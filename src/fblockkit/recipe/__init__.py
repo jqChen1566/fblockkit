@@ -34,6 +34,13 @@ from .basis_ecp import (
 )
 from .convergence import ConvergencePlan, plan_convergence
 from .dmet import DmetError, DmetPlan, plan_dmet, render as render_dmet
+from .relativistic import (
+    RelativisticError,
+    RelativisticPlan,
+    SoCasscfTemplate,
+    plan_relativistic,
+    plan_so_casscf,
+)
 from .openmolcas import (
     Deviation,
     OpenMolcasChainSpec,
@@ -56,6 +63,11 @@ __all__ = [
     "BasisEntry",
     "ConvergencePlan",
     "DmetError",
+    "RelativisticError",
+    "RelativisticPlan",
+    "SoCasscfTemplate",
+    "plan_relativistic",
+    "plan_so_casscf",
     "DmetPlan",
     "plan_dmet",
     "render_dmet",

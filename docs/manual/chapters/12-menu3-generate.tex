@@ -60,6 +60,30 @@ what to check afterwards.
 \end{itemize}
 \end{readbox}
 
+\subsection{The relativistic tier line}
+
+When the profile names an $f$-block element or a spin-orbit target
+(\code{magnetic}, \code{spectra}), the run guidance adds the relativistic tier
+the need implies -- the last line of the listing above.  The tiers come from the
+X2C hierarchy for two-component work, and the rule's point is \emph{avoiding
+over-configuration}: scalar work uses the one-electron variants, light
+main-group spin-orbit work wants the two-electron correction (it can carry a
+quarter of the splitting in O$_2$), and the f block is the case where paying for
+that correction buys only $1.6$--$4.9$~cm$^{-1}$ on Nd\textsuperscript{3+}
+splittings -- so the atomic-mean-field tier is the default there and a higher
+tier must be justified by the target accuracy.  One option is ruled out in
+every row: the atomic-mean-field variant \code{amfX2C} has a numerically
+unstable single-centre scalar approximation.
+
+For f-block spin-orbit work the same source supplies the two-component
+SO-CASSCF template this toolkit records as guidance (ORCA itself offers the
+one-electron variants only): the whole $4f$ shell, the ground-term manifold
+state-averaged in full -- the window is computed as $(2S+1)(2L+1)$ from the
+Hund term, giving the source's 52 states for Nd\textsuperscript{3+} -- spin-orbit
+contracted bases for the heavy elements, Cholesky threshold $10^{-7}$~Hartree,
+and the report of Kramers doublet levels plus each multiplet's centre of
+gravity.
+
 \section{Worked example}
 
 The generated input of this session was run for real on ORCA 6.1.1 and its

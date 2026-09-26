@@ -151,6 +151,7 @@ def run_guidance(
     recommendation: Recommendation,
     convergence: ConvergencePlan | None = None,
     basis_entry: BasisEntry | None = None,
+    relativistic=None,
 ) -> str:
     """Build the run guidance (which never enters the .inp): which analysers and
     diagnostics to use once the job has finished."""
@@ -167,6 +168,13 @@ def run_guidance(
     if convergence is not None:
         for note in convergence.notes:
             lines.append(f"- {note}")
+    if relativistic is not None:
+        lines.append(
+            f"- Relativistic tier: {relativistic.tier} (for the stated need: "
+            f"{relativistic.need})"
+        )
+        for note in relativistic.notes:
+            lines.append(f"  - {note}")
     if recommendation.refusals:
         lines.append("- This route includes refusals:")
         for refusal in recommendation.refusals:

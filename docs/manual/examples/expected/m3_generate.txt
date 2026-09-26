@@ -52,6 +52,10 @@ Run guidance:
 - This route includes a perturbation layer: afterwards use the diagnosis layer to check orbital convergence and the reference weights/denominators.
 - Memory: the generated input sets %maxcore 2000 MB. A large-basis f-block CASSCF can need several GB per process (measured: a Yb3+ CASSCF(13,7) with SARC2-DKH-QZVP under TRAH asked for 9345 MB per process and aborted); raise %maxcore if ORCA reports out of memory.
 - !SlowConv is available but needs caution: the manual warns that it can converge to a solution closer to the initial guess -- a correct initial guess comes first.
+- Relativistic tier: SFX2C-1e / X2C-1e (for the stated need: only scalar relativity (geometry, energies))
+  - the standard scalar treatment
+  - the two-electron term is not needed for geometries and scalar energetics
+  - never use amfX2C: its scalar part rests on a single-centre approximation that is numerically unstable
 - Reminders:
   - Matched at metal valence 3 (entries that do not list a valence are treated as the general tier).
 

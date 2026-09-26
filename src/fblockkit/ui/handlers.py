@@ -318,10 +318,32 @@ def generate_input(session: Session) -> None:
     target = Path(geometry_path).with_name(Path(geometry_path).stem + ".fbk.inp")
     target.write_text(text, encoding="ascii")
     session.say(f"Input file written: {target}")
-    session.say(run_guidance(recommendation, plan, basis_entry))
+    session.say(
+        run_guidance(
+            recommendation, plan, basis_entry, _relativistic_for(profile)
+        )
+    )
 
 
 # --- 4 basis query ----------------------------------------------------------
+
+
+def _relativistic_for(profile):
+    """The relativistic tier the profile's needs imply (None when nothing is asked)."""
+    from ..knowledge.elements import ElementError, is_f_element
+    from ..recipe import plan_relativistic
+
+    f_block = False
+    for symbol in profile.elements:
+        try:
+            f_block = f_block or is_f_element(symbol)
+        except ElementError:
+            continue
+    targets = {target.strip().lower() for target in profile.targets}
+    needs_soc = bool(targets & {"magnetic", "spectra"})
+    if not (f_block or needs_soc):
+        return None
+    return plan_relativistic(needs_soc=needs_soc, f_block=f_block)
 
 
 def basis_query(session: Session) -> None:

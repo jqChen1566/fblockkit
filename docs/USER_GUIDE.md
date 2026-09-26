@@ -120,7 +120,14 @@ each with its rationale.
 
 **What you get**: `structure.fbk.inp` (pure ASCII, directly runnable) and, on
 screen, the run guidance (method chain, basis, convergence discipline, refusals,
-and what to check afterwards).
+and what to check afterwards). When the profile names an f-block element or a
+spin-orbit target (`magnetic`, `spectra`), the guidance adds the **relativistic
+tier** the need implies: the one-electron variants for scalar work, the
+two-electron correction for light main-group spin-orbit work, the
+atomic-mean-field tier for the f block (where the two-electron correction is
+worth only 1.6-4.9 cm^-1 on Nd3+ splittings -- so a higher tier must be
+justified by the target accuracy), and the amfX2C variant is ruled out
+everywhere for its unstable scalar approximation.
 
 **Built-in discipline** (all from the ORCA manual or measured by this group; the
 sources are in the generated guidance):

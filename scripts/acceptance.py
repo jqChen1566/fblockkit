@@ -191,6 +191,11 @@ def main() -> int:
                 "source's gates included)",
             )
 
+            check(
+                "Relativistic tier:" in out and "SFX2C-1e" in out,
+                "menu 3 adds the relativistic tier line the f-block profile implies",
+            )
+
             geometry = read("octahedron.xyz.fbk.md")
             check("Coordination shell: 6 ligands" in geometry and "Oh" in geometry,
                   "the geometry report finds the octahedral shell and the Oh parameter count")
