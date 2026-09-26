@@ -142,10 +142,15 @@
     5f-in-core pseudopotentials (the AnPP2/AnBS2 family) apply to the trivalent state only:
     for AnCl3 the CCSD(T) MAD against small-core pseudopotentials is 2.9 kcal/mol
     (AnPP2-III). The tetravalent case does not meet the bar (AnCl4 MAD 11.8, no gain over
-    the existing schemes). v0.1 does not generate inputs for this route automatically: the
-    parameters are not in ORCA's internal library and must be obtained from the original
-    paper or upstream and checked by hand (this group has already found OCR corruption in
-    its SI).
+    the existing schemes). This route is still not auto-generated as ORCA input, but the
+    reason has changed (2026-09-26 re-check): the parameters are fully available -- the SI
+    text layer is intact (26 pseudopotential and 78 basis blocks recovered and round-trip
+    validated bit-for-bit through PySCF's CP2K parser; the earlier OCR damage was an
+    artefact of our conversion pipeline, not of the source) -- yet the GTH local form
+    (-q erf(a r)/r plus Gaussians) and its separable nonlocal projector with a full h
+    matrix cannot be represented in ORCA's NewECP block. The validated execution paths are
+    PySCF (pyscf.gto.basis.parse_cp2k_pp) and CP2K (native GTH/MOLOPT); ORCA input
+    generation therefore remains refused, with the representability limit as the reason.
   refusals:
     - f–f transitions, crystal-field splittings and 5f multiplets are all out of reach (l_max = 2, no 5f non-local channel).
     - Every SOC-dependent property (f–f fine structure, magnetic anisotropy, ZFS, g tensor) is unavailable (the pseudopotential is a scalar-relativistic parameterisation).
@@ -162,3 +167,10 @@
       ref: "Lu J.-B., Zhang Y.-Y., Liu J.-B., Li J., J. Chem. Theory Comput., 2025, 21(1), 170-182, DOI 10.1021/acs.jctc.4c01189"
       bibkey: lu2025normconserving
       url: https://doi.org/10.1021/acs.jctc.4c01189
+    - kind: measured
+      text: >-
+        Re-extraction from the original PDF (2026-09-26): all 104 parameter blocks complete
+        and round-trip validated through PySCF's CP2K parser with max|diff| = 0.00e+00; the
+        ORCA field mapping was worked out (N_core = Z - sum n_elec), but the erf local part
+        and the coupled nonlocal h matrix have no NewECP representation.
+      ref: Close-reading file 文献细读/细读_5f入芯ECP_Lu2025.md, section 7 (parameter re-extraction)
