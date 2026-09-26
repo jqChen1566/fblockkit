@@ -1,0 +1,31 @@
+fBlockKit -- the f-block calculation toolkit
+Copyright 2026 jqChen1566
+
+This product includes software developed by jqChen1566.
+
+Bundled third-party components
+------------------------------
+The Python wheel contains only this project's code and its data files; the following
+dependencies are installed separately by the package manager:
+
+- PyYAML (MIT License)
+- Jinja2 (BSD 3-Clause License)
+- NumPy (BSD 3-Clause License)
+
+The Windows/Linux "green package" additionally bundles CPython (PSF License) and the
+PyInstaller bootloader and runtime (GPL-2.0-or-later with the PyInstaller bootloader
+exception, which permits distributing bundled applications under any license).
+
+Literature references
+---------------------
+The files under `src/fblockkit/knowledge/` (sources.bib and the rule tables) cite
+published works. Those entries are bibliographic references, not incorporated text;
+the tool prints the complete citation and a paste-ready BibTeX entry for every
+reference it uses.
+
+External algorithms
+-------------------
+Methodological protocols implemented here were re-derived from their published
+descriptions. No code from GPL-licensed or unlicensed software is linked, copied or
+redistributed; the tool index (`src/fblockkit/knowledge/toolindex/tools.yaml`) records
+the relation and status of every external tool that appears in this project's scope.

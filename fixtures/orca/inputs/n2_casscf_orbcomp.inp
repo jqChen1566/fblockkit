@@ -1,0 +1,15 @@
+# 夹具：N2 CASSCF(6,6) + 逐 MO 成分打印（P_ReducedOrbPopMO_L）——A1 轨道成分分析
+! RHF def2-SVP def2-SVP/C TightSCF
+%pal nprocs 4 end
+%maxcore 2000
+%output Print[P_ReducedOrbPopMO_L] 1 end
+%casscf
+  nel 6
+  norb 6
+  mult 1
+  nroots 2
+end
+* xyz 0 1
+N 0 0 0
+N 0 0 1.094
+*

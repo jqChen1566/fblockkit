@@ -1,0 +1,37 @@
+fBlockKit -- the f-block calculation toolkit (input generation + characterisation analysis; it runs no calculations)
+
+Available functions:
+   1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)
+   2  Coordination geometry and symmetry hints (read an XYZ structure)
+   3  Generate an ORCA input (system profile -> input file + run guidance)
+   4  Basis-set / ECP recommendation (element/valence/targets)
+   5  Search the tool index (keywords)
+   6  Tool onboarding notes (by index id)
+   7  Cross-level solution consistency (records JSON input)
+   8  Save this session as a script
+   9  SCF rescue (triage + corrected input files)
+  10  Crystal-field fit (levels + coefficients JSON)
+  11  Point-charge crystal-field estimate (read an XYZ structure + charges)
+   0  Quit
+Choose a number (Enter = leave empty)> 1
+ORCA output file path (Enter = leave empty)> work/fhh_optts_freq.out
+Report written: work\fhh_optts_freq.out.fbk.md
+Data written: work\fhh_optts_freq.out.fbk.json
+Analysis sections: 0.
+Diagnosis: Info 2; Warning 1 (details in the report file).
+
+Available functions:
+   1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)
+   2  Coordination geometry and symmetry hints (read an XYZ structure)
+   3  Generate an ORCA input (system profile -> input file + run guidance)
+   4  Basis-set / ECP recommendation (element/valence/targets)
+   5  Search the tool index (keywords)
+   6  Tool onboarding notes (by index id)
+   7  Cross-level solution consistency (records JSON input)
+   8  Save this session as a script
+   9  SCF rescue (triage + corrected input files)
+  10  Crystal-field fit (levels + coefficients JSON)
+  11  Point-charge crystal-field estimate (read an XYZ structure + charges)
+   0  Quit
+Choose a number (Enter = leave empty)> 0
+Goodbye.

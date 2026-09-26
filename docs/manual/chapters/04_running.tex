@@ -1,0 +1,121 @@
+\chapter{Running fBlockKit}
+\label{ch:running}
+
+\section{The menu}
+
+Start the program (Section~\ref{ch:installation}) and you get a numbered menu.
+Type the number of a function and press Enter. Every prompt tells you what it
+wants and which value is the default; pressing Enter alone accepts the default.
+At any menu, typing \code{0} leaves the program.
+
+The menu numbers are part of the public interface: they are append-only and
+never reordered, because a session script replays by number. In this manual the
+chapter of a menu number documents that function; a cross-reference such as
+\menu{9} points to it.
+
+\begin{transcript}[title={The program starts with its menu (excerpt)}]
+fBlockKit -- the f-block calculation toolkit (input generation + characterisation analysis; it runs no calculations)
+
+Available functions:
+   1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)
+   2  Coordination geometry and symmetry hints (read an XYZ structure)
+   ...
+  11  Point-charge crystal-field estimate (read an XYZ structure + charges)
+   0  Quit
+Choose a number (Enter = leave empty)>
+\end{transcript}
+
+\section{The interaction is a script}
+
+Every thing you type at a prompt is one line of a script. A script is a text
+file with one input per line:
+
+\begin{itemize}
+  \item an \textbf{empty line} means ``just press Enter'' (accept the default);
+  \item a line starting with \code{\#} is a comment and is ignored;
+  \item everything else is passed to the prompt exactly as if you had typed it.
+\end{itemize}
+
+You can obtain a script in two ways: record while you work
+(\cmd{--record FILE}), or save the session so far with \menu{8}. Both record
+the answer sequence itself; the act of saving is not part of the script, so
+replaying it never asks for a save path.
+
+A script replays with
+
+\begin{codeblock}
+fblockkit run script.txt
+\end{codeblock}
+
+The program prints exactly what it would have printed interactively, including
+the prompts and your answers, so a replay is a complete transcript. Replaying
+the same script twice produces \emph{byte-identical} output -- the program
+writes no timestamps and nothing else unstable. This property is also the
+project's regression acceptance criterion: the test suite replays the scripts
+in this manual and compares them byte for byte.
+
+\begin{notebox}[Reading a transcript]
+The transcript boxes in this manual show both sides of the conversation: the
+prompt line ends with \code{>} followed by the typed answer. An empty line in
+a script appears as an empty answer.
+\end{notebox}
+
+\subsection{A worked recording}
+
+\lstinputlisting[style=fbkcode,
+  title={The script used for the recording example: \file{examples/scripts/m8\_script.txt}}]
+  {examples/scripts/m8_script.txt}
+
+The session performs two analyses and then saves its input at \menu{8}:
+
+\lstinputlisting[style=fbkcode, firstline=60, lastline=67, title={Session excerpt (menu 8)}]
+  {examples/expected/m8_script.txt}
+
+The saved file contains exactly the six input lines typed \emph{before} the
+saving action:
+
+\lstinputlisting[style=fbkcode,
+  title={The recorded script (\file{examples/expected/saved\_session.txt})}]
+  {examples/expected/saved_session.txt}
+
+Replaying that file reproduces the two analyses; when the replay reaches
+\menu{8} the script has no further line, so the program reports the finished
+input and leaves cleanly:
+
+\lstinputlisting[style=fbkcode, firstline=63, lastline=67, title={Replay of the saved script}]
+  {examples/expected/m8_replay.txt}
+
+\section{The command line}
+
+\begin{codeblock}
+fblockkit                      interactive menu
+fblockkit --record FILE        the same, recording your input as a script
+fblockkit run SCRIPT.txt       replay a script
+fblockkit search KEYWORDS      search the tool index (Chapter~\ref{ch:menu5})
+fblockkit guide TOOL_ID        tool onboarding notes (Chapter~\ref{ch:menu6})
+\end{codeblock}
+
+Exit codes: \code{0} for a normal run; \code{2} for a usage problem (a missing
+script file, an empty keyword, an unknown tool id). The program prints
+diagnostics to standard output only -- there is no log file, and no state is
+kept between runs.
+
+\section{What gets written, and where}
+
+\fbk{} writes new files \emph{next to the input file you gave it} (never
+overwriting anything):
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}lX@{}}
+\toprule
+Product & Written by \\
+\midrule
+\file{name.fbk.md}, \file{name.fbk.json} & \menu{1} (report), \menu{2}, \menu{10}, \menu{11} \\
+\file{structure.fbk.inp} & \menu{3} (generated ORCA input) \\
+\file{input.fix\_\textit{variant}.inp} & \menu{9} (corrected inputs) \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Reports and generated files contain no timestamps, so a re-run overwrites the
+previous product with identical content rather than creating clutter.

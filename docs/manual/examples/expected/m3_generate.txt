@@ -1,0 +1,67 @@
+fBlockKit -- the f-block calculation toolkit (input generation + characterisation analysis; it runs no calculations)
+
+Available functions:
+   1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)
+   2  Coordination geometry and symmetry hints (read an XYZ structure)
+   3  Generate an ORCA input (system profile -> input file + run guidance)
+   4  Basis-set / ECP recommendation (element/valence/targets)
+   5  Search the tool index (keywords)
+   6  Tool onboarding notes (by index id)
+   7  Cross-level solution consistency (records JSON input)
+   8  Save this session as a script
+   9  SCF rescue (triage + corrected input files)
+  10  Crystal-field fit (levels + coefficients JSON)
+  11  Point-charge crystal-field estimate (read an XYZ structure + charges)
+   0  Quit
+Choose a number (Enter = leave empty)> 3
+Element list (comma separated, e.g. La,O,H) (Enter = leave empty)> Ce
+System charge (Enter = 0)> 3
+Spin multiplicity (2S+1) (Enter = 1)> 2
+f-block metal valence (Enter = leave empty)> 3
+Targets (comma separated: energy/geometry/excited/magnetic/spectra) (Enter = energy)> energy
+Structure file (XYZ) path (Enter = leave empty)> work/ce_atom.xyz
+Method chain: CASSCF + SC-NEVPT2
+Basis-set / ECP recommendation (3 tier(s)):
+  1. SARC2-DKH-QZVP (DKH2; aux SARC2-DKH-QZVP/JK)
+     First choice for lanthanide wavefunction methods (CASSCF/NEVPT2 and the like): valence quadruple-zeta, with NEVPT2-optimized (3g2h) polarization functions. Comes with its own dedicated /JK fitting basis.
+  2. ANO-RCC-TZP (DKH2)
+     ANO-RCC (Full/DZP/TZP/QZP, DKH2). The general choice for magnetic-property chains (the OpenMolcas route); also built into ORCA. One of the standard basis sets of the lanthanide single-molecule-magnet literature workflow.
+  3. def2-TZVP (def2-ECP (28-core, matched automatically))
+     The def2 family (def2-SVP/TZVP/QZVPP): covers Ce-Lu (the 28-core def2-ECP is matched automatically); suits screening, geometry optimisation and initial-guess stages; for correlation-energy targets, upgrade to SARC2 / ANO-RCC.
+- Matched at metal valence 3 (entries that do not list a valence are treated as the general tier).
+Choose a basis tier (1-3) (Enter = 1)> 1
+Starting active-space suggestions (G2, suggestions only; Ce):
+  4f-only (minimal): CAS(1e,7o) [confirmed]
+    The seven 4f orbitals with the 1 f electrons: the minimal space that captures the f manifold; confirmed by the Dy(III) CAS(9,7) precedent. Choosing the orbitals still requires user insight.
+  4f + d double shell: CAS(1e,12o) [provisional]
+    4f (7 orbitals) plus the d shell (5 orbitals) at the same electron count: use when the d shell participates (bonding, An(IV) valence requirements, or when occupation analysis shows d weight in the correlated orbitals).
+Active space nel,norb,mult,nroots (Enter = leave empty)> 1,7,2,1
+Convergence tier (default = defaults first; difficult = use TRAH) (Enter = default)> default
+Input file written: work\ce_atom.fbk.inp
+Run guidance:
+- Method chain: CASSCF + SC-NEVPT2
+- Basis set / ECP: SARC2-DKH-QZVP (DKH2; aux SARC2-DKH-QZVP/JK)
+- Once it has finished, hand the output to the diagnosis layer (diagnosis): SCF/CASSCF convergence, active-space occupations (outside 0.02-1.98 points to a space that is too large), CASPT2 reference weights and smallest denominator, and the sign of the NEVPT2 class contributions; with SOC, verify the state order and identity.
+- Run the default convergence settings first (the manual states plainly that the defaults come before hand-tuning).
+- Initial guess: the default !PModel often does not give the right starting orbitals; in the f block prefer a fragment guess (compute the fragments first, then combine), or AVAS to select the atomic valence space; when all of that fails, read existing orbitals with !moread + %moinp.
+- If the default settings struggle to converge, switch to !TRAH then (do not add MaxIter as the first step).
+- This route includes a perturbation layer: afterwards use the diagnosis layer to check orbital convergence and the reference weights/denominators.
+- !SlowConv is available but needs caution: the manual warns that it can converge to a solution closer to the initial guess -- a correct initial guess comes first.
+- Reminders:
+  - Matched at metal valence 3 (entries that do not list a valence are treated as the general tier).
+
+Available functions:
+   1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)
+   2  Coordination geometry and symmetry hints (read an XYZ structure)
+   3  Generate an ORCA input (system profile -> input file + run guidance)
+   4  Basis-set / ECP recommendation (element/valence/targets)
+   5  Search the tool index (keywords)
+   6  Tool onboarding notes (by index id)
+   7  Cross-level solution consistency (records JSON input)
+   8  Save this session as a script
+   9  SCF rescue (triage + corrected input files)
+  10  Crystal-field fit (levels + coefficients JSON)
+  11  Point-charge crystal-field estimate (read an XYZ structure + charges)
+   0  Quit
+Choose a number (Enter = leave empty)> 0
+Goodbye.

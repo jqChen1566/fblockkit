@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "fBlockKit -- the f-block calculation toolkit"
+abstract: >-
+  A zero-barrier workbench for strongly correlated systems and lanthanide/actinide
+  calculations: it generates calculation input files (basis set, ECP, active space,
+  convergence settings) and reads output files or input structures for
+  characterisation analysis. It never runs a calculation for the user, does not use
+  the network, and does not use machine learning in its decision layer; every
+  conclusion carries its provenance (a program-manual quote, a literature DOI, or a
+  measured record).
+type: software
+authors:
+  - name: "jqChen1566"
+    email: "chen_jianqi1566@163.com"
+version: 0.1.0
+date-released: "2026-09-26"
+license: Apache-2.0
+repository-code: "https://github.com/jqChen1566/fblockkit"
+keywords:
+  - quantum chemistry
+  - f-block
+  - lanthanide
+  - actinide
+  - multireference
+  - ORCA
+  - OpenMolcas
+  - input generation
+  - output analysis

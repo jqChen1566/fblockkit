@@ -1,0 +1,164 @@
+# fBlockKit basis-set / ECP recommendation table (G1)
+# Each entry carries: element range covered / applicable valences and targets / ORCA
+# keywords / provenance (manual/literature/measured).
+# kind: recommend (usable tier) / caution (boundary to watch) / refuse (unusable or not
+# automatically generatable).
+# Convention: evidence.text always uses the block scalar (>-).
+
+- id: BE-SARC2-LN
+  kind: recommend
+  elements: La-Lu
+  valence: [3]
+  targets: [energy, excited, magnetic, spectra]
+  basis: SARC2-DKH-QZVP
+  hamiltonian: DKH2
+  auxiliary: SARC2-DKH-QZVP/JK
+  note: >-
+    First choice for lanthanide wavefunction methods (CASSCF/NEVPT2 and the like):
+    valence quadruple-zeta, with NEVPT2-optimized (3g2h) polarization functions. Comes
+    with its own dedicated /JK fitting basis.
+  evidence:
+    - kind: manual
+      text: >-
+        "Specifically for wavefunction-based calculations of lanthanide systems we recommend
+        the more heavily polarized SARC2 basis sets."; "SARC basis sets of valence quadruple-zeta
+        quality for lanthanides, with NEVPT2-optimized (3g2h) polarization functions (SARC2).
+        Suitable for accurate calculations using correlated wavefunction methods."
+      ref: ORCA 6.1 manual §2.7 (Table 2.29)
+      url: https://www.faccts.de/docs/orca/6.1/manual/contents/essentialelements/basissets.html
+    - kind: manual
+      text: >-
+        "Each basis set has a large dedicated /JK auxiliary basis set for simultaneous Coulomb
+        and exchange fitting" (Table 2.35 lists SARC2-DKH-QZVP/JK, covering La-Lu)
+      ref: ORCA 6.1 manual §2.7 (Table 2.35)
+
+- id: BE-SARC-DKH-AN
+  kind: recommend
+  elements: Ac-Lr
+  valence: [3, 4]
+  targets: [energy, excited, magnetic, spectra]
+  basis: SARC-DKH-TZVPP
+  hamiltonian: DKH2
+  auxiliary: SARC/J
+  note: >-
+    Actinides (the workhorse tier when no SARC2 is built in): SARC-DKH-TZVP / TZVPP cover
+    Ac-Lr, with the SARC/J Coulomb fitting basis alongside. SARC-ZORA-* with ZORA is also
+    available.
+  evidence:
+    - kind: manual
+      text: >-
+        "SARC-DKH-TZVP / SARC-DKH-TZVPP | Rb-Rn, Ac-Lr | DKH2"; "SARC/J is the general-purpose
+        Coulomb-fitting auxiliary for all SARC orbital basis sets."
+      ref: ORCA 6.1 manual §2.7 (Table 2.28)
+      url: https://www.faccts.de/docs/orca/6.1/manual/contents/essentialelements/basissets.html
+
+- id: BE-ANO-RCC
+  kind: recommend
+  elements: H-Cm
+  targets: [energy, excited, magnetic, spectra]
+  basis: ANO-RCC-TZP
+  hamiltonian: DKH2
+  note: >-
+    ANO-RCC (Full/DZP/TZP/QZP, DKH2). The general choice for magnetic-property chains (the
+    OpenMolcas route); also built into ORCA. One of the standard basis sets of the
+    lanthanide single-molecule-magnet literature workflow.
+  evidence:
+    - kind: manual
+      text: >-
+        "ANO-RCC-Full / ANO-RCC-DZP / ANO-RCC-TZP / ANO-RCC-QZP | H-Cm | DKH2"
+      ref: ORCA 6.1 manual §2.7 (Table 2.33)
+      url: https://www.faccts.de/docs/orca/6.1/manual/contents/essentialelements/basissets.html
+    - kind: literature
+      text: >-
+        A single protocol across 19 Dy(III) single-molecule magnets: the ANO-RCC basis set
+        contracted in three tiers (VTZP for the metal and its nearest neighbours, VDZP for
+        the rest), with a RASSCF/RASSI/SINGLE_ANISO chain.
+      ref: "Chilton N. F., Chem. Soc. Rev., 2025, 54(24), 11468-11487, DOI 10.1039/d5cs00493d"
+      bibkey: chilton2025abinitio
+      url: https://doi.org/10.1039/d5cs00493d
+
+- id: BE-DEF2-LN
+  kind: recommend
+  elements: Ce-Lu
+  valence: [2, 3, 4]
+  targets: [energy, geometry, excited, spectra]
+  basis: def2-TZVP
+  ecp: def2-ECP (28-core, matched automatically)
+  note: >-
+    The def2 family (def2-SVP/TZVP/QZVPP): covers Ce-Lu (the 28-core def2-ECP is matched
+    automatically); suits screening, geometry optimisation and initial-guess stages; for
+    correlation-energy targets, upgrade to SARC2 / ANO-RCC.
+  evidence:
+    - kind: manual
+      text: >-
+        "def2-TZVP | H-Rn | def2-ECP (Rb-Rn)"; "def2-ECP | 28 | Ce-Lu"; "Requesting some
+        basis sets automatically assigns the matching ECP ... for example, 'def2' basis sets
+        use the def2-ECP."
+      ref: ORCA 6.1 manual §2.7 (Table 2.14 / Table 2.38)
+      url: https://www.faccts.de/docs/orca/6.1/manual/contents/essentialelements/basissets.html
+
+- id: BE-DEF2-AN-CAUTION
+  kind: caution
+  elements: Th-Lr
+  note: >-
+    The standard def2 basis sets (def2-SVP/TZVP/QZVPP and the like) stop at Rn and do not
+    cover the actinides -- do not pick the def2 family for an actinide; use the SARC-DKH,
+    ANO-RCC or Stuttgart pseudopotential tiers instead. For JK fitting, actinides can use
+    def2/JKsmall (H-Ra, Th-Lr).
+  evidence:
+    - kind: manual
+      text: >-
+        "def2-SVP | H-Rn", "def2-TZVP | H-Rn", "def2-QZVPP | H-Rn" (the coverage column stops
+        at Rn); "def2/JKsmall | H-Ra, Th-Lr | reduced version of def2/JK"
+      ref: ORCA 6.1 manual §2.7 (Table 2.14 / Table 2.35)
+      url: https://www.faccts.de/docs/orca/6.1/manual/contents/essentialelements/basissets.html
+
+- id: BE-STUTTGART-ECP
+  kind: recommend
+  elements: Ac-Lr
+  targets: [energy, geometry]
+  ecp: SK-MCDHF-RSC (Stuttgart 60-core and others; ORCA internal library)
+  note: >-
+    Stuttgart pseudopotentials are reachable through ORCA's built-in keywords
+    (SK-MCDHF-RSC, SDD/def-SD and others; the ECP must be named explicitly and the valence
+    basis pairing is in manual Table 2.38); they can also be set element by element with
+    %basis NewECP. ECP parameters from an external source (a BSE download, say) must be
+    inlined and checked by hand.
+  evidence:
+    - kind: manual
+      text: >-
+        "A selection of ECP parameters and associated basis sets is directly accessible in ORCA
+        through the internal ECP library"; "The simplest way to assign ECPs is by using the ECP
+        keyword within the simple input line. The ECP keyword itself assigns only the effective
+        core potential, not a valence basis set!"
+      ref: ORCA 6.1 manual §2.7 (Table 2.38)
+      url: https://www.faccts.de/docs/orca/6.1/manual/contents/essentialelements/basissets.html
+
+- id: BE-5F-IN-CORE
+  kind: refuse
+  elements: Pa-Lr
+  valence: [3]
+  note: >-
+    5f-in-core pseudopotentials (the AnPP2/AnBS2 family) apply to the trivalent state only:
+    for AnCl3 the CCSD(T) MAD against small-core pseudopotentials is 2.9 kcal/mol
+    (AnPP2-III). The tetravalent case does not meet the bar (AnCl4 MAD 11.8, no gain over
+    the existing schemes). v0.1 does not generate inputs for this route automatically: the
+    parameters are not in ORCA's internal library and must be obtained from the original
+    paper or upstream and checked by hand (this group has already found OCR corruption in
+    its SI).
+  refusals:
+    - f–f transitions, crystal-field splittings and 5f multiplets are all out of reach (l_max = 2, no 5f non-local channel).
+    - Every SOC-dependent property (f–f fine structure, magnetic anisotropy, ZFS, g tensor) is unavailable (the pseudopotential is a scalar-relativistic parameterisation).
+    - Variable-valence, redox and mixed-valence systems are out of scope (the valence is fixed inside the pseudopotential).
+    - Forbidden when the ground state is 5f^(n-1) 6d^1 (III) or 5f^(n-2) 6d^1 (IV) (the source paper's own prohibition).
+    - Properties that depend on the half-filled / filled 5f breakpoints (the even-odd effect at Cm and Lr, for instance) cannot be reproduced.
+  evidence:
+    - kind: literature
+      text: >-
+        AnPP2 gives a trivalent MAD of 2.9 kcal/mol (3.3 over U–Am / 1.9 over Cm–Lr);
+        11.8 kcal/mol for the tetravalent case, with no gain; scalar-relativistic only;
+        DZVP by default in the condensed phase; having 5f and 6d both in the valence is
+        the precondition for the tetravalent case to work.
+      ref: "Lu J.-B., Zhang Y.-Y., Liu J.-B., Li J., J. Chem. Theory Comput., 2025, 21(1), 170-182, DOI 10.1021/acs.jctc.4c01189"
+      bibkey: lu2025normconserving
+      url: https://doi.org/10.1021/acs.jctc.4c01189

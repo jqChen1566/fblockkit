@@ -1,0 +1,94 @@
+\chapter{Development and extension}
+\label{ch:development}
+
+This chapter is for people extending the program: adding a rule, a parser
+section or an analyser, or packaging a release.
+
+\section{Architecture and the layering contract}
+
+\begin{codeblock}
+ui/            menu, command line, script replay, session
+  recipe/      system profile -> recommendations -> input templates
+  diagnosis/   rule engine (findings with severity and provenance)
+  analysis/    characterisers (output files, structures, data files)
+  toolindex/   the external-tool index
+      parsers/     program-output parsing (ORCA deep)
+        knowledge/ rules, basis/ECP data, templates, sources.bib
+\end{codeblock}
+
+Dependencies point one way only, and the direction is enforced mechanically by
+import-linter (the first step of \file{scripts/verify.sh}): ui may use
+everything below it; recipe/diagnosis/analysis/toolindex may use parsers and
+knowledge; parsers may use knowledge; knowledge uses nothing from the program.
+Two house rules accompany the layering: diagnosis and recipe only ever
+\emph{propose} (they write new files, never modify yours), and analysis never
+depends on diagnosis (it must work on any output file, stand-alone).
+
+\section{Adding a rule}
+
+\begin{enumerate}
+  \item Register any new fact field in \file{knowledge/rules/README.md} first,
+    and make the parser layer produce it (\file{parsers/orca.py}, function
+    \code{facts()}); add an evaluation case to \file{tests/test\_knowledge.py}.
+  \item Add the rule to a YAML file under \file{knowledge/rules/}. Every rule
+    needs non-empty evidence; a \code{literature} item must point into
+    \file{sources.bib} with a bibkey (the loader rejects it otherwise); a
+    \code{diagnosis} rule needs a severity and no \code{method}; a
+    \code{recipe} rule needs a \code{method} and no severity.
+  \item Quote evidence text as a YAML block scalar (\code{>-}). A
+    double-quoted scalar ends at the closing quote, and nothing may follow on
+    the line -- the classic trap this project's rule files document.
+  \item Add tests: the rule logic against hand-built fact tables, plus an
+    end-to-end case on a real fixture.
+\end{enumerate}
+
+\section{Adding a parser section}
+
+The fixture discipline comes first: obtain a real output file that exercises
+the pattern, register it in \file{fixtures/orca/README.md} with its source and
+run outcome, and only then write the regular expressions against it. Manual
+examples may come from older program versions and are not authoritative. New
+patterns must not fire on the existing fixtures incorrectly: run the whole
+suite, and check negative cases explicitly (a marker that is always present is
+unusable -- the SOC detection in this project was fixed by falsifying candidate
+markers one by one against five fixtures).
+
+\section{Adding an analyser}
+
+An output-reading analyser implements \code{accepts(result)} and
+\code{run(result) -> ReportSection} and provides \code{evidence()}; it is
+registered in \file{analysis/\_\_init\_\_.py}, after which the menu-1 pipeline
+runs it automatically and merges its evidence into the report's provenance.
+Structure-reading and mapping-reading analysers (geometry, point charge,
+declaration check) are called directly by their menu handlers instead.
+Everything user-visible is in English; error messages end with a
+``Next step: \dots'' sentence.
+
+\section{Verification and packaging}
+
+\begin{codeblock}
+bash scripts/verify.sh
+\end{codeblock}
+
+runs, in order: the layering contract; a byte-compile of all sources and tests
+with the interpreter at hand (this is the syntax gate for the supported
+minimum, Python 3.11 -- development machines often run newer interpreters that
+accept syntax 3.11 rejects); and the test suite. The suite includes the
+examples of this manual: \file{tests/test\_manual.py} replays every script in
+\file{docs/manual/examples/} and compares the output byte for byte.
+
+Packaging produces two artefacts (Chapter~\ref{ch:installation}): the pip wheel
+(\code{pip wheel .}) and the green package (PyInstaller with
+\file{packaging/fblockkit.spec}, built inside a 3.12 environment). Two
+packaging lessons are baked into the spec and worth repeating: every data-file
+suffix must be declared both in \file{pyproject.toml} (package-data) and in the
+spec's collection pattern (a missing \file{.bib} once broke the green package
+while the wheel worked); and always \emph{run} the packaged build, not just
+build it.
+
+\section{The examples of this manual}
+
+\file{docs/manual/examples/} contains the session scripts, the deterministic
+input generator and the captured outputs; \file{run-examples.sh} refreshes the
+captures. When a change alters any program output, refresh the captures and
+re-run the suite: a stale capture is a failing test, by design.

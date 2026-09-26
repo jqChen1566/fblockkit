@@ -1,0 +1,42 @@
+{
+  "meta": {
+    "description": "Crystal-field parameters B_k^q (cm^-1) and ground-manifold level energies (cm^-1) of the cubic (Oh) Dy(III) single-ion magnet Cs2NaDyCl6 (compound 2 of the paper), in two electronic-structure columns. Known-answer data for two independent things at once: the cubic allowed-parameter set (four non-zero B_k^q, second rank entirely zero) and the absolute normalisation and phase convention of the extended Stevens operators used by the paper.",
+    "source": "Peng L., Liu S., Zhang X., Chen X., Li C., Ung S. F., Cheng H.-P., Chan G. K.-L., Accurate Crystal Field Hamiltonians of Single-Ion Magnets at Mean-Field Cost, J. Phys. Chem. Lett., 2025, 16(47), 12312-12320, DOI 10.1021/acs.jpclett.5c02971",
+    "bibkey": "peng2025accurate",
+    "tables": ["Supporting Information, Table S2 (B_k^q; first of the four blocks merged into one table)", "Supporting Information, Table S7 (level energies)"],
+    "transcription_note": "Table S2 of the SI conversion (jz5c02971_si_001.md) merges the parameter tables of compounds 2, 3, 4 and 5 into one 108-row table whose captions follow the table body; our reading notes (close-reading file) 文献细读/细读_CF哈密顿量_Chan2025.md section 4.6 record that block correspondence as a 'to be confirmed' item. The first block is identified as compound 2 by two independent arguments, both verified against the source text: its non-zero pattern is exactly the four parameters a four-fold axis allows, and the Figure S7 caption in the same file states 'Because 2 has Oh symmetry, 4 B_k^q parameters that preserve the symmetry are fitted'. Table S7 is captioned 'of 2' in the source and has the 16-row Kramers-pair structure of a J = 15/2 manifold.",
+    "transcription_detail": "Values verified verbatim against the SI conversion text, not against the reading notes alone. The Table S7 block in the conversion lists 15 of the 16 rows: the last row (the second member of the eighth Kramers doublet) is missing from the conversion, and the doublet structure of the remaining 14 rows plus the spectrum of the fitted Hamiltonian both give 232.77 for it.",
+    "operator_convention": "Extended Stevens operators of the Rudowicz/Ryabov lineage, extended (cosine/sine) form, B_k^q in cm^-1.",
+    "warning": "B_k^q from a different operator convention, manifold, unit or z-axis are not comparable with these numbers."
+  },
+  "point_group": "Oh",
+  "manifold": {"ion": "Dy3+", "term": "6H15/2", "J": 7.5, "dimension": 16},
+  "parameters": {
+    "columns": ["HF@HF", "PBE0@HF"],
+    "units": "cm^-1",
+    "records": [
+      {"k": 4, "q": 0, "values": {"HF@HF": -6.7731441e-3, "PBE0@HF": -8.5464965e-3}},
+      {"k": 4, "q": 4, "values": {"HF@HF": -3.3858198e-2, "PBE0@HF": -4.2870167e-2}},
+      {"k": 6, "q": 0, "values": {"HF@HF": 6.8419138e-6, "PBE0@HF": 1.1472420e-5}},
+      {"k": 6, "q": 4, "values": {"HF@HF": -1.4594543e-4, "PBE0@HF": -2.5131119e-4}}
+    ],
+    "zero_parameters": "All 23 other (k, q) with k in {2, 4, 6} are exactly zero in both columns, including the whole second rank -- the source table lists them as 0."
+  },
+  "levels": {
+    "columns": ["HF@HF", "PBE0@HF"],
+    "units": "cm^-1",
+    "labels": ["KD1", "KD2", "KD3", "KD4", "KD5", "KD6", "KD7", "KD8"],
+    "records": [
+      {"label": "KD1", "values": {"HF@HF": 0.0,    "PBE0@HF": 0.0}},
+      {"label": "KD2", "values": {"HF@HF": 19.92,  "PBE0@HF": 27.61}},
+      {"label": "KD3", "values": {"HF@HF": 19.97,  "PBE0@HF": 27.68}},
+      {"label": "KD4", "values": {"HF@HF": 103.88, "PBE0@HF": 119.43}},
+      {"label": "KD5", "values": {"HF@HF": 188.56, "PBE0@HF": 244.52}},
+      {"label": "KD6", "values": {"HF@HF": 188.75, "PBE0@HF": 245.46}},
+      {"label": "KD7", "values": {"HF@HF": 232.65, "PBE0@HF": 297.65}},
+      {"label": "KD8", "values": {"HF@HF": 232.77, "PBE0@HF": 298.19}}
+    ]
+  },
+  "allowed_parameters_oh": [[4, 0], [4, 4], [6, 0], [6, 4]],
+  "known_answer_note": "Diagonalising H_CF built from the four tabulated B_k^q reproduces these eight levels to better than half of the last printed digit (max |deviation| = 0.0049 cm^-1 for both columns), which is the precision to which the source table is printed. See tests/test_crystal_field.py."
+}

@@ -1,0 +1,11 @@
+# Fixture: stretched N2 (2.2 A), UHF with a broken-symmetry guess and the
+# molecule divided into two fragments (fragment index syntax N(1) / N(2)) so
+# that ORCA prints the local spin analysis.
+! UHF def2-SVP TightSCF
+%scf brokensym 3,3 end
+%pal nprocs 2 end
+%maxcore 2000
+* xyz 0 1
+N(1) 0 0 0
+N(2) 0 0 2.2
+*

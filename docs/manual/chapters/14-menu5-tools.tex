@@ -1,0 +1,73 @@
+\chapter{Search the tool index (menu 5)}
+\label{ch:menu5}
+\menulabel{5}
+
+\section{Purpose}
+
+Find external tools relevant to f-block and multireference work: what each one
+is for, how \fbk{} intends to relate to it, whether it is actually used now,
+and its licence.
+
+\section{What you need}
+
+Keywords (several words, space separated; all must match). The same search is
+available from the command line: \cmd{search KEYWORDS}.
+
+\section{Walkthrough}
+
+\lstinputlisting[style=fbkcode, firstline=16, lastline=21,
+  title={The menu-5 example session}]
+  {examples/expected/m5_tools.txt}
+
+\section{What you get}
+
+For every hit: the tier, the status, the licence, the purpose, and the note
+with integration caveats. The example entry shows the two independent
+dimensions to read:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}lX@{}}
+\toprule
+Dimension & Meaning \\
+\midrule
+relation (\textbf{tier}) & how we intend to use it: \textbf{A} absorb (file or
+  algorithm level), \textbf{B} interface (generate its input, read its output),
+  \textbf{C} index (calculation kernels, algorithmic borrowing included) \\
+status & whether it is used \emph{now}: \code{active} or
+  \code{registered} (``registered'' is a dot on the map, not a feature) \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+The MOKIT entry is an A-tier tool with status \code{registered}: the project
+takes only its ``hand orbitals over'' step and the UNO/GVB window idea, not the
+package. Licences the project has not verified are marked ``to verify'' --
+never asserted.
+
+\section{How to read the numbers}
+
+\begin{readbox}
+Do not read the index as a feature list. ``Registered'' means the tool is on
+the map (with a source and a purpose); it does not mean \fbk{} uses it. The
+program's own mechanical gate is explicit: the test suite asserts that the
+\code{active} set is exactly the one component that is genuinely wired in
+(the autoCAS entropy protocol), so any future promotion of a tool to
+\code{active} must be accompanied by an actual integration and a test change.
+\end{readbox}
+
+\section{Worked example}
+
+Search \code{lanthanide DMET} to find the lanthanide-embedding entries, then
+\code{magnetic} for the magnetic-property chain tools. Multi-word searches
+require all words to match somewhere in the record.
+
+\section{Caveats, refusals and related sections}
+
+\begin{refusalbox}
+\begin{itemize}
+  \item The index carries no installation actions and downloads nothing.
+  \item A search with no hits says so plainly; an empty keyword is refused.
+\end{itemize}
+\end{refusalbox}
+
+Related: \menu{6} for the full entry of one tool (onboarding notes).

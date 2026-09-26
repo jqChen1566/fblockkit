@@ -1,0 +1,84 @@
+\chapter{Introduction}
+\label{ch:introduction}
+
+\section{What fBlockKit is}
+
+\fbk{} is a local toolbox for strongly correlated systems and
+lanthanide/actinide calculations. It packages the expert knowledge around two
+recurring jobs into deterministic procedures:
+
+\begin{enumerate}
+  \item \textbf{Generating input}: you describe the system (elements, charge,
+    multiplicity, f-block metal valence, targets, structure), and \fbk{}
+    proposes the method chain, the basis set and ECP, a starting active space
+    and the convergence settings, then writes a directly runnable ORCA input
+    file together with plain run guidance.
+  \item \textbf{Reading results}: you give it an output file (or a structure
+    file), and \fbk{} reports what the calculation actually did: orbital
+    composition, occupation and entropy analysis, multi-reference character,
+    local spin distribution, crystal-field parameters, cross-level solution
+    consistency, SCF problems, transition-state checks -- each conclusion with
+    its provenance and, where needed, a refusal to conclude.
+\end{enumerate}
+
+The program is a workbench, not an engine. It wraps knowledge around existing
+codes (ORCA is the deep target of version 0.1; an OpenMolcas magnetic-property
+chain template is included), and it is designed for chemists who do not
+program: a numbered menu, prompts that always show their default, and a
+``record once, replay forever'' script model.
+
+\section{What fBlockKit is not}
+
+\begin{refusalbox}
+\begin{itemize}
+  \item It does \textbf{not} run calculations. You submit the generated input
+    to ORCA (or OpenMolcas) yourself; \fbk{} never launches an engine, never
+    queues a job, and never waits for one.
+  \item It does \textbf{not} use machine learning in its decision layer. Every
+    recommendation and every diagnosis is a deterministic rule with declared
+    conditions, an action and provenance; the same input always produces the
+    same output.
+  \item It does \textbf{not} use the network. Nothing is uploaded, nothing is
+    fetched; the program works in an offline environment.
+  \item It does \textbf{not} modify your files. Every product is a new file
+    beside the input (\file{*.fbk.md}, \file{*.fbk.json}, \file{*.fbk.inp},
+    \file{*.fix\_*.inp}); the originals are only ever read.
+\end{itemize}
+\end{refusalbox}
+
+\section{Design principles}
+
+\begin{description}[leftmargin=1.6em]
+  \item[Refuse rather than guess.] When the data needed for a conclusion is
+    missing, or a request is structurally impossible (a 5f-in-core
+    pseudopotential for an f--f transition, for example), the program says so
+    and states the next step. A suspicious number is worse than no number.
+  \item[Everything carries provenance.] Three classes are marked in every
+    report: a program manual (§ number and URL), a literature reference (full
+    citation with DOI, plus a paste-ready BibTeX entry), or a measured record
+    of this project (a file path or a fixture). Literature entries are checked
+    against a bundled BibTeX database at load time, so a rule whose source
+    cannot be resolved does not load at all.
+  \item[The interaction is a script.] Every sequence of answers can be saved
+    (or recorded while you type) and replayed: the same script produces the
+    same output, byte for byte. This is also the program's regression
+    acceptance criterion.
+  \item[Registration is not use.] The built-in index of external tools records
+    two independent facts for every entry: how \fbk{} intends to relate to the
+    tool (absorb / interface / index) and whether the tool is actually used
+    \emph{now} (\code{active} / \code{registered}). Do not read the index as a
+    feature list.
+\end{description}
+
+\section{Scope of version 0.1}
+
+Version 0.1 covers ORCA deeply (input generation and output parsing) and
+OpenMolcas only through the magnetic-property chain template. The analysis and
+diagnosis side reads ORCA 6.x output; the parser patterns are fixed against
+registered real output files of ORCA 6.1.1 (\file{fixtures/orca/}). Other
+programs (Gaussian, PySCF, \dots) are on the long-term roadmap, not in this
+version.
+
+The program is licensed under Apache-2.0 and is in early development: the
+report formats and interfaces may still change between releases. When you use
+it, cite it as described in \file{CITATION.cff}.

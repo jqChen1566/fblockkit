@@ -1,0 +1,227 @@
+# fBlockKit external tool index (T1: the A/B/C tiers)
+# Two dimensions must be recorded separately, otherwise "registered" is read as "used":
+#   relation (strategy): absorb = tier A (we take in its file format/algorithm);
+#                        interface = tier B (we interface: generate its input, read its output);
+#                        index = tier C (registered only; a compute-kernel type, possibly
+#                        with an algorithm borrowed from it)
+#   status (present state): active = actually used in this version (protocol internalised or
+#                           already interfaced); planned = registered only, not used yet
+# The license field follows the official repository; where this group's documents do not state
+# it, it is marked "to be checked" rather than guessed.
+# Convention: note and evidence.text always use the block scalar (>-).
+
+- id: mokit
+  name: MOKIT / automr
+  purpose: black-box multireference workflow (UNO/GVB route, automatic active-space selection; hands orbitals between 19 programs)
+  relation: absorb
+  status: planned
+  license: Apache-2.0
+  source: https://gitlab.com/jxzou/mokit
+  note: >-
+    v0.1 takes only the "hand orbitals over" step and the UNO/GVB window-selection idea; it
+    is not a whole-package dependency. The official citation form is "Jingxiang Zou,
+    Molecular Orbital Kit (MOKIT)". Not fully functional on Windows.
+  evidence:
+    - {kind: measured, text: Research synthesis §1 (tools and worked examples) and §5 (direct-wrapping list), ref: 调研/合成_cjq12_全景与方案_20260925.md}
+
+- id: autocas
+  name: autoCAS
+  purpose: entropy-based automatic active-space selection (single-orbital entropy + mutual-information protocol)
+  relation: index
+  status: active
+  license: BSD-3-Clause
+  source: pip package scine-autocas (v3.0.0)
+  note: Only the protocol is internalised (thresholds 0.14 / 1–2% fallback, and the localized-basis precondition); the software is not integrated.
+  evidence:
+    - {kind: measured, text: BSD-3 license, pip package name scine-autocas (v3.0.0), ref: B1_可微分DFT_cjq6/AutoCAS方法论_20260921.md}
+
+- id: activespacefinder
+  name: ActiveSpaceFinder
+  purpose: active-space suggester (as a decision backend)
+  relation: index
+  status: planned
+  license: Apache-2.0
+  source: recorded in the research notes (repository listed in the research documents)
+  note: Used as a reference for an independent suggester; not integrated.
+  evidence:
+    - {kind: measured, text: Research synthesis §5 "as a decision backend" list, ref: 调研/合成_cjq12_全景与方案_20260925.md}
+
+- id: cclib
+  name: cclib
+  purpose: multi-program output parsing (a shape reference for the parser)
+  relation: absorb
+  status: planned
+  license: BSD-3-Clause
+  source: https://github.com/cclib/cclib
+  note: A shape reference for the parser-layer design; fBlockKit's ORCA parser is implemented here (no dependency is introduced).
+  evidence:
+    - {kind: measured, text: Research synthesis §5 "direct wrapping (do not rewrite)" list, ref: 调研/合成_cjq12_全景与方案_20260925.md}
+
+- id: ase
+  name: ASE
+  purpose: structure handling and workflows (the Atomic Simulation Environment)
+  relation: interface
+  status: planned
+  license: LGPL-2.1-or-later
+  source: https://docs.ase-lib.org/
+  note: An optional interface at the structure layer (reading and writing structure files); v0.1 ships its own lightweight XYZ parser.
+  evidence:
+    - {kind: measured, text: Research synthesis §5 list, ref: 调研/合成_cjq12_全景与方案_20260925.md}
+
+- id: opi
+  name: OPI (ORCA Python Interface)
+  purpose: ORCA automation and error patterns (a reference for ErrorPatterns)
+  relation: interface
+  status: planned
+  license: to be checked (against the official repository)
+  source: https://github.com/faccts/opi (documentation recorded in the group's notes)
+  note: Its ORCA error-pattern list is a supplementary source for the diagnosis layer.
+  evidence:
+    - {kind: measured, text: Research synthesis §5 "custodian's Job/ErrorHandler skeleton; OPI's ORCA ErrorPatterns", ref: 调研/合成_cjq12_全景与方案_20260925.md}
+
+- id: goodvibes
+  name: GoodVibes / Shermo
+  purpose: thermochemistry corrections and frequency handling
+  relation: index
+  status: planned
+  license: to be checked (GoodVibes, against the official repository)
+  source: recorded in the research notes
+  note: A shape reference for the D4 deferred issue (imaginary-frequency reading).
+  evidence:
+    - {kind: measured, text: Research synthesis §5 list, ref: 调研/合成_cjq12_全景与方案_20260925.md}
+
+- id: molclus
+  name: Molclus / isostat
+  purpose: conformer deduplication and Boltzmann weighting
+  relation: index
+  status: planned
+  license: free but closed source (distributed from the official site)
+  source: http://www.keinsci.com/research/molclus.html
+  note: Closed source, so registered only and never linked in.
+  evidence:
+    - {kind: measured, text: Research synthesis §5 list, ref: 调研/合成_cjq12_全景与方案_20260925.md}
+
+- id: xtb
+  name: xTB
+  purpose: semi-empirical engine (a candidate for embedding in v0.2)
+  relation: interface
+  status: planned
+  license: LGPL-3.0
+  source: https://github.com/grimme-lab/xtb
+  note: LGPL allows redistribution with the package; v0.1 does not embed it and only records the shape of its input/output.
+  evidence:
+    - {kind: measured, text: Research synthesis §1 and §4 "xtb/CREST are LGPL-3.0 and can be redistributed with the package", ref: 调研/合成_cjq12_全景与方案_20260925.md}
+
+- id: crest
+  name: CREST
+  purpose: conformer search (the zero-barrier benchmark)
+  relation: interface
+  status: planned
+  license: LGPL-3.0
+  source: https://github.com/crest-lab/crest
+  note: A UX benchmark (self-explaining result files); a candidate for embedding in v0.2.
+  evidence:
+    - {kind: measured, text: Research synthesis §1 "the zero-barrier benchmark", ref: 调研/合成_cjq12_全景与方案_20260925.md}
+
+- id: openmolcas
+  name: OpenMolcas
+  purpose: magnetic-property chain engine (RASSCF/RASSI/SINGLE_ANISO)
+  relation: interface
+  status: planned
+  license: LGPL-2.1 (against the official repository)
+  source: https://gitlab.com/Molcas/OpenMolcas
+  note: One of the first-release coverages -- build the magnetic-property chain template (G3, a later step).
+  evidence:
+    - {kind: measured, text: User decision of 2026-09-25 "first release = ORCA deep + OpenMolcas magnetic-property chain template", ref: 00_说明.md §2}
+
+- id: pyscf
+  name: PySCF
+  purpose: quantum-chemistry library (a reference for cross-checks and post-processing)
+  relation: interface
+  status: planned
+  license: to be checked (against the official repository)
+  source: https://pyscf.org/
+  note: This group's main reference implementation for the differentiable stack; fBlockKit does not depend on it.
+  evidence:
+    - {kind: measured, text: Global documentation reference table (PySCF) and the research list, ref: 调研/合成_cjq12_全景与方案_20260925.md}
+
+- id: block2
+  name: Block2
+  purpose: DMRG engine (large active spaces)
+  relation: index
+  status: planned
+  license: to be checked (against the official repository)
+  source: https://github.com/block-hczhai/block2-preview
+  note: Tier C registration; this group's conclusion is "no need to bring in DMRG while the existing FCI suffices".
+  evidence:
+    - {kind: measured, text: Research candidates (active spaces and MR automation) and the B1 project conclusion, ref: 调研/候选方法_活性空间与MR自动化_20260925.md}
+
+- id: qcmaquis
+  name: QCMaquis
+  purpose: DMRG/quantum chemistry (ETH)
+  relation: index
+  status: planned
+  license: to be checked (against the official repository)
+  source: https://github.com/qcscine/qcmaquis
+  note: One component of the SCINE stack; tier C registration.
+  evidence:
+    - {kind: measured, text: SCINE capability assessment and the research list, ref: 调研/合成_cjq12_全景与方案_20260925.md}
+
+- id: phi
+  name: PHI
+  purpose: magnetic fitting (CF parameter fitting and magnetic-property simulation)
+  relation: index
+  status: planned
+  license: GPL-3.0
+  source: recorded in the research notes
+  note: GPL -- borrow the algorithm only (tier D, do not link the code in).
+  evidence:
+    - {kind: measured, text: 'Research synthesis §3 "magnetic fitting: PHI (GPLv3), CONDON 3.0 / SplitFit, SIMPRE"', ref: 调研/合成_cjq12_全景与方案_20260925.md}
+
+- id: condon-splitfit
+  name: CONDON 3.0 / SplitFit
+  purpose: CF parameter fitting
+  relation: index
+  status: planned
+  license: to be checked (against the official source)
+  source: recorded in the research notes
+  note: A shape reference for A4 (CF extraction).
+  evidence:
+    - {kind: measured, text: Research synthesis §3, ref: 调研/合成_cjq12_全景与方案_20260925.md}
+
+- id: pycrystalfield
+  name: PyCrystalField
+  purpose: point-charge crystal-field estimate (the S2 route)
+  relation: index
+  status: planned
+  license: GPL (as recorded in the research notes)
+  source: recorded in the research notes
+  note: >-
+    GPL -- the software itself is never linked; its published algorithm route is now
+    implemented independently as S2 (analysis/point_charge.py, menu 11, validated by
+    numerical quadrature), so this entry stays registered for reference only.
+  evidence:
+    - {kind: measured, text: Design spec §5.3 "S2 point-charge CEF estimate (the PyCrystalField route, GPL -- borrow the algorithm only)", ref: 设计/设计文档_spec_v0.1_20260925.md}
+    - {kind: literature, text: The published algorithm route of the PyCrystalField software paper, implemented independently (no code linked or copied); the module cites this entry via the same bibkey., ref: "Scheie A., J. Appl. Crystallogr., 2021, 54(1), 356-362, DOI 10.1107/S160057672001554X", bibkey: scheie2021pycrystalfield}
+
+- id: liblan
+  name: liblan (LnSIM DMET code)
+  purpose: DMET/SA-CASSCF-SO workflows for lanthanide SIMs
+  relation: index
+  status: planned
+  license: to be checked (against the official repository)
+  source: https://github.com/IrisA144/liblan_preview
+  note: Its ΔS_E criterion and recipe rules have entered our literature review; the code licence must be checked first.
+  evidence:
+    - {kind: literature, text: Implementation and SI data are available upstream (github.com/IrisA144/liblan_preview); the DeltaS_E criterion entered our literature review, ref: "Ai Y., Li Z.-W., Guan Z.-B., Jiang H., J. Chem. Theory Comput., 2025, 21(19), 9631-9640, DOI 10.1021/acs.jctc.5c01336", bibkey: ai2025density}
+
+- id: nja-cfs
+  name: NJA-CFS
+  purpose: reads multireference results from ORCA for characterisation (a close neighbour)
+  relation: index
+  status: planned
+  license: to be checked (scope and licence under review)
+  source: recorded in the research notes (official link still to be added)
+  note: Sits close to fBlockKit's characterisation-analysis column -- check the scope and licence before deciding whether to move it to interface.
+  evidence:
+    - {kind: measured, text: Noticed during the naming check, see synthesis document §1.4 to-do, ref: 调研/合成_cjq12_全景与方案_20260925.md}

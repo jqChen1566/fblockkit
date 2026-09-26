@@ -1,0 +1,64 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fblockkit"
+version = "0.1.0"
+description = "fBlockKit - the f-block calculation toolkit: input-file generation and characterisation analysis for strongly correlated systems and lanthanide/actinide calculations"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+authors = [{ name = "jqChen1566", email = "chen_jianqi1566@163.com" }]
+keywords = [
+    "quantum chemistry",
+    "f-block",
+    "lanthanide",
+    "actinide",
+    "multireference",
+    "ORCA",
+    "OpenMolcas",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Chemistry",
+    "Topic :: Scientific/Engineering :: Physics",
+]
+dependencies = ["pyyaml>=6", "jinja2>=3.1", "numpy>=1.26"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "import-linter>=2.0"]
+
+[project.urls]
+Homepage = "https://github.com/jqChen1566/fblockkit"
+Repository = "https://github.com/jqChen1566/fblockkit"
+Changelog = "https://github.com/jqChen1566/fblockkit/blob/main/CHANGELOG.md"
+
+[project.scripts]
+fblockkit = "fblockkit.ui.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+# Data files must be declared explicitly, otherwise pip installs / wheels would miss
+# them (checked before packaging; see step 8 of the architecture design).
+[tool.setuptools.package-data]
+fblockkit = [
+    "knowledge/basis_ecp.yaml",
+    "knowledge/sources.bib",
+    "knowledge/rules/*.yaml",
+    "knowledge/rules/*.md",
+    "knowledge/templates/*.j2",
+    "knowledge/toolindex/*.yaml",
+    "ui/menu.yaml",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,137 @@
+* ===========================================================================
+* fBlockKit -- OpenMolcas magnetic-property chain (input generation only)
+* title: {{ title }}
+* Source skeleton and line annotations: {{ source_note }}
+* Spin blocks: {{ spin_block_summary }}
+* Active space: {{ nactel }} electrons in {{ nactorb }} orbitals; molecular charge {{ charge }}
+* Basis assignment to write into {{ coord_file }}:
+*   {{ element }} = {{ basis_metal }};
+*   first coordination sphere = {{ basis_ligand }};
+*   all remaining atoms = {{ basis_outer }}
+* ===========================================================================
+* Notes added by fBlockKit (tags [fBlockKit:...]) -- the source input has none of them:
+*   [fBlockKit:G3-1] Comment character: "*" at the start of a line is the documented
+*     OpenMolcas comment marker (documentation users.guide/emil.html, checked 2026-09-25);
+*     comments may not sit between a keyword and its continuation lines. This file keeps
+*     every comment on its own line. If your version still rejects these lines, delete
+*     every line that starts with "*".
+*   [fBlockKit:G3-7] The source's 28 line annotations are placed here on the lines the
+*     internal close-reading aligns them to; that alignment is an inference from the
+*     source's printed order, not a printed fact.
+*   [fBlockKit:G3-4] Blocks are written in decreasing spin multiplicity and each block
+*     after the first reads the previous block's orbital file (Typeindex / FILEORB);
+*     this follows the source's example order, which the source does not state as a rule.
+*   [fBlockKit:G3-5] The &SINGLE_ANISO sampling parameters below are the source's values;
+*     they are not exposed as options in this version -- edit them in place if your
+*     experiment needs different temperature or field grids.
+* ===========================================================================
+
+&GATEWAY
+* Set up integral options
+    AMFI
+* Calculate SOC integrals
+    RICD=acCD
+* Use RI approximation
+    Coord= {{ coord_file }}
+* Define structure and basis (one file holds the geometry and the per-atom basis)
+*
+* [fBlockKit] Per-atom basis labels expected in that file:
+*   {{ element }} : {{ basis_metal }}
+*   first coordination sphere : {{ basis_ligand }}
+*   all remaining atoms : {{ basis_outer }}
+    Angmom= {{ angmom_origin }} ANGSTROM
+* Set origin for angmom
+*
+* [fBlockKit:G3-3] The point group below is the one this job was generated with
+*   (default C1 = no symmetry). The source example writes "group= NoSym" instead;
+*   confirm which spelling your version accepts.
+    group= {{ symmetry }}
+* Don't use symmetry
+
+&SEWARD
+* Calculate integrals
+
+{% for block in blocks %}
+&RASSCF
+{% if block.first %}
+* Spin multiplicity
+    Spin= {{ block.spin }}
+* Molecular charge
+    Charge= {{ charge }}
+* Num roots (twice), unity weighting
+    CiRoot= {{ block.nroots }} {{ block.nroots }} 1
+* Num active electrons
+    Nactel= {{ nactel }} 0 0
+* Num active orbitals
+    RAS2= {{ nactorb }}
+{% else %}
+* Read type of orbitals from file
+    Typeindex
+* Spin multiplicity
+    Spin= {{ block.spin }}
+* Molecular charge
+    Charge= {{ charge }}
+* Take starting MOs from here
+    FILEORB= {{ block.prev_rasorb }}
+* Num roots (twice), unity weighting
+    CiRoot= {{ block.nroots }} {{ block.nroots }} 1
+* Num active electrons
+    Nactel= {{ nactel }} 0 0
+{% endif %}
+* Copy IPH file
+>> COPY $Project.JobIph {{ block.iph }}
+* Copy rasscf.h5 file
+>> COPY $Project.rasscf.h5 {{ block.h5 }}
+{% if block.next_rasorb %}
+* [fBlockKit:G3-2] Addition not shown in the source: the next block reads
+*   FILEORB= {{ block.next_rasorb }}, so this block's orbital file is copied to that name.
+*   Verify the source file name ($Project.RasOrb) in your version, or delete this line
+*   if the file is already produced under that name.
+>> COPY $Project.RasOrb {{ block.next_rasorb }}
+{% endif %}
+
+{% endfor %}
+* [fBlockKit:G3-8] "Nactel=" / "RAS2=" / "CiRoot=" spellings and the meaning of the three
+*   numbers after Nactel are reproduced verbatim from the source example; they were not
+*   cross-checked against the OpenMolcas documentation for this version.
+*   As in the source, only the first block carries RAS2=; the later blocks take the
+*   orbital types from the file they read.
+
+&RASSI
+* Calculate SOC elements
+    SPIN
+* Print matrix elements
+    MEES
+* Calculate g-values
+    EPRG= {{ rassi_eprg }}
+* Num multiplicities, which roots
+    Nr of JobIph= {{ blocks | length }} ALL
+* Names of IPH files
+    IPHN
+{% for block in blocks %}
+    {{ block.iph }}
+{% endfor %}
+* Print angmom matrix elements
+* [fBlockKit:G3-6] The source asks for one 'ANGMOM' property per spin block (three blocks
+*   there); this file asks for {{ blocks | length }}, one per block, by the same pattern.
+    PROP
+    {{ blocks | length }}
+{% for block in blocks %}
+    'ANGMOM' {{ block.index }}
+{% endfor %}
+
+&SINGLE_ANISO
+* Set angular momenta
+    CRYS= {{ element_lower }}
+* Ground state is a doublet
+* [fBlockKit] The source's annotation for this line is "Ground state is a doublet"; the
+*   numbering convention of MLTP is not stated there -- check it against your output.
+    MLTP= {{ single_aniso_mltp }}
+* Temperatures for susceptibility
+    TINT= {{ single_aniso_tint }}
+* Fields for magnetisation
+    HINT= {{ single_aniso_hint }}
+* Temperature for magnetisation
+    TMAG= {{ single_aniso_tmag }}
+* Quantisation axis from ground KD
+    QUAX= {{ single_aniso_quax }}

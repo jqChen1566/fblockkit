@@ -1,0 +1,52 @@
+fBlockKit -- the f-block calculation toolkit (input generation + characterisation analysis; it runs no calculations)
+
+Available functions:
+   1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)
+   2  Coordination geometry and symmetry hints (read an XYZ structure)
+   3  Generate an ORCA input (system profile -> input file + run guidance)
+   4  Basis-set / ECP recommendation (element/valence/targets)
+   5  Search the tool index (keywords)
+   6  Tool onboarding notes (by index id)
+   7  Cross-level solution consistency (records JSON input)
+   8  Save this session as a script
+   9  SCF rescue (triage + corrected input files)
+  10  Crystal-field fit (levels + coefficients JSON)
+  11  Point-charge crystal-field estimate (read an XYZ structure + charges)
+   0  Quit
+Choose a number (Enter = leave empty)> 4
+Element list (comma separated, e.g. La,O,H) (Enter = leave empty)> Pu,Cl
+System charge (Enter = 0)> 0
+Spin multiplicity (2S+1) (Enter = 1)> 2
+f-block metal valence (Enter = leave empty)> 3
+Targets (comma separated: energy/geometry/excited/magnetic/spectra) (Enter = energy)> energy
+Basis-set / ECP recommendation (3 tier(s)):
+  1. SARC-DKH-TZVPP (DKH2; aux SARC/J)
+     Actinides (the workhorse tier when no SARC2 is built in): SARC-DKH-TZVP / TZVPP cover Ac-Lr, with the SARC/J Coulomb fitting basis alongside. SARC-ZORA-* with ZORA is also available.
+  2. ANO-RCC-TZP (DKH2)
+     ANO-RCC (Full/DZP/TZP/QZP, DKH2). The general choice for magnetic-property chains (the OpenMolcas route); also built into ORCA. One of the standard basis sets of the lanthanide single-molecule-magnet literature workflow.
+  3. SK-MCDHF-RSC (Stuttgart 60-core and others; ORCA internal library)
+     Stuttgart pseudopotentials are reachable through ORCA's built-in keywords (SK-MCDHF-RSC, SDD/def-SD and others; the ECP must be named explicitly and the valence basis pairing is in manual Table 2.38); they can also be set element by element with %basis NewECP. ECP parameters from an external source (a BSE download, say) must be inlined and checked by hand.
+Note: The standard def2 basis sets (def2-SVP/TZVP/QZVPP and the like) stop at Rn and do not cover the actinides -- do not pick the def2 family for an actinide; use the SARC-DKH, ANO-RCC or Stuttgart pseudopotential tiers instead. For JK fitting, actinides can use def2/JKsmall (H-Ra, Th-Lr).
+Not applicable: 5f-in-core pseudopotentials (the AnPP2/AnBS2 family) apply to the trivalent state only: for AnCl3 the CCSD(T) MAD against small-core pseudopotentials is 2.9 kcal/mol (AnPP2-III). The tetravalent case does not meet the bar (AnCl4 MAD 11.8, no gain over the existing schemes). v0.1 does not generate inputs for this route automatically: the parameters are not in ORCA's internal library and must be obtained from the original paper or upstream and checked by hand (this group has already found OCR corruption in its SI).
+  - f–f transitions, crystal-field splittings and 5f multiplets are all out of reach (l_max = 2, no 5f non-local channel).
+  - Every SOC-dependent property (f–f fine structure, magnetic anisotropy, ZFS, g tensor) is unavailable (the pseudopotential is a scalar-relativistic parameterisation).
+  - Variable-valence, redox and mixed-valence systems are out of scope (the valence is fixed inside the pseudopotential).
+  - Forbidden when the ground state is 5f^(n-1) 6d^1 (III) or 5f^(n-2) 6d^1 (IV) (the source paper's own prohibition).
+  - Properties that depend on the half-filled / filled 5f breakpoints (the even-odd effect at Cm and Lr, for instance) cannot be reproduced.
+- Matched at metal valence 3 (entries that do not list a valence are treated as the general tier).
+
+Available functions:
+   1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)
+   2  Coordination geometry and symmetry hints (read an XYZ structure)
+   3  Generate an ORCA input (system profile -> input file + run guidance)
+   4  Basis-set / ECP recommendation (element/valence/targets)
+   5  Search the tool index (keywords)
+   6  Tool onboarding notes (by index id)
+   7  Cross-level solution consistency (records JSON input)
+   8  Save this session as a script
+   9  SCF rescue (triage + corrected input files)
+  10  Crystal-field fit (levels + coefficients JSON)
+  11  Point-charge crystal-field estimate (read an XYZ structure + charges)
+   0  Quit
+Choose a number (Enter = leave empty)> 0
+Goodbye.

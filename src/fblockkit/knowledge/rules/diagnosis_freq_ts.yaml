@@ -1,0 +1,305 @@
+# fBlockKit diagnosis rules -- frequency analysis and transition-state jobs (D4)
+# The fact fields come from the parser layer's extraction of the output file (see the
+# fact vocabulary in README.md in this directory).
+# Convention: evidence.text always uses the block scalar (>-) -- after a double-quoted
+# YAML scalar closes, nothing else may follow on that line.
+# severity semantics: info = a check that must be carried out; warn = a concrete doubt
+# was found; error = the conclusion cannot be relied on.
+#
+# Scope note: every rule below reads the facts of the LAST frequency block (in an OptTS
+# job ORCA prints the initial Hessian block first and the verification block last; see
+# the measured record in D4-TS-HIGHER-ORDER-SADDLE).
+
+# --- reading a frequency analysis -------------------------------------------
+
+- id: D4-FREQ-NO-IMAGINARY-MODE
+  kind: diagnosis
+  severity: info
+  title: No imaginary mode -- a minimum on the surface this frequency job was run on
+  condition:
+    all:
+      - { field: frequency_present, op: eq, value: true }
+      - { field: frequency_imaginary_count, op: eq, value: 0 }
+  action: >-
+    A frequency analysis with no imaginary mode makes the structure a minimum of the
+    surface it was computed on: a local minimum at this level of theory, which says
+    nothing yet about it being the global minimum. Two checks belong to that statement.
+    First, the frequency job and the geometry optimisation must have used the same
+    method and basis set, the requirement the ORCA tutorial states explicitly -- a
+    minimum of one surface is not a stationary point of another. Second, confirm that
+    the translation and rotation modes (6, or 5 for a linear molecule) were recognised
+    as zeros rather than counted as vibrations, and that the block read here is the one
+    attached to the final geometry.
+  evidence:
+    - kind: manual
+      text: >-
+        "Note that the frequency calculation must be performed at the same level of theory
+        as the geometry optimization!"
+      ref: ORCA 6.1 tutorial, Reaction path / TS optimization, TS Verification
+      url: https://www.faccts.de/docs/orca/6.1/tutorials/react/tsopt.html
+    - kind: measured
+      text: >-
+        A converged r2SCAN-3c Opt Freq job on water reports no imaginary mode; the six
+        translation/rotation modes come out as zeros and the frequency block follows the
+        last geometry cycle, so a count of 0 is what a genuine minimum looks like in this
+        output format.
+      ref: Fixture fixtures/orca/h2o_freq_min.out (ORCA 6.1.1)
+  confidence: confirmed
+
+- id: D4-TS-ONE-IMAGINARY-MODE
+  kind: diagnosis
+  severity: info
+  title: Exactly one imaginary mode -- a first-order saddle, i.e. a transition-state candidate
+  condition:
+    all:
+      - { field: frequency_imaginary_count, op: eq, value: 1 }
+  action: >-
+    One imaginary mode is the signature of a first-order saddle point, so this structure
+    is a transition-state candidate. Before it is used as a transition state, confirm
+    that the imaginary mode is the mode of interest and that it connects the intended
+    minima -- inspect the normal mode or follow the intrinsic reaction coordinate and
+    check which minima it links, which is what the tutorial asks for; confirm that the
+    whole study stayed at one level of theory, because a saddle point of one surface is
+    not a stationary point of another; and confirm that the count came from the last
+    frequency block of the job rather than from the initial Hessian block an OptTS run
+    prints first. If the mode is small, treat it as unverified and check it by the
+    independent route of the small-imaginary-mode rule (D4-FREQ-SMALL-IMAGINARY-MODE).
+  evidence:
+    - kind: manual
+      text: >-
+        "However, it is further important to check if the optimized structure is a minimum
+        or a saddle point (TS) on the potential energy surface. The latter is characterized
+        by exactly one imaginary frequency in the frequency calculations on the finally
+        optimized TS geometry. This imaginary frequency must further represent the
+        structural transition of interest ..."
+      ref: ORCA 6.1 tutorial, Reaction path / TS optimization, TS Verification
+      url: https://www.faccts.de/docs/orca/6.1/tutorials/react/tsopt.html
+    - kind: measured
+      text: >-
+        Single-level rule, measured on the Pd(PH3)2 + CH3I oxidative addition: giving the
+        GFN2 transition-state geometry to r2SCAN-3c gave 7 imaginary modes on the DFT
+        surface (it is not a stationary point there at all), while the same-level
+        r2SCAN-3c verification run gave exactly 1 imaginary mode (at -240.56 cm^-1)
+        together with three minima reporting 0 imaginary modes.
+      ref: >-
+        SCINE-stack/SCINE capability assessment report, section 4.1 and pitfall list item
+        9 (single level of theory throughout) of D:/project/SCINE-stack/SCINE 能力评估报告.md;
+        the same record is restated as pit table row 32 of D:/project/SCINE-stack (project notes)
+  confidence: confirmed
+
+- id: D4-TS-HIGHER-ORDER-SADDLE
+  kind: diagnosis
+  severity: warn
+  title: Two or more imaginary modes -- a higher-order saddle, not a first-order transition state
+  condition:
+    all:
+      - { field: frequency_imaginary_count, op: ge, value: 2 }
+  action: >-
+    A structure with two or more imaginary modes is not a first-order saddle, so it
+    cannot be used as a transition state as it stands. Re-optimise it: follow a different
+    mode, or start from a better guess, and give the optimisation a better Hessian --
+    the tutorial's recommended route computes an exact Hessian first and then runs OptTS
+    reading it, because the approximate Hessian can make the TS localisation fail. Two
+    checks belong to the count itself: confirm that it comes from the last frequency
+    block (an OptTS job prints the initial Hessian block first, and that block may
+    describe an intermediate structure), and treat small imaginary modes as unverified
+    rather than as evidence against the geometry (D4-FREQ-SMALL-IMAGINARY-MODE).
+  evidence:
+    - kind: manual
+      text: >-
+        "Run a direct !OptTS calculation requesting a prior exact Hessian calculation
+        (recommended)." -- "Using the approximate Hessian by simply running !OptTS can
+        cause troubles with the TS localization. We generally recommend to use an exact
+        Hessian to start the TS optimization."
+      ref: ORCA 6.1 tutorial, Reaction path / TS optimization
+      url: https://www.faccts.de/docs/orca/6.1/tutorials/react/tsopt.html
+    - kind: measured
+      text: >-
+        An OptTS job prints two frequency blocks: the first one is the initial Hessian
+        (which may belong to an intermediate structure) and the last one is the result
+        for the converged geometry. Measured case: the first block gave 2 imaginary modes
+        and the last block 1, so reading the first block alone would misjudge a genuine
+        saddle point.
+      ref: SCINE-stack project notes pit table row 41 (D:/project/SCINE-stack (project notes))
+    - kind: measured
+      text: >-
+        A deliberately linear water geometry gives 2 degenerate imaginary modes (the
+        bends, -1493.31 cm^-1 each) -- a second-order saddle, not a transition state.
+      ref: Fixture fixtures/orca/h2o_linear_freq.out (ORCA 6.1.1)
+  confidence: confirmed
+
+- id: D4-FREQ-SMALL-IMAGINARY-MODE
+  kind: diagnosis
+  severity: warn
+  title: The imaginary mode is smaller than 50 cm^-1 -- the region where counting imaginary modes is unreliable
+  condition:
+    all:
+      - { field: frequency_imaginary_count, op: ge, value: 1 }
+      - { field: frequency_min_imaginary, op: gt, value: -50.0 }
+  action: >-
+    Verify this mode independently before any conclusion is drawn from it. The measured
+    record of this group: counting imaginary modes is not a reliable procedure in itself,
+    because a numerical Hessian can report an imaginary mode in the low-frequency region
+    whose actual energy curvature is positive (in a loose two-fragment system the extra
+    imaginary mode appeared in 8 of 8 geometries, always at the second-lowest mode
+    position, with the spurious values between about -27 and -278 cm^-1). The independent
+    check that settled that case was an energy-curvature scan along the mode direction:
+    displace by +/- delta and look at the sign of E(+delta) + E(-delta) - 2*E(0)
+    (negative = a genuine imaginary mode, positive = numerical noise), always carrying
+    one known real mode along as an internal control. A tighter SCF convergence or a
+    finer integration grid in a recomputed Hessian, or further optimisation followed by
+    a new frequency job, are equivalent independent routes. This is a verify statement,
+    not a claim that the mode is wrong: do not drop the mode from the record and do not
+    treat the number of imaginary modes as settled until the independent check has been
+    done.
+  evidence:
+    - kind: measured
+      text: >-
+        Counting imaginary modes is not reliable as a routine procedure: a numerical
+        Hessian can report an imaginary mode in the low-frequency region (in this case
+        always at the second-lowest mode position) whose actual energy curvature is
+        positive. Measured on a loose two-fragment system (C2H4 + C4H6, fragment distance
+        about 2.2 A): ORCA's numerical Hessian reported an extra imaginary mode in 8 of 8
+        geometries, while the energy-curvature criterion E(+delta) + E(-delta) - 2*E(0)
+        showed that each of the 8 geometries has exactly one genuine imaginary mode (the
+        extra one has positive curvature, of the same order as the neighbouring real
+        mode). (Translated from the source, which is written in Chinese.)
+      ref: >-
+        NNP-AFIR development report 39 (audit of the report-31 saddle-point verdict),
+        sections 3, 4 and 7: D:/project/NNP-AFIR/开发报告/报告-39-报告31鞍点判定审计.md;
+        the check is implemented in D:/project/NNP-AFIR/scripts/probe_soft_mode.py
+    - kind: measured
+      text: >-
+        Provenance and limit of the 50 cm^-1 threshold: the spurious modes of the record
+        above lie between about -27 and -278 cm^-1, so 50 cm^-1 is a deliberately
+        conservative lower edge -- it catches the lowest end of that range only, and an
+        imaginary value above the threshold is not evidence that the mode is genuine
+        either.
+      ref: >-
+        Group's measured record, NNP-AFIR development report 39, section 3 table
+        (D:/project/NNP-AFIR/开发报告/报告-39-报告31鞍点判定审计.md)
+  confidence: provisional
+
+# --- transition-state jobs ---------------------------------------------------
+
+- id: D4-TS-NO-FREQUENCY-VERIFICATION
+  kind: diagnosis
+  severity: warn
+  title: A transition-state optimisation without a frequency verification of the final geometry
+  condition:
+    all:
+      - { field: ts_optimization, op: eq, value: true }
+      - any:
+          - { field: frequency_present, op: eq, value: false }
+          - { field: frequency_after_geometry, op: eq, value: false }
+  action: >-
+    The optimised structure has not been verified as a saddle point. Run a final
+    frequency analysis on the optimised geometry (expect exactly one imaginary mode, at
+    the same level of theory as the optimisation), or add Freq to the OptTS job so that
+    the frequency step follows the optimisation. The tutorial's recommended procedure
+    computes an exact Hessian first and then runs OptTS reading it (Calc_Hess true in the
+    %geom block, or inhess read with a Hessian file from a previous calculation). A
+    converged OptTS run on its own is not evidence: the optimisation converges to a
+    stationary point without saying of which order it is.
+  evidence:
+    - kind: manual
+      text: >-
+        "By adding the !Freq simple input keyword aside !OptTS, a frequency calculation
+        after the TS optimization is requested. This is useful to verify that the
+        optimization yielded a transition state that is characterized by presence of
+        exactly one imaginary frequency." -- "Run a direct !OptTS calculation requesting a
+        prior exact Hessian calculation (recommended)."
+      ref: ORCA 6.1 tutorial, Reaction path / TS optimization
+      url: https://www.faccts.de/docs/orca/6.1/tutorials/react/tsopt.html
+    - kind: measured
+      text: >-
+        Two fixtures started from one OptTS guess: the job without Freq ("! r2SCAN-3c
+        OptTS") converges (HURRAY, OPTIMIZATION RUN DONE) and contains no VIBRATIONAL
+        FREQUENCIES block at all, while the same guess with Freq ("! r2SCAN-3c OptTS
+        Freq") converges and the frequency block after the optimisation reports one
+        imaginary mode at -90.48 cm^-1.
+      ref: >-
+        Fixtures fixtures/orca/fhh_optts_nofreq.out and fixtures/orca/fhh_optts_freq.out
+        (ORCA 6.1.1)
+  confidence: confirmed
+
+- id: D4-TS-OPTIMISATION-NOT-CONVERGED
+  kind: diagnosis
+  severity: warn
+  title: The transition-state optimisation did not converge -- the geometry is not a stationary point
+  condition:
+    all:
+      - { field: ts_optimization, op: eq, value: true }
+      - { field: optimization_converged, op: eq, value: false }
+  action: >-
+    No energy taken from this geometry has the meaning of a transition-state energy or of
+    a barrier, because an unconverged optimisation has not reached a stationary point.
+    Restart from the last geometry (or from a better guess) and, as the program itself
+    suggests, allow more optimisation cycles; the tutorial's recommended route improves
+    the restart by starting from an exact Hessian (Calc_Hess true, or inhess read with a
+    Hessian file from a previous calculation). Note that ORCA also skips a requested
+    frequency step once the optimisation has failed, so the verification is missing as
+    well and a separate frequency job is needed after convergence.
+  evidence:
+    - kind: measured
+      text: >-
+        ORCA aborts the frequency step when the TS optimisation did not converge: "The
+        optimization did not converge but reached the maximum number of optimization
+        cycles. As a subsequent Frequencies calculation has been requested ORCA will abort
+        at this point of the run. Please restart the calculation with the lowest energy
+        geometry and/or a larger maxiter for the geometry optimization." The job (input
+        line "! r2SCAN-3c OptTS Freq") terminated normally and yet contains no
+        VIBRATIONAL FREQUENCIES block.
+      ref: >-
+        Fixture fixtures/orca/nh3_planar_optts_freq.out (ORCA 6.1.1, ERROR block after the
+        50-cycle limit)
+    - kind: manual
+      text: >-
+        "As with conventional geometry optimizations, proper convergence must be achieved
+        for the transition state optimization."
+      ref: ORCA 6.1 tutorial, Reaction path / TS optimization, TS Verification
+      url: https://www.faccts.de/docs/orca/6.1/tutorials/react/tsopt.html
+    - kind: measured
+      text: >-
+        A single-point energy on a non-stationary geometry has no barrier meaning: the
+        GFN2 transition-state geometry of the Pd(PH3)2 + CH3I oxidative addition is not
+        even a stationary point on the r2SCAN-3c surface (7 imaginary modes), and the
+        r2SCAN-3c OptTS restarted from it did not converge within 100 cycles.
+      ref: >-
+        SCINE-stack/SCINE capability assessment report, section 4.1
+        (D:/project/SCINE-stack/SCINE 能力评估报告.md) and pitfall table item 32 of
+        D:/project/SCINE-stack (project notes)
+  confidence: confirmed
+
+- id: D4-BARRIER-REFERENCE-POINT
+  kind: diagnosis
+  severity: info
+  title: A transition-state-like species was found -- a barrier derived from it must state its reference point
+  condition:
+    all:
+      - { field: frequency_imaginary_count, op: eq, value: 1 }
+  action: >-
+    When a barrier derived from this species is reported, state explicitly what the
+    energies are measured from (separated reactants, pre-complex, the endpoint of a path
+    profile, ...), and check that the transition state and the reference structures were
+    computed at the same level of theory. Measured: the same barrier data can be read as
+    +5.90 kcal/mol (a barrier) or -22.14 kcal/mol (no barrier) depending on the reference
+    point, because the routine that produced the number measured from a path endpoint
+    that was a pre-complex rather than the separated reactants.
+  evidence:
+    - kind: measured
+      text: >-
+        The reference point of a barrier: get_barrier_from_spline() returns the barrier
+        relative to the two spline endpoints, and an endpoint can be a pre-complex rather
+        than the separated reactants, so the same data set can give the two opposite
+        readings "+5.90 kcal/mol, there is a barrier" and "-22.14 kcal/mol, there is no
+        barrier"; whenever this number is quoted, the reference point must be stated.
+        The same source records the effect at the DFT level as well: the r2SCAN-3c
+        barrier of that step is +12.30 kcal/mol relative to the pre-complex but
+        +6.54 kcal/mol relative to the separated reactants. (Translated from the source,
+        which is written in Chinese.)
+      ref: >-
+        SCINE-stack/SCINE capability assessment report, section 4.1 and pitfall list item
+        8 ("a barrier must state its reference point"):
+        D:/project/SCINE-stack/SCINE 能力评估报告.md
+  confidence: confirmed

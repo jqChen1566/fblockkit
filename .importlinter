@@ -1,0 +1,11 @@
+[importlinter]
+root_package = fblockkit
+
+[importlinter:contract:layers]
+name = Layering contract (architecture design v0.1 §1.2)
+type = layers
+layers =
+    fblockkit.ui
+    fblockkit.recipe | fblockkit.analysis | fblockkit.diagnosis | fblockkit.toolindex
+    fblockkit.parsers
+    fblockkit.knowledge

@@ -1,0 +1,76 @@
+\chapter{Cross-level solution consistency (menu 7)}
+\label{ch:menu7}
+\menulabel{7}
+
+\section{Purpose}
+
+When the same molecule has several candidate solutions (different 5f
+occupations, different SCF branches) each computed at a cheap level (say HF)
+and an expensive level (say CCSD(T)), check whether ``pick the best solution by
+the cheap level'' is safe. The classic f-block failure mode: the ordering of
+solutions changes with the method.
+
+\section{What you need}
+
+A records JSON: one entry per candidate solution with a label and one energy
+per level. The top level may be a list or an object with a \code{records} list;
+extra fields such as \code{occupation} are kept for readability and otherwise
+ignored. The schema is in Chapter~\ref{ch:formats}.
+
+\section{Walkthrough}
+
+\lstinputlisting[style=fbkcode, firstline=16, lastline=25,
+  title={The menu-7 example session on the bundled PuCl\textsubscript{3} table}]
+  {examples/expected/m7_crosslevel.txt}
+
+\section{What you get}
+
+Warnings, each with its evidence: when the two levels disagree about the best
+solution, and when a solution inside the cheap level's top $N$ drops out of the
+expensive level's top $N$. For the bundled example (a literature table of 21
+PuCl$_3$ 5f occupations with HF and CCSD(T) energies, taken from the SI of the
+source paper), both fire:
+
+\begin{itemize}
+  \item HF favours solution No.~3, CCSD(T) favours No.~1 -- picking by HF
+    leaves the pick 0.06 kcal/mol behind at the CCSD(T) level (small, but the
+    ordering is what is wrong);
+  \item the HF second-best solution (No.~10) drops to position 7 at the
+    CCSD(T) level (about 1.76 kcal/mol behind) -- a much larger move, and the
+    qualitative lesson.
+\end{itemize}
+
+\section{How to read the numbers}
+
+\begin{readbox}
+The absolute energy differences in the example are small; the transferable
+lesson is the ordering instability. Two consequences: re-rank the candidates at
+the expensive level before choosing one, and re-check the identity of a
+solution that moves (a dropped solution may be a different electronic state
+re-labelled by the occupation table).
+\end{readbox}
+
+\section{Worked example}
+
+The bundled file \file{fixtures/literature/pucl3\_s18.json} is the worked
+example: prepare your own records in the same shape from two levels you
+already ran, run \menu{7} on it, and compare the verdicts with your chemical
+expectation. If the warnings fire on your data, the cheap-level shortlist is
+not a safe selector.
+
+\section{Caveats, refusals and related sections}
+
+\begin{refusalbox}
+\begin{itemize}
+  \item The check works on energies you supply; it does not compute anything
+    and does not decide which solution is physically right.
+  \item The top-$N$ depth is a program constant; the tool states which $N$ it
+    used in the output when the rule fires.
+  \item Malformed records (missing labels, non-numeric energies, fewer than
+    two levels) are refused with a next-step message.
+\end{itemize}
+\end{refusalbox}
+
+Related: \menu{9} for SCF-side multiple-solution problems, and the A1 section
+of \menu{1} -- ``no f-composition orbital'' is the same phenomenon seen from
+one output file.

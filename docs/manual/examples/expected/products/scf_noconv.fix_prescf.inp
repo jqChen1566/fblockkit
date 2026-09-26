@@ -1,0 +1,55 @@
+# fBlockKit SCF rescue: two-step pre-SCF route (manual section 2.6.9). This is a new file; the
+# original input is unchanged.
+# Step 1 (this file): save it as prescf.inp and run it. It is deliberately crude -- small
+# basis, pure GGA, RI, loose convergence, strong damping -- and its only job is to produce
+# prescf.gbw, i.e. starting orbitals good enough for the real job.
+# Manual: "Perform a small basis set (SV) calculation in using the LSD or BP functional and RI
+# approximation with a cheap auxiliary basis set. Set Convergence=Loose and MaxIter=200 or so.
+# The key point is to use a large damping factor and damp until the DIIS comes into a domain
+# of convergence. This is accomplished by SlowConv or even VerySlowConv."
+# Step 2 (below, commented out): your own input with 'moread' and the %moinp line added, saved
+# under a different name and run after step 1. Keep the basenames different from step 1's --
+# the manual's section 1.7.12 covers the AutoStart pitfalls.
+# Step 2 keeps your %scf settings exactly as written. MaxIter is not a remedy in itself
+# (manual section 3.13: "Increasing MaxIter will not help in many cases.") -- the only MaxIter
+# in this file is the pre-SCF value section 2.6.9 prescribes for step 1.
+# 夹具：SCF 未收敛路径（MaxIter 上限压低）
+# 用途：错误/警告模式检测（解析器必须识别「未收敛」而非静默）
+! BP86 def2-SVP def2/J RI LooseSCF SlowConv
+%pal nprocs 2 end
+%maxcore 2000
+
+# --- your %scf block, kept for reference (step 2 uses it unchanged) ---
+# %scf
+#   MaxIter 3
+# end
+%scf
+  # manual section 2.6.9 for this step: 'Set Convergence=Loose and MaxIter=200 or so.'
+  # "Convergence=Loose" is carried by !LooseSCF on the simple-input line above.
+  MaxIter 200
+end
+* xyz 0 1
+N 0 0 0
+N 0 0 1.094
+*
+
+# Step 2 of 2 -- the real job, started from the pre-SCF orbitals. Save these lines as a new
+# file and run them after step 1 has finished.
+# Guess guidance (manual section 2.6.9): "Use the orbitals of this calculation and
+# GuessMode=CMatrix to start a calculation with the target basis set." Section 1.7.13 adds:
+# "This is always required when the orbital energies of the small basis set calculation are
+# positive, as will be the case for anions." Uncomment a GuessMode line in your %scf block if
+# that applies to your system.
+# # 夹具：SCF 未收敛路径（MaxIter 上限压低）
+# # 用途：错误/警告模式检测（解析器必须识别「未收敛」而非静默）
+# ! HF def2-SVP moread
+# %moinp "prescf.gbw"
+# %pal nprocs 2 end
+# %maxcore 2000
+# %scf
+#   MaxIter 3
+# end
+# * xyz 0 1
+# N 0 0 0
+# N 0 0 1.094
+# *

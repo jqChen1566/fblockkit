@@ -1,0 +1,53 @@
+fBlockKit -- the f-block calculation toolkit (input generation + characterisation analysis; it runs no calculations)
+
+Available functions:
+   1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)
+   2  Coordination geometry and symmetry hints (read an XYZ structure)
+   3  Generate an ORCA input (system profile -> input file + run guidance)
+   4  Basis-set / ECP recommendation (element/valence/targets)
+   5  Search the tool index (keywords)
+   6  Tool onboarding notes (by index id)
+   7  Cross-level solution consistency (records JSON input)
+   8  Save this session as a script
+   9  SCF rescue (triage + corrected input files)
+  10  Crystal-field fit (levels + coefficients JSON)
+  11  Point-charge crystal-field estimate (read an XYZ structure + charges)
+   0  Quit
+Choose a number (Enter = leave empty)> 10
+CF input JSON path (levels + coefficients; see the user guide) (Enter = leave empty)> work/cf_c3.json
+Point group C3, J = 8.0
+Sampled states: 24; fitted parameters: 9
+Condition number: 4.2e+05; rank 10
+max |residual| = 4.466e-06 (caller's energy unit)
+
+B_k^q:
+  (2, 0)   1000
+  (4,-3)   4.742679582e-10
+  (4, 0)   10
+  (4, 3)   50
+  (6,-6)  -6.592698609e-12
+  (6,-3)  -3.87506971e-11
+  (6, 0)   1
+  (6, 3)  -5.557741767e-13
+  (6, 6)   5.339957643e-12
+  const    -1.896225259e-07
+note: well posed: full column rank and cond below the ill-conditioning limit.
+Report written: work\cf_c3.json.fbk.md
+Projection-basis declaration: 5 of 5 item(s) recorded (section A5 in the report).
+Parameter comparison against the bundled set: 3 (k, q) refused without a matching declaration.
+
+Available functions:
+   1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)
+   2  Coordination geometry and symmetry hints (read an XYZ structure)
+   3  Generate an ORCA input (system profile -> input file + run guidance)
+   4  Basis-set / ECP recommendation (element/valence/targets)
+   5  Search the tool index (keywords)
+   6  Tool onboarding notes (by index id)
+   7  Cross-level solution consistency (records JSON input)
+   8  Save this session as a script
+   9  SCF rescue (triage + corrected input files)
+  10  Crystal-field fit (levels + coefficients JSON)
+  11  Point-charge crystal-field estimate (read an XYZ structure + charges)
+   0  Quit
+Choose a number (Enter = leave empty)> 0
+Goodbye.

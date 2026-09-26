@@ -1,0 +1,72 @@
+\chapter{Coordination geometry and symmetry hints (menu 2)}
+\label{ch:menu2}
+\menulabel{2}
+
+\section{Purpose}
+
+Look at a structure before computing anything: find the metal centre, its
+coordination shell, and the geometric symmetry hints, and get the number of
+crystal-field parameters the point group allows.
+
+\section{What you need}
+
+A standard XYZ file. The point group is asked for interactively (optional, but
+confirmed by you, not guessed by the program).
+
+\section{Walkthrough}
+
+\lstinputlisting[style=fbkcode, firstline=16, lastline=31,
+  title={The menu-2 example session (a toy CeO\textsubscript{6} octahedron)}]
+  {examples/expected/m2_geometry.txt}
+
+\section{What you get}
+
+The coordination shell (metal centre, coordination number, per-ligand
+distances), the symmetry hints (direction distribution via second-moment
+eigenvalue ratios, inversion pairing, planarity), the CF parameter-count rule,
+and a report file \file{name.fbk.md} with the provenance.
+
+\section{How to read the numbers}
+
+\begin{readbox}
+\begin{itemize}
+  \item The symmetry lines are \emph{geometric-distribution hints}, not a
+    rigorous point-group determination. The program says which point group it
+    applied the parameter count to, because you typed it.
+  \item For the example (a perfect octahedron) the direction distribution is
+    isotropic, there are three inversion pairs, and $O_h$ allows four
+    $B_k^q$: $(4,0), (4,4), (6,0), (6,4)$ -- the whole second rank vanishes at
+    a cubic site.
+  \item The rule itself: only even $k$ is kept (time reversal) and $k \le 6$
+    (4f, $l = 3$); a true three-fold axis keeps nine parameters, $O_h$ four,
+    and a fit that needs all 27 means the frame carries no true symmetry --
+    then the $z$-axis convention must be declared. This is the same rule that
+    the crystal-field fit (Chapter~\ref{ch:menu10}) and the points-charge
+    estimate (Chapter~\ref{ch:menu11}) apply.
+\end{itemize}
+\end{readbox}
+
+\section{Worked example}
+
+The session above is the worked example: build any toy structure, confirm the
+point group you believe, and read the parameter count. For a real complex the
+useful reading is comparative: run menu 2, note the distance spread of the
+first shell and whether the inversion pairing is complete, then decide whether
+a higher-symmetry fit ($O_h$, $C_3$) is physically justified before fitting.
+
+\section{Caveats, refusals and related sections}
+
+\begin{refusalbox}
+\begin{itemize}
+  \item No calculation is performed and no file is modified; the XYZ is read
+    only.
+  \item The program refuses malformed XYZ files with a next-step message
+    (mismatched atom count, unreadable content).
+  \item Hints about planarity/linearity are distribution measures; a nearly
+    planar arrangement of a floppy ligand set is not evidence of a planar
+    \emph{molecule}. Confirm the point group chemically.
+\end{itemize}
+\end{refusalbox}
+
+Related: \menu{11} consumes exactly this structure format and the same
+symmetry logic; Chapter~\ref{ch:criteria} lists the underlying constants.

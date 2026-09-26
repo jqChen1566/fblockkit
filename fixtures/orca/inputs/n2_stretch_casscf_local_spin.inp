@@ -1,0 +1,16 @@
+# Fixture: stretched N2 (2.2 A), CASSCF(6,6) with 2 singlet roots and the
+# molecule divided into two fragments - the CASSCF variant of the local spin
+# analysis (per-root printing).
+! RHF def2-SVP def2-SVP/C TightSCF
+%pal nprocs 2 end
+%maxcore 2000
+%casscf
+  nel 6
+  norb 6
+  mult 1
+  nroots 2
+end
+* xyz 0 1
+N(1) 0 0 0
+N(2) 0 0 2.2
+*

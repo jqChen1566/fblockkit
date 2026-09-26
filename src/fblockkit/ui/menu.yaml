@@ -1,0 +1,44 @@
+# fBlockKit interactive menu (declarative: number -> title -> handler)
+# Discipline (architecture design v0.1 §3 L3):
+#   1. numbers are append-only, never reordered -- the number is public API (scripts
+#      replay by number), and a historical number is never changed or recycled;
+#   2. documentation and menu stay isomorphic -- a section number in the user guide is a
+#      menu number, so changing the menu requires changing the guide.
+version: 1
+items:
+  - number: "1"
+    title: Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)
+    handler: report_output
+  - number: "2"
+    title: Coordination geometry and symmetry hints (read an XYZ structure)
+    handler: geometry_report
+  - number: "3"
+    title: Generate an ORCA input (system profile -> input file + run guidance)
+    handler: generate_input
+  - number: "4"
+    title: Basis-set / ECP recommendation (element/valence/targets)
+    handler: basis_query
+  - number: "5"
+    title: Search the tool index (keywords)
+    handler: tool_search
+  - number: "6"
+    title: Tool onboarding notes (by index id)
+    handler: tool_guide
+  - number: "7"
+    title: Cross-level solution consistency (records JSON input)
+    handler: cross_level
+  - number: "8"
+    title: Save this session as a script
+    handler: save_script
+  - number: "9"
+    title: SCF rescue (triage + corrected input files)
+    handler: scf_rescue
+  - number: "10"
+    title: Crystal-field fit (levels + coefficients JSON)
+    handler: crystal_field_fit
+  - number: "11"
+    title: Point-charge crystal-field estimate (read an XYZ structure + charges)
+    handler: point_charge_estimate
+  - number: "0"
+    title: Quit
+    handler: quit

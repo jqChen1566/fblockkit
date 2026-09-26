@@ -1,0 +1,102 @@
+%% fbk.sty -- shared macros and layout for the fBlockKit manual.
+%% Build with XeLaTeX (fontspec); see build.sh for the full pass sequence.
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{fbk}[2026/09/26 fBlockKit manual style]
+
+% --- fonts (XeLaTeX) ---------------------------------------------------------
+\RequirePackage{fontspec}
+\setmainfont{TeX Gyre Termes}
+\setsansfont{TeX Gyre Heros}
+\setmonofont{DejaVuSansMono}[
+  Extension=.ttf,
+  UprightFont=*,
+  BoldFont=*-Bold,
+  ItalicFont=*-Oblique,
+  BoldItalicFont=*-BoldOblique,
+  Scale=0.84,
+]
+
+% --- page, language, structure ----------------------------------------------
+\RequirePackage[british]{babel}
+\RequirePackage{microtype}
+\RequirePackage[htt]{hyphenat}   % hyphenate \texttt runs (long paths, identifiers)
+\setlength{\emergencystretch}{2em}  % last-resort stretch: avoids overfull prose boxes
+\RequirePackage{scrlayer-scrpage}
+\clearpairofpagestyles
+\automark[section]{chapter}
+\ihead{\headmark}
+\ohead{\pagemark}
+\setkomafont{pagehead}{\normalfont\sffamily\small}
+
+% --- maths, tables, boxes, code ---------------------------------------------
+\RequirePackage{amsmath, amssymb}
+\RequirePackage{booktabs}
+\RequirePackage{array}
+\RequirePackage{tabularx}
+\RequirePackage{enumitem}
+\setlist{itemsep=2pt, topsep=3pt}
+\RequirePackage{xcolor}
+\definecolor{fbkblue}{HTML}{1F4E79}
+\definecolor{fbkgray}{HTML}{F2F2F2}
+\definecolor{fbkframe}{HTML}{C8C8C8}
+\definecolor{fbkwarn}{HTML}{8B2500}
+\RequirePackage[most]{tcolorbox}
+\RequirePackage{caption}
+\RequirePackage{listings}
+\RequirePackage{makeidx}
+\RequirePackage{url}
+
+\lstdefinestyle{fbkcode}{%
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  breakatwhitespace=false,
+  postbreak=\mbox{\textcolor{fbkblue}{$\hookrightarrow$}\space},
+  columns=fullflexible,
+  keepspaces=true,
+  frame=single,
+  framerule=0.4pt,
+  rulecolor=\color{fbkframe},
+  backgroundcolor=\color{fbkgray},
+  xleftmargin=1em, xrightmargin=0.5em,
+  aboveskip=0.8em, belowskip=0.8em,
+}
+\lstnewenvironment{transcript}[1][]{\lstset{style=fbkcode,#1}}{}
+\lstnewenvironment{excerpt}[1][]{\lstset{style=fbkcode,#1}}{}
+\lstnewenvironment{codeblock}[1][]{\lstset{style=fbkcode,#1}}{}
+
+% float-free boxes
+\newtcolorbox{notebox}[1][Note]{%
+  colback=fbkgray, colframe=fbkframe, boxrule=0.4pt,
+  fonttitle=\bfseries\sffamily, title=#1, arc=1mm, left=2mm, right=2mm,
+}
+\newtcolorbox{refusalbox}[1][What it will not do]{%
+  colback=white, colframe=fbkwarn, boxrule=0.6pt,
+  fonttitle=\bfseries\sffamily\color{fbkwarn}, title=#1, arc=1mm,
+  left=2mm, right=2mm,
+}
+\newtcolorbox{readbox}[1][How to read the numbers]{%
+  colback=white, colframe=fbkblue, boxrule=0.6pt,
+  fonttitle=\bfseries\sffamily\color{fbkblue}, title=#1, arc=1mm,
+  left=2mm, right=2mm,
+}
+
+% --- hyperref last ----------------------------------------------------------
+\RequirePackage[colorlinks=true, linkcolor=fbkblue, citecolor=fbkblue,
+                urlcolor=fbkblue, pdftitle={fBlockKit manual},
+                pdfauthor={The fBlockKit developers}]{hyperref}
+
+% --- bibliography (biber; loaded after hyperref) -----------------------------
+\RequirePackage[backend=biber, style=numeric-comp, giveninits=true,
+                maxbibnames=99, maxcitenames=2]{biblatex}
+
+% --- shorthand macros --------------------------------------------------------
+\newcommand{\fbk}{\textsf{fBlockKit}}
+\newcommand{\menu}[1]{\hyperref[menu:#1]{menu~#1}}
+\newcommand{\menulabel}[1]{\label{menu:#1}}
+\newcommand{\file}[1]{\texttt{#1}}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\cmd}[1]{\texttt{fblockkit #1}}
+\newcommand{\sev}[1]{\textsf{#1}}
+\newcommand{\bibkey}[1]{\texttt{#1}}
+% provenance table row helper: \provrow{claim}{source class}{reference}
+\newcommand{\provrow}[3]{#1 & #2 & #3 \\}

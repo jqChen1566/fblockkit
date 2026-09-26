@@ -1,0 +1,81 @@
+\chapter{SCF rescue (menu 9)}
+\label{ch:menu9}
+\menulabel{9}
+
+\section{Purpose}
+
+Read one output file whose SCF struggled, name what happened (triage), and --
+if you give the matching input file -- write corrected input files for you,
+each with an auditable list of what changed and why.
+
+\section{What you need}
+
+\begin{itemize}
+  \item the ORCA output file of the failed or suspicious SCF;
+  \item optionally the matching input file: with it, \menu{9} writes corrected
+    inputs; without it, you get the triage only.
+\end{itemize}
+
+\section{Walkthrough}
+
+\lstinputlisting[style=fbkcode, firstline=16, lastline=32,
+  title={The menu-9 example session (an SCF that did not converge)}]
+  {examples/expected/m9_scf.txt}
+
+\section{What you get}
+
+Findings from the triage (each with the measured numbers -- cycle counts, DIIS
+errors, achieved-versus-tolerance comparisons -- and a suggested action), then
+one corrected input per applicable fix, written next to your input as
+\file{name.fix\_\textit{variant}.inp}. The example wrote two:
+
+\begin{itemize}
+  \item \file{scf\_noconv.fix\_slowconv.inp} -- appends the manual's damping
+    keyword, with the manual's caution carried in the file as a comment
+    (\code{SlowConv} can converge to a solution closer to the initial guess);
+  \item \file{scf\_noconv.fix\_prescf.inp} -- the manual's two-step route: a
+    cheap pre-SCF whose only purpose is better starting orbitals, then the
+    original job with \code{moread} and \code{\%moinp} pointing at the pre-SCF
+    orbitals. Your \code{\%scf} settings are preserved (kept as comments in
+    step~1 and used unchanged in step~2).
+\end{itemize}
+
+\section{How to read the numbers}
+
+\begin{readbox}
+Read the triage finding first: it says what pattern was recognised and quotes
+the measured numbers from your file. Then read each proposal's rationale and
+change list -- nothing is changed silently, and every corrected file states its
+own uncertainty (the pre-SCF route ``promises nothing''; the damping route is
+the weaker of the two when the starting orbitals are the true problem).
+\end{readbox}
+
+\section{Worked example}
+
+\begin{itemize}
+  \item The session above is the failure case: an SCF stopped after 2 cycles
+    with a large final DIIS error.
+  \item The negative control is a healthy run: point \menu{9} at
+    \file{n2\_hf\_clean.out} (a clean 8-cycle SCF) and the triage answers
+    ``SCF looks healthy: no triage finding.'' -- no noise, no invented
+    problems.
+\end{itemize}
+
+\section{Caveats, refusals and related sections}
+
+\begin{refusalbox}
+\begin{itemize}
+  \item \textbf{It will not propose merely raising \code{MaxIter}}: the manual
+    states plainly that this does not help in many cases; the program says so
+    as a refusal instead of writing that change.
+  \item Your original files are never modified; every product is a new file.
+  \item The triage reads numbers printed by ORCA; when a number is missing
+    from the output (a truncated file, a different print level), the
+    corresponding criterion is skipped rather than guessed.
+  \item The proposed inputs keep your file's structure (comment lines,
+    \code{\%scf} block) and add only what the manual prescribes.
+\end{itemize}
+\end{refusalbox}
+
+Related: \menu{1}'s SCF-related findings (a report can tell you to come here),
+and Chapter~\ref{ch:criteria} for the criteria the triage applies.

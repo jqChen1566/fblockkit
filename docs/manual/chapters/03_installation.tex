@@ -1,0 +1,78 @@
+\chapter{Installation}
+\label{ch:installation}
+
+\section{Requirements}
+
+\fbk{} needs Python $\ge$ 3.11 and three libraries (PyYAML, Jinja2, NumPy).
+The green package needs nothing at all: it bundles a Python runtime.
+
+\section{Three ways to install}
+
+\subsection{pip (Linux, macOS, Windows)}
+
+\begin{codeblock}
+pip install fblockkit
+\end{codeblock}
+
+This installs the \cmd{} command. Data files (the rule tables, the input
+templates, the menu, the tool index and the BibTeX database) ship inside the
+package -- there is nothing to configure afterwards.
+
+\subsection{Green package (no Python needed)}
+
+Unpack the archive for your platform and run the executable inside:
+
+\begin{codeblock}
+dist/fblockkit/fblockkit.exe      # Windows
+dist/fblockkit/fblockkit          # Linux
+\end{codeblock}
+
+The green package is self-contained (it carries its own Python interpreter and
+the three libraries); it can be moved anywhere and run from any directory.
+See the \file{NOTICE} file for the bundled components and their licences.
+
+\subsection{From source}
+
+\begin{codeblock}
+git clone <repository>
+cd fblockkit
+python -m pip install .
+\end{codeblock}
+
+For development, add the test dependencies (\code{pip install -e ".[dev]"})
+and run the acceptance check:
+
+\begin{codeblock}
+bash scripts/verify.sh
+\end{codeblock}
+
+which performs, in order: the layering contract (import-linter), a
+byte-compile of every source and test file with the interpreter at hand (the
+syntax gate for the supported minimum Python 3.11), and the test suite.
+
+\section{Offline and air-gapped machines}
+
+The program itself never needs the network. If the target machine has no
+internet access, download the wheel on a connected machine
+(\code{pip download fblockkit} or \code{pip wheel}), copy it over together
+with the wheels of its dependencies, and install with
+
+\begin{codeblock}
+python -m pip install --no-index --find-links <wheel-directory> fblockkit
+\end{codeblock}
+
+\section{Checking the installation}
+
+\begin{codeblock}
+fblockkit search dmrg        # should print the DMRG-related tool-index hits
+fblockkit guide openmolcas   # should print the OpenMolcas onboarding notes
+\end{codeblock}
+
+\section{Uninstalling}
+
+\begin{codeblock}
+pip uninstall fblockkit
+\end{codeblock}
+
+No data or configuration is written outside the program directory: uninstalling
+leaves nothing behind.

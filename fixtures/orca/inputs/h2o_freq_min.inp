@@ -1,0 +1,9 @@
+# Fixture: water, r2SCAN-3c Opt + Freq - a clean minimum (0 imaginary modes).
+! r2SCAN-3c Opt Freq
+%pal nprocs 4 end
+%maxcore 2000
+* xyz 0 1
+O  0.000  0.000  0.117
+H  0.000  0.757 -0.469
+H  0.000 -0.757 -0.469
+*

@@ -1,0 +1,40 @@
+fBlockKit -- the f-block calculation toolkit (input generation + characterisation analysis; it runs no calculations)
+
+Available functions:
+   1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)
+   2  Coordination geometry and symmetry hints (read an XYZ structure)
+   3  Generate an ORCA input (system profile -> input file + run guidance)
+   4  Basis-set / ECP recommendation (element/valence/targets)
+   5  Search the tool index (keywords)
+   6  Tool onboarding notes (by index id)
+   7  Cross-level solution consistency (records JSON input)
+   8  Save this session as a script
+   9  SCF rescue (triage + corrected input files)
+  10  Crystal-field fit (levels + coefficients JSON)
+  11  Point-charge crystal-field estimate (read an XYZ structure + charges)
+   0  Quit
+Choose a number (Enter = leave empty)> 7
+Records JSON path (each item carries label and energies; see section 7 of the guide) (Enter = leave empty)> work/pucl3_s18.json
+2 cross-level risk(s) found:
+[Warning] the two levels disagree on the best solution: HF favours No.3 while CCSD(T) favours No.1; picking the best by HF leaves it 0.06 kcal/mol behind at the CCSD(T) level.
+  Action: Re-rank the candidate solutions at the CCSD(T) level before choosing one; do not use the HF ordering directly as the basis for solution selection.
+  Evidence: [literature] Lu J.-B., Zhang Y.-Y., Liu J.-B., Li J., J. Chem. Theory Comput., 2025, 21(1), 170-182, DOI 10.1021/acs.jctc.4c01189 (SI Table S18)
+[Warning] a solution in the low level's top 3 drops out of the top 3 at the higher level: No.10 (HF position 2 -> CCSD(T) position 7).
+  Action: Re-check the energy, occupation and configuration assignment of the dropped solution at the higher level (it may be a different electronic state).
+  Evidence: [literature] Lu J.-B., Zhang Y.-Y., Liu J.-B., Li J., J. Chem. Theory Comput., 2025, 21(1), 170-182, DOI 10.1021/acs.jctc.4c01189 (SI Table S18)
+
+Available functions:
+   1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)
+   2  Coordination geometry and symmetry hints (read an XYZ structure)
+   3  Generate an ORCA input (system profile -> input file + run guidance)
+   4  Basis-set / ECP recommendation (element/valence/targets)
+   5  Search the tool index (keywords)
+   6  Tool onboarding notes (by index id)
+   7  Cross-level solution consistency (records JSON input)
+   8  Save this session as a script
+   9  SCF rescue (triage + corrected input files)
+  10  Crystal-field fit (levels + coefficients JSON)
+  11  Point-charge crystal-field estimate (read an XYZ structure + charges)
+   0  Quit
+Choose a number (Enter = leave empty)> 0
+Goodbye.

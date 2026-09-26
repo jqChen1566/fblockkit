@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# tool caches
+.import_linter_cache/
+.pytest_cache/
+
+# virtual environments and build artefacts
+venv/
+.venv/
+build/
+dist/
+packaging/.buildenv/
+
+# the built manual (a release artefact; see docs/manual/build.sh)
+docs/manual/main.pdf

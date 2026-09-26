@@ -1,0 +1,54 @@
+{
+  "meta": {
+    "description": "Crystal-field parameters B_k^q (cm^-1) and ground-manifold level energies (cm^-1) of the C3-symmetric Er(III) single-ion magnet Er-trensal (compound 1 of the paper), in three electronic-structure columns. Known-answer data for the A4 crystal-field fitter: the nine non-zero B_k^q are exactly the (k, q) set allowed by a true three-fold axis, the eight energies are the Kramers-doublet levels of the fitted Hamiltonian.",
+    "source": "Peng L., Liu S., Zhang X., Chen X., Li C., Ung S. F., Cheng H.-P., Chan G. K.-L., Accurate Crystal Field Hamiltonians of Single-Ion Magnets at Mean-Field Cost, J. Phys. Chem. Lett., 2025, 16(47), 12312-12320, DOI 10.1021/acs.jpclett.5c02971",
+    "bibkey": "peng2025accurate",
+    "tables": ["Supporting Information, Table S1 (B_k^q, three columns)", "Supporting Information, Table S6 (Kramers-doublet level energies, two columns)"],
+    "transcription_note": "Values transcribed from our reading notes (close-reading file) of the paper, 文献细读/细读_CF哈密顿量_Chan2025.md section 4.6, which quotes the SI tables of both the journal version and the arXiv preprint (arXiv:2505.16905v2); the two conversions of Table S1 agree row by row. Not read from the PDF figure.",
+    "level_convention": "Level 1 is the ground Kramers doublet and is set to 0; the eight tabulated energies are the doubly-degenerate levels of the J = 15/2 (Er3+, 4I15/2) manifold. They are levels, not sampled-state energies: the fitter needs one energy per sampled state plus the projection coefficients of that state (see tests/test_crystal_field.py).",
+    "operator_convention": "Extended Stevens operators of the Rudowicz/Ryabov lineage, extended (cosine/sine) form; q = +3 and q = -3 are independent parameters, which is why both appear below. B_k^q in cm^-1. z axis: pseudo-C3 axis of the molecule. The paper's own footnote states that the CASPT2 column is given in the coordinate frame used for the two other columns.",
+    "warning": "B_k^q from a different operator convention, manifold, unit or z-axis are not comparable with these numbers."
+  },
+  "parameters": {
+    "columns": ["HF@HF", "PBE0@HF", "CASPT2(14o)"],
+    "units": "cm^-1",
+    "records": [
+      {"k": 2, "q": 0,  "values": {"HF@HF": -1.0846603e0,    "PBE0@HF": -1.1673728e0,    "CASPT2(14o)": -1.1122607e0}},
+      {"k": 4, "q": 0,  "values": {"HF@HF": -1.0765159e-3,   "PBE0@HF": -1.2073254e-3,   "CASPT2(14o)": -5.5875272e-4}},
+      {"k": 4, "q": 3,  "values": {"HF@HF": 1.6502459e-1,    "PBE0@HF": 2.0880005e-1,    "CASPT2(14o)": 1.9528516e-1}},
+      {"k": 4, "q": -3, "values": {"HF@HF": -9.1485833e-2,   "PBE0@HF": -1.1321827e-1,   "CASPT2(14o)": -1.0677587e-1}},
+      {"k": 6, "q": 0,  "values": {"HF@HF": 9.3301951e-5,    "PBE0@HF": 1.3333043e-4,    "CASPT2(14o)": 1.3367383e-4}},
+      {"k": 6, "q": 3,  "values": {"HF@HF": -6.7258782e-4,   "PBE0@HF": -1.2066800e-3,   "CASPT2(14o)": -1.0575970e-3}},
+      {"k": 6, "q": -3, "values": {"HF@HF": 4.4996124e-4,    "PBE0@HF": 7.6336324e-4,    "CASPT2(14o)": 6.3971423e-4}},
+      {"k": 6, "q": 6,  "values": {"HF@HF": 4.6114261e-4,    "PBE0@HF": 6.6374329e-4,    "CASPT2(14o)": 6.7345254e-4}},
+      {"k": 6, "q": -6, "values": {"HF@HF": -6.6657762e-4,   "PBE0@HF": -1.0271989e-3,   "CASPT2(14o)": -9.6671484e-4}}
+    ],
+    "zero_parameters": "All other (k, q) with k in {2, 4, 6} are zero in the two mean-field columns; the CASPT2 column has residual values of order 1e-3 to 1e-8 (paper, Table S1)."
+  },
+  "levels": {
+    "columns": ["HF@HF", "PBE0@HF"],
+    "units": "cm^-1",
+    "labels": ["KD1", "KD2", "KD3", "KD4", "KD5", "KD6", "KD7", "KD8"],
+    "records": [
+      {"label": "KD1", "values": {"HF@HF": 0.0,    "PBE0@HF": 0.0}},
+      {"label": "KD2", "values": {"HF@HF": 89.85,  "PBE0@HF": 67.12}},
+      {"label": "KD3", "values": {"HF@HF": 124.25, "PBE0@HF": 119.12}},
+      {"label": "KD4", "values": {"HF@HF": 141.19, "PBE0@HF": 133.66}},
+      {"label": "KD5", "values": {"HF@HF": 238.33, "PBE0@HF": 295.59}},
+      {"label": "KD6", "values": {"HF@HF": 561.86, "PBE0@HF": 572.08}},
+      {"label": "KD7", "values": {"HF@HF": 602.17, "PBE0@HF": 625.49}},
+      {"label": "KD8", "values": {"HF@HF": 628.83, "PBE0@HF": 651.87}}
+    ],
+    "note": "The paper's own convergence statement: the mean-field spectrum is not an eigenstate sample. Comparing a fitted CF Hamiltonian against these levels is step 6 of the paper's workflow."
+  },
+  "point_group": "C3",
+  "manifold": {"ion": "Er3+", "term": "4I15/2", "J": 7.5, "dimension": 16},
+  "nonzero_pattern_c3": [[2, 0], [4, -3], [4, 0], [4, 3], [6, -6], [6, -3], [6, 0], [6, 3], [6, 6]],
+  "cross_check": {
+    "method": "Build H_CF from the nine B_k^q of a column, diagonalise, subtract the ground level, and compare the eight Kramers doublets with the same column of Table S6. Measured 2026-09-25 with this module's operators, J = 15/2, basis |J M>.",
+    "PBE0@HF": "Reproduces Table S6 to max |deviation| = 0.0039 cm^-1, i.e. within the 0.01 cm^-1 to which the table is printed. This is an external known-answer test of the operator normalisation and of the cosine/sine phase convention.",
+    "HF@HF": "Reproduces Table S6 only up to a constant factor: the diagonalised spectrum is 0.76336 x the tabulated levels (ratio constant to 4e-5 over all seven excited doublets, i.e. uniform to within the table's rounding). The same factor appears in neither the PBE0 column of this table nor either column of the compound 2 fixture, so it is a residual inconsistency between the two tables of the paper for this one column, not an operator-convention effect -- a wrong operator convention would move the two columns differently or break all four columns. Both tables were re-read verbatim from the SI conversion text (jz5c02971_si_001.md) to rule out a transcription error on our side; the nine B_k^q and the eight levels match that text exactly.",
+    "consequence": "Use the PBE0@HF pair (B_k^q and levels) as the known answer. Do not use the HF@HF column of Table S6 as the known answer for the HF@HF column of Table S1 without the ~1.31 factor. The paper's own text applies an empirical factor of 1.3 to its CASSCF(7o) spectrum, which is a plausible origin of the factor but is not stated for this column anywhere we have read."
+  },
+  "round_trip_note": "Round-trip recipe used in the tests: build H_CF from one column of the nine B_k^q, diagonalise it, and feed the 16 eigenpairs back into fit_crystal_field. On its own this recovers nothing -- the Kramers doublets duplicate the design-matrix rows (measured rank 8 of 10 columns). Adding oriented sampled states restores full rank and the nine B_k^q come back to ~1e-12 relative."
+}

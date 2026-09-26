@@ -1,0 +1,95 @@
+\chapter{File formats and data}
+\label{ch:formats}
+
+\section{Products}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}lX@{}}
+\toprule
+File & Content \\
+\midrule
+\file{name.fbk.md} & the report: summary, analysis sections, findings,
+  provenance, references (complete citations + paste-ready BibTeX) \\
+\file{name.fbk.json} & the same content as data: \code{title}, \code{sections},
+  \code{findings} (severity, message, rule id, suggested fix, refusals),
+  \code{provenance}, plus a few program-specific keys \\
+\file{structure.fbk.inp} & a generated ORCA input (pure ASCII) \\
+\file{input.fix\_\textit{variant}.inp} & a corrected input from \menu{9} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Nothing carries timestamps; products are deterministic.
+
+\section{Input JSON: cross-level records (menu 7)}
+
+\begin{codeblock}
+[
+  {"label": "No.1",
+   "occupation": "(5f)^1 ...",        # optional, informational
+   "energies": {"HF": -1930.87692, "CCSD(T)": -1932.97951}},
+  {"label": "No.2", "energies": {"HF": -1930.87392, "CCSD(T)": -1932.97745}}
+]
+\end{codeblock}
+
+The top level may also be an object with a \code{records} list. All records
+must carry the same level names; labels must be unique.
+
+\section{Input JSON: crystal-field fit (menu 10)}
+
+\begin{codeblock}
+{
+  "point_group": "C3",                  # C3 | Oh | C1/none
+  "J": 8.0,                             # the |J M> manifold
+  "levels": [0.0, 12.3, ...],           # one energy per sampled state
+  "coefficients": [[[re, im], ...], ...],  # amplitudes on |J M>, M = m - J
+  "declaration": {                      # optional: the five A5 items
+    "convention": "...", "projection": "...", "units": "cm^-1",
+    "z_axis": "...", "origin": "..."},
+  "compare": {                          # optional: a second parameter set
+    "label": "...",
+    "parameters": {"2,0": 1879.0, "2,2": -43.0},
+    "declaration": {"projection": "..."}}
+}
+\end{codeblock}
+
+Parameter keys are \code{"k,q"} strings or two-element lists. Pass the
+amplitudes themselves, not their complex conjugates (the conjugation trap,
+Chapter~\ref{ch:menu10}).
+
+\section{Structure and charge input (menus 2 and 11)}
+
+Standard XYZ (atom count, comment, \code{element x y z}). For \menu{11}, the
+interactive prompts take per-element charges (\code{O=-2,H=0.4}) and optional
+radial moments \code{r2,r4,r6} in \AA$^k$. An element present in the structure
+but missing from the charge list is refused, with the missing symbols named.
+
+\section{Knowledge data (inside the package)}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}lX@{}}
+\toprule
+File & Content \\
+\midrule
+\file{knowledge/sources.bib} & the reference database (BibTeX). Every
+  literature-evidence item must carry a bibkey that resolves here; loading
+  fails otherwise \\
+\file{knowledge/rules/*.yaml} & the rule base: id, kind (recipe/diagnosis),
+  condition tree, action, refusals, evidence, confidence, severity (diagnosis
+  only) \\
+\file{knowledge/basis\_ecp.yaml} & the basis/ECP recommendation table \\
+\file{knowledge/templates/*.j2} & the input templates (ORCA, OpenMolcas) \\
+\file{knowledge/toolindex/tools.yaml} & the external-tool index (relation and
+  status per entry) \\
+\file{ui/menu.yaml} & the menu definition: number, title, handler (append-only
+  numbers) \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\section{The report as an interface}
+
+The Markdown report is for humans; the JSON companion is the scripting
+interface. Its stability follows the release policy: within a minor version
+the section titles and finding fields are stable; new fields may be added.
+Finding \code{rule\_id}s are stable identifiers you may key on.

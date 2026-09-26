@@ -1,0 +1,10 @@
+# Fixture: the same F + H2 transition-state guess with OptTS only (no Freq
+# keyword) - the "no post-optimisation frequency verification" case.
+! r2SCAN-3c OptTS
+%pal nprocs 4 end
+%maxcore 2000
+* xyz 0 2
+F  0.000  0.000 -1.450
+H  0.000  0.000  0.000
+H  0.000  0.000  0.800
+*

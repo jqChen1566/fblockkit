@@ -1,0 +1,74 @@
+\chapter{Basis-set / ECP recommendation (menu 4)}
+\label{ch:menu4}
+\menulabel{4}
+
+\section{Purpose}
+
+Look up the basis-set and ECP recommendation for an element set, valence and
+target without generating a file -- the same knowledge that \menu{3} uses.
+
+\section{What you need}
+
+Element list, charge, multiplicity, f-block metal valence, targets (the same
+profile as \menu{3}).
+
+\section{Walkthrough}
+
+\lstinputlisting[style=fbkcode, firstline=16, lastline=36,
+  title={The menu-4 example session (Pu, Cl)}]
+  {examples/expected/m4_basis.txt}
+
+\section{What you get}
+
+Recommendation tiers (each with its matching auxiliary basis and rationale),
+boundary cautions, and not-applicable tiers with the hard refusal conditions --
+everything with provenance. The example shows the three shapes of an answer:
+
+\begin{itemize}
+  \item \textbf{Tiers}: SARC-DKH-TZVPP first for an actinide (SARC covers
+    Ac--Lr with its own SARC/J fitting basis), ANO-RCC as the
+    magnetic-property-chain generalist, Stuttgart pseudopotentials through
+    ORCA's built-in keywords.
+  \item \textbf{Boundary cautions}: the standard def2 family stops at Rn and
+    does not cover the actinides -- do not pick it for an actinide.
+  \item \textbf{Not applicable, with reasons}: the 5f-in-core pseudopotential
+    family applies to the trivalent state only (its own calibration: AnCl$_3$
+    MAD 2.9 kcal/mol against small-core pseudopotentials; the tetravalent case
+    does not meet the bar), and it is structurally blind to everything that
+    needs an f channel with $l_{\max} = 2$: f--f transitions, crystal-field
+    splittings, 5f multiplets, every SOC-dependent property. Its refusal list
+    also states the source paper's own prohibition (ground state
+    $5f^{n-1}6d^1$).
+\end{itemize}
+
+\section{How to read the numbers}
+
+\begin{readbox}
+The not-applicable block is the part to read carefully: it is the program
+declining to recommend, with the quantified reason attached. A tier that is
+``not applicable'' for one target may be exactly right for another (the
+5f-in-core family is legitimate for closed-shell chemistry with no f physics);
+read the condition, not the verdict alone.
+\end{readbox}
+
+\section{Worked example}
+
+Run the session above; then change the valence from 3 to 4 and the targets to
+\code{excited} and compare the blocks. The recommendation changes because the
+rules match on (elements, valence, targets) -- there is no hidden state.
+
+\section{Caveats, refusals and related sections}
+
+\begin{refusalbox}
+\begin{itemize}
+  \item This is a lookup, not a calculation: no file is written.
+  \item ECP parameters from an external source (a Basis Set Exchange download,
+    say) must be inlined into the ORCA input and checked by hand -- the
+    program says so where that route is suggested.
+  \item Where the licence or availability of an external basis was not
+    verified, the entry says ``to verify'' instead of asserting it.
+\end{itemize}
+\end{refusalbox}
+
+Related: \menu{3} (generation), Chapter~\ref{ch:criteria} (the underlying
+rules and their sources).

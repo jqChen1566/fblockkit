@@ -1,0 +1,26 @@
+# fBlockKit-generated ORCA input (f-block toolkit)
+# simple input line: {{ simple_keywords | join(' ') }}
+{% for note in input_notes -%}
+# note: {{ note }}
+{% endfor -%}
+! {{ simple_keywords | join(' ') }}
+%pal nprocs {{ nprocs }} end
+%maxcore {{ maxcore }}
+{% if scf_block %}
+%scf
+{% for line in scf_block -%}
+  {{ line }}
+{% endfor -%}
+end
+{% endif %}
+{% if casscf %}
+%casscf
+  nel {{ casscf.nel }}
+  norb {{ casscf.norb }}
+  mult {{ casscf.mult }}
+  nroots {{ casscf.nroots }}
+end
+{% endif %}
+* xyz {{ charge }} {{ mult }}
+{{ geometry }}
+*

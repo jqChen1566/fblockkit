@@ -1,0 +1,176 @@
+# fBlockKit recipe rules -- ORCA multireference methods (first batch)
+# Source: the internal design table 设计/ORCA强关联方法决策表 v0.1 (2026-09-25); provenance
+# is recorded rule by rule (manual/literature/measured).
+# The fact fields (derived by the recipe layer from SystemProfile) are in README.md in this
+# directory.
+# Convention: evidence.text always uses the block scalar (>-) -- after a double-quoted YAML
+# scalar closes, nothing else may follow on that line.
+
+- id: A1-gradient-task
+  kind: recipe
+  title: A geometry-optimisation / frequency task can only use a CASSCF reference
+  method: CASSCF (geometry/frequency reference)
+  condition:
+    all:
+      - { field: geometry_task, op: eq, value: true }
+  action: Use CASSCF as the reference (it has an analytic gradient); NEVPT2 / CASPT2 / MRCI serve single-point corrections only.
+  refusal:
+    - A correlation-layer method must not be put into an optimisation loop (no analytic gradient).
+  evidence:
+    - kind: measured
+      text: >-
+        Four-way comparison (ORCA / PySCF / Psi4): none of the multireference correlation
+        layers has an analytic gradient; only CASSCF does.
+      ref: 方法谱系与梯度支持_20260923.md (checked by this group)
+  confidence: confirmed
+
+- id: A2-f-block-energy-nevpt2
+  kind: recipe
+  title: For f-block energy targets prefer SC-NEVPT2 over CASPT2
+  method: CASSCF + SC-NEVPT2
+  condition:
+    all:
+      - { field: f_block, op: eq, value: true }
+      - { field: targets, op: contains, value: energy }
+  action: CASSCF + SC-NEVPT2 is recommended (in preference to CASPT2).
+  evidence:
+    - kind: manual
+      text: >-
+        "unlike NEVPT2, the CASPT2 formulations require the storage of the entire wave function.
+        Hence, the scope of accessible systems is far more limited compared to the NEVPT2
+        implementation in ORCA."
+      ref: ORCA 6.1 manual §3.17 (CASPT2 introduction)
+      url: https://www.faccts.de/docs/orca/6.1/manual/contents/modelchemistries/caspt2.html
+  confidence: confirmed
+
+- id: A3-initial-guess
+  kind: recipe
+  title: Do not leave the initial guess orbitals to the default and to luck
+  condition:
+    all: []
+  action: The default !PModel often does not give the right starting orbitals or active space; for the f block prefer a fragment guess, and use !moread + %moinp to read orbitals when needed.
+  evidence:
+    - kind: manual
+      text: >-
+        "Often, the default !PModel guess does not provide good starting orbitals or the
+        correct active space"
+      ref: ORCA 6.1 manual §3.13
+      url: https://www.faccts.de/docs/orca/6.1/manual/contents/modelchemistries/CASSCF.html
+    - kind: manual
+      text: >-
+        "the fragment guess, is particularly successful and leads to a rapid convergence"
+        (the initial-guess advice for f-block systems)
+      ref: ORCA 6.1 manual §3.13
+      url: https://www.faccts.de/docs/orca/6.1/manual/contents/modelchemistries/CASSCF.html
+  confidence: confirmed
+
+- id: A4-convergence-discipline
+  kind: recipe
+  title: "CASSCF convergence discipline: try the default first, use TRAH when it is difficult"
+  condition:
+    all: []
+  action: Run the default settings first; if it is still difficult add !TRAH; do not rely on raising MaxIter (the manual states plainly that it does not help in most cases).
+  evidence:
+    - kind: manual
+      text: >-
+        "Please always try the default convergence settings before tweaking the convergence
+        manually!" / "In case of convergence problems with the default settings, it is
+        recommended to try the !TRAH option." / "Increasing MaxIter will not help in many cases."
+      ref: ORCA 6.1 manual §3.13
+      url: https://www.faccts.de/docs/orca/6.1/manual/contents/modelchemistries/CASSCF.html
+  confidence: confirmed
+
+- id: B1-casscf-feasible
+  kind: recipe
+  title: CASSCF is feasible up to about 14 active orbitals
+  method: CASSCF (+ SC-NEVPT2)
+  condition:
+    all:
+      - { field: active_space_orbitals, op: ge, value: 1 }
+      - { field: active_space_orbitals, op: le, value: 14 }
+  action: A CASSCF reference is feasible (+ SC-NEVPT2 correlation correction); the occupations must fall within 0.02–1.98.
+  evidence:
+    - kind: manual
+      text: >-
+        "the limit of feasibility is roughly around ~14 active orbitals or about one million
+        CSFs in the active space"
+      ref: ORCA 6.1 manual §3.13
+      url: https://www.faccts.de/docs/orca/6.1/manual/contents/modelchemistries/CASSCF.html
+  confidence: confirmed
+
+- id: B2-iceci-open-shells
+  kind: recipe
+  title: With 14–16 open shells, ICE-CI is available
+  method: ICE-CI
+  condition:
+    all:
+      - { field: open_shells, op: ge, value: 14 }
+      - { field: open_shells, op: le, value: 16 }
+  action: ICE-CI (approximately FCI, adaptively robust) is available; use MP2 natural orbitals for the initial guess; the result carries a statement that it depends on the orbital choice.
+  evidence:
+    - kind: manual
+      text: >-
+        The practical upper limit is 14-16 open shells; "the use of MP2 natural orbitals
+        appears to be a very good idea in conjunction with the ICE-CI procedure"
+      ref: ORCA 6.1 manual §3.14
+      url: https://www.faccts.de/docs/orca/6.1/manual/contents/modelchemistries/iceci.html
+  confidence: confirmed
+
+- id: B3-large-active-space
+  kind: recipe
+  title: "Active space of 15–30 orbitals: ICE-CI or DMRG"
+  method: ICE-CI / DMRG
+  condition:
+    all:
+      - { field: active_space_orbitals, op: gt, value: 14 }
+      - { field: active_space_orbitals, op: le, value: 30 }
+  action: ICE-CI or DMRG. A routine DMRG size is 30e/30o (a 12-core node, from hours to a day) with an accuracy of about 1 kcal/mol; note that ORCA's embedded BLOCK is Linux only.
+  evidence:
+    - kind: manual
+      text: >-
+        Routine sizes: 30 electrons in 30 active orbitals, 1–10 states, accuracy about
+        1 kcal/mol; "BLOCK is only available on the Linux platform!"
+      ref: ORCA 6.1 manual §3.15 (DMRG)
+      url: https://www.faccts.de/docs/orca/6.1/manual/contents/modelchemistries/dmrg.html
+  confidence: confirmed
+
+- id: B6-refuse-out-of-scope
+  kind: recipe
+  title: Refuse to recommend when the active space exceeds the supported range
+  condition:
+    all:
+      - { field: active_space_orbitals, op: gt, value: 40 }
+  action: No routine recommendation is given; consider only a DLPNO tier (DLPNO-NEVPT2 is recommended above 80 atoms) or shrink the active space.
+  refusal:
+    - The active space exceeds the range v0.1 supports (> 40 orbitals).
+  evidence:
+    - kind: manual
+      text: >-
+        "For systems with more than 80 atoms, we recommend the DLPNO-NEVPT2 method"
+        (recovers 99.9% of the FIC-NEVPT2 correlation energies)
+      ref: ORCA 6.1 manual §3.16
+      url: https://www.faccts.de/docs/orca/6.1/manual/contents/modelchemistries/NEVPT2.html
+  confidence: confirmed
+
+- id: C1-soc-chain
+  kind: recipe
+  title: "SOC/magnetic chain: SA-CASSCF → rel → QDPT → SINGLE_ANISO"
+  method: SA-CASSCF → %rel(SOC) → QDPT
+  condition:
+    all:
+      - { field: soc_task, op: eq, value: true }
+  action: SA-CASSCF reference → %rel block (SOCType defaults to 3 = mean field) → QDPT → optionally SINGLE_ANISO; for strong spin-orbit coupling MLTP is a mandatory keyword; the model space is built iteratively by energy truncation (start from ligand-field splitting 5.0 eV / g tensor 7.5 eV / magnetic axis 2.5 eV).
+  evidence:
+    - kind: manual
+      text: >-
+        "In cases of strong spin-orbit coupling the usage of this keyword is mandatory." (MLTP);
+        "Please always check the obtained orbitals after CASSCF calculation."
+      ref: ORCA 6.1 manual §5.32 (SINGLE_ANISO)
+      url: https://www.faccts.de/docs/orca/6.1/manual/contents/spectroscopyproperties/single_aniso.html
+    - kind: literature
+      text: >-
+        The SISO model space is built iteratively by energy truncation E_cut; ligand-field
+        splitting 5.0 eV, g tensor 7.5 eV and magnetic axis 2.5 eV are the starting values.
+      ref: "Zhou J., Jangid B., Hermes M. R., Gagliardi L., J. Chem. Inf. Model., 2026, 66(17), 11052-11061, DOI 10.1021/acs.jcim.6c01565"
+      bibkey: zhou2026highthroughput
+  confidence: confirmed

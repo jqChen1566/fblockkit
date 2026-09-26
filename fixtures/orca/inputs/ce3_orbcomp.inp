@@ -1,0 +1,17 @@
+# 夹具：Ce3+ DKH2/SARC2 CASSCF(1,7) + 逐 MO 成分打印——f 区 A1 分析
+! DKH2 SARC2-DKH-QZVP TightSCF
+%pal nprocs 4 end
+%maxcore 2000
+%output Print[P_ReducedOrbPopMO_L] 1 end
+%scf
+MaxIter 300
+end
+%casscf
+  nel 1
+  norb 7
+  mult 2
+  nroots 1
+end
+* xyz 3 2
+Ce 0.0 0.0 0.0
+*

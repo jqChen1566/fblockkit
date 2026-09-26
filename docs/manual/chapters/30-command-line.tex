@@ -1,0 +1,44 @@
+\chapter{Command-line reference}
+\label{ch:cli}
+
+\section{Synopsis}
+
+\begin{codeblock}
+fblockkit                      interactive menu (Chapter~\ref{ch:running})
+fblockkit --record FILE        the same, recording this session's input to FILE
+fblockkit run SCRIPT.txt       replay a script
+fblockkit search KEYWORDS      search the tool index (Chapter~\ref{ch:menu5})
+fblockkit guide TOOL_ID        tool onboarding notes (Chapter~\ref{ch:menu6})
+\end{codeblock}
+
+All output goes to standard output; there is no log file and no state between
+runs. Exit codes: \code{0} success, \code{2} usage problem (missing script,
+empty keyword, unknown tool id). The interactive menu is also reachable as
+\code{python -m fblockkit} when the package is used from source.
+
+\section{The script format}
+
+One input per line. An empty line means ``press Enter'' (accept the default);
+a line starting with \code{\#} is a comment and is skipped; everything else is
+delivered to the prompt exactly as typed. Scripts can be produced by
+\code{--record}, by \menu{8}, or by hand.
+
+Replaying is exactly equivalent to typing: same prompts, same output,
+byte-identical across runs. A script that runs out of lines mid-session ends
+with ``Cancelled (input finished)'' for the pending prompt and continues to the
+next menu (or exits cleanly at EOF).
+
+\section{Examples}
+
+\begin{codeblock}
+fblockkit search lanthanide DMET
+fblockkit guide openmolcas
+fblockkit run my_session.txt
+fblockkit --record my_session.txt      # then work normally; the file is written at exit
+\end{codeblock}
+
+\section{Environment}
+
+\code{PYTHONUTF8=1} is recommended on Windows consoles (the program prints
+ASCII/UTF-8 only, but the console code page can mangle the display). On the
+supported Python versions the program has no other environment requirements.

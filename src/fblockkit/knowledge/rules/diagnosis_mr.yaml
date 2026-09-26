@@ -1,0 +1,283 @@
+# fBlockKit diagnosis rules -- multireference calculations
+# The fact fields come from the parser layer's extraction of the output file (see the
+# fact vocabulary in README.md in this directory).
+# Convention: evidence.text always uses the block scalar (>-) -- after a double-quoted
+# YAML scalar closes, nothing else may follow on that line.
+# severity semantics: info = a check that must be carried out; warn = a concrete doubt
+# was found; error = the conclusion cannot be relied on.
+
+# --- D3: mandatory CASPT2 checks --------------------------------------------
+
+- id: DG-CASPT2-WEIGHTS
+  kind: diagnosis
+  severity: info
+  title: A CASPT2 run requires checking the reference weights and the smallest denominator
+  condition:
+    all:
+      - { field: caspt2_present, op: eq, value: true }
+  action: >-
+    Check the Reference Weight and the smallest energy denominator in the output. The
+    manual states plainly that the program does not abort on an intruder state and
+    silently carries on, so every CASPT2 run must be checked by hand (or by the two
+    threshold rules below), and the CASPT2 numbers must not be used before that check
+    is done.
+  refusal:
+    - The CASPT2 numbers must not be used before the check is complete (the program does not abort on an intruder state, it silently carries on).
+  evidence:
+    - kind: manual
+      text: >-
+        "In case of intruder states, the residual equation may not converge. The program will
+        not abort. Hence, it is important to check convergence for every CASPT2 run."
+      ref: ORCA 6.1 manual §3.17
+      url: https://www.faccts.de/docs/orca/6.1/manual/contents/modelchemistries/caspt2.html
+  confidence: confirmed
+
+- id: DG-CASPT2-LOW-WEIGHT
+  kind: diagnosis
+  severity: warn
+  title: CASPT2 reference weight below 0.9 (a sign of intruder states)
+  condition:
+    all:
+      - { field: caspt2_min_reference_weight, op: lt, value: 0.9 }
+  action: >-
+    Check the state the low weight belongs to: it may be contaminated by an intruder
+    state. How to proceed: switch to CASPT2-K, which is more robust against intruder
+    states (manual: less prone to intruder states and ... more accurate), or to NEVPT2;
+    if necessary enlarge the active space, change the orbitals, or add an (im) level
+    shift and recompute.
+  evidence:
+    - kind: manual
+      text: >-
+        "The CASPT2 output lists the settings prior to the computation. The printed reference
+        weights should be checked. Small reference weights indicate intruder states."
+      ref: ORCA 6.1 manual §3.17
+      url: https://www.faccts.de/docs/orca/6.1/manual/contents/modelchemistries/caspt2.html
+    - kind: manual
+      text: >-
+        "In general, RefWeight should be >0.9, such that the states are dominated by reference
+        space configurations." (the number comes from the MR-EOM chapter; using it for the
+        CASPT2 weight is an analogy)
+      ref: ORCA 6.1 manual §3.19.14
+      url: https://www.faccts.de/docs/orca/6.1/manual/contents/modelchemistries/mrci.html
+  confidence: provisional
+
+- id: DG-CASPT2-SMALL-DENOMINATOR
+  kind: diagnosis
+  severity: warn
+  title: CASPT2 smallest energy denominator below 1e-2 (a sign of a small denominator)
+  condition:
+    all:
+      - { field: caspt2_min_denominator, op: lt, value: 0.01 }
+  action: >-
+    Check the excitation class the small denominator belongs to (the lowest of the 8
+    smallest energy denominators). The manual states plainly that "Small denominator may
+    lead to intruder states"; the results of a state with a small denominator cannot be
+    used directly. Proceed as in the rule above (CASPT2-K / NEVPT2 / level shift).
+  evidence:
+    - kind: manual
+      text: >-
+        "Along the lines, the program also prints the smallest denominators in the perturbation
+        expression ... Small denominator may lead to intruder states."
+      ref: ORCA 6.1 manual §3.17
+      url: https://www.faccts.de/docs/orca/6.1/manual/contents/modelchemistries/caspt2.html
+    - kind: manual
+      text: >-
+        "TSMallDenom 1e-2 # printing thresh for small denominators" (ORCA's own printing
+        threshold for a "small denominator" is 1e-2 by default; this rule borrows it as
+        the criterion threshold)
+      ref: ORCA 6.1 manual §3.16 (PTSettings keyword table)
+      url: https://www.faccts.de/docs/orca/6.1/manual/contents/modelchemistries/nevpt2.html
+  confidence: provisional
+
+# --- D1: CASSCF / NEVPT2 check-up -------------------------------------------
+
+- id: DG-CASSCF-NOT-CONVERGED
+  kind: diagnosis
+  severity: error
+  title: CASSCF did not report convergence
+  condition:
+    all:
+      - { field: casscf_present, op: eq, value: true }
+      - { field: casscf_converged, op: eq, value: false }
+  action: >-
+    Check whether the maximum number of macro iterations (MaxIter) was reached or the
+    convergence tolerance is too tight; review the final ||g|| and the energy change,
+    then adjust the settings and rerun. Neither the CASSCF energy on non-converged
+    orbitals nor any later perturbation-layer result on them can be used.
+  refusal:
+    - CASPT2 / NEVPT2 results must not be run on, or taken from, non-converged CASSCF orbitals.
+  evidence:
+    - kind: measured
+      text: >-
+        ORCA prints the warning automatically in jobs that include PT2: "IMPORTANT NOTE:
+        CASSCF must signal convergence for a subsequent CASPT2/NEVPT2! Set maxiter=1 to run
+        CASPT2/NEVPT2 with arbitrary orbitals." (measured in the WARNINGS block of fixture
+        fixtures/orca/n2_casscf_nevpt2.out)
+      ref: ORCA 6.1.1 output warning block (fixture n2_casscf_nevpt2.out)
+  confidence: confirmed
+
+- id: DG-CASSCF-ENERGY-ONLY-CONVERGENCE
+  kind: diagnosis
+  severity: warn
+  title: CASSCF reports convergence by the energy criterion only (the gradient need not be converged)
+  condition:
+    all:
+      - { field: casscf_converged_via, op: eq, value: energy }
+  action: >-
+    Check the final ||g|| against the Orbital gradient convergence tolerance. Measured by
+    this group: energy convergence does not imply orbital convergence, and NEVPT2 depends
+    on the orbitals (with unconverged orbitals the perturbation layer can bring in errors
+    of the order of kcal/mol); tighten the convergence tolerance and rerun if necessary.
+  evidence:
+    - kind: measured
+      text: >-
+        Measured in this group's differentiable multireference stack: NEVPT2 depends on
+        converged orbitals, not on a converged energy; a flat energy with still-drifting
+        orbitals can cause an error of about 8 kcal/mol (conv_tol_grad must be tightened
+        and max_cycle_macro enlarged).
+      ref: Group's lessons-learned compilation (B1_可微分DFT_cjq6/经验教训汇编_20260915.md, 2026-09-15)
+    - kind: measured
+      text: >-
+        ORCA's CASSCF convergence markers come in two kinds: the energy criterion "THE
+        CAS-SCF ENERGY HAS CONVERGED" and the gradient criterion "THE CAS-SCF GRADIENT HAS
+        CONVERGED" (both measured in the fixtures).
+      ref: Fixtures n2_casscf_nevpt2.out (energy criterion) and co_plus_soc.out (gradient criterion)
+  confidence: confirmed
+
+- id: DG-ACTIVE-SPACE-NEAR-EMPTY
+  kind: diagnosis
+  severity: warn
+  title: Active space contains a nearly empty orbital (occupation < 0.02)
+  condition:
+    all:
+      - { field: casscf_active_occ_min, op: lt, value: 0.02 }
+  action: >-
+    Check the active-orbital window: an active orbital with an occupation below 0.02 does
+    not really take part in the correlation, so the space may be too large or the window
+    poorly chosen; consider narrowing the active space by occupation and rerunning, and
+    confirm whether that orbital was meant to be included at all.
+  evidence:
+    - kind: manual
+      text: >-
+        "All orbitals between occupation number say 1.98 down to 0.02 will be included in the
+        active space." (auto-ICE's automatic window convention; this rule borrows the
+        0.02/1.98 interval as a check-up threshold)
+      ref: ORCA 6.1 manual §3.14 (ICE-CI and auto-ICE)
+      url: https://www.faccts.de/docs/orca/6.1/manual/contents/modelchemistries/iceci.html
+  confidence: provisional
+
+- id: DG-ACTIVE-SPACE-NEAR-FULL
+  kind: diagnosis
+  severity: warn
+  title: Active space contains a nearly full orbital (occupation > 1.98)
+  condition:
+    all:
+      - { field: casscf_active_occ_max, op: gt, value: 1.98 }
+  action: >-
+    Check the active-orbital window: an active orbital with an occupation above 1.98 is
+    essentially a core orbital, so the space may be too large or the window poorly chosen;
+    consider moving it out of the active space and rerunning.
+  evidence:
+    - kind: manual
+      text: >-
+        "All orbitals between occupation number say 1.98 down to 0.02 will be included in the
+        active space." (auto-ICE's automatic window convention; this rule borrows the
+        0.02/1.98 interval as a check-up threshold)
+      ref: ORCA 6.1 manual §3.14 (ICE-CI and auto-ICE)
+      url: https://www.faccts.de/docs/orca/6.1/manual/contents/modelchemistries/iceci.html
+  confidence: provisional
+
+- id: DG-NEVPT2-FALSE-INTRUDER
+  kind: diagnosis
+  severity: warn
+  title: NEVPT2 has a positive 1-hole/1-particle class contribution (a sign of intruder states)
+  condition:
+    all:
+      - { field: nevpt2_max_hole_particle, op: gt, value: 0.0 }
+  action: >-
+    Check the per-state class-contribution table: when the V1_i (ITUV) or Vm1_a (TUVA)
+    contribution is positive, the manual lists it as a sign of a (false) intruder state;
+    check whether it comes together with negative Koopmans energies or energy-denominator
+    warnings. How to proceed: use FIC-NEVPT2's imaginary shift option, or fix the
+    reference wavefunction / density-matrix approximation and recompute.
+  evidence:
+    - kind: manual
+      text: >-
+        "Indications are unreasonable correlation energy contributions from the 1-hole excitation
+        class (denoted as 'V_i' or 'ITUV') or the 1-particle excitation class (denoted as 'V_a'
+        or 'TUVA'), e.g., positive or large correlation energies compared to the 2-hole-2-particle
+        excitation class (denoted as 'V_ijab' or 'IJAB'). For transparency, ORCA prints warnings
+        when the Koopmans energies or the energy denominators are negative."
+      ref: ORCA 6.1 manual §3.16.6 (False Intruder States and Imaginary Shift)
+      url: https://www.faccts.de/docs/orca/6.1/manual/contents/modelchemistries/nevpt2.html
+  confidence: confirmed
+
+# --- other ------------------------------------------------------------------
+
+- id: DG-SOC-STATE-IDENTITY
+  kind: diagnosis
+  severity: info
+  title: The state order and state identity of a SOC calculation must be verified
+  condition:
+    all:
+      - { field: soc_present, op: eq, value: true }
+  action: >-
+    Verify the one-to-one correspondence between the CAS-CI states and the printed
+    energies/properties; dynamic correlation can change the state order and even the
+    state identity.
+  evidence:
+    - kind: manual
+      text: >-
+        "It is YOUR responsibility to make sure that the CAS-CI state ... correlates properly
+        with the energies printed here"; "The order of states or even the identity of states
+        may change with and without inclusion of dynamic correlation."
+      ref: ORCA 6.1 manual §3.19.14 (MRCI-SOC submodule)
+      url: https://www.faccts.de/docs/orca/6.1/manual/contents/modelchemistries/mrci.html
+  confidence: confirmed
+
+- id: DG-SCF-PSEUDO-CONVERGENCE
+  kind: diagnosis
+  severity: warn
+  title: Too few SCF cycles is treated as a suspected pseudo-convergence
+  condition:
+    all:
+      # the precondition is "convergence was reported": a non-converged aborted run is
+      # reported by DG-RUN-ABORTED, which is a different statement
+      - { field: scf_converged, op: eq, value: true }
+      - { field: scf_cycles, op: le, value: 3 }
+  action: >-
+    Counter-check with SlowConv, and check the N of "SCF CONVERGED AFTER N CYCLES".
+  evidence:
+    - kind: measured
+      text: >-
+        For a transition-metal complex ORCA can report "convergence" after only 2 SCF cycles
+        (a pseudo-convergence signal).
+      ref: >-
+        SCINE-stack project notes pit table row 35 ("ORCA may report SCF convergence after only
+        2 cycles for Pd complexes"); restated as item 11, section 8, of
+        SCINE-stack/SCINE 能力评估报告.md
+
+  confidence: confirmed
+
+- id: DG-RUN-ABORTED
+  kind: diagnosis
+  severity: error
+  title: The job did not terminate normally
+  condition:
+    all:
+      - { field: terminated_normally, op: eq, value: false }
+  action: >-
+    Look at the error lines in the output (the parse result's errors field gives their
+    text), fix the problem and rerun; no number from an output that did not terminate
+    normally can be used.
+  refusal:
+    - No concluding number may be extracted from a job that did not terminate normally.
+  evidence:
+    - kind: measured
+      text: >-
+        The fixtures cover two kinds of abnormal termination: LEANSCF aborting because the
+        SCF did not converge (scf_noconv.out) and a segmentation fault in the LEANSCF
+        section (fblock_dft_gd_crash.out, "mpirun noticed that process rank ... exited on
+        signal 11"). Neither prints "****ORCA TERMINATED NORMALLY****".
+      ref: Fixtures scf_noconv.out / fblock_dft_gd_crash.out (ORCA 6.1.1)
+  confidence: confirmed

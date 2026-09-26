@@ -1,0 +1,11 @@
+# Fixture: planar NH3 (D3h guess geometry), r2SCAN-3c Freq only - the umbrella
+# mode is imaginary at the planar geometry (first-order saddle signature).
+! r2SCAN-3c Freq
+%pal nprocs 4 end
+%maxcore 2000
+* xyz 0 1
+N  0.000  0.000  0.000
+H  1.012  0.000  0.000
+H -0.506  0.876  0.000
+H -0.506 -0.876  0.000
+*

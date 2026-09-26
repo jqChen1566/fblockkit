@@ -1,0 +1,12 @@
+# Fixture: planar NH3 (D3h) as the umbrella-inversion transition-state guess,
+# r2SCAN-3c OptTS + Freq - a robust TS optimisation that converges to the
+# planar saddle (one substantial imaginary mode).
+! r2SCAN-3c OptTS Freq
+%pal nprocs 4 end
+%maxcore 2000
+* xyz 0 1
+N  0.000  0.000  0.000
+H  1.012  0.000  0.000
+H -0.506  0.876  0.000
+H -0.506 -0.876  0.000
+*

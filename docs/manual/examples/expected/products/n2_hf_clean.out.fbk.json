@@ -1,0 +1,16 @@
+{
+  "title": "fBlockKit report",
+  "sections": [
+    {
+      "title": "Summary",
+      "body": "Subject: work\\n2_hf_clean.out\nCounts: no findings"
+    }
+  ],
+  "findings": [],
+  "provenance": [],
+  "program": "orca",
+  "input_path": "work\\n2_hf_clean.out",
+  "version": "6.1.1",
+  "terminated_normally": true,
+  "final_energy": -108.852742164473
+}

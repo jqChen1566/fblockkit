@@ -1,0 +1,9 @@
+# Fixture: N2 CCSD/def2-TZVP single point - source of the T1 diagnostic
+# (closed-shell reference, expected to be small).
+! CCSD def2-TZVP TightSCF
+%pal nprocs 4 end
+%maxcore 2000
+* xyz 0 1
+N 0 0 0
+N 0 0 1.094
+*

@@ -1,0 +1,6 @@
+2
+work/octahedron.xyz
+Oh
+1
+work/n2_hf_clean.out
+8

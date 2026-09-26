@@ -1,0 +1,211 @@
+\chapter{Criteria and thresholds}
+\label{ch:criteria}
+
+Every number the program judges against, with its source class. \textsf{[Manual]}
+= a program manual (section and URL are printed in the report);
+\textsf{[Literature]} = a DOI-backed reference (the complete citation and
+BibTeX entry are printed in the report); \textsf{[Measured]} = a record of this
+project (a fixture or an internal record, cited by path). Thresholds marked
+\emph{provisional} are this project's working values, to be re-calibrated when
+evidence accumulates.
+
+\section{Occupations and active spaces}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{2.0cm} X >{\raggedright\arraybackslash}p{3.2cm}@{}}
+\toprule
+Quantity & Value & Meaning / limits & Source \\
+\midrule
+Active-orbital window & 0.02--1.98 & ORCA's auto-ICE convention, borrowed here
+  as the definition of ``fractionally occupied''; an active orbital outside it
+  is reported as nearly empty / nearly full (a ``please confirm'' warning, not
+  an error -- a full f shell in the window is deliberate in magnetic work) &
+  \textsf{[Manual]} ORCA 6.1 \S3.14 \\
+f-electron count & filling rule & Standard filling for the f$^n$ configuration
+  of the trivalent (or stated-valence) ion; drives the active-space suggestion
+  only & \textsf{[Measured]} module tests \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\section{Entropy and multi-reference character}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{2.0cm} X >{\raggedright\arraybackslash}p{3.2cm}@{}}
+\toprule
+Quantity & Value & Meaning / limits & Source \\
+\midrule
+Single-orbital entropy line & max $s_i > 0.14$ & For the \emph{true four-state}
+  entropy $s_i = -\sum_j \rho_{jj} \ln \rho_{jj}$ over the four occupation
+  states of an orbital (ceiling $\ln 4$). An ORCA output gives only
+  spin-summed occupations, which do not determine that entropy; the program
+  computes a provable upper bound instead and applies 0.14 one-sidedly --
+  bound $\le 0.14$ excludes, bound $> 0.14$ is indecisive &
+  \textsf{[Literature]} Stein \& Reiher 2016; Wardzala et al.\ 2026 Eq.~(6) \\
+Weak-correlation cut & 1--2\% of max & Relative cut used with the ranking
+  proxy when no plateau is found & \textsf{[Literature]} Stein \& Reiher 2016 \\
+$Z_{s(1)}$ line & 0.2 & A \emph{different} diagnostic; listed here only to say
+  it is never mixed with the 0.14 line & \textsf{[Literature]} Stein \& Reiher
+  2017 \\
+T1 screening & 0.02 & Closed-shell screening convention for single-reference
+  adequacy (CCSD singles norm / $\sqrt{N_{\text{corr}}}$); a screening result,
+  not a law. ORCA prints T1, not D1 & \textsf{[Literature]} Lee \& Taylor 1989 \\
+Fractional-orbital count & no published line & Reported as a count; an
+  occupation within $10^{-3}$ of an integer counts as integer-valued (single
+  configuration) & \textsf{[Measured]} module convention \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\section{CASSCF, NEVPT2 and CASPT2}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{2.0cm} X >{\raggedright\arraybackslash}p{3.2cm}@{}}
+\toprule
+Quantity & Value & Meaning / limits & Source \\
+\midrule
+CASSCF convergence & energy \emph{or} gradient marker & ORCA prints two
+  different convergence markers; energy convergence does not imply orbital
+  convergence, and the perturbation layer depends on the orbitals (order of
+  kcal/mol) & \textsf{[Measured]} group records + fixtures \\
+CASPT2 reference weight & recommend $> 0.9$ & Below 0.9 the state is not
+  dominated by the reference; ORCA does \emph{not} abort on intruders, so the
+  check is mandatory & \textsf{[Manual]} ORCA 6.1 (CASPT2) \\
+CASPT2 smallest denominator & alert below 0.01 & A small denominator is the
+  intruder-state risk the manual describes; the program alerts, it does not
+  decide & \textsf{[Manual]} same section \\
+NEVPT2 hole/particle classes & alert when $> 0$ & Positive V1\_i (1-hole) or
+  V m1\_a (1-particle) class contributions indicate a (false) intruder state &
+  \textsf{[Manual]} ORCA 6.1 \S3.16.6 \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\section{SCF}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{2.0cm} X >{\raggedright\arraybackslash}p{3.2cm}@{}}
+\toprule
+Quantity & Value & Meaning / limits & Source \\
+\midrule
+Suspected pseudo-convergence & converged within $\le 3$ cycles & Counter-check
+  the cycle count; a real transition-metal case converged in 2 cycles &
+  \textsf{[Measured]} SCINE capability report \\
+Rescue paths & see Chapter~\ref{ch:menu9} & Better starting orbitals first;
+  \code{SlowConv} with its caution; \code{MaxIter} alone is refused (the
+  manual: ``will not help in many cases'') & \textsf{[Manual]} ORCA 6.1
+  \S2.6.x; \textsf{[Measured]} fixtures \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\section{Frequencies and transition states}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{2.0cm} X >{\raggedright\arraybackslash}p{3.2cm}@{}}
+\toprule
+Quantity & Value & Meaning / limits & Source \\
+\midrule
+Imaginary-mode reading & 0 / 1 / $\ge 2$ & 0 = minimum; exactly 1 = first-order
+  saddle (a TS candidate); $\ge 2$ = higher-order saddle. The count must come
+  from the last frequency block (an OptTS job prints the initial Hessian block
+  first) & \textsf{[Manual]} ORCA 6.1 TS tutorial \\
+Small-imaginary warning & $|\nu| < 50$~cm$^{-1}$ & \emph{Provisional}: in this
+  regime a numerical Hessian can report imaginary modes whose energy curvature
+  is positive (measured: spurious modes between about $-27$ and
+  $-278$~cm$^{-1}$ on a loose two-fragment system, settled by an
+  energy-curvature scan). The rule says ``verify'', never ``wrong'' &
+  \textsf{[Measured]} group audit report \\
+TS verification & frequency after the optimisation & A converged TS optimisation
+  is not evidence by itself; the recommended route uses an exact starting
+  Hessian, and adding \code{Freq} verifies exactly one imaginary mode &
+  \textsf{[Manual]} ORCA 6.1 TS tutorial \\
+Barrier reference point & always state it & The same barrier data read
+  $+5.90$ or $-22.14$~kcal/mol depending on whether the reference is a
+  pre-complex or the separated reactants & \textsf{[Measured]} SCINE
+  capability report \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\section{Crystal fields}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{2.0cm} X >{\raggedright\arraybackslash}p{3.2cm}@{}}
+\toprule
+Quantity & Value & Meaning / limits & Source \\
+\midrule
+Allowed $B_k^q$ & $C_3$: 9; $O_h$: 4; none: 27 & Even $k$ only (time reversal),
+  $k \le 6$ (4f) & \textsf{[Literature]} Peng et al.\ 2025; Chilton 2025 \\
+Cross-scheme comparison & $(2,0)$ only, roughly & Same wavefunction, different
+  projection: $B_2^2$ moved $+198 \to -43$~cm$^{-1}$; $B_2^0$ moved 3\%. The
+  licence is exactly the leading axial parameter & \textsf{[Literature]}
+  Chilton 2025 (Table S1) \\
+Ill-conditioning limit & cond $> 10^8$ & Flagged, with the rank-deficiency note
+  for eigenstate-only sampling & \textsf{[Measured]} module tests \\
+Point-charge estimate & qualitative & Measured point-charge/ab initio
+  deviations make the model unusable for quantitative parameters; $\langle
+  r^k\rangle$ is user-supplied & \textsf{[Literature]} Ungur \& Chibotaru 2017;
+  Scheie 2021 \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\section{Cross-level consistency}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{2.0cm} X >{\raggedright\arraybackslash}p{3.2cm}@{}}
+\toprule
+Quantity & Value & Meaning / limits & Source \\
+\midrule
+Top-$N$ dropout & $N = 3$ & A solution in the cheap level's top 3 that leaves
+  the expensive level's top 3 is reported; so is a disagreement about the best
+  solution. In the source case the cheap-level best was not the expensive-level
+  best, and the cheap-level second-best fell to position 7 &
+  \textsf{[Literature]} Lu et al.\ 2025 (SI Table S18) \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\section{Local spin analysis}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{2.0cm} X >{\raggedright\arraybackslash}p{3.2cm}@{}}
+\toprule
+Quantity & Value & Meaning / limits & Source \\
+\midrule
+Block selection & last block & SCF jobs print several blocks (guess, after SCF,
+  final); only the last describes the converged wavefunction & \textsf{[Measured]} fixtures \\
+Spin purity & $\langle S^2 \rangle$ vs $S(S+1)$ & Read from the printed numbers;
+  a deviation is a property of the method (broken symmetry is deliberately not
+  spin-pure), not a file defect & \textsf{[Measured]} fixture values \\
+Metal spin share & own construction, provisional & the metal share
+  $(\sum_B \langle S_M S_B \rangle) / \langle S^2 \rangle$; undefined (0/0) for
+  a total singlet, where the section reports the $S_{\mathrm{eff}}$ magnitudes
+  instead & this manual's program, declared in its output \\
+$\Delta S_E$ boundary & not available from tables & Local spin analysis is not
+  the environment spin-polarisation entropy; the real quantity needs the
+  two-step \code{orca\_2json} + \code{orca\_loc} route; the measured scale it
+  stands in for: $\Delta S_E$ 2.766 (wrong solution) vs 0.007 (correct), and a
+  downstream MAE of 357.7 vs 8.6~cm$^{-1}$ & \textsf{[Literature]} Ai et al.\
+  2025; \textsf{[Manual]} ORCA 6.1 \S5.1.10 \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\section{Composition and analysis conventions}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{2.0cm} X >{\raggedright\arraybackslash}p{3.2cm}@{}}
+\toprule
+Quantity & Value & Meaning / limits & Source \\
+\midrule
+Shell assignment & largest (atom, shell) weight & Rank within an occupation
+  partition only -- ranking the whole space by weight picks up virtual orbitals
+  & \textsf{[Measured]} group's EuF record \\
+Composition table & print flag needed & \code{\%output Print[P\_ReducedOrbPopMO\_L] 1};
+  without it the A1 section is skipped with an explanation & \textsf{[Manual]}
+  ORCA 6.1 \S2.9 \\
+\bottomrule
+\end{tabularx}
+\end{center}

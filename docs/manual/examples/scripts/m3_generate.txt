@@ -1,0 +1,11 @@
+3
+Ce
+3
+2
+3
+energy
+work/ce_atom.xyz
+1
+1,7,2,1
+default
+0

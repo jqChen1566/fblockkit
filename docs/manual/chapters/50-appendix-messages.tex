@@ -1,0 +1,50 @@
+\chapter{Messages and what to do}
+\label{app:messages}
+
+Every refusal or error in \fbk{} ends with a next step. The recurring ones,
+with their meaning:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}lX@{}}
+\toprule
+Message (abridged) & What to do \\
+\midrule
+\code{Parse failed: \dots is not ORCA output} & Confirm the file comes from
+  ORCA; another program's output needs its own parser (not in version 0.1) \\
+\code{Cancelled (no path given)} & You pressed Enter on a required path; rerun
+  the function and give the file \\
+\code{Cancelled (input finished)} & A script ran out of lines; nothing is
+  broken -- add the missing lines and replay \\
+\code{cannot recognise the output format} & The file is not one of the
+  supported formats, or is truncated; submit a sample if it is a new version \\
+\code{refused: this output carries no multi-reference indicator} (A3) & The
+  output has neither a T1 line nor CASSCF occupations; run the missing kind of
+  job and rerun the panel \\
+\code{not available: T1 needs a coupled-cluster (CCSD) output} & Run a CCSD
+  single point at the same geometry for the T1 indicator \\
+\code{Point-charge estimate refused: \dots missing charge for ['O']} & Add the
+  missing element to the charge list (\code{O=-2} style); nothing is charged
+  as zero silently \\
+\code{Crystal-field fit failed: \dots Next step: provide a JSON with keys \dots}
+  & The JSON is missing a required key or has a malformed coefficient; see
+  Chapter~\ref{ch:formats} \\
+\code{DeclarationError: \dots Next step:} & The declaration/comparison block
+  is malformed (unknown key, bad parameter spelling); the message names the
+  expected keys \\
+\code{Structure read failed: \dots} & The XYZ is malformed (atom count does
+  not match the lines); fix the file and rerun \\
+\code{script does not exist: \dots} (CLI) & Check the path; exit code 2 \\
+\code{no hits (keywords: \dots)} & The tool index has no record matching all
+  keywords; try fewer words (\menu{5}) \\
+\code{guide needs a tool index id} (CLI) & Search first (\cmd{search}), then
+  pass the exact id \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Warnings that are results, not errors, in descending frequency: the CASSCF
+energy-only convergence warning, the near-empty/near-full active-orbital
+warnings, the CASPT2 weight/denominator alerts, the pseudo-convergence
+suspicion, and the frequency/transition-state findings. Each carries its
+evidence and action in the report; Chapter~\ref{ch:criteria} has the
+thresholds.

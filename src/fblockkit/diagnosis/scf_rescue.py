@@ -1,0 +1,1155 @@
+"""SCF rescue triage and corrected-input proposals (feature D2).
+
+What this module is for
+-----------------------
+Two entry points for a job whose SCF cannot be trusted:
+
+- :func:`triage` reads one parsed ORCA output and reports what is wrong with its SCF:
+  no convergence, a crash inside the SCF module, a suspiciously short or long
+  convergence, a DIIS error that rises again after AO-DIIS was switched on, or a run
+  declared converged while the criterion its convergence check enforces is still above
+  the printed tolerance.
+- :func:`propose_fixes` turns those findings into *new* input files: a ``SlowConv``
+  variant, and a two-step route that runs a cheap pre-SCF and reads its orbitals back.
+
+Discipline
+----------
+- Proposals are new strings for new files; the caller's input file is never touched.
+- Editing is textual and conservative: every edit is listed in ``FixProposal.changes``
+  and nothing else is reordered or dropped (a ``%scf`` block that is not carried over
+  is kept in the file as comments).
+- No proposal claims the fix will work, and no proposal may consist of a MaxIter
+  change alone -- the manual states "Increasing MaxIter will not help in many cases."
+- Every finding carries its provenance: manual quotes (section + URL) or this group's
+  measured records.
+
+Why these checks are Python and not rows of ``knowledge/rules/*.yaml``
+--------------------------------------------------------------------
+A rule row can only compare one fact against a threshold under a fixed title. These
+checks must report the *measured* numbers (cycle counts, DIIS errors, the
+achieved-vs-tolerance table) inside the message, exactly like
+:mod:`fblockkit.diagnosis.cross_level`. Keeping them out of the rule table also keeps
+``diagnose()`` unchanged: a healthy 64-cycle run still yields no finding there, while
+the triage reports it (see ``tests/test_scf_rescue.py``).
+
+Convergence-check scope (why the other printed rows are not triaged)
+--------------------------------------------------------------------
+ORCA's ``ConvCheckMode`` decides which printed criteria are pass/fail: mode 2 (the default,
+and what every standard preset sets) checks the energy change only, mode 0 checks all of
+them, and mode 1 stops as soon as one is met. The remaining rows of the ``SCF CONVERGENCE``
+block are informational, and on a healthy run they sit above their tolerances routinely
+(measured on ``n2_hf_clean.out``: 8 cycles, terminated normally, three rows above
+tolerance). The triage therefore tests only the rows the mode enforces; the mode is read
+from the echoed input setting, else from the printed label, else assumed to be the
+documented default -- and the finding always names which of the three it used, so an
+unrecognized future label degrades to the default instead of to a warning.
+
+Text-reader scope
+-----------------
+The DIIS/SOSCF iteration tables and the ``SCF CONVERGENCE`` summary are read from the
+output text here, because the parser's ``scf`` section exposes only
+converged/cycles/energy (``parsers/orca.py``). Both readers are header-driven and were
+developed against the fixtures in ``fixtures/orca/``. If the parser ever publishes
+these tables, this local reader should be replaced by it.
+"""
+
+from __future__ import annotations
+
+import math
+import re
+import textwrap
+from dataclasses import dataclass
+from typing import Iterable, Sequence
+
+from ..knowledge.models import (
+    EVIDENCE_MANUAL,
+    EVIDENCE_MEASURED,
+    Evidence,
+    Finding,
+    ParseResult,
+)
+from ..parsers import ParserError, read_text
+from ..parsers.base import float_or_none
+
+# --- public constants -------------------------------------------------------
+
+PROGRAM_ORCA = "orca"
+
+#: Convergence after at most this many cycles counts as a pseudo-convergence signal
+#: (group's measured record, see ``EV_PSEUDO_CONVERGENCE_RECORD``).
+PSEUDO_CYCLE_LIMIT = 3
+
+#: Triage threshold (ours, not a manual value): from this cycle count on, the run was
+#: expensive enough that the manual's pre-SCF route is worth proposing.
+LONG_CYCLE_LIMIT = 50
+
+#: Triage threshold (ours): the DIIS error must rise to at least this factor of its
+#: value when AO-DIIS was switched on before it counts as "rising again".
+DIIS_REBOUND_FACTOR = 2.0
+
+#: Triage margin (ours): a printed criterion counts as unmet only when it exceeds the
+#: tolerance ORCA printed next to it by at least this factor, so that last-digit
+#: excursions do not produce noise.
+CRITERIA_MARGIN = 5.0
+
+#: ConvCheckMode values (ORCA 6.1 manual §2.6.1): 0 = every criterion has to be
+#: satisfied, 1 = one criterion is enough, 2 = the total-energy and one-electron-energy
+#: changes. Mode 2 is ORCA's default and is what every standard preset sets, so it is also
+#: what we assume when an output says nothing about the mode.
+CONVCHECK_ALL = 0
+CONVCHECK_ONE_IS_ENOUGH = 1
+CONVCHECK_ENERGY = 2
+DEFAULT_CONVCHECK_MODE = CONVCHECK_ENERGY
+
+#: Printed mode labels. ORCA does not document these labels in the manual; the mapping
+#: below is measured on the fixtures (every output there that prints the SCF settings shows
+#: it) and it agrees with the manual's wording for mode 2. An unrecognized label falls back
+#: to the default mode, and the finding says so.
+_CONVCHECK_LABELS = {"total+1el-energy": CONVCHECK_ENERGY}
+
+RULE_NOT_CONVERGED = "SCF-NOT-CONVERGED"
+RULE_ABORTED_NO_VERDICT = "SCF-ABORTED-NO-VERDICT"
+RULE_PSEUDO_CONVERGENCE = "SCF-PSEUDO-CONVERGENCE"
+RULE_LONG_CONVERGENCE = "SCF-LONG-CONVERGENCE"
+RULE_DIIS_REBOUND = "SCF-DIIS-REBOUND"
+RULE_CRITERIA_UNMET = "SCF-CONVERGED-CRITERIA-UNMET"
+
+FIX_SLOWCONV = "slowconv"
+FIX_PRESCF = "prescf"
+
+# --- manual quotes (verbatim; section numbers refer to the ORCA 6.1 manual) --
+# One quote per Evidence entry: quotes from different sentences are never glued
+# together, so every ``text`` below is a contiguous piece of the manual.
+#
+# Rendering notes (the local manual is a Markdown conversion of the PDF):
+# - ``_Q_LOOK_AT_ORBITALS`` writes ``Print[P_GuessOrb]`` where the Markdown escapes the
+#   underscore (``P\_GuessOrb``); the quote is the rendered text.
+# - ``_Q_NOTRAH`` joins two code blocks ("! NOTRAH" / "%scf AutoTRAH false end") that the
+#   PDF prints on separate lines; the quotation marks only delimit the code snippets.
+
+_Q_PRESCF_ROUTE = (
+    "Perform a small basis set (SV) calculation in using the LSD or BP functional and RI "
+    "approximation with a cheap auxiliary basis set. Set Convergence=Loose and MaxIter=200 "
+    "or so. The key point is to use a large damping factor and damp until the DIIS comes "
+    "into a domain of convergence. This is accomplished by SlowConv or even VerySlowConv."
+)
+_Q_BETTER_GUESS = (
+    "Despite all efforts you may still find molecules where SCF convergence is poor. These "
+    "are almost invariably related to open-shell situations and the answer is almost always "
+    "to provide “better” starting orbitals."
+)
+_Q_LOOK_AT_ORBITALS = (
+    "Carefully look at the starting orbitals (Print[P_GuessOrb]=1) and see if they make "
+    "sense for your molecule."
+)
+_Q_SLOWCONV = (
+    "While ORCA offers keywords like !SlowConv, this might not be the best option. "
+    "Specifically, !SlowConv may converge to a local minimum solution that is closer to "
+    "that of the initial guess."
+)
+_Q_DIIS_STUCK = (
+    "If the DIIS gets stuck at some error 0.001 or so the SOSCF (or even better TRAH) could "
+    "be put in operation from this point on."
+)
+_Q_TRAH = (
+    "Note that for troublesome or lacking SCF convergence the TRAH algorithm should be used "
+    "(see Sec. Trust-Region Augmented Hessian (TRAH) SCF). If not turned off explicitly, "
+    "TRAH is switched on automatically whenever convergence problems are present by means "
+    "of the AutoTRAH feature (see Sec. Trust-Region Augmented Hessian (TRAH) SCF)."
+)
+_Q_NOTRAH = 'To disable automatic activation: "! NOTRAH" or "%scf AutoTRAH false end".'
+_Q_LEVELSHIFT = (
+    "Use large level shifts. This increases the number of iterations but stabilizes the "
+    "converger. (shift shift 0.5 erroff 0 end)"
+)
+_Q_CONVCHECK_MODES = (
+    "ConvCheckMode  2   # = 0: check all convergence criteria\n"
+    "# = 1: stop if one of criterion is met, this is sloppy!\n"
+    "# = 2: check change in total energy and in one-electron energy\n"
+    "#       Converged if delta(Etot)<TolE and delta(E1)<1e3*TolE"
+)
+_Q_CONVCHECK_SEMANTICS = (
+    "If ConvCheckMode=0, all convergence criteria have to be satisfied for the program to "
+    "accept the calculation as converged, which is a quite rigorous criterion. In this mode, "
+    "the program also has mechanisms to decide that a calculation is converged even if one "
+    "convergence criterion is not fulfilled but the others are overachieved. ConvCheckMode=1 "
+    "means that one criterion is enough. This is quite dangerous, so ensure that none of the "
+    "criteria are too weak, otherwise the result will be unreliable. The default "
+    "ConvCheckMode=2 is a check of medium rigor — the program checks for the change in total "
+    "energy and for the change in the one-electron energy."
+)
+_Q_DENSITY_TOL = (
+    "If you have small eigenvalues of the overlap matrix, the density may not be converged "
+    "to the number of significant figures requested by TolMaxP and TolRMSP."
+)
+_Q_CONVFORCED = (
+    "Irrespective of the ConvForced value that has been chosen, properties or numerical "
+    "calculations (NumGrad, NumFreq) will not be performed on non-converged wavefunctions!"
+)
+_Q_MAXITER = (
+    "Please try the program with default settings before playing with the more advanced "
+    "options. If you encounter convergence problems, have a look into your output, read the "
+    "warning and see how the gradient and energy evolves. Try !TRAH. Increasing MaxIter will "
+    "not help in many cases."
+)
+_Q_CMATRIX = (
+    "Use the orbitals of this calculation and GuessMode=CMatrix to start a calculation with "
+    "the target basis set."
+)
+_Q_CMATRIX_ANION = (
+    "This is always required when the orbital energies of the small basis set calculation "
+    "are positive, as will be the case for anions."
+)
+
+_MANUAL_URL_ROOT = "https://www.faccts.de/docs/orca/6.1/manual/"
+_MANUAL_URL_TUTORIALS = "https://www.faccts.de/docs/orca/6.1/tutorials/"
+_MANUAL_URL_CASSCF = (
+    "https://www.faccts.de/docs/orca/6.1/manual/contents/modelchemistries/CASSCF.html"
+)
+
+EV_PRESCF_ROUTE = Evidence(
+    kind=EVIDENCE_MANUAL,
+    text=_Q_PRESCF_ROUTE,
+    ref="ORCA 6.1 manual §2.6.9 (Tips and Tricks: Converging SCF Calculations)",
+    url=_MANUAL_URL_ROOT,
+)
+EV_BETTER_GUESS = Evidence(
+    kind=EVIDENCE_MANUAL,
+    text=_Q_BETTER_GUESS,
+    ref="ORCA 6.1 manual §2.6.9",
+    url=_MANUAL_URL_ROOT,
+)
+EV_LOOK_AT_ORBITALS = Evidence(
+    kind=EVIDENCE_MANUAL,
+    text=_Q_LOOK_AT_ORBITALS,
+    ref="ORCA 6.1 manual §2.6.9",
+    url=_MANUAL_URL_ROOT,
+)
+EV_SLOWCONV_CAUTION = Evidence(
+    kind=EVIDENCE_MANUAL,
+    text=_Q_SLOWCONV,
+    ref="ORCA 6.1 manual §1.7.13 (SCF Convergence Problems)",
+    url=_MANUAL_URL_TUTORIALS,
+)
+EV_DIIS_STUCK = Evidence(
+    kind=EVIDENCE_MANUAL,
+    text=_Q_DIIS_STUCK,
+    ref="ORCA 6.1 manual §2.6.9",
+    url=_MANUAL_URL_ROOT,
+)
+EV_TRAH = Evidence(
+    kind=EVIDENCE_MANUAL,
+    text=_Q_TRAH,
+    ref="ORCA 6.1 manual §2.6.4 (Direct Inversion in Iterative Subspace)",
+    url=_MANUAL_URL_ROOT,
+)
+EV_NOTRAH = Evidence(
+    kind=EVIDENCE_MANUAL,
+    text=_Q_NOTRAH,
+    ref="ORCA 6.1 manual §2.6.7 (Trust-Region Augmented Hessian (TRAH) SCF)",
+    url=_MANUAL_URL_ROOT,
+)
+EV_LEVELSHIFT = Evidence(
+    kind=EVIDENCE_MANUAL,
+    text=_Q_LEVELSHIFT,
+    ref="ORCA 6.1 manual §2.6.9",
+    url=_MANUAL_URL_ROOT,
+)
+EV_CONVFORCED = Evidence(
+    kind=EVIDENCE_MANUAL,
+    text=_Q_CONVFORCED,
+    ref="ORCA 6.1 manual §2.6.1 (Convergence Tolerances)",
+    url=_MANUAL_URL_ROOT,
+)
+EV_CONVCHECK_MODES = Evidence(
+    kind=EVIDENCE_MANUAL,
+    text=_Q_CONVCHECK_MODES,
+    ref="ORCA 6.1 manual §2.6.1 (Convergence Tolerances, %scf example block)",
+    url=_MANUAL_URL_ROOT,
+)
+EV_CONVCHECK_SEMANTICS = Evidence(
+    kind=EVIDENCE_MANUAL,
+    text=_Q_CONVCHECK_SEMANTICS,
+    ref="ORCA 6.1 manual §2.6.1 (Convergence Tolerances)",
+    url=_MANUAL_URL_ROOT,
+)
+EV_DENSITY_TOL = Evidence(
+    kind=EVIDENCE_MANUAL,
+    text=_Q_DENSITY_TOL,
+    ref="ORCA 6.1 manual §2.6.1 (Convergence Tolerances)",
+    url=_MANUAL_URL_ROOT,
+)
+EV_MAXITER_REFUSAL = Evidence(
+    kind=EVIDENCE_MANUAL,
+    text=_Q_MAXITER,
+    ref="ORCA 6.1 manual §3.13 (convergence-problems note, CASSCF chapter)",
+    url=_MANUAL_URL_CASSCF,
+)
+EV_CMATRIX = Evidence(
+    kind=EVIDENCE_MANUAL,
+    text=_Q_CMATRIX,
+    ref="ORCA 6.1 manual §2.6.9",
+    url=_MANUAL_URL_ROOT,
+)
+EV_CMATRIX_ANION = Evidence(
+    kind=EVIDENCE_MANUAL,
+    text=_Q_CMATRIX_ANION,
+    ref="ORCA 6.1 manual §1.7.13 (Converging DFT for Open-Shell Transition Metals)",
+    url=_MANUAL_URL_TUTORIALS,
+)
+
+# --- measured records of this group ----------------------------------------
+
+EV_PSEUDO_CONVERGENCE_RECORD = Evidence(
+    kind=EVIDENCE_MEASURED,
+    text=(
+        "ORCA can report SCF convergence after only 2 cycles for a transition-metal "
+        "complex; a very small cycle count is a pseudo-convergence signal. Counter-check "
+        "'SCF CONVERGED AFTER N CYCLES', re-run with SlowConv, or use a different guess."
+    ),
+    ref=(
+        "SCINE-stack pit table row 35 (SCINE-stack project notes); full text in "
+        "SCINE 能力评估报告.md §8 item 11"
+    ),
+)
+EV_NEVPT2_NEEDS_ORBITALS = Evidence(
+    kind=EVIDENCE_MEASURED,
+    text=(
+        "NEVPT2 depends on converged orbitals, not on converged energies: a flat energy "
+        "with drifting orbitals was measured to shift results by about 8 kcal/mol, so "
+        "tighten the convergence criteria (gradient criterion, larger macro-iteration "
+        "limit) instead of trusting an energy-only verdict."
+    ),
+    ref=(
+        "Group's lessons-learned compilation "
+        "(B1_可微分DFT_cjq6/经验教训汇编_20260915.md, 2026-09-15)"
+    ),
+)
+EV_NOT_CONVERGED_MEASURED = Evidence(
+    kind=EVIDENCE_MEASURED,
+    text=(
+        "Measured on fixture scf_noconv.out (ORCA 6.1.1, N2/def2-SVP with '%scf MaxIter 3'): "
+        "the output prints 'SCF NOT CONVERGED AFTER 2 CYCLES' and the run aborts in LEANSCF; "
+        "the DIIS table holds 3 rows and its last DIIS error is 4.71e-02."
+    ),
+    ref="Fixture scf_noconv.out (fixtures/orca/README.md)",
+)
+EV_LONG_CONVERGENCE_MEASURED = Evidence(
+    kind=EVIDENCE_MEASURED,
+    text=(
+        "Measured on fixture fblock_dft_la_complex.out (ORCA 6.1.1, wB97M-V/def2-SVPD): the "
+        "SCF needed 64 cycles, the DIIS history was reset once and the converger was "
+        "switched to SOSCF."
+    ),
+    ref="Fixture fblock_dft_la_complex.out (fixtures/orca/README.md)",
+)
+EV_HARD_RUN_CRITERIA_MEASURED = Evidence(
+    kind=EVIDENCE_MEASURED,
+    text=(
+        "Measured on fixture fblock_dft_la_complex.out (64 cycles, mode label "
+        "'Total+1el-Energy'): the SCF CONVERGENCE block prints MAX-Density 1.2283e-04 "
+        "(tolerance 1.0000e-07), RMS-Density 6.2238e-06 (5.0000e-09), DIIS Error 2.6225e-03 "
+        "(5.0000e-07) and Orbital Rotation 9.8997e-05 (1.0000e-05) above their tolerances, "
+        "while the enforced energy criterion is met (7.4660e-09 vs 1.0000e-08). Those rows "
+        "are informational under the default check, so the triage does not report them."
+    ),
+    ref="Fixture fblock_dft_la_complex.out (fixtures/orca/README.md)",
+)
+EV_CLEAN_RUN_CRITERIA_MEASURED = Evidence(
+    kind=EVIDENCE_MEASURED,
+    text=(
+        "Measured on fixture n2_hf_clean.out (ORCA 6.1.1, N2/def2-SVP HF, 8 cycles, "
+        "terminated normally): the SCF CONVERGENCE block prints MAX-Density 5.8573e-05 "
+        "(tolerance 1.0000e-05), RMS-Density 8.9188e-06 (1.0000e-06) and DIIS Error "
+        "1.8058e-03 (1.0000e-06) above their tolerances while the enforced energy criterion "
+        "is met (2.0488e-07 vs 1.0000e-06). A healthy short run must stay silent, which is "
+        "why only the criteria the check enforces are triaged."
+    ),
+    ref="Fixture n2_hf_clean.out (fixtures/orca/README.md)",
+)
+EV_DIIS_REBOUND_MEASURED = Evidence(
+    kind=EVIDENCE_MEASURED,
+    text=(
+        "Measured on fixture fblock_dft_gd_crash.out (ORCA 6.1.1, Gd complex): the DIIS "
+        "error was 3.30e-01 when AO-DIIS was switched on (cycle 12) and rose to 1.30e+00 "
+        "(cycle 50); the energy jumped by up to 2.37e+01 Eh between cycles; the DIIS "
+        "history was reset twice; AutoTRAH then took over and the run died with SIGSEGV in "
+        "TRAHIterator::Solve, without printing any SCF verdict."
+    ),
+    ref="Fixture fblock_dft_gd_crash.out (fixtures/orca/README.md)",
+)
+
+
+class ScfRescueError(ValueError):
+    """Invalid input for the SCF rescue layer."""
+
+
+# --- data models ------------------------------------------------------------
+
+@dataclass(frozen=True)
+class FixProposal:
+    """One corrected input file, as text. The caller decides whether to write it.
+
+    ``changes`` lists the edits applied to the original text (the auditable form of
+    "conservative editing"); ``content`` is a complete input file for a *new* file and
+    never a patch of the caller's file.
+    """
+
+    name: str
+    content: str
+    rationale: str
+    evidence: tuple[Evidence, ...]
+    changes: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
+class _ScfScan:
+    """Measured signals read from the output text (everything optional)."""
+
+    solver_seen: bool = False
+    diis_rows: tuple[tuple[int, float], ...] = ()
+    diis_error_at_switch: float | None = None
+    diis_switch_cycle: int | None = None
+    diis_resets: int = 0
+    converger_switches: tuple[str, ...] = ()
+    max_abs_energy_step: float | None = None
+    criteria: tuple[tuple[str, float, float], ...] = ()
+    check_mode: int = DEFAULT_CONVCHECK_MODE
+    check_mode_source: str = "assumed default (the output does not print the mode)"
+
+
+# --- text reader ------------------------------------------------------------
+
+_ITER_TABLE_RE = re.compile(r"^\s*Iteration\s+Energy \(Eh\)")
+_DIVIDER_CHARS = frozenset("- ")
+_TURN_ON_DIIS = "***Turning on AO-DIIS***"
+_DIIS_RESET = "****Resetting DIIS****"
+_CONVERGER_SWITCH_RE = re.compile(r"\*\*\*\s*Initializing\s+(\w+)\s*\*\*\*")
+#: AutoTRAH announces itself in prose rather than with an "Initializing" banner.
+_AUTO_TRAH_MARKER = "Leaving SCF to start the TRAH-SCF procedure"
+_SCF_SOLVER_BANNER = "ORCA LEAN-SCF"
+_CRITERIA_TITLE = "SCF CONVERGENCE"
+_CRITERION_RE = re.compile(
+    r"^\s*Last\s+(?P<name>.+?)\s*\.\.\.\s*"
+    r"(?P<value>[-+]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)\s+"
+    r"Tolerance\s*:\s*(?P<tolerance>[-+]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)\s*$"
+)
+#: "Convergence Check Mode ConvCheckMode   .... Total+1el-Energy"
+_MODE_LABEL_RE = re.compile(r"Convergence Check Mode\s+ConvCheckMode\s*\.*\s*(?P<label>\S.*?)\s*$")
+#: ORCA echoes the input file at the top of the output ("|  7>   MaxIter 3"), which is where
+#: an explicit mode setting or the !ExtremeSCF keyword can be seen.
+_ECHO_LINE_RE = re.compile(r"^\s*\|\s*\d+>")
+_MODE_SETTING_RE = re.compile(r"ConvCheckMode\s+(\d)", re.IGNORECASE)
+_EXTREME_KEYWORD_RE = re.compile(r"\bExtremeSCF\b", re.IGNORECASE)
+
+
+def _columns_of(header: str) -> tuple[str, ...]:
+    """Column names of an SCF iteration table.
+
+    A unit token such as ``(Eh)`` continues the previous name, so the number of names
+    equals the number of data fields in a row.
+    """
+    names: list[str] = []
+    for token in header.split():
+        if token.startswith("(") and names:
+            names[-1] = f"{names[-1]} {token}"
+        else:
+            names.append(token)
+    return tuple(names)
+
+
+def _finite(values: Iterable[float | None]) -> bool:
+    return all(value is not None and math.isfinite(value) for value in values)
+
+
+def _scan_text(text: str) -> _ScfScan:
+    """Read the SCF tables and the convergence summary from an ORCA output text.
+
+    A row is attributed to the table whose header most recently preceded it, and it is
+    accepted only when its first field continues the iteration count. Both guards are
+    needed: ORCA prints many other numeric tables, and the TRAH table (``Iter.``) is not
+    an ``Iteration`` table at all.
+    """
+    solver_seen = False
+    columns: tuple[str, ...] = ()
+    diis_rows: list[tuple[int, float]] = []
+    energy_steps: list[float] = []
+    diis_at_switch: float | None = None
+    diis_switch_cycle: int | None = None
+    resets = 0
+    switches: list[str] = []
+    criteria: list[tuple[str, float, float]] = []
+    expected_index = 0
+    in_criteria = False
+    mode_label = ""
+    echo: list[str] = []
+
+    for line in text.splitlines():
+        stripped = line.strip()
+        if _ECHO_LINE_RE.match(line) is not None:
+            echo.append(line.split(">", 1)[1])
+        if (label := _MODE_LABEL_RE.search(line)) is not None:
+            mode_label = label.group("label")
+        if in_criteria:
+            match = _CRITERION_RE.match(line)
+            if match is not None:
+                value = float_or_none(match.group("value"))
+                tolerance = float_or_none(match.group("tolerance"))
+                if value is not None and tolerance is not None:
+                    criteria.append((match.group("name").strip(), value, tolerance))
+                continue
+            if not criteria and (not stripped or set(stripped) <= _DIVIDER_CHARS):
+                continue  # divider and blank line between the title and the table
+            in_criteria = False  # block ended; fall through to the other readers
+
+        if _SCF_SOLVER_BANNER in line:
+            solver_seen = True
+        if _ITER_TABLE_RE.match(line) is not None:
+            columns = _columns_of(line)
+            expected_index = 0
+            continue
+        if columns and stripped:
+            fields = line.split()
+            index = _int_or_none(fields[0])
+            values = [float_or_none(token) for token in fields[1:]]
+            if (
+                len(fields) == len(columns)
+                and index == expected_index + 1
+                and _finite(values)
+            ):
+                expected_index = index
+                if "DIISErr" in columns:
+                    diis_rows.append((index, values[columns.index("DIISErr") - 1]))
+                    if "Delta-E" in columns:
+                        energy_steps.append(abs(values[columns.index("Delta-E") - 1]))
+                continue
+
+        if _TURN_ON_DIIS in line and diis_at_switch is None and diis_rows:
+            diis_at_switch = diis_rows[-1][1]
+            diis_switch_cycle = diis_rows[-1][0]
+        if _DIIS_RESET in line:
+            resets += 1
+        if (match := _CONVERGER_SWITCH_RE.search(line)) is not None:
+            switches.append(match.group(1).upper())
+        if _AUTO_TRAH_MARKER in line:
+            switches.append("TRAH")
+        if stripped == _CRITERIA_TITLE:
+            in_criteria = True
+
+    check_mode, mode_source = _resolve_check_mode(" ".join(echo), mode_label)
+    return _ScfScan(
+        solver_seen=solver_seen,
+        diis_rows=tuple(diis_rows),
+        diis_error_at_switch=diis_at_switch,
+        diis_switch_cycle=diis_switch_cycle,
+        diis_resets=resets,
+        converger_switches=tuple(switches),
+        max_abs_energy_step=max(energy_steps) if energy_steps else None,
+        criteria=tuple(criteria),
+        check_mode=check_mode,
+        check_mode_source=mode_source,
+    )
+
+
+def _resolve_check_mode(echo_text: str, mode_label: str) -> tuple[int, str]:
+    """Which ConvCheckMode the run used, and where that was read from.
+
+    An explicit setting in the echoed input wins (it is what ORCA was told to do); the
+    printed label comes next; otherwise the documented default is assumed and the source
+    string says so, so the finding never claims more than it knows.
+    """
+    setting = _MODE_SETTING_RE.search(echo_text)
+    if setting is not None and setting.group(1) in "012":
+        return int(setting.group(1)), f"the echoed input setting 'ConvCheckMode {setting.group(1)}'"
+    if _EXTREME_KEYWORD_RE.search(echo_text) is not None:
+        return CONVCHECK_ALL, "the echoed input keyword '!ExtremeSCF' (mode 0)"
+    if mode_label:
+        known = _CONVCHECK_LABELS.get(mode_label.lower())
+        if known is not None:
+            return known, f"the printed mode label {mode_label!r}"
+        return DEFAULT_CONVCHECK_MODE, (
+            f"assumed default: the printed mode label {mode_label!r} is not one we know"
+        )
+    return DEFAULT_CONVCHECK_MODE, "assumed default (the output does not print the mode)"
+
+
+def _int_or_none(token: str) -> int | None:
+    try:
+        return int(token)
+    except ValueError:
+        return None
+
+
+def _read_output_text(result: ParseResult) -> str:
+    try:
+        return read_text(result.path)
+    except ParserError as exc:
+        raise ScfRescueError(
+            f"cannot re-read the output file {result.path!r} to extract the SCF tables "
+            f"({exc}). Next step: call triage() with a ParseResult whose path still "
+            "exists -- the DIIS table and the SCF CONVERGENCE block are read from the "
+            "file text, so an in-memory result cannot be triaged."
+        ) from exc
+
+
+# --- findings ---------------------------------------------------------------
+
+def _sci(value: float) -> str:
+    return f"{value:.3e}"
+
+
+def _not_converged_finding(
+    cycles: int | None, terminated: bool | None, scan: _ScfScan
+) -> Finding:
+    printed = (
+        f"SCF NOT CONVERGED AFTER {cycles} CYCLES"
+        if cycles is not None
+        else "SCF NOT CONVERGED"
+    )
+    # Only claim an abort when the parser says so; "unknown" must not become "aborted".
+    tail = " and the run aborted inside the SCF module" if terminated is False else ""
+    measured = ""
+    if scan.diis_rows:
+        measured = (
+            f" Measured from the DIIS table: {len(scan.diis_rows)} cycle(s), last DIIS "
+            f"error {_sci(scan.diis_rows[-1][1])}."
+        )
+    return Finding(
+        severity="error",
+        message=f"SCF reported no convergence: ORCA printed '{printed}'{tail}.{measured}",
+        evidence=(
+            EV_NOT_CONVERGED_MEASURED,
+            EV_BETTER_GUESS,
+            EV_PRESCF_ROUTE,
+            EV_CONVFORCED,
+        ),
+        suggested_fix=(
+            "Fix path, in the manual's order: (1) give the SCF better starting orbitals -- "
+            "the manual says the answer is almost always better starting orbitals, see the "
+            "'prescf' proposal; (2) if you want the damping keyword, take its caution with "
+            "it, see the 'slowconv' proposal; (3) for a stuck DIIS the manual points to "
+            "SOSCF or TRAH and to large level shifts."
+        ),
+        refusals=(
+            'Raising MaxIter is not the remedy: the manual states "Increasing MaxIter will '
+            'not help in many cases." Choose a better starting guess instead.',
+            "No energy, density or property may be taken from this output as an SCF "
+            "result; the wavefunction is not converged.",
+        ),
+        rule_id=RULE_NOT_CONVERGED,
+    )
+
+
+def _aborted_no_verdict_finding(scan: _ScfScan, errors: Sequence[str]) -> Finding:
+    detail = f" First error line: {errors[0]!r}." if errors else ""
+    switches = (
+        f" Converger switch(es) seen before the end: {', '.join(scan.converger_switches)}."
+        if scan.converger_switches
+        else ""
+    )
+    return Finding(
+        severity="error",
+        message=(
+            "The run ended inside the SCF module without any convergence verdict: the SCF "
+            f"solver started ({len(scan.diis_rows)} iteration row(s) read) and the job did "
+            "not terminate normally, but neither 'SCF CONVERGED' nor 'SCF NOT CONVERGED' "
+            f"was printed.{switches}{detail}"
+        ),
+        evidence=(EV_DIIS_REBOUND_MEASURED, EV_TRAH, EV_NOTRAH),
+        suggested_fix=(
+            "Read the error lines first: a crash inside the SCF module is a program-level "
+            "failure, not a convergence setting -- if it is reproducible, report it with "
+            "the input and this output. Since ORCA switches TRAH on automatically when "
+            "convergence problems appear, the manual documents how to disable that "
+            "(section 2.6.7), which is the first thing to try if the crash is in the TRAH "
+            "solver. If the job was killed from outside, simply resubmit it."
+        ),
+        refusals=(
+            "No SCF verdict means no SCF numbers: do not read energy, density or orbitals "
+            "from this output.",
+        ),
+        rule_id=RULE_ABORTED_NO_VERDICT,
+    )
+
+
+def _pseudo_convergence_finding(cycles: int, energies: Sequence[float]) -> Finding:
+    last = f" Last energy read: {energies[-1]:.10f} Eh." if energies else ""
+    return Finding(
+        severity="warn",
+        message=(
+            f"SCF reported convergence after only {cycles} cycle(s) "
+            f"({PSEUDO_CYCLE_LIMIT} or fewer), which our records treat as a "
+            f"pseudo-convergence signal.{last}"
+        ),
+        evidence=(EV_PSEUDO_CONVERGENCE_RECORD, EV_SLOWCONV_CAUTION),
+        suggested_fix=(
+            "Counter-check 'SCF CONVERGED AFTER N CYCLES' and the orbital energies, then "
+            "re-run once with the damping keyword from the 'slowconv' proposal (or from a "
+            "different guess) and compare the two solutions before using either."
+        ),
+        refusals=(
+            "Do not treat a 1-3 cycle convergence as evidence that the SCF is right; it "
+            "only says the convergence criterion was met.",
+        ),
+        rule_id=RULE_PSEUDO_CONVERGENCE,
+    )
+
+
+def _long_convergence_finding(cycles: int, scan: _ScfScan) -> Finding:
+    details = []
+    if scan.diis_rows:
+        details.append(
+            f"{len(scan.diis_rows)} DIIS cycles (last DIIS error "
+            f"{_sci(scan.diis_rows[-1][1])})"
+        )
+    if scan.diis_resets:
+        details.append(f"{scan.diis_resets} DIIS history reset(s)")
+    if scan.converger_switches:
+        details.append("converger switch(es): " + ", ".join(scan.converger_switches))
+    tail = f" Measured: {'; '.join(details)}." if details else ""
+    return Finding(
+        severity="warn",
+        message=(
+            f"SCF needed {cycles} cycles to converge ({LONG_CYCLE_LIMIT} or more is our "
+            f"triage threshold).{tail}"
+        ),
+        evidence=(
+            EV_LONG_CONVERGENCE_MEASURED,
+            EV_BETTER_GUESS,
+            EV_LOOK_AT_ORBITALS,
+            EV_PRESCF_ROUTE,
+        ),
+        suggested_fix=(
+            "Before the next run, give the SCF better starting orbitals: the manual's "
+            "two-step route (cheap GGA small-basis pre-SCF, then read those orbitals) is "
+            "spelled out in the 'prescf' proposal; also look at the guess orbitals "
+            "(Print[P_GuessOrb]=1) once."
+        ),
+        rule_id=RULE_LONG_CONVERGENCE,
+    )
+
+
+def _diis_rebound_finding(
+    peak_cycle: int, peak: float, reference: float, scan: _ScfScan
+) -> Finding:
+    steps = (
+        f" The largest |Delta-E| in the DIIS phase was {_sci(scan.max_abs_energy_step)} Eh."
+        if scan.max_abs_energy_step is not None
+        else ""
+    )
+    resets = (
+        f" The DIIS history was reset {scan.diis_resets} time(s)."
+        if scan.diis_resets
+        else ""
+    )
+    return Finding(
+        severity="warn",
+        message=(
+            f"DIIS error rose again while AO-DIIS was active: it was {_sci(reference)} when "
+            f"AO-DIIS was switched on and reached {_sci(peak)} later (cycle {peak_cycle}), "
+            f"a factor of {peak / reference:.1f} (our threshold: "
+            f"{DIIS_REBOUND_FACTOR:.1f}).{steps}{resets}"
+        ),
+        evidence=(EV_DIIS_REBOUND_MEASURED, EV_DIIS_STUCK, EV_TRAH, EV_LEVELSHIFT),
+        suggested_fix=(
+            "This is the situation the manual describes as DIIS getting stuck: put SOSCF or "
+            "TRAH in operation from here, and/or use a large level shift (sections 2.6.9 and "
+            "2.6.4). Watch energy and error together; if the error keeps rising, fix the "
+            "starting orbitals instead of the converger -- see the 'prescf' proposal."
+        ),
+        refusals=(
+            "An SCF whose DIIS error is rising must not be left running as if it were "
+            "converging: judge it on the error, not on the energy alone.",
+        ),
+        rule_id=RULE_DIIS_REBOUND,
+    )
+
+
+def _enforced_criteria(scan: _ScfScan) -> tuple[tuple[str, float, float], ...]:
+    """The printed criteria the active ConvCheckMode actually enforces.
+
+    Mode 2 (ORCA's default) enforces the energy change; mode 0 enforces every criterion;
+    mode 1 stops as soon as one criterion is met, so no single printed row can be read as a
+    failure there. The other rows of the block are informational either way.
+    """
+    if scan.check_mode == CONVCHECK_ALL:
+        return scan.criteria
+    if scan.check_mode == CONVCHECK_ENERGY:
+        return tuple(row for row in scan.criteria if "energy" in row[0].lower())
+    return ()
+
+
+def _unmet_criteria(scan: _ScfScan) -> tuple[tuple[str, float, float], ...]:
+    return tuple(
+        (name, value, tolerance)
+        for name, value, tolerance in _enforced_criteria(scan)
+        if tolerance > 0 and value > tolerance * CRITERIA_MARGIN
+    )
+
+
+def _criteria_unmet_finding(
+    unmet: Sequence[tuple[str, float, float]], scan: _ScfScan
+) -> Finding:
+    listed = "; ".join(
+        f"{name} {_sci(value)} vs tolerance {_sci(tolerance)}"
+        for name, value, tolerance in unmet
+    )
+    if scan.check_mode == CONVCHECK_ALL:
+        subject = (
+            f"{len(unmet)} of {len(scan.criteria)} printed criteria are above their printed "
+            f"tolerance"
+        )
+        scope = f" (mode 0: {scan.check_mode_source})"
+        extra = ""
+    else:
+        subject = (
+            "the energy change -- the only criterion the default check enforces -- is above "
+            "its printed tolerance"
+        )
+        scope = f" (mode {scan.check_mode}: {scan.check_mode_source})"
+        informational = len(scan.criteria) - len(_enforced_criteria(scan))
+        extra = (
+            f" The other {informational} printed row(s) are informational in this mode and "
+            "are not triaged."
+            if informational
+            else ""
+        )
+    return Finding(
+        severity="warn",
+        message=(
+            f"SCF is reported converged, but {subject}, by at least a factor of "
+            f"{CRITERIA_MARGIN:.0f}{scope}: {listed}.{extra}"
+        ),
+        evidence=(
+            EV_CONVCHECK_MODES,
+            EV_CONVCHECK_SEMANTICS,
+            EV_CLEAN_RUN_CRITERIA_MEASURED,
+            EV_HARD_RUN_CRITERIA_MEASURED,
+            EV_DENSITY_TOL,
+            EV_NEVPT2_NEEDS_ORBITALS,
+        ),
+        suggested_fix=(
+            "Re-converge before building anything orbital-dependent on this wavefunction "
+            "(CASSCF guess, NEVPT2, properties): a better starting guess first, tighter "
+            "criteria second. If you only need the energy, the printed non-energy rows are "
+            "informational under the default check -- but note that a mode-0 run may also be "
+            "accepted when one criterion is missed while the others are overachieved, so "
+            "mode-0 hits need a look at the block by hand."
+        ),
+        refusals=(
+            "Do not report this run as meeting the convergence criteria its check "
+            "enforces: the block shows at least one of them above its printed tolerance.",
+        ),
+        rule_id=RULE_CRITERIA_UNMET,
+    )
+
+
+def triage(result: ParseResult) -> tuple[Finding, ...]:
+    """Report what is wrong with the SCF of one parsed output (may be empty).
+
+    Only ORCA outputs are supported. Findings come in a fixed order: no convergence,
+    crash without a verdict, pseudo-convergence, long convergence, rising DIIS error,
+    unmet convergence criteria; ``build_report`` re-sorts them by severity for display.
+    """
+    if result.program != PROGRAM_ORCA:
+        raise ScfRescueError(
+            f"SCF triage is implemented for {PROGRAM_ORCA!r} only, got {result.program!r}. "
+            "Next step: add a reader for that program's SCF tables in this module, or run "
+            "the triage on the ORCA output of the job."
+        )
+    sections = result.sections
+    scf = sections.get("scf") or {}
+    converged = scf.get("converged")
+    cycles = scf.get("cycles")
+    energies = tuple(scf.get("energies") or ())
+    terminated = sections.get("terminated_normally")
+    errors = tuple(sections.get("errors") or ())
+    scan = _scan_text(_read_output_text(result))
+
+    findings: list[Finding] = []
+    if converged is False:
+        findings.append(_not_converged_finding(cycles, terminated, scan))
+    elif converged is None and scan.solver_seen and terminated is False:
+        findings.append(_aborted_no_verdict_finding(scan, errors))
+
+    if converged is True and isinstance(cycles, int):
+        if cycles <= PSEUDO_CYCLE_LIMIT:
+            findings.append(_pseudo_convergence_finding(cycles, energies))
+        elif cycles >= LONG_CYCLE_LIMIT:
+            findings.append(_long_convergence_finding(cycles, scan))
+
+    if scan.diis_rows:
+        # The reference is the DIIS error when AO-DIIS was switched on (or the first row
+        # if that marker is absent); the peak is taken *after* that point only, so the
+        # large error of the pre-DIIS start-up cycles cannot be mistaken for a rebound.
+        switch_cycle = scan.diis_switch_cycle
+        if switch_cycle is None:
+            switch_cycle = scan.diis_rows[0][0]
+            reference = scan.diis_rows[0][1]
+        else:
+            reference = scan.diis_error_at_switch or scan.diis_rows[0][1]
+        later = [row for row in scan.diis_rows if row[0] > switch_cycle]
+        if later and reference > 0:
+            peak_cycle, peak = max(later, key=lambda row: row[1])
+            if peak >= reference * DIIS_REBOUND_FACTOR:
+                findings.append(_diis_rebound_finding(peak_cycle, peak, reference, scan))
+
+    unmet = _unmet_criteria(scan)
+    if unmet:
+        findings.append(_criteria_unmet_finding(unmet, scan))
+
+    return tuple(findings)
+
+
+# --- fix proposals ----------------------------------------------------------
+
+_COMPOUND_MARKER = "%compound"
+_PRESCF_SIMPLE_LINE = "! BP86 def2-SVP def2/J RI LooseSCF SlowConv"
+_PRESCF_SCF_BLOCK = (
+    "%scf",
+    "  # manual section 2.6.9 for this step: 'Set Convergence=Loose and MaxIter=200 or so.'",
+    "  # \"Convergence=Loose\" is carried by !LooseSCF on the simple-input line above.",
+    "  MaxIter 200",
+    "end",
+)
+_PRESCF_MOINP = '%moinp "prescf.gbw"'
+
+#: Findings that motivate each proposal. A proposal is skipped when the input already
+#: contains what it would add (an existing damping keyword, or an orbital read-in).
+_SLOWCONV_TRIGGERS = frozenset({RULE_NOT_CONVERGED, RULE_PSEUDO_CONVERGENCE})
+_PRESCF_TRIGGERS = frozenset(
+    {
+        RULE_NOT_CONVERGED,
+        RULE_ABORTED_NO_VERDICT,
+        RULE_LONG_CONVERGENCE,
+        RULE_DIIS_REBOUND,
+        RULE_CRITERIA_UNMET,
+    }
+)
+
+
+def _comment(items: Iterable[str], width: int = 92) -> list[str]:
+    """Wrap text into ``#`` comment lines (ORCA ignores ``#`` comments)."""
+    out: list[str] = []
+    for item in items:
+        out.extend(textwrap.wrap(item, width=width) or [""])
+    return [f"# {line}".rstrip() for line in out]
+
+
+def _quote(text: str) -> str:
+    """Quote a manual sentence for a *generated input file*.
+
+    ASCII double quotes only: a generated file must stay byte-safe for parsers that are
+    stricter than ORCA's, and the manual's own typography lives in the Evidence text.
+    """
+    return f'"{text}"'
+
+
+def _lines_of(input_text: str) -> list[str]:
+    if not input_text.strip():
+        raise ScfRescueError(
+            "the input text is empty. Next step: pass the content of the original ORCA "
+            "input file (the .inp you ran), not the output file."
+        )
+    return input_text.splitlines()
+
+
+def _simple_input_index(lines: Sequence[str]) -> int | None:
+    """Index of the simple-input line (``!``) before any ``%compound`` block, if any."""
+    for index, line in enumerate(lines):
+        stripped = line.strip()
+        if _COMPOUND_MARKER in stripped:
+            return None
+        if not stripped or stripped.startswith("#") or stripped.startswith("%"):
+            continue
+        if stripped.startswith("!"):
+            return index
+    return None
+
+
+def _scf_block_range(lines: Sequence[str]) -> tuple[int, int] | None:
+    """Inclusive line range of the ``%scf`` block, one-line form included."""
+    for index, line in enumerate(lines):
+        stripped = line.strip().lower()
+        if not stripped.startswith("%scf"):
+            continue
+        if stripped[len("%scf"):].strip().endswith("end"):
+            return index, index
+        for end in range(index + 1, len(lines)):
+            if lines[end].strip().lower() == "end":
+                return index, end
+        return index, len(lines) - 1
+    return None
+
+
+def _dedupe_evidence(items: Iterable[Evidence]) -> tuple[Evidence, ...]:
+    seen: set[tuple[str, str, str]] = set()
+    out: list[Evidence] = []
+    for item in items:
+        key = (item.kind, item.text, item.ref)
+        if key not in seen:
+            seen.add(key)
+            out.append(item)
+    return tuple(out)
+
+
+def _evidence_from(
+    findings: Sequence[Finding], extra: Sequence[Evidence]
+) -> tuple[Evidence, ...]:
+    return _dedupe_evidence(
+        [item for finding in findings for item in finding.evidence] + list(extra)
+    )
+
+
+def _slowconv_proposal(lines: Sequence[str], findings: Sequence[Finding]) -> FixProposal:
+    index = _simple_input_index(lines)
+    if index is None:
+        raise ScfRescueError(
+            "no simple-input line (a line starting with '!') was found before any "
+            "%compound block. Next step: put the method and basis keywords on a "
+            "simple-input line and append 'SlowConv' by hand -- editing a line this "
+            "reader cannot see could silently change the wrong job."
+        )
+    original = lines[index].strip()
+    header = _comment(
+        [
+            "fBlockKit SCF rescue: SlowConv variant. This is a new file; the original "
+            "input is unchanged.",
+            "'SlowConv' was appended to the simple-input line below. Every other keyword "
+            "and block is exactly as you wrote it, and MaxIter is untouched.",
+            f"Caution (ORCA 6.1 manual, section 1.7.13): {_quote(_Q_SLOWCONV)}",
+        ]
+    )
+    content = header + [lines[index].rstrip() + " SlowConv"] + list(lines[index + 1:])
+    return FixProposal(
+        name=FIX_SLOWCONV,
+        content="\n".join(content) + "\n",
+        rationale=(
+            "Appends the manual's damping keyword without touching anything else, so the "
+            "result can be compared with the original run. The caution is part of the "
+            "proposal: SlowConv is documented to be able to converge to a local minimum "
+            "solution that is closer to the initial guess, so if the starting orbitals are "
+            "the real problem this proposal is the weaker of the two."
+        ),
+        evidence=_evidence_from(findings, (EV_SLOWCONV_CAUTION, EV_MAXITER_REFUSAL)),
+        changes=(
+            f"appended 'SlowConv' to the simple-input line: {original!r} -> "
+            f"{original + ' SlowConv'!r}",
+            "prepended comment lines (purpose + the manual's SlowConv caution)",
+        ),
+    )
+
+
+def _prescf_proposal(lines: Sequence[str], findings: Sequence[Finding]) -> FixProposal:
+    index = _simple_input_index(lines)
+    if index is None:
+        raise ScfRescueError(
+            "no simple-input line (a line starting with '!') was found before any "
+            "%compound block. Next step: build the pre-SCF by hand -- copy your input, "
+            f"replace the method line with {_PRESCF_SIMPLE_LINE!r}, and read the result "
+            f"back with 'moread' plus {_PRESCF_MOINP!r}."
+        )
+    body = list(lines)
+    body[index] = _PRESCF_SIMPLE_LINE
+    changes = [
+        "replaced the simple-input line with the manual's pre-SCF method: "
+        f"{_PRESCF_SIMPLE_LINE!r}",
+    ]
+    block = _scf_block_range(body)
+    if block is None:
+        body[index + 1:index + 1] = list(_PRESCF_SCF_BLOCK)
+        changes.append(
+            "inserted a %scf block with the manual's pre-SCF setting (MaxIter 200); the "
+            "input had none"
+        )
+    else:
+        start, end = block
+        kept = ["", "# --- your %scf block, kept for reference (step 2 uses it unchanged) ---"]
+        kept += [f"# {line}".rstrip() for line in body[start : end + 1]]
+        body[start : end + 1] = kept + list(_PRESCF_SCF_BLOCK)
+        changes.append(
+            "replaced the %scf block with the manual's pre-SCF setting (MaxIter 200); your "
+            "%scf lines are kept as comments and are carried unchanged into step 2"
+        )
+
+    step2 = [f"# {line}".rstrip() if line.strip() else "#" for line in lines]
+    step2[index] = "# " + lines[index].rstrip() + " moread"
+    step2.insert(index + 1, "# " + _PRESCF_MOINP)
+    changes.append(
+        "appended step 2 as a commented block: your input with 'moread' on the simple-input "
+        f"line and {_PRESCF_MOINP!r} after it"
+    )
+
+    header = _comment(
+        [
+            "fBlockKit SCF rescue: two-step pre-SCF route (manual section 2.6.9). This is "
+            "a new file; the original input is unchanged.",
+            "Step 1 (this file): save it as prescf.inp and run it. It is deliberately "
+            "crude -- small basis, pure GGA, RI, loose convergence, strong damping -- and "
+            "its only job is to produce prescf.gbw, i.e. starting orbitals good enough for "
+            "the real job.",
+            f"Manual: {_quote(_Q_PRESCF_ROUTE)}",
+            "Step 2 (below, commented out): your own input with 'moread' and the %moinp "
+            "line added, saved under a different name and run after step 1. Keep the "
+            "basenames different from step 1's -- the manual's section 1.7.12 covers the "
+            "AutoStart pitfalls.",
+            "Step 2 keeps your %scf settings exactly as written. MaxIter is not a remedy "
+            f"in itself (manual section 3.13: {_quote('Increasing MaxIter will not help in many cases.')})"
+            " -- the only MaxIter in this file is the pre-SCF value section 2.6.9 "
+            "prescribes for step 1.",
+        ]
+    )
+    step2_header = _comment(
+        [
+            "Step 2 of 2 -- the real job, started from the pre-SCF orbitals. Save these "
+            "lines as a new file and run them after step 1 has finished.",
+            f"Guess guidance (manual section 2.6.9): {_quote(_Q_CMATRIX)} Section 1.7.13 "
+            f"adds: {_quote(_Q_CMATRIX_ANION)} Uncomment a GuessMode line in your %scf "
+            "block if that applies to your system.",
+        ]
+    )
+    content = header + body + [""] + step2_header + step2
+    return FixProposal(
+        name=FIX_PRESCF,
+        content="\n".join(content) + "\n",
+        rationale=(
+            "Implements the manual's two-step route: the cheap pre-SCF exists only to "
+            "supply better starting orbitals, which the manual calls the answer almost "
+            "always when SCF convergence is poor. The target job is preserved verbatim "
+            "(including your %scf settings) and only gains 'moread' plus the %moinp line; "
+            "the damping keyword used in step 1 is the manual's own pre-SCF ingredient, "
+            "with its caution in view. Nothing here promises convergence: compare the "
+            "result with the original run before using it."
+        ),
+        evidence=_evidence_from(
+            findings, (EV_PRESCF_ROUTE, EV_BETTER_GUESS, EV_CMATRIX, EV_MAXITER_REFUSAL)
+        ),
+        changes=tuple(changes),
+    )
+
+
+def propose_fixes(
+    input_text: str, findings: Sequence[Finding]
+) -> tuple[FixProposal, ...]:
+    """Build corrected inputs for the SCF findings (may be empty).
+
+    ``input_text`` is the content of the original ``.inp``; the returned proposals are
+    complete files for *new* names, so the original file on disk is never touched. A
+    proposal is skipped when the input already contains what it would add (an existing
+    damping keyword, or an existing ``moread``/``%moinp`` orbital read).
+    """
+    lines = _lines_of(input_text)
+    selected = {finding.rule_id for finding in findings}
+    damping_present = any(
+        "SlowConv" in line for line in lines if line.strip().startswith("!")
+    )
+    orbital_read_present = any(
+        "moread" in line.lower() or line.strip().lower().startswith("%moinp")
+        for line in lines
+    )
+    proposals: list[FixProposal] = []
+    if selected & _SLOWCONV_TRIGGERS and not damping_present:
+        proposals.append(_slowconv_proposal(lines, findings))
+    if selected & _PRESCF_TRIGGERS and not orbital_read_present:
+        proposals.append(_prescf_proposal(lines, findings))
+    return tuple(proposals)

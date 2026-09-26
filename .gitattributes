@@ -1,0 +1,5 @@
+# fixtures keep their original bytes: no line-ending conversion for the ORCA output
+# (the extension discipline in fixtures/orca/README.md)
+fixtures/** -text
+*.sh text eol=lf
+.importlinter text eol=lf

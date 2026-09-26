@@ -1,0 +1,9 @@
+# Fixture: N2 HF/def2-SVP single point - a clean, short SCF run (no CASSCF layer)
+# Used to test that the SCF triage stays silent on a healthy run.
+! HF def2-SVP
+%pal nprocs 2 end
+%maxcore 2000
+* xyz 0 1
+N 0 0 0
+N 0 0 1.094
+*

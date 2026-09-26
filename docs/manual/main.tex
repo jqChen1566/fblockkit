@@ -1,0 +1,77 @@
+%% fBlockKit manual -- main file.
+%% Build: bash build.sh   (xelatex -> biber -> makeindex -> xelatex -> xelatex)
+\documentclass[11pt,a4paper,oneside,numbers=noenddot,listof=totoc]{scrreprt}
+
+\usepackage{fbk}
+
+\addbibresource{generated/sources.bib}
+% The References chapter is the program's own reference database: every entry the
+% program implements is listed, and the criteria chapter cites the entries it uses.
+\nocite{*}
+\makeindex
+
+\begin{document}
+
+% --- title page -------------------------------------------------------------
+\begin{titlepage}
+  \centering
+  \vspace*{3cm}
+  {\sffamily\Huge\bfseries \fbk\par}
+  \vspace{0.6cm}
+  {\sffamily\Large the f-block calculation toolkit\par}
+  \vspace{0.3cm}
+  {\sffamily\large Manual\par}
+  \vspace{1.5cm}
+  {\large Version 0.1.0 \quad$\cdot$\quad 2026-09-26\par}
+  \vfill
+  {\small Apache-2.0 licence. Every criterion in this manual carries its
+   provenance (a program-manual quote, a literature reference with DOI, or a
+   measured record). The software's test suite is the acceptance contract; this
+   manual's worked examples are replayable scripts shipped with it.\par}
+\end{titlepage}
+
+\pagenumbering{roman}
+
+\input{chapters/01_preface}
+
+\tableofcontents
+
+\clearpage
+\pagenumbering{arabic}
+
+\part{Getting started}
+\input{chapters/02_introduction}
+\input{chapters/03_installation}
+\input{chapters/04_running}
+\input{chapters/05_the-report}
+
+\part{Functions, menu by menu}
+\input{chapters/10-menu1-checkup}
+\input{chapters/11-menu2-geometry}
+\input{chapters/12-menu3-generate}
+\input{chapters/13-menu4-basis}
+\input{chapters/14-menu5-tools}
+\input{chapters/15-menu6-guide}
+\input{chapters/16-menu7-crosslevel}
+\input{chapters/17-menu8-script}
+\input{chapters/18-menu9-scf}
+\input{chapters/19-menu10-crystal-field}
+\input{chapters/20-menu11-point-charge}
+
+\part{Reference}
+\input{chapters/30-command-line}
+\input{chapters/31-criteria}
+\input{chapters/32-formats}
+
+\part{Development}
+\input{chapters/40-development}
+
+\appendix
+\part{Appendices}
+\input{chapters/50-appendix-messages}
+\input{chapters/51-appendix-glossary}
+
+\printbibliography[heading=bibintoc, title={References}]
+\printindex
+
+\end{document}

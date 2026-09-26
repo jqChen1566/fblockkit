@@ -1,0 +1,145 @@
+{
+  "title": "fBlockKit report",
+  "sections": [
+    {
+      "title": "Summary",
+      "body": "Subject: work\\n2_casscf_nevpt2.out\nCounts: Warning 3"
+    },
+    {
+      "title": "A1 orbital composition (per MO, Loewdin)",
+      "body": "Composition source: LOEWDIN ORBITAL-COMPOSITIONS table (28 orbitals in total)\nOccupation partition: occ > 0.02 counts as occupied (9), otherwise as a virtual orbital (19)\n\nf composition ranking (occupied partition, top 8):\n  (no f-composition orbital in the occupied partition: the highest f weight is only 0.0% -- if this system should have electrons in that shell, check the initial guess / active-orbital window, it may be the wrong branch of a multiple-solution problem)\n\nDominant shells of the active orbitals (0.02 < occ < 1.98):\n  MO    5  occ 1.7092  N1 p 48.8%; next: N2 p 48.8%\n  MO    6  occ 1.7092  N1 p 48.8%; next: N2 p 48.8%\n  MO    7  occ 0.2936  N1 p 48.2%; next: N2 p 48.2%\n  MO    8  occ 0.2936  N1 p 48.2%; next: N2 p 48.2%\n\nCriterion and convention: the assignment is the (atom, shell) with the largest weight; every ranking is partitioned by occupation first (measured on this group's EuF: ranking the whole space by weight picks up virtual orbitals)."
+    },
+    {
+      "title": "A2 occupation spectrum and entropy bound spectrum",
+      "body": "Active space: 6 orbitals; occupations (input order): 1.9924 1.7092 1.7092 0.2936 0.2936 0.0020\n\nSingle-orbital entropy BOUND spectrum (descending; s_bound = -2[x ln x + (1-x) ln(1-x)], x = n/2 -- the maximum-entropy completion of the four occupation weights for a spin-summed occupation):\n  0.8342 0.8342 0.8293 0.8293 0.0502 0.0158\n  max(s_bound) = 0.8342\n  Exclusion test: max(s_bound) = 0.8342 > 0.14 -> NOT decidable from the occupations alone. The bound is loose (it is attained only when the two spin channels of the orbital are uncorrelated), so it is not evidence of multireference character; the true four-state entropy needs the 2-RDM route (orca_2json RDM2_aa/ab/bb plus orca_loc orbitals; see the A6 section).\n  Plateau/cliff (ranking proxy): the largest relative gap (94.0%) sits at item 4 of the descending order -- the first 4 items form the plateau candidate (active-orbital indices, input order from 0: [1, 2, 3, 4]). The proxy ranks orbitals by the bound; relative order is not guaranteed to match the true four-state entropies.\n\nThreshold-based candidates (s_bound > 0.14, active-orbital indices): [1, 2, 3, 4]\n\nPreconditions (must travel with the conclusion):\n- The entropy spectrum must be read in a localized-orbital basis (autoCAS); a \"plateau\" in a non-localized or truncated space can be numerical noise.\n- A closed-shell single determinant gives bound 0 for every orbital; for an open-shell occupation n = 1 the bound is ln 4 = 1.386294 by construction (a spin-restricted description of one unpaired electron), so an f1 active space always reads as \"not decidable\", never as multireference.\n- The 0.14 line applies to the true four-state entropy; the threshold 0.14 and Zs(1) > 0.2 mean different things and must not be mixed."
+    },
+    {
+      "title": "A3 multi-reference character",
+      "body": "One panel over the multi-reference (MR) character indicators this output carries; every line is labelled with its source. The verdict below is drawn from the available indicators only.\n\nIndicator table (3 indicators; line = the published criterion, n/a = not available in this output):\n  indicator                         value                   line                verdict\n  T1 diagnostic                     n/a                     0.02                unavailable\n  fractional active orbitals        4 of 6 in 0.02-1.98     window 0.02-1.98    present\n  max single-orbital entropy bound  0.834236                0.14 (exclusion)    above: indecisive\n\nPer-indicator verdicts:\n- T1 diagnostic: not available: T1 needs a coupled-cluster (CCSD) output: ORCA prints it inside the \"COUPLED CLUSTER ENERGY\" block. Next step: run a CCSD single point at the same geometry and rerun this panel on that output.\n- fractional active orbitals: 4 of 6 active orbitals have a fractional occupation (inside 0.02-1.98 and not integer-valued) -> the active-space wavefunction is not one configuration. The window is ORCA's active-space convention (auto-ICE) and is used here as the definition of a fractional orbital; the count itself has no published threshold (the review gives none), so the panel reports the count, not a line.\n- max single-orbital entropy bound: max(s_bound) = 0.834236 > 0.14: indecisive -- the bound is above the line, which is not evidence of multireference character. The true four-state entropy needs the 2-RDM route (orca_2json RDM2_aa/ab/bb plus orca_loc orbitals; see the A6 section). Convention: s_bound is the maximum-entropy completion of the four occupation weights for a spin-summed occupation (A2 module), so it never under-estimates the true four-state entropy; it is tight only for uncorrelated spin channels. An orbital with occupation 1 gives s_bound = ln 4 = 1.386294 by construction. The 0.14 line (Stein & Reiher 2016) applies to the true four-state entropy; Wardzala et al. 2026 quotes the same number as the M-diagnostic line. The Zs(1) > 0.2 line means something else again and is not used here.\n\nCombined verdict: MR character indicated\n  fired: fractional active orbitals (4 of 6 fractional)\n  not fired: max single-orbital entropy bound (0.834236 > 0.14 (indecisive))\n  unavailable: T1 diagnostic (needs a CCSD output)\nPanel completeness: 2 of 3 indicators available; the verdict rests on the available indicator(s) only and the missing one(s) are named here, never replaced silently.\n\nCaveats (carried with the verdict):\n- Threshold calibration range: the T1 0.02 line and the max(s1) 0.14 line were calibrated on main-group and 3d systems; the review that quotes the 0.14 M-diagnostic line contains no lanthanide or actinide example at all (Wardzala et al. 2026). For an f-block system these are a default starting value that must be verified, not a verdict.\n- Two diagnostics share the number 0.14: max(s1) > 0.14 (Stein & Reiher 2016) and the M diagnostic > 0.14 (Wardzala et al. 2026). The Zs(1) > 0.2 line means something else again and is not used by this panel.\n- Entropy bound convention: s_bound is the maximum-entropy completion of the four occupation weights for a spin-summed occupation (A2 module); it never under-estimates the true four-state entropy and is used here as an exclusion test only. An orbital with occupation 1 gives s_bound = ln 4 = 1.386294 by construction (measured on the Ce3+ fixture: N(occ) = (1, 0, 0, 0, 0, 0, 0), 0 fractional orbitals, max(s_bound) = 1.386294 -> indecisive). The true four-state entropy needs the 2-RDM route (orca_2json RDM2 + orca_loc).\n- The verdict rests on the available indicators only; the ones missing from this output are named above and are not replaced by another indicator."
+    },
+    {
+      "title": "References",
+      "body": "Complete citations:\n- [wardzala2026multireference] Wardzala, J. J.; Hennefarth, M. R.; Agarawal, V.; Jangid, B.; Seal, A.; Hermes, M. R.; King, D. S.; Gagliardi, L. (2026). Multireference Methods for Chemistry and Materials Science: Automated Active Spaces, Efficient Dynamic Correlation, and Extended Systems. Chemical Reviews, 126(8), 4592-4618. DOI: 10.1021/acs.chemrev.5c00866\n- [stein2016automated] Stein, C. J.; Reiher, M. (2016). Automated Selection of Active Orbital Spaces. Journal of Chemical Theory and Computation, 12(4), 1760-1771. DOI: 10.1021/acs.jctc.6b00156\n- [stein2017measuring] Stein, C. J.; Reiher, M. (2017). Measuring multi-configurational character by orbital entanglement. Molecular Physics, 115(17-18), 2110-2119. DOI: 10.1080/00268976.2017.1288934\n- [stein2019autocas] Stein, C. J.; Reiher, M. (2019). autoCAS: A Program for Fully Automated Multiconfigurational Calculations. Journal of Computational Chemistry, 40(25), 2216-2226. DOI: 10.1002/jcc.25869\n- [lee1989diagnostic] Lee, T. J.; Taylor, P. R. (1989). A diagnostic for determining the quality of single-reference electron correlation methods. International Journal of Quantum Chemistry, 36(S23), 199-207. DOI: 10.1002/qua.560360824\n\nBibTeX (paste-ready):\n\n```bibtex\n@article{wardzala2026multireference,\n  author  = {Wardzala, Jacob J. and Hennefarth, Matthew R. and Agarawal, Valay and Jangid, Bhavnesh and Seal, Aniruddha and Hermes, Matthew R. and King, Daniel S. and Gagliardi, Laura},\n  title   = {Multireference Methods for Chemistry and Materials Science: Automated Active Spaces, Efficient Dynamic Correlation, and Extended Systems},\n  journal = {Chemical Reviews},\n  year    = {2026},\n  volume  = {126},\n  number  = {8},\n  pages   = {4592--4618},\n  doi     = {10.1021/acs.chemrev.5c00866},\n}\n```\n\n```bibtex\n@article{stein2016automated,\n  author  = {Stein, Christopher J. and Reiher, Markus},\n  title   = {Automated Selection of Active Orbital Spaces},\n  journal = {Journal of Chemical Theory and Computation},\n  year    = {2016},\n  volume  = {12},\n  number  = {4},\n  pages   = {1760--1771},\n  doi     = {10.1021/acs.jctc.6b00156},\n}\n```\n\n```bibtex\n@article{stein2017measuring,\n  author  = {Stein, Christopher J. and Reiher, Markus},\n  title   = {Measuring multi-configurational character by orbital entanglement},\n  journal = {Molecular Physics},\n  year    = {2017},\n  volume  = {115},\n  number  = {17-18},\n  pages   = {2110--2119},\n  doi     = {10.1080/00268976.2017.1288934},\n}\n```\n\n```bibtex\n@article{stein2019autocas,\n  author  = {Stein, Christopher J. and Reiher, Markus},\n  title   = {autoCAS: A Program for Fully Automated Multiconfigurational Calculations},\n  journal = {Journal of Computational Chemistry},\n  year    = {2019},\n  volume  = {40},\n  number  = {25},\n  pages   = {2216--2226},\n  doi     = {10.1002/jcc.25869},\n}\n```\n\n```bibtex\n@article{lee1989diagnostic,\n  author  = {Lee, Timothy J. and Taylor, Peter R.},\n  title   = {A diagnostic for determining the quality of single-reference electron correlation methods},\n  journal = {International Journal of Quantum Chemistry},\n  year    = {1989},\n  volume  = {36},\n  number  = {S23},\n  pages   = {199--207},\n  doi     = {10.1002/qua.560360824},\n  note    = {Year of record 1989 (Symposium issue); the Crossref record carries a digitisation date of 2009.},\n}\n```"
+    }
+  ],
+  "findings": [
+    {
+      "severity": "warn",
+      "message": "CASSCF reports convergence by the energy criterion only (the gradient need not be converged)",
+      "rule_id": "DG-CASSCF-ENERGY-ONLY-CONVERGENCE",
+      "suggested_fix": "Check the final ||g|| against the Orbital gradient convergence tolerance. Measured by this group: energy convergence does not imply orbital convergence, and NEVPT2 depends on the orbitals (with unconverged orbitals the perturbation layer can bring in errors of the order of kcal/mol); tighten the convergence tolerance and rerun if necessary.",
+      "refusals": []
+    },
+    {
+      "severity": "warn",
+      "message": "Active space contains a nearly empty orbital (occupation < 0.02)",
+      "rule_id": "DG-ACTIVE-SPACE-NEAR-EMPTY",
+      "suggested_fix": "Check the active-orbital window: an active orbital with an occupation below 0.02 does not really take part in the correlation, so the space may be too large or the window poorly chosen; consider narrowing the active space by occupation and rerunning, and confirm whether that orbital was meant to be included at all.",
+      "refusals": []
+    },
+    {
+      "severity": "warn",
+      "message": "Active space contains a nearly full orbital (occupation > 1.98)",
+      "rule_id": "DG-ACTIVE-SPACE-NEAR-FULL",
+      "suggested_fix": "Check the active-orbital window: an active orbital with an occupation above 1.98 is essentially a core orbital, so the space may be too large or the window poorly chosen; consider moving it out of the active space and rerunning.",
+      "refusals": []
+    }
+  ],
+  "provenance": [
+    {
+      "kind": "measured",
+      "text": "Measured in this group's differentiable multireference stack: NEVPT2 depends on converged orbitals, not on a converged energy; a flat energy with still-drifting orbitals can cause an error of about 8 kcal/mol (conv_tol_grad must be tightened and max_cycle_macro enlarged).",
+      "ref": "Group's lessons-learned compilation (B1_可微分DFT_cjq6/经验教训汇编_20260915.md, 2026-09-15)",
+      "url": ""
+    },
+    {
+      "kind": "measured",
+      "text": "ORCA's CASSCF convergence markers come in two kinds: the energy criterion \"THE CAS-SCF ENERGY HAS CONVERGED\" and the gradient criterion \"THE CAS-SCF GRADIENT HAS CONVERGED\" (both measured in the fixtures).",
+      "ref": "Fixtures n2_casscf_nevpt2.out (energy criterion) and co_plus_soc.out (gradient criterion)",
+      "url": ""
+    },
+    {
+      "kind": "manual",
+      "text": "\"All orbitals between occupation number say 1.98 down to 0.02 will be included in the active space.\" (auto-ICE's automatic window convention; this rule borrows the 0.02/1.98 interval as a check-up threshold)",
+      "ref": "ORCA 6.1 manual §3.14 (ICE-CI and auto-ICE)",
+      "url": "https://www.faccts.de/docs/orca/6.1/manual/contents/modelchemistries/iceci.html"
+    },
+    {
+      "kind": "measured",
+      "text": "Measured on the molecular end of EuF: the absolute-weight threshold (49 f-type AOs give 48 of 76 orbitals an f weight > 0.5) and the ratio of two shells (the 0/0-style false signal 0.0039/0.0039 = 1.0) both fail; the right answer is to take the shell with the largest weight. Ranking the whole space by weight puts three virtual orbitals in the top three -- orbital selection must be partitioned by occupation first.",
+      "ref": "This group's differentiable multireference stack records: composition-split-needs-two-shells / rank-within-partition-not-across (2026-09)",
+      "url": ""
+    },
+    {
+      "kind": "literature",
+      "text": "The single-orbital entropy is defined from the one-orbital reduced density matrix in the basis of the four occupation states {0, up, down, up-down}, S_i = -sum_j rho_jj ln rho_jj (Eq. (6) of this review); its four weights need the spin-resolved occupations and the double occupancy, which a spin-summed natural occupation does not determine.",
+      "ref": "Wardzala J. J. et al., Chem. Rev., 2026, 126(8), 4592-4618, DOI 10.1021/acs.chemrev.5c00866 (Eq. (6))",
+      "url": "https://doi.org/10.1021/acs.chemrev.5c00866"
+    },
+    {
+      "kind": "literature",
+      "text": "Multireference criterion: at least one single-orbital entropy above 0.14; weak-correlation cut-off: orbitals below 1-2% of max(s1). The line applies to the four-state entropy; this module uses it only as the exclusion line of the occupation-derived upper bound.",
+      "ref": "Stein C. J., Reiher M., J. Chem. Theory Comput., 2016, 12(4), 1760-1771, DOI 10.1021/acs.jctc.6b00156",
+      "url": ""
+    },
+    {
+      "kind": "literature",
+      "text": "The Zs(1) thresholds (0.1/0.2) come from a different diagnostic; they must not be mixed with the 0.14 max(s1) criterion.",
+      "ref": "Stein C. J., Reiher M., Mol. Phys., 2017, 115(17-18), 2110-2119, DOI 10.1080/00268976.2017.1288934",
+      "url": ""
+    },
+    {
+      "kind": "literature",
+      "text": "\"In a localized basis, a given orbital is often connected to only one or at most to a few other orbitals by a strong mutual information element.\" - the localized-orbital precondition for reading an entropy spectrum.",
+      "ref": "Stein C. J., Reiher M., J. Comput. Chem., 2019, 40(25), 2216-2226, DOI 10.1002/jcc.25869",
+      "url": ""
+    },
+    {
+      "kind": "measured",
+      "text": "Measured by this group (t177): after a large space is truncated to a small one the entropy spectrum degrades into numerical noise (all s1 <~ 2e-6, and the plateau recommendation set contains virtual orbitals with occupation 0). The upper-bound property s_bound(n) >= s_true(n_a, n_b, p2) is verified numerically over the admissible weight grid in tests/test_analysis.py (2026-09-26).",
+      "ref": "B1_可微分DFT_cjq6/t177熵谱失效_文献定案_20260922.md; bound property: tests/test_analysis.py",
+      "url": ""
+    },
+    {
+      "kind": "literature",
+      "text": "T1 diagnostic: the norm of the coupled-cluster single-excitation amplitudes, normalised by the number of correlated electrons. Values above about 0.02 for a closed-shell reference are the commonly used screening convention for whether a single-reference treatment is adequate; it is a screening convention, not a hard law, and a value below the line does not prove single-reference adequacy.",
+      "ref": "Lee T. J., Taylor P. R., Int. J. Quantum Chem., 1989, 36(S23), 199-207, DOI 10.1002/qua.560360824",
+      "url": "https://doi.org/10.1002/qua.560360824"
+    },
+    {
+      "kind": "literature",
+      "text": "Multireference criterion: max s1 > 0.14, with s1 the four-state single-orbital entropy (Stein & Reiher 2016). This panel applies the line to the A2 bound one-sidedly: a bound at or below 0.14 excludes multireference character on this metric, a bound above it decides nothing because the bound is loose.",
+      "ref": "Stein C. J., Reiher M., J. Chem. Theory Comput., 2016, 12(4), 1760-1771, DOI 10.1021/acs.jctc.6b00156",
+      "url": "https://doi.org/10.1021/acs.jctc.6b00156"
+    },
+    {
+      "kind": "literature",
+      "text": "The same 0.14 line is quoted by this review as the M-diagnostic line: M > 0.14 marks significant multiconfigurational character (a CCSD(T)/CASSCF pre-screening for whether a multireference treatment is needed). The number is shared between two different diagnostics; the Zs(1) > 0.2 line means something else again and is not used by this panel.",
+      "ref": "Wardzala J. J. et al., Chem. Rev., 2026, 126(8), 4592-4618, DOI 10.1021/acs.chemrev.5c00866 (Sec. 2.3.2)",
+      "url": "https://doi.org/10.1021/acs.chemrev.5c00866"
+    },
+    {
+      "kind": "literature",
+      "text": "Calibration range of these thresholds: the review's systems are main-group molecules and 3d/4d/5d transition-metal complexes -- it contains no lanthanide or actinide example at all. For an f-block system the lines quoted by this panel are a default starting value that must be verified, not a verdict.",
+      "ref": "Wardzala J. J. et al., Chem. Rev., 2026, 126(8), 4592-4618, DOI 10.1021/acs.chemrev.5c00866; scope noted in this group's reading record 文献细读/细读_自动活性空间综述_ChemRev2026.md (2026-09-25, fact 14)",
+      "url": "https://doi.org/10.1021/acs.chemrev.5c00866"
+    },
+    {
+      "kind": "manual",
+      "text": "\"All orbitals between occupation number say 1.98 down to 0.02 will be included in the active space.\" (the auto-ICE selection convention; this panel borrows the 0.02/1.98 interval as its definition of a fractionally occupied active orbital)",
+      "ref": "ORCA 6.1 manual Sec. 3.14 (ICE-CI and auto-ICE)",
+      "url": "https://www.faccts.de/docs/orca/6.1/manual/contents/modelchemistries/iceci.html"
+    },
+    {
+      "kind": "measured",
+      "text": "Measured on the ORCA 6.1.1 fixtures (2026-09-26; the jobs are listed in the fixture table, fixtures/orca/README.md): the CCSD outputs print a T1 diagnostic and its singles norm, and no D1 diagnostic (the string \"D1\" occurs nowhere in n2_ccsd.out, f2_ccsd.out or n2_stretch_ccsd.out); T1 = 0.013031252 (N2), 0.011538126 (F2), 0.045766132 (stretched N2); singles_norm / T1 = sqrt(10) = 3.162278 on both N2 outputs and sqrt(14) = 3.741657 on F2 (one indicator, not two). CASSCF: N2 CAS(6,6) N(occ) = (1.99236, 1.70922, 1.70922, 0.29360, 0.29360, 0.00200) gives 4 fractional orbitals and max(s_bound) = 0.834236 (indecisive); Ce3+ 4f1 N(occ) = (1, 0, 0, 0, 0, 0, 0) gives 0 fractional orbitals and max(s_bound) = 1.386294 = ln 4, the open-shell single-occupation limit of the bound (indecisive, not a positive signal).",
+      "ref": "fixtures/orca/ (ORCA 6.1.1 outputs; the D1 measurement is also recorded in src/fblockkit/parsers/orca.py)",
+      "url": ""
+    }
+  ],
+  "program": "orca",
+  "input_path": "work\\n2_casscf_nevpt2.out",
+  "version": "6.1.1",
+  "terminated_normally": true,
+  "final_energy": -108.959518471128
+}

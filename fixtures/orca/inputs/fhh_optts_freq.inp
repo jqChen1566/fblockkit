@@ -1,0 +1,10 @@
+# Fixture: F + H2 transition state, r2SCAN-3c OptTS + Freq from a collinear
+# guess - the recommended "optimise, then verify" workflow in one job.
+! r2SCAN-3c OptTS Freq
+%pal nprocs 4 end
+%maxcore 2000
+* xyz 0 2
+F  0.000  0.000 -1.450
+H  0.000  0.000  0.000
+H  0.000  0.000  0.800
+*

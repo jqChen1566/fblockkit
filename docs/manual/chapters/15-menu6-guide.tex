@@ -1,0 +1,59 @@
+\chapter{Tool onboarding notes (menu 6)}
+\label{ch:menu6}
+\menulabel{6}
+
+\section{Purpose}
+
+The full entry of one external tool: tier, status, where to obtain it, licence
+and integration notes -- what you need to decide whether to install and use it
+alongside \fbk{}.
+
+\section{What you need}
+
+A tool-index id (find it with \menu{5} or \cmd{search}); the same text is on
+the command line: \cmd{guide TOOL\_ID}.
+
+\section{Walkthrough}
+
+\lstinputlisting[style=fbkcode, firstline=35, lastline=45,
+  title={The menu-6 example session (OpenMolcas)}]
+  {examples/expected/m5_tools.txt}
+
+\section{What you get}
+
+The entry in full, including its provenance lines: which decision or document
+put this tool on the map. The example is OpenMolcas, a B-tier interface
+(the magnetic-property chain template): the note states the licence found in
+the official repository, the source URL, and the scope decision that makes it
+a first-release coverage.
+
+\section{How to read the numbers}
+
+\begin{readbox}
+Read three things together: \emph{relation} (whether \fbk{} generates its
+input, reads its output, or merely points at it), \emph{status} (whether that
+integration exists today), and the \emph{licence}. The licence line matters for
+your own redistribution decisions; where the project could not verify a licence
+it says so.
+\end{readbox}
+
+\section{Worked example}
+
+\begin{codeblock}
+fblockkit guide openmolcas     # the same entry, from the command line
+fblockkit guide no-such-tool   # an actionable error (exit code 2)
+\end{codeblock}
+
+\section{Caveats, refusals and related sections}
+
+\begin{refusalbox}
+\begin{itemize}
+  \item The guide describes; it does not install or configure anything.
+  \item When you cite the tool in a paper, use its own official citation form
+    (given in the entry where known), not this manual.
+\end{itemize}
+\end{refusalbox}
+
+Related: \menu{5} (search first), and the generated OpenMolcas magnetic-chain
+template (Chapter~\ref{ch:menu3} mentions the ORCA side; the OpenMolcas
+template is a recipe-layer product described in Chapter~\ref{ch:development}).

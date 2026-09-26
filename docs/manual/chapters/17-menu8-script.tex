@@ -1,0 +1,73 @@
+\chapter{Save this session as a script (menu 8)}
+\label{ch:menu8}
+\menulabel{8}
+
+\section{Purpose}
+
+Keep every input you have typed so far as a replayable script: record once,
+replay forever.
+
+\section{What you need}
+
+Nothing but the session itself. The alternative route is to start the program
+with \cmd{--record FILE}, which records from the first prompt.
+
+\section{Walkthrough}
+
+\lstinputlisting[style=fbkcode, firstline=60, lastline=67,
+  title={Saving a session at menu 8 (from the recording example)}]
+  {examples/expected/m8_script.txt}
+
+The saved file contains the six input lines typed \emph{before} the saving
+action -- the save-path answer itself is not part of it:
+
+\lstinputlisting[style=fbkcode,
+  title={The recorded script (\file{examples/expected/saved\_session.txt})}]
+  {examples/expected/saved_session.txt}
+
+\section{What you get}
+
+A text file with one input per line. Its format is the script format of
+Chapter~\ref{ch:running}: an empty line means ``press Enter'' (accept the
+default), \code{\#} starts a comment, and everything else goes to the prompt.
+
+\section{How to read the numbers}
+
+\begin{readbox}
+The count in ``Saved $N$ input line(s)'' is the size of the recorded prefix.
+When you replay a script, the program prints the same conversation again --
+prompts plus your recorded answers -- so the replay file is a complete,
+diffable transcript. Replaying the same script twice is byte-identical; that
+property is a tested guarantee, not a hope.
+\end{readbox}
+
+\section{Worked example}
+
+A recording ends at the moment of saving, so replaying it runs the recorded
+analyses and then finishes the input at the save prompt:
+
+\lstinputlisting[style=fbkcode, firstline=63, lastline=67,
+  title={Replaying the saved script: the recorded part runs, then the input ends}]
+  {examples/expected/m8_replay.txt}
+
+To record a complete workflow, either put \menu{8} last (the saved prefix is
+then everything that matters), or use \cmd{--record FILE}, which appends the
+whole session including the exit.
+
+\section{Caveats, refusals and related sections}
+
+\begin{refusalbox}
+\begin{itemize}
+  \item A script replays inputs, not files: if a recorded script points at
+    \file{work/job.out}, that file must exist when you replay it.
+  \item Replaying is exactly equivalent to typing; it grants no extra
+    capabilities (nothing runs calculations, nothing touches the network).
+  \item If the input runs out mid-session the program says
+    ``Cancelled (input finished)'' and continues cleanly -- it never blocks
+    waiting for a terminal that is not there.
+\end{itemize}
+\end{refusalbox}
+
+Related: Chapter~\ref{ch:running} (the full script model and the CLI), and
+\file{docs/manual/examples/} in the repository, whose scripts are replayed by
+the test suite.

@@ -1,0 +1,87 @@
+\chapter{Point-charge crystal-field estimate (menu 11)}
+\label{ch:menu11}
+\menulabel{11}
+
+\section{Purpose}
+
+A first, model-level estimate of the crystal-field potential the surrounding
+point charges create -- computed from the geometry alone, with no
+quantum-chemical calculation. Use it to see the sign pattern, the size and the
+symmetry of the field your ligands produce, and as a sanity check on a fitted
+parameter set or on a charge assignment.
+
+\section{What you need}
+
+\begin{itemize}
+  \item an XYZ structure;
+  \item a point charge per element, in units of the elementary charge
+    (\code{O=-2,H=0.4} style);
+  \item for values in cm$^{-1}$: the radial expectation values
+    \code{r2,r4,r6} in \AA$^k$. These are ion- and method-specific and are
+    deliberately \emph{not} shipped: without them the estimate stays
+    geometry-only, and says so.
+\end{itemize}
+
+\section{Walkthrough}
+
+\lstinputlisting[style=fbkcode, firstline=16, lastline=54,
+  title={The menu-11 example session (an octahedral CeO\textsubscript{6} toy
+  structure, geometry-only)}]
+  {examples/expected/m11_point_charge.txt}
+
+\section{What you get}
+
+A report (\file{structure.xyz.fbk.md}) with: the model and its $r < R_i$
+assumption, the charges used, the lattice sums per $(k,q)$, the parameters in
+cm$^{-1}$ when radial moments are given (otherwise the explicit refusal), the
+seven f-orbital energies (eigenvalues of the potential matrix) and the overall
+splitting, the symmetry note, and the boundary paragraphs -- including the
+measured caveat that point-charge estimates are qualitative.
+
+\section{How to read the numbers}
+
+\begin{readbox}
+\begin{itemize}
+  \item In the example the only non-zero symmetry-relevant terms are
+    $(4,0), (4,4), (6,0), (6,4)$ -- exactly the $O_h$ allowed set, with the
+    whole second rank vanishing. That is the check to run first: more non-zero
+    terms than your point group allows means the geometry or the charge
+    assignment breaks the symmetry.
+  \item The seven orbital energies split the 4f shell; with unit radial moments
+    their spread ($0.0469$ in the example's units) is a shape measure, not yet
+    a spectroscopic splitting. Supply $\langle r^k\rangle$ to get cm$^{-1}$.
+  \item These are \emph{$l$-shell} parameters acting inside the 4f orbital
+    space. They are not the $J$-manifold Stevens parameters of \menu{10}; the
+    operator-equivalent projection is not performed here. Compare the two
+    modules through the spectra they generate, never parameter by parameter.
+\end{itemize}
+\end{readbox}
+
+\section{Worked example}
+
+The session above; then add a charge set that breaks the symmetry (make one
+oxygen neutral) and watch the $(2,0)$ and $(2,2)$ lattice sums appear -- the
+symmetry reading changes immediately, which is exactly what this estimate is
+good for. For quantitative parameters use the ab initio route
+(\menu{10} and its cited sources), not this model.
+
+\section{Caveats, refusals and related sections}
+
+\begin{refusalbox}
+\begin{itemize}
+  \item \textbf{No radial moments, no cm$^{-1}$}: the program refuses to
+    produce parameters rather than substitute a default $\langle r^k\rangle$.
+    The lattice sums are geometry only.
+  \item An element in the structure without a charge is refused, with the
+    missing symbols named -- nothing is silently charged as zero.
+  \item Atoms sitting on the centre are excluded with a note (the model has no
+    self-interaction term).
+  \item The model is qualitative: measured deviations between point-charge and
+    ab initio crystal fields make it unusable for quantitative extraction
+    (the citation is printed in the section). Read it as a geometry and
+    charge-assignment check.
+\end{itemize}
+\end{refusalbox}
+
+Related: \menu{2} (coordination geometry), \menu{10} (the ab initio fit) and
+Chapter~\ref{ch:criteria} for the multipole-expansion conventions.

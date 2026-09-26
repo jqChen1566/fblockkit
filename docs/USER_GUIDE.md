@@ -1,0 +1,342 @@
+# fBlockKit User Guide
+
+> For chemists who do not program. Section numbers in this guide are the menu
+> numbers of the program (the number is the path); menu numbers are append-only
+> and this guide follows them.
+>
+> Version: v0.1.0 (early development). The provenance of every methodological
+> criterion is in the program's output ("provenance" section and the References
+> block) and in the data files under `src/fblockkit/knowledge/`.
+>
+> The full manual is built from `docs/manual/` (`bash docs/manual/build.sh`):
+> the same structure, one chapter per menu entry, with worked examples that are
+> replayable scripts; the built PDF ships with the release archives.
+
+## 0 Before you start
+
+fBlockKit does two things, and it never runs calculations for you:
+
+1. **Generates input files** - it turns "which method, basis set, active space and
+   convergence settings" into an input file you can submit to ORCA, plus plain
+   guidance on how to run it;
+2. **Characterises results** - it reads an output file you already have (or a
+   structure file) and reports composition, entropy spectra, geometry and
+   diagnostic conclusions. Every conclusion carries its provenance.
+
+It does **not** run engines, does not use the network, and does not upload your
+files anywhere.
+
+Three ways to start:
+
+- Green package: unpack and run `fblockkit.exe` (Windows) or `fblockkit` (Linux);
+- Installed package: `pip install fblockkit`, then the `fblockkit` command;
+- From source: `python -m fblockkit`.
+
+You get a numbered menu. Type your answer at each prompt: **pressing Enter alone
+takes the default**; a text file holding your inputs, one per line, is a replayable
+script (Section 8).
+
+## 1 Check-up and characterisation (read an ORCA output)
+
+**What it is for**: turn one ORCA output file into an "analysis + diagnosis" report.
+
+**What you need**: an ORCA 6.x output file (`.out`/`.log`). The per-MO composition
+analysis needs the `LOEWDIN ORBITAL-COMPOSITIONS` table in the output (add
+`%output Print[P_ReducedOrbPopMO_L] 1` to the input; it is printed at the normal
+print level); when the table is absent, that analysis section is skipped with an
+explanation.
+
+**How**: choose menu 1, then give the file path.
+
+**What you get** (written next to the input file; nothing you already have is
+overwritten):
+
+- `name.fbk.md` - the report: summary -> analysis sections (A1 orbital
+  composition, A2 occupations and the entropy bound, A3 the multi-reference
+  character panel; A6 the local spin analysis when the input divided the
+  molecule into fragments) -> diagnostic findings (graded refuse / error /
+  warning / info) -> provenance summary -> References;
+- `name.fbk.json` - the same content, machine-readable;
+- The References block lists, for every cited work, the **complete citation**
+  (authors, year, title, journal, volume(issue), pages, DOI) and a
+  **paste-ready BibTeX entry**.
+
+**How to read the report**:
+
+- Every finding carries a rule id, a suggested action, the refusals that apply
+  ("do not use this"), and its evidence (a manual quote, a literature DOI, or a
+  measured record of this group);
+- An "info" finding is a mandatory check (for example the CASPT2 reference
+  weights), not a detected problem;
+- Entropy thresholds and their precondition (a localized-orbital basis) travel
+  with the report - never read the numbers without the caveats. The A2 spectrum
+  is the maximum-entropy *bound* on the literature single-orbital entropy (an
+  ORCA output prints only spin-summed occupations): a bound at or below 0.14
+  excludes strong multireference character on that metric, a bound above it
+  decides nothing and the section says so;
+- The A5 projection-basis declaration check is attached to every crystal-field
+  fit (Section 10); the A6 section states explicitly that the local spin
+  analysis is not the environment spin-polarisation entropy Delta S_E.
+
+## 2 Coordination geometry and symmetry hints (read an XYZ structure)
+
+**What it is for**: see what the system looks like before computing anything.
+
+**What you need**: a standard XYZ structure file.
+
+**How**: menu 2 -> file path -> point group (optional; Enter to skip).
+
+**What you get**: the coordination shell (metal centre, coordination number,
+per-ligand distances) and symmetry hints (direction distribution, inversion
+pairing, planarity), plus the "symmetry -> number of crystal-field parameters"
+table (C3 -> 9, Oh -> 4, no real symmetry -> 27).
+
+**Note**: these are geometric-distribution hints, not a rigorous point-group
+determination; confirm the point group yourself and type it at the prompt - the
+program then reports the parameter count for it.
+
+## 3 Generate an ORCA input (system profile)
+
+**What it is for**: answer a few questions and get a directly runnable ORCA input
+plus plain run guidance.
+
+**How**: menu 3, then: element list -> charge -> spin multiplicity -> f-block
+metal valence -> targets (energy/geometry/excited/magnetic/spectra) -> structure
+file (XYZ) -> basis tier number -> active space `nel,norb,mult,nroots`
+(Enter = no `%casscf` block) -> convergence tier.
+
+Starting active spaces are suggested first (G2): the f-only minimal space with
+its documented precedent, and an f+d double-shell option marked *provisional*,
+each with its rationale.
+
+**What you get**: `structure.fbk.inp` (pure ASCII, directly runnable) and, on
+screen, the run guidance (method chain, basis, convergence discipline, refusals,
+and what to check afterwards).
+
+**Built-in discipline** (all from the ORCA manual or measured by this group; the
+sources are in the generated guidance):
+
+- Geometry optimisation / frequencies may only use a CASSCF reference layer -
+  correlated layers are never put into an optimisation loop;
+- Default convergence settings first; `TRAH` only for difficult cases, and it
+  requires a matching /C auxiliary basis (otherwise the request is explicitly
+  downgraded, never silently kept);
+- Basis tiers are matched by element, valence and target (the SARC2 tier is the
+  documented default for lanthanide wavefunction work); unsuitable tiers (for
+  example 5f-in-core pseudopotentials for f-f transitions) are listed as "not
+  applicable" with the reason.
+
+## 4 Basis-set / ECP recommendation
+
+**What it is for**: look up recommendations without generating a file.
+
+**How**: menu 4, then element list, charge, multiplicity, valence, targets.
+
+**What you get**: recommendation tiers (each with its matching auxiliary basis
+and rationale), boundary cautions (for example: the standard def2 family stops
+at Rn and does not cover the actinides), and not-applicable tiers with their hard
+refusal conditions. Everything carries its provenance.
+
+## 5 Search the tool index
+
+**What it is for**: look up external tools. Each record has two dimensions that
+must be read separately:
+
+- **Tier (relation)** - how we intend to use it: A absorb (file/algorithm level),
+  B interface (generate its input, read its output), C index (calculation kernels,
+  including algorithmic borrowing);
+- **Status** - whether it is actually used *now*: `active` / `registered (not
+  enabled)`. "Registered" is a dot on the map, not a feature of this program.
+
+**How**: menu 5 -> keywords (several words, space separated; all must match).
+
+**What you get**: tier, status, licence and purpose of each hit; licences we have
+not verified are marked "to verify".
+
+## 6 Tool onboarding notes (by index id)
+
+**What it is for**: the tier, status, where to obtain it, licence and integration
+notes of a single tool.
+
+**How**: menu 6 -> tool id (for example `openmolcas`; search first with Section 5).
+
+## 7 Cross-level solution consistency
+
+**What it is for**: when the same molecule has several candidate solutions each
+computed at a cheap level (say HF) and an expensive level (say CCSD(T)), check
+whether "pick the best solution by the cheap level" is safe.
+
+**What you need**: a records JSON such as
+
+```json
+[
+  {"label": "No.1", "occupation": "...", "energies": {"HF": -1930.87692, "CCSD(T)": -1932.97951}},
+  {"label": "No.2", "occupation": "...", "energies": {"HF": -1930.87392, "CCSD(T)": -1932.97745}}
+]
+```
+
+(The top level may also be an object with a `records` list; extra fields such as
+`occupation` are kept for readability and otherwise ignored.)
+
+**How**: menu 7 -> records JSON path.
+
+**What you get**: warnings when the best solution differs between levels, and
+when solutions in the cheap-level top N drop out of the expensive-level top N -
+each with its evidence. The bundled `fixtures/literature/pucl3_s18.json`
+(literature Table S18: 21 PuCl3 5f occupations x HF/CCSD(T)) is an instance of
+this format; run menu 7 on it to see the effect:
+
+- the HF-best solution (No.3) is not the CCSD(T)-best solution (No.1);
+- the HF second-best (No.10) drops out of the CCSD(T) top three (about
+  1.76 kcal/mol behind).
+
+**How to use the conclusion**: re-rank the candidates at the expensive level
+before choosing; do not pick a solution from the cheap-level ordering alone.
+
+## 8 Save this session as a script
+
+**What it is for**: keep every input you typed as a script, for one-command
+replay ("record once, replay forever").
+
+**How**: menu 8 -> script path (Enter = `fbk_session.txt`).
+
+**Replay**: `fblockkit run script.txt`. Script format: one line per input, an
+empty line means "just press Enter", `#` starts a comment. Replaying the same
+script twice gives byte-identical output - this is also the project's regression
+acceptance criterion.
+
+## 9 SCF rescue (triage + corrected input files)
+
+**What it is for**: read one output file whose SCF struggled, name what happened,
+and - if you give the matching input file - write corrected inputs for you.
+
+**How**: menu 9 -> ORCA output path -> input file path (Enter = skip the
+corrected inputs).
+
+**What you get**: findings from the SCF triage (each with the measured numbers -
+cycle counts, DIIS errors, achieved-vs-tolerance comparisons - and a suggested
+action), then one corrected input per applicable fix, written next to your input
+as `<name>.fix_<variant>.inp`. Your original files are never modified.
+
+**What it will and will not propose**: damping (`SlowConv`) with the manual's
+warning that it can converge closer to the initial guess; a two-step pre-SCF
+route that reads the orbitals into your original input. It will *not* propose
+merely raising `MaxIter` - the manual states that will not help in many cases -
+that refusal is reported instead. The criteria used and every self-set threshold
+are listed in the module and its tests.
+
+## 10 Crystal-field fit (levels + coefficients JSON)
+
+**What it is for**: fit the crystal-field parameters `B_k^q` from sampled state
+energies and their projection coefficients (the mean-field-cost route of the
+reference paper: cheap states plus exact linear algebra).
+
+**What you need**: a JSON file such as
+
+```json
+{
+  "point_group": "C3",
+  "J": 7.5,
+  "levels": [0.0, 89.85, 124.25],
+  "coefficients": [[[0.0, 0.0], 1.0], ...]
+}
+```
+
+`coefficients[i][m]` is the amplitude of state `i` on `|J M>` with `M = m - J`,
+given as a number or a `[re, im]` pair. Pass the amplitudes themselves, not their
+complex conjugates (the fitter warns about this trap).
+
+**How**: menu 10 -> JSON path.
+
+**What you get**: the fitted `B_k^q` (respecting the point group's allowed set:
+C3-like 9, Oh 4, none 27), the constant, residual per state, the design-matrix
+condition number, and rank warnings; plus a report file with the complete
+citation and a paste-ready BibTeX entry. Sequence-to-level agreement is the
+sanity check: diagonalising the fitted Hamiltonian must reproduce your input
+levels (the bundled literature fixtures do this to 0.005 cm^-1).
+
+**Projection-basis declaration check (A5)**: the same JSON may carry a
+`declaration` object and a `compare` block, and the menu then appends the A5
+check to the report:
+
+```json
+{
+  "point_group": "C3", "J": 7.5, "levels": [...], "coefficients": [...],
+  "declaration": {"convention": "Stevens", "projection": "J = 15/2",
+                  "units": "cm^-1", "z_axis": "KD ground-state easy axis",
+                  "origin": "metal site"},
+  "compare": {"label": "Table S1 (L = 5)",
+              "parameters": {"2,0": 1879.0, "2,2": -43.0, "...": 0.0},
+              "declaration": {"projection": "L = 5"}}
+}
+```
+
+The five declaration items are the ones a `B_k^q` set must record before its
+numbers can be compared with another scheme (operator convention, projection
+manifold, units, z-axis definition, origin/chirality). The comparison verdict
+is per `(k, q)`: only the leading axial `(2, 0)` may be compared roughly
+across schemes (the source's one measured example moved it by 3%), everything
+else is refused without a matching declaration - the same wavefunction's
+`B_2^2` reads +198 or -43 cm^-1 depending on the projection scheme (Chilton's
+Table S1).
+
+## 11 Point-charge crystal-field estimate (read an XYZ structure + charges)
+
+**What it is for**: a first, model-level estimate of the crystal-field potential
+created by the surrounding point charges - the classic point-charge model,
+computed from the geometry alone (no quantum-chemical calculation). Use it to
+see the sign pattern, the size and the symmetry of the field the ligands
+produce, and as a sanity check on a fitted parameter set.
+
+**What you need**: an XYZ structure, a point charge per element (in units of the
+elementary charge, e.g. `O=-2,H=0.4`), and - for values in cm^-1 - the radial
+expectation values `r2,r4,r6` in Angstrom^k. The radial moments are
+ion- and method-specific and are deliberately **not** shipped with this tool:
+without them the menu still reports the geometry-only lattice sums and says
+explicitly that no cm^-1 parameters were produced.
+
+**How**: menu 11 -> XYZ path -> charges -> radial moments (Enter = geometry
+only).
+
+**What you get**: the charges used, the lattice sums per `(k, q)`, the
+parameters in cm^-1 (when the radial moments are given), the seven f-orbital
+energies (the potential matrix's eigenvalues) and the overall splitting, plus
+the symmetry note (which `(k, q)` survive) and a report file with the complete
+citations.
+
+**What it is not**: the parameters are the exact one-electron point-charge
+matrix elements in the f-orbital (`l = 3`) basis - they are *not* the
+`J`-manifold Stevens parameters of Section 10 (the operator-equivalent
+projection is not carried out here), and the point-charge model itself is
+qualitative: measured deviations make it unusable for quantitative parameter
+extraction (the same caveat the section prints, with its citation). The
+`l`-basis numbers and Section 10's `B_k^q` are comparable only through their
+spectra, not parameter by parameter.
+
+## Appendix A Command line
+
+```text
+fblockkit                     interactive menu
+fblockkit --record FILE       interactive, recording your input as a script
+fblockkit run SCRIPT.txt      replay a script
+fblockkit search KEYWORDS     search the tool index
+fblockkit guide TOOL_ID       tool onboarding notes
+```
+
+## Appendix B Installation and distribution
+
+- **Green package**: unpack and run; no Python needed (built for Windows and
+  Linux from `packaging/fblockkit.spec`);
+- **pip package**: `pip install fblockkit` (Python >= 3.11). Data files (rules,
+  templates, menu, indexes, BibTeX database) ship with the package - see the
+  package-data declaration in `pyproject.toml`.
+
+## Appendix C Citations and references
+
+Every criterion in the output carries provenance in three classes: **manual**
+(section number + URL), **literature** (complete citation with DOI, plus a
+paste-ready BibTeX entry in the References block), and **measured** (a record of
+this group). The reference database is `src/fblockkit/knowledge/sources.bib`;
+literature evidence is rejected at load time unless it points to an entry there.
+When you cite an external tool, use its own official citation format (given in
+its onboarding notes).

@@ -1,0 +1,182 @@
+{
+  "meta": {
+    "description": "Total energies (Hartree) of the 21 5f-occupation solutions of PuCl3 at the HF and CCSD(T) levels; a regression fixture for the cross-level consistency check.",
+    "source": "Lu J.-B. et al., Norm-Conserving 5f-in-Core Pseudopotentials and Gaussian Basis Sets Optimized for Tri- and Tetra-Valent Actinides, J. Chem. Theory Comput., 2025, 21, 170-182, DOI 10.1021/acs.jctc.4c01189",
+    "table": "Supporting Information, Table S18",
+    "note": "The source table labels the occupations by m = -3..3; the five entries per row are the five occupied 5f orbitals. The values were transcribed from the MinerU conversion of the SI text and checked item by item against the numbers quoted in the literature review section 4.6: No.1 CCSD(T) = -1932.97951, No.3 HF = -1930.87769, No.10 = -1930.87697/-1932.97670, and the second-lowest HF solution falls 1.76 kcal/mol behind the best at the CCSD(T) level.",
+    "levels": [
+      "HF",
+      "CCSD(T)"
+    ]
+  },
+  "records": [
+    {
+      "label": "No.1",
+      "occupation": "5f_-2 5f_0 5f_1 5f_2 5f_3",
+      "energies": {
+        "HF": -1930.87692,
+        "CCSD(T)": -1932.97951
+      }
+    },
+    {
+      "label": "No.2",
+      "occupation": "5f_-3 5f_-2 5f_0 5f_2 5f_3",
+      "energies": {
+        "HF": -1930.87392,
+        "CCSD(T)": -1932.97745
+      }
+    },
+    {
+      "label": "No.3",
+      "occupation": "5f_-3 5f_-2 5f_0 5f_1 5f_2",
+      "energies": {
+        "HF": -1930.87769,
+        "CCSD(T)": -1932.97941
+      }
+    },
+    {
+      "label": "No.4",
+      "occupation": "5f_-3 5f_-2 5f_1 5f_2 5f_3",
+      "energies": {
+        "HF": -1930.83151,
+        "CCSD(T)": -1932.95186
+      }
+    },
+    {
+      "label": "No.5",
+      "occupation": "5f_-2 5f_-1 5f_0 5f_1 5f_2",
+      "energies": {
+        "HF": -1930.81259,
+        "CCSD(T)": -1932.93266
+      }
+    },
+    {
+      "label": "No.6",
+      "occupation": "5f_-3 5f_-2 5f_-1 5f_0 5f_2",
+      "energies": {
+        "HF": -1930.86803,
+        "CCSD(T)": -1932.96944
+      }
+    },
+    {
+      "label": "No.7",
+      "occupation": "5f_-3 5f_-2 5f_0 5f_1 5f_3",
+      "energies": {
+        "HF": -1930.87664,
+        "CCSD(T)": -1932.97867
+      }
+    },
+    {
+      "label": "No.8",
+      "occupation": "5f_-3 5f_-2 5f_-1 5f_2 5f_3",
+      "energies": {
+        "HF": -1930.81091,
+        "CCSD(T)": -1932.93063
+      }
+    },
+    {
+      "label": "No.9",
+      "occupation": "5f_-2 5f_-1 5f_0 5f_1 5f_3",
+      "energies": {
+        "HF": -1930.8644,
+        "CCSD(T)": -1932.96644
+      }
+    },
+    {
+      "label": "No.10",
+      "occupation": "5f_-2 5f_-1 5f_1 5f_2 5f_3",
+      "energies": {
+        "HF": -1930.87697,
+        "CCSD(T)": -1932.9767
+      }
+    },
+    {
+      "label": "No.11",
+      "occupation": "5f_-3 5f_-2 5f_-1 5f_1 5f_2",
+      "energies": {
+        "HF": -1930.8738,
+        "CCSD(T)": -1932.97515
+      }
+    },
+    {
+      "label": "No.12",
+      "occupation": "5f_-3 5f_-2 5f_-1 5f_0 5f_1",
+      "energies": {
+        "HF": -1930.86843,
+        "CCSD(T)": -1932.96858
+      }
+    },
+    {
+      "label": "No.13",
+      "occupation": "5f_-3 5f_-2 5f_-1 5f_0 5f_3",
+      "energies": {
+        "HF": -1930.87668,
+        "CCSD(T)": -1932.97637
+      }
+    },
+    {
+      "label": "No.14",
+      "occupation": "5f_-2 5f_-1 5f_0 5f_2 5f_3",
+      "energies": {
+        "HF": -1930.87392,
+        "CCSD(T)": -1932.97745
+      }
+    },
+    {
+      "label": "No.15",
+      "occupation": "5f_-3 5f_-2 5f_-1 5f_1 5f_3",
+      "energies": {
+        "HF": -1930.87578,
+        "CCSD(T)": -1932.97614
+      }
+    },
+    {
+      "label": "No.16",
+      "occupation": "5f_-3 5f_0 5f_1 5f_2 5f_3",
+      "energies": {
+        "HF": -1930.87639,
+        "CCSD(T)": -1932.979
+      }
+    },
+    {
+      "label": "No.17",
+      "occupation": "5f_-1 5f_0 5f_1 5f_2 5f_3",
+      "energies": {
+        "HF": -1930.83682,
+        "CCSD(T)": -1932.95847
+      }
+    },
+    {
+      "label": "No.18",
+      "occupation": "5f_-3 5f_-1 5f_0 5f_1 5f_2",
+      "energies": {
+        "HF": -1930.86794,
+        "CCSD(T)": -1932.96928
+      }
+    },
+    {
+      "label": "No.19",
+      "occupation": "5f_-3 5f_-1 5f_0 5f_2 5f_3",
+      "energies": {
+        "HF": -1930.83606,
+        "CCSD(T)": -1932.95853
+      }
+    },
+    {
+      "label": "No.20",
+      "occupation": "5f_-3 5f_-1 5f_1 5f_2 5f_3",
+      "energies": {
+        "HF": -1930.87534,
+        "CCSD(T)": -1932.97628
+      }
+    },
+    {
+      "label": "No.21",
+      "occupation": "5f_-3 5f_-1 5f_0 5f_1 5f_3",
+      "energies": {
+        "HF": -1930.83689,
+        "CCSD(T)": -1932.95815
+      }
+    }
+  ]
+}
