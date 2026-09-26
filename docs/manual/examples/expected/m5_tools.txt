@@ -15,6 +15,7 @@ Available functions:
   12  Exact active-space analysis (CASSCF output + FCIDUMP: four-state entropy, environment spin entropy, atomic-term check; optional orca_2json exports)
   13  Orbital-space comparison (two orca_2json exports: subspace fraction and space-change SVD)
   14  AVAS target projection (an orbital export + a target AO shell -> active-space size)
+  15  Orbital portrait (an export -> occupation, bonding label, shell composition, extent)
    0  Quit
 Choose a number (Enter = leave empty)> 5
 Search keywords (several words, space separated) (Enter = leave empty)> mokit
@@ -37,6 +38,7 @@ Available functions:
   12  Exact active-space analysis (CASSCF output + FCIDUMP: four-state entropy, environment spin entropy, atomic-term check; optional orca_2json exports)
   13  Orbital-space comparison (two orca_2json exports: subspace fraction and space-change SVD)
   14  AVAS target projection (an orbital export + a target AO shell -> active-space size)
+  15  Orbital portrait (an export -> occupation, bonding label, shell composition, extent)
    0  Quit
 Choose a number (Enter = leave empty)> 6
 Tool index id (e.g. openmolcas; search with menu 5) (Enter = leave empty)> openmolcas
@@ -64,6 +66,7 @@ Available functions:
   12  Exact active-space analysis (CASSCF output + FCIDUMP: four-state entropy, environment spin entropy, atomic-term check; optional orca_2json exports)
   13  Orbital-space comparison (two orca_2json exports: subspace fraction and space-change SVD)
   14  AVAS target projection (an orbital export + a target AO shell -> active-space size)
+  15  Orbital portrait (an export -> occupation, bonding label, shell composition, extent)
    0  Quit
 Choose a number (Enter = leave empty)> 6
 Tool index id (e.g. openmolcas; search with menu 5) (Enter = leave empty)> liblan
@@ -131,6 +134,7 @@ Available functions:
   12  Exact active-space analysis (CASSCF output + FCIDUMP: four-state entropy, environment spin entropy, atomic-term check; optional orca_2json exports)
   13  Orbital-space comparison (two orca_2json exports: subspace fraction and space-change SVD)
   14  AVAS target projection (an orbital export + a target AO shell -> active-space size)
+  15  Orbital portrait (an export -> occupation, bonding label, shell composition, extent)
    0  Quit
 Choose a number (Enter = leave empty)> 0
 Goodbye.

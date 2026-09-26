@@ -16,6 +16,7 @@ import numpy as np
 
 from ..analysis import atomic_terms, avas, cf_declaration, crystal_field, point_charge
 from ..analysis import entropy_rdm, environment_spin
+from ..analysis import orbital_portrait
 from ..analysis import orbital_space as orbital_space_analysis
 from ..analysis import evidence_for, run_all
 from ..analysis import geometry as geometry_analysis
@@ -909,10 +910,13 @@ def orbital_space(session: Session) -> None:
             )
             return
         comparison = orbital_space_analysis.compare_spaces(coefficients_a, coefficients_b, overlap)
+        window_a = _window(first_window_text, first.n_mo)
+        window_b = _window(second_window_text, second.n_mo)
         section = orbital_space_analysis.run(
             comparison,
             label_a=_space_label(first, first_window_text),
             label_b=_space_label(second, second_window_text),
+            jaccard_index=orbital_space_analysis.jaccard(window_a, window_b),
         )
     except (ParserError, orbital_space_analysis.OrbitalSpaceError, OSError, ValueError) as exc:
         session.say(f"Orbital-space comparison failed: {exc}")
@@ -1016,6 +1020,40 @@ def _ANGULAR_LETTERS() -> dict:
     return dict(ANGULAR_LETTERS)
 
 
+
+# --- 15 orbital portrait -----------------------------------------------------
+
+
+def orbital_portrait_report(session: Session) -> None:
+    """Menu 15: the deterministic descriptor panel of an orbital set (an export in)."""
+    export_text = session.ask("orca_2json export path")
+    if not export_text:
+        session.say("Cancelled (no export path given).")
+        return
+    window_text = session.ask(
+        "Window 'first last' in ORCA's 0-based numbering (Enter = the orbitals with "
+        "fractional occupations)"
+    )
+    try:
+        export = parse_orca_json(Path(export_text))
+        window = None
+        if window_text:
+            first, last = (int(token) for token in window_text.replace(",", " ").split())
+            window = list(range(first, last + 1))
+        section = orbital_portrait.run(export, window=window)
+    except (ParserError, orbital_portrait.PortraitError, OSError, ValueError) as exc:
+        session.say(f"Orbital portrait failed: {exc}")
+        return
+    session.say(section.body)
+    report_lines = f"## {section.title}\n\n{section.body}\n"
+    refs = references_section(orbital_portrait.evidence())
+    if refs is not None:
+        report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
+    md_path = Path(export_text).with_name(Path(export_text).name + ".portrait.fbk.md")
+    md_path.write_text(report_lines, encoding="utf-8")
+    session.say(f"Report written: {md_path}")
+
+
 HANDLERS = {
     "report_output": report_output,
     "geometry_report": geometry_report,
@@ -1031,5 +1069,6 @@ HANDLERS = {
     "exact_entropy": exact_entropy,
     "orbital_space": orbital_space,
     "avas_target": avas_target,
+    "orbital_portrait": orbital_portrait_report,
     "quit": quit_session,
 }

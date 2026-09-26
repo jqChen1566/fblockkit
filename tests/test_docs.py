@@ -45,6 +45,7 @@ def test_doc_mentions_each_menu_title_topic():
         "Exact four-state entropy",
         "Orbital-space comparison",
         "AVAS target projection",
+        "Orbital portrait",
     ):
         assert keyword in text, keyword
 

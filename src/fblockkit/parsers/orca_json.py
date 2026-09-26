@@ -141,6 +141,7 @@ class OrcaJson:
     hftyp: str
     point_group: str
     atoms: tuple[str, ...]
+    coordinates: tuple[tuple[float, float, float], ...]
     n_mo: int
     n_ao: int
     mo_coefficients: tuple[tuple[float, ...], ...]
@@ -206,7 +207,7 @@ def parse_orca_json(path: str | Path) -> OrcaJson:
                 _EXPORT_HINT,
             )
 
-    atoms = _atom_labels(molecule)
+    atoms, coordinates = _atom_labels(molecule)
     # Absent S-Matrix: a documented export variant, not a defect.
     overlap = None
     if "S-Matrix" in molecule:
@@ -228,6 +229,7 @@ def parse_orca_json(path: str | Path) -> OrcaJson:
             _entry(molecule, "PointGroup", "the Molecule block"), "Molecule.PointGroup"
         ),
         atoms=atoms,
+        coordinates=coordinates,
         n_mo=len(coefficients),
         n_ao=n_ao,
         mo_coefficients=tuple(coefficients),
@@ -291,8 +293,15 @@ def _number_row(value: Any, where: str) -> tuple[float, ...]:
     return tuple(_number(item, f"{where}[{index}]") for index, item in enumerate(value))
 
 
-def _atom_labels(molecule: Mapping[str, Any]) -> tuple[str, ...]:
-    """Element labels of the ``Atoms`` block, in file order."""
+def _atom_labels(
+    molecule: Mapping[str, Any],
+) -> tuple[tuple[str, ...], tuple[tuple[float, float, float], ...]]:
+    """Element labels and coordinates of the ``Atoms`` block, in file order.
+
+    The coordinates are in the export's own units (``CoordinateUnits``, Angstrom
+    in every measured fixture); consumers that cut distances read them together
+    with that field.
+    """
     entries = _entry(molecule, "Atoms", "the Molecule block")
     if not isinstance(entries, list):
         raise _fail(
@@ -301,11 +310,21 @@ def _atom_labels(molecule: Mapping[str, Any]) -> tuple[str, ...]:
     if not entries:
         raise _fail("the 'Atoms' entry is empty: the export carries no atoms.", _EXPORT_HINT)
     labels: list[str] = []
+    coordinates: list[tuple[float, float, float]] = []
     for index, entry in enumerate(entries):
         where = f"Molecule.Atoms[{index}]"
         atom = _mapping(entry, where)
         labels.append(_text(_entry(atom, "ElementLabel", where), f"{where}.ElementLabel"))
-    return tuple(labels)
+        coords = _entry(atom, "Coords", where)
+        if not isinstance(coords, list) or len(coords) != 3:
+            raise _fail(
+                f"{where}.Coords is {coords!r}, not a list of three numbers.",
+                _EXPORT_HINT,
+            )
+        coordinates.append(
+            tuple(_number(value, f"{where}.Coords[{k}]") for k, value in enumerate(coords))
+        )
+    return tuple(labels), tuple(coordinates)  # type: ignore[return-value]
 
 
 # ORCA's AO label grammar, measured on the fixtures (N2 and Eu exports of ORCA

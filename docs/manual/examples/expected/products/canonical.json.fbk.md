@@ -10,6 +10,7 @@ Singular values of C_step_a [4 9]^T S C_step_a.loc [4 9] (descending, 6 values):
 Reading (provisional bands; the sigma_F source -- Guan & Jiang, Eq. (10), arXiv:2607.08178 as recorded in the project notes, not re-verified -- and the S_change source report 1 - sigma_F = 2.9e-3/6.8e-5 and a 0.65-0.99 SVD range respectively, and the stated use is ranking candidate spaces, not an absolute pass mark):
   - containment: the smaller space is contained in the larger to numerical precision (deficit vs the 1e-4 / 1e-2 provisional lines)
   - space change (equal sizes; the source's measured range for its own runs is 0.65-0.99): the two spaces are essentially the same space (smallest singular value vs the 0.9 / 0.5 provisional lines)
+  - Jaccard index of the two windows = 1.0000: reported next to the overlap so that a disagreement can be split into 'different orbitals chosen' (low index) against 'same space, different behaviour' (high index) -- the evaluation protocol of the descriptor-panel source
 
 ## References
 

@@ -147,6 +147,7 @@ def _open_shell_export() -> OrcaJson:
         hftyp="ROHF",
         point_group="C1",
         atoms=("X",),
+        coordinates=((0.0, 0.0, 0.0),),
         n_mo=3,
         n_ao=3,
         mo_coefficients=coefficients,

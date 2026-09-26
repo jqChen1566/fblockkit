@@ -504,6 +504,47 @@ the deliverable is the size and the verdict on a window, not a restart file;
 the emitted `%scf avas` block covers the systems where ORCA's built-in AVAS
 works.
 
+## 15 Orbital portrait (an export -> descriptor table)
+
+**What it is for**: the deterministic part of RLEASE's orbital descriptor -- a
+per-orbital panel of the things a chemist reads off one by one: occupation,
+orbital energy, the dominant centre and its Löwdin share, the angular-momentum
+composition, a **bonding label**, and an AO-centre estimate of the orbital's
+extent and charge-centroid displacement. Nothing here needs a model; the
+source's neural predictor and threshold policy are explicitly not adopted.
+
+**What you need**: one `orca_2json` export.
+
+**How**: menu 15 -> export path -> window `first last` in ORCA's 0-based
+numbering (Enter = the orbitals with fractional occupations, i.e. the active
+space of a correlated export).
+
+**What you get**: the table on screen and a report file
+(`<export>.portrait.fbk.md`) with the citations.
+
+**How to read it**:
+
+- the **bonding label** is the source's own criterion: accumulate the atom-pair
+  population `S_AB = sum_{mu in A} sum_{nu in B} c_mu S_mu,nu c_nu` over pairs
+  within 6 Angstrom; a single atom carrying more than 95% of the Löwdin
+  population makes the orbital non-bonding, otherwise the sign of the cross
+  terms decides. Two measured additions are documented with the criterion: a
+  cross term within 0.01 counts as non-bonding (a symmetric 1s core measures
+  3e-4, and a bare sign test would call it "bonding"), and a row marked `!` is
+  cancellation-heavy (the absolute sum of its atom-pair blocks exceeds 5 -- the
+  N2 orbitals run up to 2.2 while one node-heavy virtual measures 158), so its
+  cross magnitude is not a bond order even though its sign still reads;
+- the **shares** are Löwdin atomic populations: non-negative and summing to one
+  for every orbital, unlike the raw block sums.
+- the extent and centroid displacement are **AO-centre estimates** (the exact
+  `<r^2>` and the diagonal integrals need integrals an export does not carry;
+  an FCIDUMP has them when needed).
+
+**What it is not**: a selection criterion by itself -- the source's own
+benchmark found that a larger active space is not automatically a better one
+(autoCAS picked 17 orbitals for CH4 where a smaller space gave half the error),
+so read this panel as evidence for a choice, not as the choice.
+
 ## Appendix A Command line
 
 ```text

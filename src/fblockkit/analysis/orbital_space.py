@@ -42,7 +42,7 @@ from ..knowledge.models import (
     ReportSection,
 )
 
-__all__ = ["SpaceComparison", "compare_spaces", "run", "evidence"]
+__all__ = ["SpaceComparison", "compare_spaces", "jaccard", "run", "evidence"]
 
 
 class OrbitalSpaceError(ValueError):
@@ -57,6 +57,25 @@ DEFICIT_SMALL = 1e-4
 DEFICIT_LARGE = 1e-2
 CHANGE_ESSENTIALLY_UNCHANGED = 0.9
 CHANGE_REPLACED = 0.5
+
+
+def jaccard(window_a, window_b) -> float:
+    """The Jaccard index of two orbital windows (|A and B| / |A or B|).
+
+    The evaluation protocol of the RLEASE source reports it next to the energy
+    error to locate where a disagreement comes from: a low Jaccard index means
+    the two calculations picked different orbitals, a high one with different
+    energies means the same space behaved differently.
+    """
+    set_a = {int(index) for index in window_a}
+    set_b = {int(index) for index in window_b}
+    union = set_a | set_b
+    if not union:
+        raise OrbitalSpaceError(
+            "both windows are empty, so the Jaccard index is undefined. Next step: give "
+            "at least one orbital in a window."
+        )
+    return len(set_a & set_b) / len(union)
 
 
 @dataclass(frozen=True)
@@ -174,7 +193,13 @@ def _definite_note(comparison: SpaceComparison) -> str:
     )
 
 
-def run(comparison: SpaceComparison, *, label_a: str = "A", label_b: str = "B") -> ReportSection:
+def run(
+    comparison: SpaceComparison,
+    *,
+    label_a: str = "A",
+    label_b: str = "B",
+    jaccard_index: float | None = None,
+) -> ReportSection:
     """Render the comparison report (both readings, with their provisional bands)."""
     singulars = " ".join(f"{value:.4f}" for value in comparison.singular_values)
     lines = [
@@ -235,6 +260,13 @@ def run(comparison: SpaceComparison, *, label_a: str = "A", label_b: str = "B") 
         lines.append(
             "  - space change: not read here -- the source's criterion compares two "
             "sets of the same size (initial vs final active space)"
+        )
+    if jaccard_index is not None:
+        lines.append(
+            f"  - Jaccard index of the two windows = {jaccard_index:.4f}: reported next "
+            "to the overlap so that a disagreement can be split into 'different "
+            "orbitals chosen' (low index) against 'same space, different behaviour' "
+            "(high index) -- the evaluation protocol of the descriptor-panel source"
         )
     if comparison.note:
         lines += ["", comparison.note]

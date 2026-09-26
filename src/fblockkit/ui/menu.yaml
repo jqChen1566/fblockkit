@@ -48,6 +48,9 @@ items:
   - number: "14"
     title: "AVAS target projection (an orbital export + a target AO shell -> active-space size)"
     handler: avas_target
+  - number: "15"
+    title: "Orbital portrait (an export -> occupation, bonding label, shell composition, extent)"
+    handler: orbital_portrait
   - number: "0"
     title: Quit
     handler: quit

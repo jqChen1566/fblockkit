@@ -432,6 +432,18 @@ def test_menu_fourteen_refuses_an_unknown_letter(tmp_path):
     assert "not an angular-momentum letter" in out
 
 
+def test_menu_fifteen_orbital_portrait(tmp_path):
+    """Menu 15: the descriptor panel on the N2 export reads its own chemistry."""
+    export = tmp_path / "canonical.json"
+    shutil.copy(FIXTURES / "n2_fcidump.canonical.json", export)
+    out, _ = _session_run(["15", str(export), "", "0"])
+    assert "Orbital portrait" in out
+    assert "bonding" in out and "extent" in out
+    report = Path(str(export) + ".portrait.fbk.md").read_text(encoding="utf-8")
+    assert "A9 orbital portrait" in report
+    assert "not adopted" in report  # the model is explicitly not adopted
+
+
 def test_menu_thirteen_orbital_space_identity(tmp_path):
     """Menu 13: the same active space before and after a localisation reads as
     unchanged (sigma_F = 1, smallest singular value 1) -- the check must be blind
@@ -445,6 +457,7 @@ def test_menu_thirteen_orbital_space_identity(tmp_path):
     )
     assert "sigma_F = ||M||_F / sqrt(min(n_A, n_B)) = 1.000000" in out
     assert "essentially the same space" in out
+    assert "Jaccard index of the two windows = 1.0000" in out
     report = Path(str(canonical) + ".fbk.md").read_text(encoding="utf-8")
     assert "sayfutyarova2017avas" in report or "10.1021/acs.jctc.7b00128" in report
     assert "References" in report

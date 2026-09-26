@@ -127,6 +127,7 @@ def main() -> int:
                     "work/canonical.json", "work/localized.json", "4 9", "0",
                     "13", "work/canonical.json", "4 9", "work/localized.json", "4 9",
                     "14", "work/canonical.json", "0", "p", "2", "", "",
+                    "15", "work/canonical.json", "",
                     "8", "work/saved.txt",
                     "0",
                 ]
@@ -194,6 +195,14 @@ def main() -> int:
             check(
                 "Relativistic tier:" in out and "SFX2C-1e" in out,
                 "menu 3 adds the relativistic tier line the f-block profile implies",
+            )
+
+            portrait = read("canonical.json.portrait.fbk.md")
+            check(
+                "A9 orbital portrait" in portrait
+                and "bonding" in portrait
+                and "Jaccard" not in portrait,
+                "menu 15 report: the descriptor panel names the N2 bonding labels",
             )
 
             geometry = read("octahedron.xyz.fbk.md")
