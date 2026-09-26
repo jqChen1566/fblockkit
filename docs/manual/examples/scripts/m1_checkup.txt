@@ -1,3 +1,5 @@
 1
 work/n2_casscf_nevpt2.out
+1
+work/n2_diffuse.out
 0

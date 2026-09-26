@@ -48,13 +48,20 @@ explanation.
 
 **How**: choose menu 1, then give the file path.
 
+**Optional prints**: two analyses read keywords of the run itself - the A1
+composition table needs `%output Print[P_ReducedOrbPopMO_L] 1 end`, and the A8
+diffuse-orbital (Rydberg) check needs `!PrintBasis` in addition (it reads the
+shell exponents the run prints). Without them those sections are skipped, never
+guessed.
+
 **What you get** (written next to the input file; nothing you already have is
 overwritten):
 
 - `name.fbk.md` - the report: summary -> analysis sections (A1 orbital
   composition, A2 occupations and the entropy bound, A3 the multi-reference
   character panel; A6 the local spin analysis when the input divided the
-  molecule into fragments) -> diagnostic findings (graded refuse / error /
+  molecule into fragments; A8 the diffuse-orbital check when the basis is
+  printed) -> diagnostic findings (graded refuse / error /
   warning / info) -> provenance summary -> References;
 - `name.fbk.json` - the same content, machine-readable;
 - The References block lists, for every cited work, the **complete citation**

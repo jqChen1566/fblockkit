@@ -14,6 +14,8 @@
 - A6 ``local_spin``: ORCA's local spin analysis (a surrogate for the environment spin
   polarisation entropy Delta S_E);
 - S1 ``geometry``: coordination geometry and symmetry hints (reads an XYZ structure);
+- A8 ``diffuse``: the diffuse-orbital (Rydberg) check of rule G, ranked per active
+  orbital (reads the printed basis and the composition table);
 - S2 ``point_charge``: the point-charge crystal-field estimate from a structure.
 
 Common convention: every output-reading module provides ``accepts(input) -> bool`` and
@@ -28,6 +30,7 @@ from . import (
     cf_declaration,
     composition,
     crystal_field,
+    diffuse,
     entropy,
     geometry,
     local_spin,
@@ -49,7 +52,7 @@ from .geometry import Atom, coordination_shell, dominant_center, parse_xyz
 
 # Analysers that read a "program output" (only those whose accepts() passes are run);
 # the structure-based S1/S2 and the mapping-based A5 are called directly by the caller
-_OUTPUT_ANALYZERS = (composition, entropy, mr_diagnostics, local_spin)
+_OUTPUT_ANALYZERS = (composition, entropy, mr_diagnostics, local_spin, diffuse)
 
 
 def run_all(result) -> tuple:
@@ -82,6 +85,7 @@ __all__ = [
     "allowed_parameters",
     "cf_declaration",
     "composition",
+    "diffuse",
     "coordination_shell",
     "crystal_field",
     "design_matrix",

@@ -21,6 +21,7 @@ cp "$REPO/fixtures/orca/generated_ce3_sarc2.out" work/
 cp "$REPO/fixtures/orca/n2_stretch_local_spin.out" work/
 cp "$REPO/fixtures/orca/fhh_optts_freq.out" work/
 cp "$REPO/fixtures/orca/n2_hf_clean.out" work/
+cp "$REPO/fixtures/orca/n2_diffuse.out" work/
 cp "$REPO/fixtures/orca/scf_noconv.out" work/
 cp "$REPO/fixtures/orca/inputs/scf_noconv.inp" work/
 cp "$REPO/fixtures/literature/pucl3_s18.json" work/

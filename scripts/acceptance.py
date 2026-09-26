@@ -81,6 +81,7 @@ def main() -> int:
             "n2_hf_clean.out",
             "generated_ce3_sarc2.out",
             "n2_stretch_local_spin.out",
+            "n2_diffuse.out",
             "fhh_optts_freq.out",
             "ce3_orbcomp.out",
         ):
@@ -111,6 +112,7 @@ def main() -> int:
                     "1", "work/co_plus_soc.out",
                     "1", "work/fhh_optts_freq.out",
                     "1", "work/n2_stretch_local_spin.out",
+                    "1", "work/n2_diffuse.out",
                     "2", "work/octahedron.xyz", "Oh",
                     "3", "Ce", "3", "2", "3", "energy", "work/ce_atom.xyz", "1", "1,7,2,1", "default", "5000",
                     "4", "Pu,Cl", "0", "2", "3", "energy",
@@ -172,6 +174,15 @@ def main() -> int:
             check("## A6 local spin analysis" in local_spin
                   and "NOT the environment spin polarisation entropy" in local_spin,
                   "the local-spin section and its Delta S_E boundary are present")
+
+            diffuse = read("n2_diffuse.out.fbk.md")
+            check(
+                "A8 diffuse-orbital (Rydberg) check" in diffuse
+                and "0.18764592" in diffuse
+                and "ranking (most diffuse channel first)" in diffuse,
+                "menu 1 report: the rule-G panel ranks the active orbitals by channel "
+                "diffuseness with the run's own exponents",
+            )
 
             geometry = read("octahedron.xyz.fbk.md")
             check("Coordination shell: 6 ligands" in geometry and "Oh" in geometry,

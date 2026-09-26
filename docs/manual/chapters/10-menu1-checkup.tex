@@ -23,6 +23,10 @@ depends on what the output contains:
     skipped, with an explanation in the report;
   \item the \textbf{occupation/entropy} analyses need a CASSCF output (the
     \code{N(occ)=} line);
+  \item the \textbf{diffuse-orbital check} (A8) additionally needs the basis
+    exponents themselves: add \code{!PrintBasis} to the input, so the run prints
+    its shells in input format; without it the section is skipped (the exponents
+    cannot be inferred from the composition table);
   \item the \textbf{T1} line of the multi-reference panel needs a coupled-cluster
     output;
   \item the \textbf{local spin} section appears only when the input divided the
@@ -49,9 +53,9 @@ Chapter~\ref{ch:report}; the following sections point at the variants.
 \begin{itemize}
   \item \file{name.fbk.md} -- the report: summary, one section per applicable
     analyser (A1 orbital composition, A2 occupation/entropy bound, A3
-    multi-reference panel, A6 local spin analysis), findings ordered by
-    severity, the provenance list, and the references block with complete
-    citations and paste-ready BibTeX entries;
+    multi-reference panel, A6 local spin analysis, A8 diffuse-orbital check),
+    findings ordered by severity, the provenance list, and the references block
+    with complete citations and paste-ready BibTeX entries;
   \item \file{name.fbk.json} -- the same content as data, for scripting.
 \end{itemize}
 
@@ -124,6 +128,30 @@ environment spin polarisation entropy $\Delta S_E$}; the real $\Delta S_E$
 needs the two-step off-line route (\code{orca\_2json} for the spin-resolved
 2-RDMs plus \code{orca\_loc} localised orbitals), which the section spells out
 together with the measured scale it stands in for.
+
+\subsection{The diffuse-orbital (Rydberg) check}
+
+Rule~G of the decision ladder asks whether the active orbitals are
+Rydberg-contaminated, which an occupation-based selection cannot see.  The A8
+section appears when the \emph{output itself} carries both the printed basis
+(\code{!PrintBasis}) and the composition table; it then reports, per active
+orbital, the diffusest and tightest Gaussian exponent of that orbital's
+dominant (element, angular-momentum) channel, the orbital's weight on the
+channel, and the ranking by diffuseness:
+
+\lstinputlisting[style=fbkcode, firstline=68, lastline=88,
+  title={A8 section (from the N\textsubscript{2} CAS(6,6) run reprinted with
+  \code{!PrintBasis})}]
+  {examples/expected/products/n2_diffuse.out.fbk.md}
+
+The section deliberately carries no threshold: the source asks for
+identification and sorting, and the exponent's absolute value does not transfer
+between elements (measured: the diffusest s exponent is $0.19$ on N/def2-SVP
+but $0.022$ on Eu/SARC2, whose valence functions are the diffuse end of \emph{that}
+basis).  Read the diffusest exponent against the tightest one of the same
+channel -- both are printed -- and across the active orbitals; the source's
+remedy for a diffuse candidate is to extend the active space with it and
+recompute the target states with SA-CASSCF + NEVPT2.
 
 \subsection{A transition-state job}
 

@@ -150,13 +150,19 @@ def _parse_orbital_composition(lines: list[str]) -> dict[str, Any]:
     state = "seek"
     indices: list[int] = []
     entries: list[dict[str, Any]] = []
-    weights: list[dict[tuple[int, str, str], float]] = []
+    weights: list[dict[tuple[int, str, str, int], float]] = []
 
     def _flush() -> None:
         for entry, shell_map in zip(entries, weights):
             entry["shells"] = tuple(
-                {"atom": atom, "element": element, "shell": shell, "weight": weight}
-                for (atom, element, shell), weight in sorted(
+                {
+                    "atom": atom,
+                    "element": element,
+                    "shell": shell,
+                    "shell_index": shell_index,
+                    "weight": weight,
+                }
+                for (atom, element, shell, shell_index), weight in sorted(
                     shell_map.items(), key=lambda item: item[1], reverse=True
                 )
             )
@@ -195,10 +201,19 @@ def _parse_orbital_composition(lines: list[str]) -> dict[str, Any]:
         if match is not None:
             atom = int(match.group(1))
             element = match.group(2)
-            shell = match.group(3)[0]  # s / p / d / f / g (first char of the AO label)
+            label = match.group(3)
+            shell = label[0]  # s / p / d / f / g (first char of the AO label)
+            # the AO label also carries the shell counter ("1s", "2p", "1dz2"): it
+            # indexes the shells of that (element, angular momentum) channel in the
+            # order the basis prints them, which is what the basis reader below and
+            # the diffuse-orbital check need
+            # this table labels AOs by letter only ("s", "pz", "dz2"), so the shell
+            # counter is unknown here (None); the orca_2json exports carry the
+            # numbered labels ("1s", "2p") and their readers give real indices
+            shell_index = None
             values = _floats(match.group(4))
             for shell_map, value in zip(weights, values):
-                key = (atom, element, shell)
+                key = (atom, element, shell, shell_index)
                 shell_map[key] = shell_map.get(key, 0.0) + value
             continue
         _flush()
@@ -223,6 +238,118 @@ _SOC_MARKERS_RE = re.compile(
     r"Calculating SOCInts|Doing QDPT with ONLY SOC|NONZERO SOC MATRIX ELEMENTS|"
     r"SOC CORRECTED|SOC MATRIX|Lowest eigenvalue of the SOC matrix"
 )
+
+# --- printed basis set (BASIS SET IN INPUT FORMAT) ---------------------------
+# Written only when the run asks for it (!PrintBasis): the block lists, per element,
+# the shells in ORCA's own input format -- one header "<L> <nprim>" per contracted
+# shell and one "index exponent coefficient(s)" row per primitive.  The order inside
+# one angular momentum runs tight to diffuse (measured on the N2 def2-SVP fixture),
+# but the diffuse-orbital check takes the minimum exponent rather than relying on it.
+
+_BASIS_MARKER = "BASIS SET IN INPUT FORMAT"
+_BASIS_SHELL_RE = re.compile(r"^\s*([SPDFGHI])\s+(\d+)\s*$")
+_BASIS_PRIMITIVE_RE = re.compile(r"^\s*\d+\s+([-+\d.eEdD]+(?:\s+[-+\d.eEdD]+)+)\s*$")
+
+
+def _parse_basis(lines: list[str]) -> dict[str, Any]:
+    """Per-element shells with their primitive exponents (requires !PrintBasis)."""
+    start = None
+    for index, line in enumerate(lines):
+        if _BASIS_MARKER in line:
+            start = index + 1
+            break
+    if start is None:
+        return {"present": False, "elements": (), "ecp_blocks": 0}
+    elements: list[dict[str, Any]] = []
+    element: str | None = None
+    shells: list[dict[str, Any]] = []
+    shell: dict[str, Any] | None = None
+    remaining = 0
+    ecp_blocks = 0
+    in_ecp = False
+
+    def _close_shell() -> None:
+        nonlocal shell
+        if shell is not None:
+            shells.append(shell)
+            shell = None
+
+    def _close_element() -> None:
+        nonlocal element
+        _close_shell()
+        if element is not None:
+            elements.append({"element": element, "shells": tuple(shells)})
+            element = None
+        shells.clear()
+
+    for line in lines[start:]:
+        stripped = line.strip()
+        if in_ecp:
+            if "end;" in stripped or stripped == "end":
+                in_ecp = False
+            continue
+        if stripped.startswith("NewGTO"):
+            _close_element()
+            tokens = stripped.split()
+            if len(tokens) < 2:
+                raise ParserError(
+                    "a NewGTO line in the printed basis carries no element symbol. "
+                    "Next step: report the output; the basis reader cannot name the "
+                    "element."
+                )
+            element = tokens[1].capitalize()
+            shell = None
+            remaining = 0
+            continue
+        if stripped.startswith("NewECP"):
+            # an ECP block sits next to the basis for the elements that have one; it
+            # carries no Gaussian exponents, so it is counted and skipped
+            _close_element()
+            ecp_blocks += 1
+            in_ecp = True
+            continue
+        if stripped.startswith("#"):
+            continue
+        if stripped and set(stripped) <= {"-", " "}:
+            continue  # the divider under the section marker
+        if stripped in ("end;", "end"):
+            _close_element()
+            continue
+        if not stripped:
+            continue
+        match = _BASIS_SHELL_RE.match(line)
+        if match is not None:
+            _close_shell()
+            shell = {"angular": match.group(1).lower(), "exponents": [], "coefficients": []}
+            remaining = int(match.group(2))
+            continue
+        match = _BASIS_PRIMITIVE_RE.match(line)
+        if match is not None:
+            if shell is None or remaining <= 0:
+                raise ParserError(
+                    f"a primitive row appears outside any shell in the printed basis "
+                    f"({stripped!r}). Next step: report the output; the basis block does "
+                    "not follow the expected shape."
+                )
+            numbers = [
+                float(token.replace("D", "E").replace("d", "e"))
+                for token in match.group(1).split()
+            ]
+            shell["exponents"].append(numbers[0])
+            shell["coefficients"].append(tuple(numbers[1:]))
+            remaining -= 1
+            continue
+        # anything else ends the block (the startup banner follows it)
+        break
+    _close_element()
+    if not elements:
+        return {"present": False, "elements": (), "ecp_blocks": ecp_blocks}
+    for entry in elements:
+        for item in entry["shells"]:
+            item["exponents"] = tuple(item["exponents"])
+            item["coefficients"] = tuple(item["coefficients"])
+    return {"present": True, "elements": tuple(elements), "ecp_blocks": ecp_blocks}
+
 
 # --- coupled cluster diagnostics (T1) ---------------------------------------
 # ORCA prints the T1 diagnostic (Lee & Taylor) inside the "COUPLED CLUSTER
@@ -915,6 +1042,7 @@ class OrcaParser:
             "scf": _parse_scf(lines),
             "orbitals": _parse_orbitals(lines),
             "orbital_composition": _parse_orbital_composition(lines),
+            "basis": _parse_basis(lines),
             "casscf": _parse_casscf(lines),
             "nevpt2": _parse_pt2(lines, "nevpt2"),
             "caspt2": _parse_pt2(lines, "caspt2"),

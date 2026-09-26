@@ -148,6 +148,10 @@ being generated for a future wave of the toolkit. The files themselves
 stay in the repository: as a *negative* fixture the chain is exactly what the
 f-character check and the atomic-term check are for.
 
+| `n2_basis.out` | N2 / def2-SVP, HF single point with `!PrintBasis` | the basis block in ORCA's input format (`BASIS SET IN INPUT FORMAT`): per element, one `<L> <nprim>` header per shell and one `index exponent coefficient(s)` row per primitive. Measured: N = 7s4p1d, diffusest s exponent 0.1876459, diffusest p 0.2195435 |
+| `n2_diffuse.out` | the N2/def2-SVP CAS(6,6) chain rerun with both `!PrintBasis` and `%output Print[P_ReducedOrbPopMO_L] 1 end` | the rule-G fixture: basis exponents *and* the per-orbital composition table in one output (final CASSCF energy reproduces the chain's -108.950671945 Eh). The printed basis block appears twice (main basis, then the /C auxiliary); the reader takes the first and stops at the following non-shell line |
+| `eu_basis.out` | Eu3+ / SARC2-DKH-QZVP with `!PrintBasis` (SCF capped at two iterations; only the printed basis is used) | the f-block basis face: four f contractions with diffusest exponents 4.870 / 1.956 / 0.786 / 0.316, matching the four f shells the exports label; the all-electron basis has no ECP block |
+
 ## Known-behaviour notes
 
 - `generated_ce3_sarc2.out`: the active occupations are (1,0,0,0,0,0,0) -- putting the

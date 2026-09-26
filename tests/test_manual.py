@@ -103,6 +103,7 @@ def _prepare_work() -> None:
         "n2_stretch_local_spin.out",
         "fhh_optts_freq.out",
         "n2_hf_clean.out",
+        "n2_diffuse.out",
         "scf_noconv.out",
     ):
         shutil.copy(FIXTURES / name, work / name)

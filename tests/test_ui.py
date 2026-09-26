@@ -400,6 +400,17 @@ def test_menu_twelve_without_exports_skips_the_localized_step(tmp_path):
     assert "IAO-IBO" not in out
 
 
+def test_menu_one_reports_the_rule_g_panel(tmp_path):
+    """Menu 1 on the !PrintBasis + composition fixture carries the A8 panel."""
+    out_file = tmp_path / "n2_diffuse.out"
+    shutil.copy(FIXTURES / "n2_diffuse.out", out_file)
+    _, _ = _session_run(["1", str(out_file), "0"])
+    report = Path(str(out_file) + ".fbk.md").read_text(encoding="utf-8")
+    assert "A8 diffuse-orbital (Rydberg) check" in report
+    assert "0.18764592" in report  # the run's own diffusest s exponent
+    assert "SA-CASSCF + NEVPT2" in report  # the source's remedy
+
+
 def test_menu_fourteen_avas_target(tmp_path):
     """Menu 14: the AVAS projection of the two N 2p shells on the N2 export reads
     back the textbook (6 electrons, 6 orbitals) active space."""
