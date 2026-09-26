@@ -105,9 +105,13 @@ def main() -> int:
             "cf_c3.json",
             "dy_doublets.json",
             "mapping_manifest.json",
+            "guess_manifest.json",
             "n2_scan_1.094.loc.json",
             "n2_scan_1.600.loc.json",
+            "n2_scan_1.610.loc.json",
             "n2_scan_2.600.loc.json",
+            "n2_scan_1.600.json",
+            "n2_scan_1.600.mkl",
         ):
             # the generator writes into its own examples/work directory
             shutil.copy(EXAMPLES / "work" / name, inputs / name)
@@ -140,6 +144,7 @@ def main() -> int:
                     "15", "work/canonical.json", "",
                     "16", "work/dy_doublets.json",
                     "17", "work/mapping_manifest.json",
+                    "18", "work/guess_manifest.json",
                     "8", "work/saved.txt",
                     "0",
                 ]
@@ -299,6 +304,30 @@ def main() -> int:
                 and "tau: occupied 0.5, virtual 0.5" in mapping,
                 "menu 17 report: the N2 scan maps its cores and puts the hybrids in "
                 "the non-matchable block; the selection implies the bond triad",
+            )
+
+            check(
+                "Active-space overlap" in mapping
+                and "0.995" in mapping
+                and "preserved" in mapping,
+                "menu 17 report: the active-space overlap block reads the scan's "
+                "small step as preserved",
+            )
+
+            guess = read("guess_manifest.json.guess.fbk.md")
+            # the residual is an eigh-level quantity (3.10e-15 locally, 4.66e-15 on
+            # the 101 BLAS): the check confines it to the round-off scale, not a value
+            check(
+                "G5 WASP initial guess" in guess
+                and "0.664" in guess
+                and "orthonormalisation residual:" in guess
+                and "e-15" in guess,
+                "menu 18 report: the 1/d weights and the orthonormalisation residual",
+            )
+            written = read("n2_scan_1.600.fbk.mkl")
+            check(
+                "$COEFF_ALPHA" in written and "$BASIS" in written and "$OCC_ALPHA" in written,
+                "menu 18 wrote the gbw-ready mkl next to the template",
             )
 
             check(product("saved.txt").is_file(), "menu 8 wrote the session script")

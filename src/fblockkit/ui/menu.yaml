@@ -57,6 +57,9 @@ items:
   - number: "17"
     title: "Cross-structure orbital mapping (a manifest of exports -> consistent active spaces along a path)"
     handler: orbital_mapping
+  - number: "18"
+    title: "WASP guess transfer (neighbour orbitals -> an interpolated, gbw-ready mkl for a geometry series)"
+    handler: wasp_guess
   - number: "0"
     title: Quit
     handler: quit

@@ -1,0 +1,87 @@
+\chapter{WASP guess transfer (menu 18)}
+\label{ch:menu18}
+\menulabel{18}
+
+\section{Purpose}
+
+Starting every structure of a series from an orbital set that already lies in
+the right basin -- the other half of the cross-structure problem menu~\menu{17}
+maps.  The WASP protocol builds the guess for a target geometry as the
+$1/d$-weighted interpolation of the neighbouring structures' orbital
+coefficients (the review's Eqs.~(11)--(13)):
+
+\[
+\mathbf{C} = \frac{\sum_\beta w_\beta \mathbf{C}_\beta}{\sum_\beta w_\beta},
+\qquad w_\beta = \frac{1}{d(\mathbf{G}, \mathbf{G}_\beta)},
+\]
+
+over the neighbourhood $d \le \delta$ (RMSD distances), followed by an
+orthonormalisation in the target geometry's overlap metric.  This menu writes
+the result into a \emph{gbw-ready} Molekel mkl: \code{orca\_2mkl <name>.fbk
+-gbw} converts it into a \code{.gbw} that ORCA reads through \code{!moread} +
+\code{\%moinp}.
+
+\section{What you need}
+
+The neighbour exports (localized orbitals of the already-computed structures),
+the target's own export (its overlap metric orthonormalises the mixture) and
+the target's mkl template (\code{orca\_2mkl <target> -mkl} after any cheap run
+at that geometry).  All structures share the basis set, the atom order and the
+orientation; the manifest schema is in Chapter~\ref{ch:formats}.
+
+\section{Walkthrough}
+
+\lstinputlisting[style=fbkcode, firstline=23, lastline=41,
+  title={The menu-18 example session (the frozen N$_2$ scan: the two far
+  neighbours build the guess for the middle geometry)}]
+  {examples/expected/m18_guess.txt}
+
+\section{What you get}
+
+The weights table, the orthonormalisation residual, the \code{.fbk.mkl} file
+(the exact conversion and \code{\%moinp} command are printed with it) and a
+report (\file{<manifest>.guess.fbk.md}) with the citations.  The occupations
+and orbital energies written along come from the nearest neighbour.
+
+\section{How to read the numbers}
+
+\begin{readbox}
+\begin{itemize}
+  \item \textbf{The weights are $1/d$ over the neighbourhood} -- closer
+    structures dominate, and a neighbour \emph{at} the target geometry takes
+    everything (the weight would diverge): the guess then is that structure's
+    own orbital set, and the report says so.
+  \item \textbf{The residual is the certificate of the write}: the mixture is
+    orthonormal in the target's overlap metric before it is written
+    ($3\times10^{-15}$ in the example).  The write-back route itself was
+    measured on ORCA 6.1.1: the converted file is accepted as
+    \code{INITIAL GUESS: MOREAD}, and a gbw$\to$mkl$\to$gbw round trip
+    preserves the coefficients to the file's print precision ($5\times10^{-8}$).
+  \item \textbf{A guess selects the basin, not just the starting point.}  In
+    the frozen example the interpolated guess converged the target geometry's
+    RHF to a \emph{second} solution 19~mEh \emph{below} the branch the scan
+    itself used -- a measured multiple-solution instance (RHF/def2-SVP at
+    1.6~\AA).  After any guess transfer, check that the solution still belongs
+    to the series (energy, orbital character, the mapping); a good guess does
+    not guarantee branch continuity.
+\end{itemize}
+\end{readbox}
+
+\section{Boundaries and related sections}
+
+\begin{refusalbox}
+\begin{itemize}
+  \item Structures with different atoms, basis or orbital counts are refused;
+    a delta that excludes every neighbour is refused with the closest
+    distance named.
+  \item Nothing is aligned silently: the RMSD (and the coefficient
+    interpolation behind it) assumes the structures share one frame, which is
+    how a scan is normally produced.
+  \item The written file is a guess: ORCA re-optimises the orbitals, and this
+    menu claims nothing about convergence.
+\end{itemize}
+\end{refusalbox}
+
+Related: \menu{17} (the mapping that keeps the active space consistent -- the
+guess and the map are complements), \menu{12} (the entropy selection the map
+carries), and Chapter~\ref{ch:criteria}.

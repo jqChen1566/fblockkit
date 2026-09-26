@@ -45,6 +45,15 @@ orientation.  The manifest JSON schema is in Chapter~\ref{ch:formats}.
   exports, a selection on one bond orbital)}]
   {examples/expected/m17_mapping.txt}
 
+With an \code{active} block in the manifest, the same report carries the
+overlap-preservation scalar of the second source (its Supporting Information)
+for every adjacent pair:
+
+\lstinputlisting[style=fbkcode, firstline=204, lastline=208,
+  title={The active-space overlap block of the same run (\code{active} =
+  the bond triad)}]
+  {examples/expected/m17_mapping.txt}
+
 The selection given for one structure ($\{4\}$ of the equilibrium geometry)
 implies the consistent space of every structure:
 

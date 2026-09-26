@@ -113,12 +113,14 @@ def _prepare_work() -> None:
     shutil.copy(FIXTURES / "n2_fcidump.fcidump", work / "FCIDUMP")
     shutil.copy(FIXTURES / "n2_fcidump.canonical.json", work / "canonical.json")
     shutil.copy(FIXTURES / "n2_fcidump.localized.json", work / "localized.json")
-    # the cross-structure mapping chain of menu 17 (three localized scan exports)
-    for distance in ("1.094", "1.600", "2.600"):
+    # the cross-structure mapping chain of menu 17 and the menu-18 template pair
+    for distance in ("1.094", "1.600", "1.610", "2.600"):
         shutil.copy(
             FIXTURES / f"n2_scan_{distance}.loc.json",
             work / f"n2_scan_{distance}.loc.json",
         )
+    shutil.copy(FIXTURES / "n2_scan_1.600.json", work / "n2_scan_1.600.json")
+    shutil.copy(FIXTURES / "n2_scan_1.600.mkl", work / "n2_scan_1.600.mkl")
 
 
 @pytest.fixture(scope="module")

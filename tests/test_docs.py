@@ -48,6 +48,7 @@ def test_doc_mentions_each_menu_title_topic():
         "Orbital portrait",
         "Magnetic-doublet criterion",
         "Cross-structure orbital mapping",
+        "WASP guess transfer",
     ):
         assert keyword in text, keyword
 

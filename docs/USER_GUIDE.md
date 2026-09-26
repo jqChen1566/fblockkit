@@ -696,6 +696,84 @@ geometry): the report shows it rather than hiding it. The selection itself is
 not made here: menu 12's entropy protocol (or any other) provides it, and this
 menu reports the consistent space it implies.
 
+**Optional: the active-space overlap (`active` block)**: give per-structure
+active-orbital lists (`"active": {"r=1.094": [4, 5, 6], ...}`) and the report
+adds the *overlap-preservation* scalar of the second source (its Supporting
+Information): between each adjacent pair, |det S_act| ~ 1 means the active
+space survived, ~ 0 means at least one active orbital exchanged with the
+inactive space (measured on the frozen scan: the cores give 1.0000 for every
+pair, the bond triad 0.9955 across a 0.01-Angstrom step and 0.72 across
+0.5-Angstrom steps). The number uses the *second* structure's overlap -- the
+source's own small-step approximation -- so between distant structures it
+demonstrates degradation rather than certifying preservation, and the printed
+bands are this project's reading of the source's qualitative scale. Note the
+two checks answer different questions: the determinant tracks the active
+*subspace* (a rotation inside a degenerate window leaves it near 1), while the
+mapping follows individual orbitals.
+
+## 18 WASP guess transfer (neighbours -> a gbw-ready mkl)
+
+**What it is for**: starting every structure of a series from an orbital set
+that already lies in the right basin. The WASP protocol (the review's
+Eqs. (11)-(13)) builds the guess for a target geometry as the 1/d-weighted
+interpolation of the *neighbouring* structures' orbital coefficients, d the
+RMSD between structures, and orthonormalises the mixture in the target's
+overlap metric. This menu writes that guess into a **gbw-ready Molekel mkl**,
+which `orca_2mkl` converts into a `.gbw` that ORCA reads through `!moread` +
+`%moinp` -- the toolkit's write-back route to ORCA's initial guess (measured
+on 6.1.1: the converted file is accepted as `INITIAL GUESS: MOREAD`; the
+round trip preserves coefficients to the print precision).
+
+**What you need**: the neighbour exports (localized orbitals of the
+already-computed structures, same basis and atom order as the target), the
+target geometry's own export (**it supplies the overlap metric**) and its mkl
+(`orca_2mkl <target> -mkl` after any cheap run at that geometry -- the
+template supplies geometry, basis and the file layout).
+
+**How**: menu 18 -> a manifest JSON:
+
+```json
+{
+  "structures": [
+    {"name": "r=1.094", "export": "n2_scan_1.094.loc.json"},
+    {"name": "r=2.600", "export": "n2_scan_2.600.loc.json"}
+  ],
+  "template": {"export": "n2_scan_1.600.loc.json", "mkl": "n2_scan_1.600.mkl"},
+  "delta": 1.0
+}
+```
+
+`delta` (optional, Angstrom) restricts the neighbourhood; without it every
+given neighbour counts. Paths are relative to the manifest.
+
+**What you get**: the weights table (distance and 1/d weight per neighbour),
+the orthonormalisation residual, the file
+`<template stem>.fbk.mkl` (run `orca_2mkl <template stem>.fbk -gbw` next to
+it), and a report (`<manifest>.guess.fbk.md`) with the citations. The
+occupations and orbital energies written along come from the nearest
+neighbour; the orbitals are the mixture.
+
+**How to read it**:
+
+- the residual should sit at round-off (3e-15 in the example): the mixture is
+  orthonormal in the target's metric before it is written;
+- a neighbour *at* the target geometry takes the whole weight (the 1/d weight
+  would diverge): the guess then is that structure's orbital set as it stands,
+  and the report says so;
+- **a guess selects the basin, not just the starting point.** In the frozen
+  example the interpolated guess converged the target geometry's RHF to a
+  *second* solution 19 mEh *below* the branch the scan itself used -- a real
+  multiple-solution instance (RHF/def2-SVP at 1.6 Angstrom). After any guess
+  transfer, verify that the solution still belongs to the series (energy,
+  orbital character, the mapping): basis continuity is not guaranteed by a
+  good guess.
+
+**Boundaries**: same basis, atom order and orientation across the structures
+(the coefficients live in each structure's own AO frame; nothing is aligned
+silently -- the RMSD is taken as given). The written mkl is a *guess*: ORCA
+re-optimises; nothing here is a converged result. The machine-readable form of
+the mkl (and the reader/writer) is documented in the format appendix.
+
 ## Appendix A Command line
 
 ```text

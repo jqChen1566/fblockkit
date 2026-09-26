@@ -141,11 +141,28 @@ print("wrote work/dy_doublets.json")
 mapping_payload = {
     "structures": [
         {"name": f"r={r}", "export": f"n2_scan_{r}.loc.json"}
-        for r in ("1.094", "1.600", "2.600")
+        for r in ("1.094", "1.600", "1.610", "2.600")
     ],
     "selections": {"r=1.094": [4]},
+    "active": {f"r={r}": [4, 5, 6] for r in ("1.094", "1.600", "1.610", "2.600")},
 }
 (WORK / "mapping_manifest.json").write_text(
     json.dumps(mapping_payload, indent=1) + "\n", encoding="utf-8"
 )
 print("wrote work/mapping_manifest.json")
+
+# --- the WASP guess manifest (menu 18): the two far neighbours build the guess
+# for the middle geometry, whose export (metric) and mkl (template) are the
+# target pair.
+
+guess_payload = {
+    "structures": [
+        {"name": "r=1.094", "export": "n2_scan_1.094.loc.json"},
+        {"name": "r=2.600", "export": "n2_scan_2.600.loc.json"},
+    ],
+    "template": {"export": "n2_scan_1.600.loc.json", "mkl": "n2_scan_1.600.mkl"},
+}
+(WORK / "guess_manifest.json").write_text(
+    json.dumps(guess_payload, indent=1) + "\n", encoding="utf-8"
+)
+print("wrote work/guess_manifest.json")

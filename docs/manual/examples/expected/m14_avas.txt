@@ -18,6 +18,7 @@ Available functions:
   15  Orbital portrait (an export -> occupation, bonding label, shell composition, extent)
   16  Magnetic-doublet criterion (a Kramers-doublet table JSON -> g_T * theta_3 and the QTM line)
   17  Cross-structure orbital mapping (a manifest of exports -> consistent active spaces along a path)
+  18  WASP guess transfer (neighbour orbitals -> an interpolated, gbw-ready mkl for a geometry series)
    0  Quit
 Choose a number (Enter = leave empty)> 14
 orca_2json export path (any gbw export) (Enter = leave empty)> work/canonical.json
@@ -77,6 +78,7 @@ Available functions:
   15  Orbital portrait (an export -> occupation, bonding label, shell composition, extent)
   16  Magnetic-doublet criterion (a Kramers-doublet table JSON -> g_T * theta_3 and the QTM line)
   17  Cross-structure orbital mapping (a manifest of exports -> consistent active spaces along a path)
+  18  WASP guess transfer (neighbour orbitals -> an interpolated, gbw-ready mkl for a geometry series)
    0  Quit
 Choose a number (Enter = leave empty)> 0
 Goodbye.

@@ -31,10 +31,14 @@ cp "$REPO/fixtures/orca/n2_fcidump_step_a.out" work/
 cp "$REPO/fixtures/orca/n2_fcidump.fcidump" work/FCIDUMP
 cp "$REPO/fixtures/orca/n2_fcidump.canonical.json" work/canonical.json
 cp "$REPO/fixtures/orca/n2_fcidump.localized.json" work/localized.json
-# the cross-structure mapping chain of menu 17 (three localized scan exports)
+# the cross-structure mapping chain of menu 17 (four localized scan exports,
+# the canonical export of the template geometry, and the template mkl of menu 18)
 cp "$REPO/fixtures/orca/n2_scan_1.094.loc.json" work/
 cp "$REPO/fixtures/orca/n2_scan_1.600.loc.json" work/
+cp "$REPO/fixtures/orca/n2_scan_1.610.loc.json" work/
 cp "$REPO/fixtures/orca/n2_scan_2.600.loc.json" work/
+cp "$REPO/fixtures/orca/n2_scan_1.600.json" work/
+cp "$REPO/fixtures/orca/n2_scan_1.600.mkl" work/
 
 for script in scripts/*.txt; do
   name=$(basename "$script" .txt)
@@ -49,10 +53,12 @@ echo "captured expected/m8_replay.txt"
 # the script saved by the menu-8 example (its content is quoted in the manual)
 cp work/saved_session.txt expected/saved_session.txt
 
-# products written next to the inputs (reports, generated inputs, corrected inputs)
+# products written next to the inputs (reports, generated inputs, corrected inputs,
+# and the gbw-ready mkl of menu 18)
 cp work/*.fbk.md expected/products/
 cp work/*.fbk.json expected/products/
 cp work/*.fbk.inp expected/products/
+cp work/*.fbk.mkl expected/products/
 cp work/*.fix_*.inp expected/products/
 
 echo "done; products in expected/products/"

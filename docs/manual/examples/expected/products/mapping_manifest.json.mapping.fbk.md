@@ -1,30 +1,30 @@
 ## A11 cross-structure orbital mapping (consistent active spaces)
 
 Cross-structure orbital mapping (kinetic energy + shell-wise populations, per the source's Eq. (1)):
-  structures: r=1.094, r=1.600, r=2.600
+  structures: r=1.094, r=1.600, r=1.610, r=2.600
   tau: occupied 0.5, virtual 0.5  (from the Eq. (8) minimum over the grid)
 
 Tau curve (non-matchable orbitals per set):
     tau    occupied   virtual
-  0.050        21       63
-  0.075        21       63
-  0.100        15       35
-  0.125        15       35
-  0.150        15       35
-  0.175        15       35
-  0.200        15       35
-  0.225        15       35
-  0.250        15       35
-  0.275        15       35
-  0.300        15       35
-  0.325        15       35
-  0.350        15       35
-  0.375         6       35
-  0.400         6       35
-  0.425         6       35
-  0.450         6       35
-  0.475         6       35
-  0.500         6       35  <- occupied tau_min
+  0.050        28       84
+  0.075        28       84
+  0.100        20       84
+  0.125        20       84
+  0.150        20       46
+  0.175        20       46
+  0.200        20       46
+  0.225        20       46
+  0.250        20       46
+  0.275        20       46
+  0.300        20       46
+  0.325        20       46
+  0.350        20       46
+  0.375         8       46
+  0.400         8       46
+  0.425         8       46
+  0.450         8       46
+  0.475         8       46
+  0.500         8       46  <- occupied tau_min
 
 Structure 'r=1.094':
    orbital   occ      t(Eh)   shells (largest Loewdin shell populations)
@@ -88,6 +88,37 @@ Structure 'r=1.600':
         26   0.00     3.0858   N0 1p:+0.306  N1 1p:+0.306  N1 2p:+0.105
         27   0.00     3.0857   N1 1p:+0.306  N0 1p:+0.306  N0 2p:+0.105
 
+Structure 'r=1.610':
+   orbital   occ      t(Eh)   shells (largest Loewdin shell populations)
+         0   2.00    22.5625   N0 1s:+1.007  N0 3s:-0.004  N0 2s:-0.003
+         1   2.00     1.9454   N0 2s:+0.469  N0 3s:+0.301  N0 1p:+0.137
+         2   2.00    22.5625   N1 1s:+1.007  N1 3s:-0.004  N1 2s:-0.003
+         3   2.00     1.9454   N1 2s:+0.469  N1 3s:+0.301  N1 1p:+0.137
+         4   2.00     1.5275   N0 1p:+0.233  N1 1p:+0.233  N0 2p:+0.203
+         5   2.00     1.5275   N0 1p:+0.233  N1 1p:+0.233  N0 2p:+0.203
+         6   2.00     1.5275   N1 1p:+0.233  N0 1p:+0.233  N1 2p:+0.203
+         7   0.00     2.7991   N0 2p:+0.453  N0 3s:+0.275  N0 1p:+0.253
+         8   0.00     2.4855   N0 2p:+0.816  N0 1p:+0.240  N0 3s:-0.052
+         9   0.00     2.7989   N0 2p:+0.454  N0 3s:+0.275  N0 1p:+0.253
+        10   0.00     2.7992   N0 2p:+0.453  N0 3s:+0.275  N0 1p:+0.253
+        11   0.00     3.5468   N0 1d:+0.970  N0 1p:+0.035  N1 1d:-0.005
+        12   0.00     3.4255   N0 1d:+0.952  N0 1p:+0.029  N1 1p:+0.007
+        13   0.00     3.4431   N0 1d:+0.941  N0 1p:+0.041  N1 1p:+0.011
+        14   0.00     3.4422   N0 1d:+0.941  N0 1p:+0.041  N1 1p:+0.011
+        15   0.00     3.4248   N0 1d:+0.952  N0 1p:+0.029  N1 1p:+0.007
+        16   0.00     2.4855   N1 2p:+0.816  N1 1p:+0.240  N1 3s:-0.052
+        17   0.00     2.7991   N1 2p:+0.454  N1 3s:+0.275  N1 1p:+0.253
+        18   0.00     2.7989   N1 2p:+0.454  N1 3s:+0.275  N1 1p:+0.253
+        19   0.00     3.5468   N1 1d:+0.970  N1 1p:+0.035  N0 1d:-0.005
+        20   0.00     3.4428   N1 1d:+0.941  N1 1p:+0.041  N0 1p:+0.011
+        21   0.00     3.4251   N1 1d:+0.952  N1 1p:+0.029  N0 1p:+0.007
+        22   0.00     3.4249   N1 1d:+0.952  N1 1p:+0.029  N0 1p:+0.007
+        23   0.00     3.4431   N1 1d:+0.941  N1 1p:+0.041  N0 1p:+0.011
+        24   0.00     2.7988   N1 2p:+0.454  N1 3s:+0.275  N1 1p:+0.253
+        25   0.00     3.0428   N1 1p:+0.305  N0 1p:+0.305  N0 2p:+0.107
+        26   0.00     3.0555   N0 1p:+0.305  N1 1p:+0.305  N1 2p:+0.107
+        27   0.00     3.0557   N1 1p:+0.305  N0 1p:+0.305  N0 2p:+0.107
+
 Structure 'r=2.600':
    orbital   occ      t(Eh)   shells (largest Loewdin shell populations)
          0   2.00    22.6405   N0 1s:+1.009  N0 2s:-0.005  N0 3s:-0.004
@@ -120,21 +151,22 @@ Structure 'r=2.600':
         27   0.00     1.8002   N0 1p:+0.236  N1 1p:+0.236  N1 2p:+0.223
 
 Occupied classes:
-  - class (3 orbital-structure pairs): 0:0, 1:0, 2:0
-  - class (3 orbital-structure pairs): 0:2, 1:2, 2:2
-  - class (9 orbital-structure pairs): 0:4, 0:5, 0:6, 1:4, 1:5, 1:6, 2:4, 2:5, 2:6
-  - class (6 orbital-structure pairs): 0:1, 0:3, 1:1, 1:3, 2:1, 2:3
-  non-matchable: r=1.094 [1, 3]; r=1.600 [1, 3]; r=2.600 [1, 3]
+  - class (4 orbital-structure pairs): 0:0, 1:0, 2:0, 3:0
+  - class (4 orbital-structure pairs): 0:2, 1:2, 2:2, 3:2
+  - class (12 orbital-structure pairs): 0:4, 0:5, 0:6, 1:4, 1:5, 1:6, 2:4, 2:5, 2:6, 3:4, 3:5, 3:6
+  - class (8 orbital-structure pairs): 0:1, 0:3, 1:1, 1:3, 2:1, 2:3, 3:1, 3:3
+  non-matchable: r=1.094 [1, 3]; r=1.600 [1, 3]; r=1.610 [1, 3]; r=2.600 [1, 3]
 
 Virtual classes:
-  - class (14 orbital-structure pairs): 0:11, 0:12, 0:14, 0:15, 1:11, 1:12, 1:13, 1:14, 1:15, 2:7, 2:11, 2:12, 2:13, 2:15
-  - class (14 orbital-structure pairs): 0:17, 0:18, 0:21, 0:23, 1:20, 1:21, 1:22, 1:23, 1:24, 2:16, 2:20, 2:21, 2:22, 2:24
-  - class (35 orbital-structure pairs): 0:7, 0:8, 0:9, 0:10, 0:13, 0:16, 0:19, 0:20, 0:22, 0:24, 0:25, 0:26, 0:27, 1:7, 1:8, 1:9, 1:10, 1:16, 1:17, 1:18, 1:19, 1:25, 1:26, 1:27, 2:8, 2:9, 2:10, 2:14, 2:17, 2:18, 2:19, 2:23, 2:25, 2:26, 2:27
-  non-matchable: r=1.094 [7, 8, 9, 10, 13, 16, 19, 20, 22, 24, 25, 26, 27]; r=1.600 [7, 8, 9, 10, 16, 17, 18, 19, 25, 26, 27]; r=2.600 [8, 9, 10, 14, 17, 18, 19, 23, 25, 26, 27]
+  - class (19 orbital-structure pairs): 0:11, 0:12, 0:14, 0:15, 1:11, 1:12, 1:13, 1:14, 1:15, 2:11, 2:12, 2:13, 2:14, 2:15, 3:7, 3:11, 3:12, 3:13, 3:15
+  - class (19 orbital-structure pairs): 0:17, 0:18, 0:21, 0:23, 1:20, 1:21, 1:22, 1:23, 1:24, 2:19, 2:20, 2:21, 2:22, 2:23, 3:16, 3:20, 3:21, 3:22, 3:24
+  - class (46 orbital-structure pairs): 0:7, 0:8, 0:9, 0:10, 0:13, 0:16, 0:19, 0:20, 0:22, 0:24, 0:25, 0:26, 0:27, 1:7, 1:8, 1:9, 1:10, 1:16, 1:17, 1:18, 1:19, 1:25, 1:26, 1:27, 2:7, 2:8, 2:9, 2:10, 2:16, 2:17, 2:18, 2:24, 2:25, 2:26, 2:27, 3:8, 3:9, 3:10, 3:14, 3:17, 3:18, 3:19, 3:23, 3:25, 3:26, 3:27
+  non-matchable: r=1.094 [7, 8, 9, 10, 13, 16, 19, 20, 22, 24, 25, 26, 27]; r=1.600 [7, 8, 9, 10, 16, 17, 18, 19, 25, 26, 27]; r=1.610 [7, 8, 9, 10, 16, 17, 18, 24, 25, 26, 27]; r=2.600 [8, 9, 10, 14, 17, 18, 19, 23, 25, 26, 27]
 
 Consistent active space implied by the selection:
   r=1.094: [4, 5, 6]
   r=1.600: [4, 5, 6]
+  r=1.610: [4, 5, 6]
   r=2.600: [4, 5, 6]
 
 Criteria and boundaries:
@@ -147,10 +179,22 @@ Criteria and boundaries:
   - The mapping compares the structures in their own frames: same basis set, same atom order, same orientation of the whole system. Rotated or permuted structures are refused by the shell-key check or give a meaningless map.
   - The selection itself is not part of this module: menu 12's entropy protocol (or any other) provides the annotation, and the module reports the consistent active space it implies through the classes.
 
+Active-space overlap between adjacent structures (|det S_act|, the overlap-preservation scalar of the second source's Supporting Information):
+  pair                                        |det S_act|   reading
+  r=1.094 -> r=1.600                        0.717243   partial
+  r=1.600 -> r=1.610                        0.995475   preserved
+  r=1.610 -> r=2.600                        0.725063   partial
+
+Boundaries of this check:
+  - S_act uses the *second* structure's AO overlap, the source's own approximation for small steps of its geodesic interpolation; between distant structures the number demonstrates degradation rather than certifying preservation
+  - the source gives the qualitative reading only (near 1 preserved, near 0 an exchange); the printed bands are this project's reading of that scale, not the source's thresholds (measured on the frozen N2 scan: the two 1s core orbitals give 1.0000 for every pair, the bond triad 0.9955 across a 0.01-Angstrom step and 0.72 across 0.5-Angstrom steps)
+  - the determinant is taken in absolute value (orbital phases are arbitrary); it measures whether the active *subspace* survived, while the mapping above follows individual orbitals -- the two answers can differ (a rotation inside the window leaves |det| near 1 while the mapping reports no match)
+
 ## References
 
 Complete citations:
 - [bensberg2023corresponding] Bensberg, M.; Reiher, M. (2023). Corresponding Active Orbital Spaces along Chemical Reaction Paths. The Journal of Physical Chemistry Letters, 14(8), 2112-2118. DOI: 10.1021/acs.jpclett.2c03905
+- [paz2021active] Paz, A. S. P.; Baleeva, N. S.; Glover, W. J. (2021). Active orbital preservation for multiconfigurational self-consistent field. The Journal of Chemical Physics, 155(7), 071103. DOI: 10.1063/5.0058673
 
 BibTeX (paste-ready):
 
@@ -164,5 +208,18 @@ BibTeX (paste-ready):
   number  = {8},
   pages   = {2112--2118},
   doi     = {10.1021/acs.jpclett.2c03905},
+}
+```
+
+```bibtex
+@article{paz2021active,
+  author  = {Paz, Amiel S. P. and Baleeva, Nadezhda S. and Glover, William J.},
+  title   = {Active orbital preservation for multiconfigurational self-consistent field},
+  journal = {The Journal of Chemical Physics},
+  year    = {2021},
+  volume  = {155},
+  number  = {7},
+  pages   = {071103},
+  doi     = {10.1063/5.0058673},
 }
 ```

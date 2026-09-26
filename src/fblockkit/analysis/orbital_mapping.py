@@ -87,8 +87,11 @@ __all__ = [
     "MappingResult",
     "descriptors_from_export",
     "match_orbitals",
+    "active_overlap_determinant",
+    "active_overlap_series",
     "analyze",
     "render",
+    "render_active_overlap",
     "run",
     "evidence",
 ]
@@ -251,6 +254,97 @@ def match_orbitals(a: OrbitalDescriptor, b: OrbitalDescriptor, tau: float) -> bo
     if abs(a.kinetic - b.kinetic) >= tau:
         return False
     return sum(abs(x - y) for (_, x), (_, y) in zip(a.shells, b.shells)) < tau
+
+
+# --- the active-space overlap check (AOP, SI-derived) -------------------------
+
+
+def active_overlap_determinant(export_a, export_b, active_a, active_b=None) -> float:
+    """``|det S_act|`` between two structures' active blocks (the AOP scalar).
+
+    The second source's overlap-preservation check, from its Supporting
+    Information (Eq. (2) there; the main text is not yet available): the active
+    orbitals of the two structures are matched by their overlap,
+
+        S_act[i, j] = <psi_i^(A) | psi_j^(B)>  ~=  c_i^(A)T  S^(B)  c_j^(B),
+
+    using the *current* (second) structure's AO overlap -- justified in the
+    source because the geometries change only minimally between adjacent steps
+    of its geodesic interpolation.  ``|det S_act| ~ 1`` means the active space
+    was preserved between the two structures; a value towards 0 means at least
+    one active orbital exchanged with the inactive space.  The determinant is
+    taken in absolute value: orbital phases are arbitrary.
+
+    Applicability: the source uses this between *adjacent* small steps.  For
+    distant structures the one-metric approximation behind ``S_act`` no longer
+    holds and the number is a demonstration of degradation, not a calibrated
+    reading; the report says so and prints the value without a threshold.
+    """
+    coefficients_a = np.array(export_a.mo_coefficients, dtype=float).T
+    coefficients_b = np.array(export_b.mo_coefficients, dtype=float).T
+    if export_b.overlap is None:
+        raise MappingError(
+            "the second export carries no S-Matrix, so the active overlap cannot be "
+            "formed. Next step: re-export with the S-Matrix."
+        )
+    overlap = np.array(export_b.overlap, dtype=float)
+    indices_a = [int(index) for index in active_a]
+    indices_b = indices_a if active_b is None else [int(index) for index in active_b]
+    for export, coefficients, indices in (
+        (export_a, coefficients_a, indices_a),
+        (export_b, coefficients_b, indices_b),
+    ):
+        for index in indices:
+            if not 0 <= index < coefficients.shape[1]:
+                raise MappingError(
+                    f"the active index {index} is outside the export "
+                    f"'{export.base_name}'s {coefficients.shape[1]} orbitals. Next step: "
+                    "check the active-space list."
+                )
+    block = coefficients_a[:, indices_a].T @ overlap @ coefficients_b[:, indices_b]
+    return float(abs(np.linalg.det(block)))
+
+
+def active_overlap_series(exports, actives, names=None) -> tuple[tuple[str, str, float], ...]:
+    """The AOP scalar for every adjacent pair of a series (given order).
+
+    ``actives``: mapping structure name -> active-orbital indices; ``names``:
+    the display/lookup names (default: the exports' own base names).  A pair
+    whose two lists disagree in length is refused (the determinant needs
+    square blocks from the same-size spaces).
+    """
+    labels = [export.base_name for export in exports] if names is None else [str(n) for n in names]
+    if len(labels) != len(exports):
+        raise MappingError(
+            "the name list and the export list differ in length. Next step: check the "
+            "manifest."
+        )
+    for name in labels:
+        if name not in actives:
+            raise MappingError(
+                f"the structure '{name}' has no active-space list. Next step: give the "
+                "'active' entry for every structure of the series."
+            )
+    rows = []
+    for position, (first, second) in enumerate(zip(exports, exports[1:])):
+        name_a, name_b = labels[position], labels[position + 1]
+        active_a = [int(index) for index in actives[name_a]]
+        active_b = [int(index) for index in actives[name_b]]
+        if len(active_a) != len(active_b):
+            raise MappingError(
+                f"'{name_a}' has {len(active_a)} active orbitals while '{name_b}' has "
+                f"{len(active_b)}: the overlap determinant needs two equally sized "
+                "spaces. Next step: check the active-space lists (the mapping's "
+                "consistent space gives equal sizes by construction)."
+            )
+        rows.append(
+            (
+                name_a,
+                name_b,
+                active_overlap_determinant(first, second, active_a, active_b),
+            )
+        )
+    return tuple(rows)
 
 
 def _kind_sets(structure: StructureDescription) -> dict[str, tuple[int, ...]]:
@@ -562,12 +656,56 @@ def render(result: MappingResult, structures) -> str:
     return "\n".join(lines)
 
 
-def run(structures, *, tau: float | None = None, selections=None) -> ReportSection:
-    """The analyser entry point for menu 17."""
+def render_active_overlap(rows) -> str:
+    """The active-space overlap (AOP) block: one |det S_act| per adjacent pair."""
+    lines = [
+        "Active-space overlap between adjacent structures (|det S_act|, the "
+        "overlap-preservation scalar of the second source's Supporting Information):",
+        "  pair                                        |det S_act|   reading",
+    ]
+    for first, second, value in rows:
+        if value >= 0.9:
+            reading = "preserved"
+        elif value <= 0.1:
+            reading = "an active/inactive exchange is likely"
+        else:
+            reading = "partial"
+        lines.append(f"  {first} -> {second:<28} {value:>10.6f}   {reading}")
+    lines += [
+        "",
+        "Boundaries of this check:",
+        "  - S_act uses the *second* structure's AO overlap, the source's own "
+        "approximation for small steps of its geodesic interpolation; between distant "
+        "structures the number demonstrates degradation rather than certifying "
+        "preservation",
+        "  - the source gives the qualitative reading only (near 1 preserved, near 0 an "
+        "exchange); the printed bands are this project's reading of that scale, not the "
+        "source's thresholds (measured on the frozen N2 scan: the two 1s core orbitals "
+        "give 1.0000 for every pair, the bond triad 0.9955 across a 0.01-Angstrom step "
+        "and 0.72 across 0.5-Angstrom steps)",
+        "  - the determinant is taken in absolute value (orbital phases are arbitrary); "
+        "it measures whether the active *subspace* survived, while the mapping above "
+        "follows individual orbitals -- the two answers can differ (a rotation inside "
+        "the window leaves |det| near 1 while the mapping reports no match)",
+    ]
+    return "\n".join(lines)
+
+
+def run(
+    structures,
+    *,
+    tau: float | None = None,
+    selections=None,
+    active_overlap=None,
+) -> ReportSection:
+    """The analyser entry point for menu 17 (``active_overlap``: series rows)."""
     result = analyze(structures, tau=tau, selections=selections)
+    body = render(result, structures)
+    if active_overlap:
+        body += "\n\n" + render_active_overlap(active_overlap)
     return ReportSection(
         title="A11 cross-structure orbital mapping (consistent active spaces)",
-        body=render(result, structures),
+        body=body,
     )
 
 
@@ -607,5 +745,25 @@ def evidence() -> tuple[Evidence, ...]:
                 "non-matchable, and the tau curve shows the source's plateau behaviour."
             ),
             ref="tests/test_orbital_mapping.py; fixtures/orca/n2_scan_*",
+        ),
+        Evidence(
+            kind=EVIDENCE_LITERATURE,
+            text=(
+                "The active-space overlap scalar: between adjacent (small-step) "
+                "structures, match the active orbitals by their overlap -- approximated "
+                "with the current geometry's AO overlap -- and read |det S_act|: near 1 "
+                "the active space was preserved, near 0 at least one active/inactive "
+                "exchange happened. From the second source's Supporting Information "
+                "(its Eq. (2)); the main text is not yet available, so the protocol's "
+                "applicability beyond adjacent small steps is recorded as unverified and "
+                "the report prints the value without a threshold."
+            ),
+            ref=(
+                "Supporting Information, section I ('Determination of active space "
+                "consistency between interpolated geometries', Eq. (2)); main text "
+                "pending (DOI 10.1063/5.0058673)"
+            ),
+            url="https://doi.org/10.1063/5.0058673",
+            bibkey="paz2021active",
         ),
     )

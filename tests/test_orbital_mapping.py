@@ -230,3 +230,76 @@ def test_evidence_carries_the_source_and_the_route():
     assert "10.1021/acs.jpclett.2c03905" in text
     assert "bensberg2023corresponding" in text
     assert "5e-7" in text or "5e-07" in text
+
+
+# --- the active-space overlap check (AOP) -------------------------------------
+
+
+def _scan(tag: str):
+    from fblockkit.parsers.orca_json import parse_orca_json
+
+    return parse_orca_json(FIXTURES / f"n2_scan_{tag}.loc.json")
+
+
+def test_the_active_overlap_reads_small_and_large_steps():
+    """The AOP scalar on the real scan: cores survive everything, the bond
+    triad survives the 0.01-Angstrom step and degrades across 0.5 Angstrom."""
+    triad = [4, 5, 6]
+    assert om.active_overlap_determinant(_scan("1.600"), _scan("1.610"), triad) == pytest.approx(
+        0.9955, abs=1e-3
+    )
+    assert om.active_overlap_determinant(_scan("1.094"), _scan("1.600"), triad) == pytest.approx(
+        0.7172, abs=1e-3
+    )
+    assert om.active_overlap_determinant(_scan("1.094"), _scan("2.600"), [0, 2]) == pytest.approx(
+        1.0007, abs=1e-3
+    )
+
+
+def test_an_active_inactive_exchange_drives_the_determinant_to_zero():
+    """Swapping one active orbital with an inactive one is the source's failure
+    mode -- while a rotation inside the degenerate window leaves it unchanged."""
+    from dataclasses import replace
+
+    a = _scan("1.600")
+    b = _scan("1.610")
+    rows = [list(row) for row in b.mo_coefficients]
+    rows[4], rows[20] = rows[20], rows[4]
+    exchanged = replace(b, mo_coefficients=tuple(tuple(row) for row in rows))
+    assert om.active_overlap_determinant(a, exchanged, [4, 5, 6]) < 1e-3
+    rows = [list(row) for row in b.mo_coefficients]
+    rows[4], rows[5] = rows[5], rows[4]
+    rotated = replace(b, mo_coefficients=tuple(tuple(row) for row in rows))
+    assert om.active_overlap_determinant(a, rotated, [4, 5, 6]) == pytest.approx(0.9955, abs=1e-3)
+
+
+def test_the_series_runs_over_adjacent_pairs():
+    exports = [_scan(tag) for tag in ("1.600", "1.610", "2.600")]
+    names = ["r=1.600", "r=1.610", "r=2.600"]
+    actives = {name: [4, 5, 6] for name in names}
+    rows = om.active_overlap_series(exports, actives, names)
+    assert [row[:2] for row in rows] == [("r=1.600", "r=1.610"), ("r=1.610", "r=2.600")]
+    assert rows[0][2] > 0.99 and rows[1][2] < 0.9
+
+
+def test_the_aop_refusals():
+    exports = [_scan("1.600"), _scan("1.610")]
+    with pytest.raises(om.MappingError, match="no active-space list"):
+        om.active_overlap_series(exports, {}, ["a", "b"])
+    wrong = {"a": [4, 5, 6], "b": [4, 5]}
+    with pytest.raises(om.MappingError, match="equally sized"):
+        om.active_overlap_series(exports, wrong, ["a", "b"])
+    with pytest.raises(om.MappingError, match="outside"):
+        om.active_overlap_determinant(exports[0], exports[1], [99])
+
+
+def test_the_report_carries_the_aop_block_when_given():
+    structures = _structures()
+    rows = om.active_overlap_series(
+        [_scan(tag) for tag in SCAN],
+        {f"r={tag}": [4, 5, 6] for tag in SCAN},
+        [f"r={tag}" for tag in SCAN],
+    )
+    section = om.run(structures, active_overlap=rows)
+    assert "Active-space overlap" in section.body
+    assert "preserved" in section.body

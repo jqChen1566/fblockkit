@@ -20,28 +20,25 @@ Available functions:
   17  Cross-structure orbital mapping (a manifest of exports -> consistent active spaces along a path)
   18  WASP guess transfer (neighbour orbitals -> an interpolated, gbw-ready mkl for a geometry series)
    0  Quit
-Choose a number (Enter = leave empty)> 10
-CF input JSON path (levels + coefficients; see the user guide) (Enter = leave empty)> work/cf_c3.json
-Point group C3, J = 8.0
-Sampled states: 24; fitted parameters: 9
-Condition number: 4.2e+05; rank 10
-max |residual| = 4.466e-06 (caller's energy unit)
+Choose a number (Enter = leave empty)> 18
+Series manifest JSON path (neighbours and the template mkl; see the user guide) (Enter = leave empty)> work/guess_manifest.json
+WASP initial guess for a geometry series (weighted orbital interpolation, 1/d over the neighbourhood):
+  neighbour            d (Angstrom)      weight
+  n2_scan_1.094.loc        0.357796     0.664011
+  n2_scan_2.600.loc        0.707107     0.335989
 
-B_k^q:
-  (2, 0)   1000
-  (4,-3)   4.742679582e-10
-  (4, 0)   10
-  (4, 3)   50
-  (6,-6)  -6.592698609e-12
-  (6,-3)  -3.87506971e-11
-  (6, 0)   1
-  (6, 3)  -5.557741767e-13
-  (6, 6)   5.339957643e-12
-  const    -1.896225259e-07
-note: well posed: full column rank and cond below the ill-conditioning limit.
-Report written: work\cf_c3.json.fbk.md
-Projection-basis declaration: 5 of 5 item(s) recorded (section A5 in the report).
-Parameter comparison against the bundled set: 3 (k, q) refused without a matching declaration.
+  orthonormalisation residual: 3.10e-15
+  occupations/energies from:   n2_scan_1.094.loc
+
+Criteria and boundaries:
+  - the mixture C = sum_beta w_beta C_beta / sum w_beta with w_beta = 1/d, over the neighbourhood delta = all given neighbours (the source's Eqs. (11)-(13)); d is the RMSD without alignment (the coefficients live in each structure's own AO frame)
+  - the mixture is orthonormalised in the target geometry's overlap metric (Loewdin); the residual max |C^T S C - I| is 3.10e-15
+  - the occupations and orbital energies written with the guess come from the nearest neighbour ('n2_scan_1.094.loc'); the orbitals themselves are the mixture
+  - The written file is a Molekel mkl: run ``orca_2mkl <name>.fbk -gbw`` to turn it into a ``.gbw`` and read it with ``!moread`` + ``%moinp`` (measured: ORCA accepts the converted file as INITIAL GUESS: MOREAD).
+  - This module builds the guess; ORCA re-optimises the orbitals. The mixture is not a converged orbital set and is not claimed to be one.
+Guess written: work\n2_scan_1.600.fbk.mkl
+Next step: run ``orca_2mkl n2_scan_1.600.fbk -gbw`` next to that file, then start the target calculation with ``!moread`` and %moinp "n2_scan_1.600.fbk.gbw".
+Report written: work\guess_manifest.json.guess.fbk.md
 
 Available functions:
    1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)

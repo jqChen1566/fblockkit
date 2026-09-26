@@ -17,6 +17,7 @@ import numpy as np
 from ..analysis import atomic_terms, avas, cf_declaration, crystal_field, point_charge
 from ..analysis import entropy_rdm, environment_spin
 from ..analysis import magnetic_doublets, orbital_mapping, orbital_portrait
+from ..recipe import guess_transfer
 from ..analysis import orbital_space as orbital_space_analysis
 from ..analysis import evidence_for, run_all
 from ..analysis import geometry as geometry_analysis
@@ -24,9 +25,10 @@ from ..diagnosis import SEVERITY_LABELS, build_report, diagnose, references_sect
 from ..diagnosis import CrossLevelError, cross_level_check, load_records
 from ..diagnosis import ScfRescueError, propose_fixes
 from ..diagnosis import triage as scf_triage
-from ..knowledge.models import SystemProfile
+from ..knowledge.models import ReportSection, SystemProfile
 from ..parsers import ParserError, parse_auto
 from ..parsers.fcidump import parse_fcidump
+from ..parsers.mkl import parse_mkl
 from ..parsers.orca_json import parse_orca_json
 from ..recipe import (
     BasisAdvice,
@@ -1102,22 +1104,30 @@ def orbital_mapping_report(session: Session) -> None:
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
         entries = payload["structures"]
+        exports = []
+        names = []
         structures = []
         for entry in entries:
             export_path = Path(str(entry["export"]))
             if not export_path.is_absolute():
                 export_path = path.parent / export_path
-            structures.append(
-                orbital_mapping.descriptors_from_export(
-                    parse_orca_json(export_path), str(entry.get("name") or export_path.name)
-                )
-            )
+            export = parse_orca_json(export_path)
+            name = str(entry.get("name") or export_path.name)
+            exports.append(export)
+            names.append(name)
+            structures.append(orbital_mapping.descriptors_from_export(export, name))
         tau = payload.get("tau")
         selections = payload.get("selections")
+        # the optional active-space overlap check runs over adjacent pairs
+        active_overlap = None
+        actives = payload.get("active")
+        if actives:
+            active_overlap = orbital_mapping.active_overlap_series(exports, actives, names)
         section = orbital_mapping.run(
             structures,
             tau=float(tau) if tau is not None else None,
             selections=selections,
+            active_overlap=active_overlap,
         )
     except (OSError, KeyError, TypeError, ValueError, ParserError) as exc:
         session.say(f"Orbital mapping failed: {exc}")
@@ -1128,6 +1138,67 @@ def orbital_mapping_report(session: Session) -> None:
     if refs is not None:
         report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
     md_path = path.with_name(path.name + ".mapping.fbk.md")
+    md_path.write_text(report_lines, encoding="utf-8")
+    session.say(f"Report written: {md_path}")
+
+
+# --- 18 WASP guess transfer --------------------------------------------------
+
+
+def wasp_guess(session: Session) -> None:
+    """Menu 18: interpolate neighbour orbitals into a gbw-ready mkl (WASP)."""
+    path_text = session.ask(
+        "Series manifest JSON path (neighbours and the template mkl; see the user guide)"
+    )
+    if not path_text:
+        session.say("Cancelled (no path given).")
+        return
+    path = Path(path_text)
+
+    def _resolve(entry) -> Path:
+        candidate = Path(str(entry))
+        return candidate if candidate.is_absolute() else path.parent / candidate
+
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        neighbours = [
+            parse_orca_json(_resolve(entry["export"])) for entry in payload["structures"]
+        ]
+        template_entry = payload["template"]
+        template_export = parse_orca_json(_resolve(template_entry["export"]))
+        template_mkl_path = _resolve(template_entry["mkl"])
+        template_mkl = parse_mkl(template_mkl_path)
+        delta = payload.get("delta")
+        result = guess_transfer.interpolate_guess(
+            neighbours,
+            template_export,
+            delta=float(delta) if delta is not None else None,
+        )
+    except (OSError, KeyError, TypeError, ValueError, ParserError) as exc:
+        session.say(f"Guess interpolation failed: {exc}")
+        return
+    body = guess_transfer.render(result)
+    session.say(body)
+    guess_path = template_mkl_path.with_name(template_mkl_path.stem + ".fbk.mkl")
+    try:
+        guess_transfer.write_guess_mkl(template_mkl, result, guess_path)
+    except (OSError, guess_transfer.GuessError) as exc:
+        session.say(f"Writing the guess mkl failed: {exc}")
+        return
+    session.say(f"Guess written: {guess_path}")
+    session.say(
+        f"Next step: run ``orca_2mkl {guess_path.stem} -gbw`` next to that file, then "
+        f"start the target calculation with ``!moread`` and %moinp \"{guess_path.stem}.gbw\"."
+    )
+    section = ReportSection(
+        title="G5 WASP initial guess (interpolated orbitals for a geometry series)",
+        body=body,
+    )
+    report_lines = f"## {section.title}\n\n{section.body}\n"
+    refs = references_section(guess_transfer.evidence())
+    if refs is not None:
+        report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
+    md_path = path.with_name(path.name + ".guess.fbk.md")
     md_path.write_text(report_lines, encoding="utf-8")
     session.say(f"Report written: {md_path}")
 
@@ -1150,5 +1221,6 @@ HANDLERS = {
     "orbital_portrait": orbital_portrait_report,
     "magnetic_doublets": magnetic_doublets_report,
     "orbital_mapping": orbital_mapping_report,
+    "wasp_guess": wasp_guess,
     "quit": quit_session,
 }

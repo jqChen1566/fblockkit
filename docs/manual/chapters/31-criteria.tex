@@ -38,6 +38,25 @@ Non-matchable block & one class together & Menu~\menu{17}: the orbitals that
   source's union rule).  Measured on the N$_2$ scan: cores map, the
   one-centre hybrids are the block & \textsf{[Literature]} same;
   \textsf{[Measured]} the frozen scan fixtures \\
+Active-space overlap & $|\det S_{\mathrm{act}}|$ near 1 preserved, near 0 an
+  exchange & Menu~\menu{17}'s optional \code{active} block (the second source's
+  Supporting Information): the active block of two \emph{adjacent} structures
+  matched by overlap, the current geometry's $S$ used for the whole matrix (its
+  small-step approximation).  The printed bands are this project's reading of
+  the source's qualitative scale -- measured: cores 1.0000 for every pair, the
+  bond triad 0.9955 across 0.01~\AA{} and 0.72 across 0.5~\AA{}; a synthetic
+  active$\leftrightarrow$inactive exchange lands at $6\times10^{-5}$ &
+  \textsf{[Literature]} Paz et al.\ 2021 SI Eq.~(2), main text pending;
+  \textsf{[Measured]} the frozen scan \\
+Guess transfer (WASP) & no threshold; $1/d$ weights & Menu~\menu{18}: the
+  target's guess as the 1/d-weighted interpolation of the neighbours over
+  $\delta$, orthonormalised in the target's metric; the written mkl converts
+  to a \code{.gbw} ORCA reads as \code{INITIAL GUESS: MOREAD} (round trip
+  measured at $5\times10^{-8}$).  \textbf{A guess steers the basin}: on the
+  frozen example it converged a \emph{second} RHF solution 19~mEh below the
+  scan's branch -- branch continuity must be checked after any transfer &
+  \textsf{[Literature]} the review's WASP (Eqs.~(11)--(13));
+  \textsf{[Measured]} the frozen chain \\
 \bottomrule
 \end{tabularx}
 \end{center}
