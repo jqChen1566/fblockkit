@@ -167,6 +167,14 @@ CASPT2 smallest denominator & alert below 0.01 & A small denominator is the
 NEVPT2 hole/particle classes & alert when $> 0$ & Positive V1\_i (1-hole) or
   V m1\_a (1-particle) class contributions indicate a (false) intruder state &
   \textsf{[Manual]} ORCA 6.1 \S3.16.6 \\
+Embedding error (DMET, 4f SIMs) & CASSCF-SO 0.6--7.8; NEVPT2 8.8--62.7~cm$^{-1}$
+  & Against all-electron on three real Dy/Er systems. NEVPT2's embedding error
+  grows systematically --- dynamic correlation is less local than the static
+  part --- so the metal-only cluster is not enough: expanding the cluster to the
+  metal plus its nearest coordinating atoms brings 3Dy back $62.7 \to
+  13.2$~cm$^{-1}$ (4.75$\times$), the default whenever NEVPT2 is used. A wrong
+  low-level SCF solution costs 42$\times$ on the fitted parameters (357.7
+  against 8.6~cm$^{-1}$) & \textsf{[Literature]} Ai et al.\ 2025 (Tables 1--3) \\
 \bottomrule
 \end{tabularx}
 \end{center}
@@ -237,6 +245,22 @@ Point-charge estimate & qualitative & Measured point-charge/ab initio
   deviations make the model unusable for quantitative parameters; $\langle
   r^k\rangle$ is user-supplied & \textsf{[Literature]} Ungur \& Chibotaru 2017;
   Scheie 2021 \\
+$g_T$ criterion (doublet ladder) & line $g_T\theta_3 = 20$ &
+  $g_T = (g_1 + g_2 + g_3 \sin\theta_3) / 3$ with $\theta_3$ in
+  \emph{degrees}; below the line the doublet can still act as a step of the
+  barrier, at or above it quantum tunnelling is opened. Empirical, not derived
+  (the source states the $g_1,g_2$ plane-out correction is not available), and
+  the line is not a universal constant (the internal dipolar field varies with
+  packing); calibrated on 19 mononuclear Dy(III) systems, where the line sits in
+  the measured gap $[15.31, 30.25]$ & \textsf{[Literature]} Chilton 2025
+  (Table S2) \\
+Doublet-table regression (menu 16) & 38/38 tabulated $g_T$ reproduced & The
+  source's whole calibration table is the fixture: every tabulated $g_T$ is
+  recomputed from the raw $g$/$ \theta_3$ columns (largest disagreement
+  $8\times10^{-4}$), the gap is reproduced, and the one doublet on the wrong
+  side of the line is the source's recorded outlier
+  ([Dy(Cp\textsuperscript{ttt})\textsubscript{2}]\textsuperscript{+}, product
+  2.52) & \textsf{[Measured]} regression check 2026-09-27 \\
 \bottomrule
 \end{tabularx}
 \end{center}

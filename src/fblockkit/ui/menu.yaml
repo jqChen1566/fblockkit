@@ -51,6 +51,9 @@ items:
   - number: "15"
     title: "Orbital portrait (an export -> occupation, bonding label, shell composition, extent)"
     handler: orbital_portrait
+  - number: "16"
+    title: "Magnetic-doublet criterion (a Kramers-doublet table JSON -> g_T * theta_3 and the QTM line)"
+    handler: magnetic_doublets
   - number: "0"
     title: Quit
     handler: quit

@@ -454,12 +454,15 @@ def evidence() -> tuple[Evidence, ...]:
         Evidence(
             kind=EVIDENCE_LITERATURE,
             text=(
-                "Hand-check recommended after SINGLE_ANISO for mononuclear Dy(III): "
-                "g_T = (g_1 + g_2 + g_3 sin(theta_3)) / 3 with theta_3 in degrees, compared "
-                "with g_T * theta_3 = 20 (below: the doublet can still act as a step of the "
-                "barrier; above: ground-state quantum tunnelling is opened). Calibrated on "
-                "19 mononuclear Dy(III) systems only, with one known outlier "
-                "([Dy(Cp^ttt)_2]+, whose QTM doublet falls in the safe range)."
+                "Criterion for reading the doublet ladder after SINGLE_ANISO for "
+                "mononuclear Dy(III): g_T = (g_1 + g_2 + g_3 sin(theta_3)) / 3 with "
+                "theta_3 in degrees, compared with g_T * theta_3 = 20 (below: the doublet "
+                "can still act as a step of the barrier; above: ground-state quantum "
+                "tunnelling is opened). Calibrated on 19 mononuclear Dy(III) systems only, "
+                "with one known outlier ([Dy(Cp^ttt)_2]+, whose QTM doublet falls in the "
+                "safe range). The toolkit implements the criterion: menu 16 applies it to "
+                "a Kramers-doublet table (g values plus theta_3 or the g3 axes) and "
+                "regression-checks the source's whole 19-system table."
             ),
             ref=SI_CRITERION_REF,
             url=SI_DOI_URL,

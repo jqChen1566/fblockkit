@@ -57,6 +57,25 @@ Parameter keys are \code{"k,q"} strings or two-element lists. Pass the
 amplitudes themselves, not their complex conjugates (the conjugation trap,
 Chapter~\ref{ch:menu10}).
 
+\section{Input JSON: magnetic-doublet table (menu 16)}
+
+\begin{codeblock}
+{
+  "system": "...",                       # optional label
+  "reference": 0,                        # optional: index or label
+  "doublets": [
+    {"label": "ground", "g": [0.41, 0.44, 9.04], "energy": 0.0,
+     "axis3": [0.0, 0.0, 1.0]},          # unit axis of the largest g value
+    {"label": "1st excited", "g": [0.41, 0.44, 9.04], "theta3": 9.52}
+  ]
+}
+\end{codeblock}
+
+Per doublet, \code{theta3} (degrees) or \code{axis3} says where the largest
+$g$ axis points; the reference doublet may omit both (its \code{theta3} is 0
+by definition when the other angles are computed from axes, and it must carry
+\code{axis3} then). \code{energy} is optional and printed when present.
+
 \section{Structure and charge input (menus 2 and 11)}
 
 Standard XYZ (atom count, comment, \code{element x y z}). For \menu{11}, the

@@ -7,7 +7,10 @@ localised orbitals, bath orbitals come from the Schmidt decomposition of the
 environment block, the static correlation is solved inside the cluster space,
 and the magnetic parameters are read from the resulting multiplets.  The source
 validates this against full all-electron CASSCF-SO on three real 4f SIMs
-(MAE 0.6-7.8 cm^-1 at the CASSCF-SO level, 8.8-62.7 cm^-1 with NEVPT2).
+(MAE 0.6-7.8 cm^-1 at the CASSCF-SO level; with SC-NEVPT2 the error grows to
+8.8-62.7 cm^-1 on the metal-only cluster and comes back to 13.2 cm^-1 when the
+cluster is expanded to the metal plus its nearest neighbours -- so that
+expansion is the recipe's default whenever NEVPT2 is used).
 
 The recipe exists here because two of its pieces are already implemented in the
 toolkit and they gate each other: the Delta S_E criterion (menu 12's
@@ -54,13 +57,14 @@ class DmetStep:
 
 @dataclass(frozen=True)
 class DmetPlan:
-    """The DMET workflow: prerequisites, steps, gates and boundaries."""
+    """The DMET workflow: prerequisites, steps, gates, expectations and boundaries."""
 
     element: str
     n_f_electrons: int
     steps: tuple[DmetStep, ...]
     basis_notes: tuple[str, ...]
     gates: tuple[str, ...]
+    expectations: tuple[str, ...]
     boundaries: tuple[str, ...]
     evidence: tuple[Evidence, ...]
 
@@ -158,8 +162,13 @@ def plan_dmet(element: str = "Dy") -> DmetPlan:
         DmetStep(
             8,
             "Dynamic correlation (optional)",
-            "Strongly contracted NEVPT2 inside the cluster space",
-            "Optional; the source reports the accuracy cost of using it per system.",
+            "Strongly contracted NEVPT2 inside the cluster space; when NEVPT2 is used, "
+            "expand the cluster of step 3 to the metal plus its nearest coordinating "
+            "atoms (the CAS window of step 6 is unchanged)",
+            "Optional; with it the embedding error grows systematically (dynamic "
+            "correlation is less local than the static part), and the metal-only "
+            "cluster that serves CASSCF-SO is not enough -- expanding 3Dy's cluster "
+            "to Dy + nearest C brings its error back by 4.75x (62.7 -> 13.2 cm^-1).",
         ),
         DmetStep(
             9,
@@ -192,6 +201,17 @@ def plan_dmet(element: str = "Dy") -> DmetPlan:
         "conclusion, not a rule (the project has counterexamples: the lowest stationary "
         "point is not always the target one).",
     )
+    expectations = (
+        "CASSCF-SO inside the cluster, embedded against the source's all-electron "
+        "values (its Table 2): MAE 7.8 cm^-1 (1Dy), 0.6 (2Er), 6.7 (3Dy); relative "
+        "error within 2.3% -- for SIM modelling the source calls this negligible.",
+        "SC-NEVPT2, metal-only cluster (its Table 3): 10.5 / 8.8 / 62.7 cm^-1 -- the "
+        "embedding error grows systematically, because dynamic correlation is less "
+        "local than the static part the CASSCF handles.",
+        "SC-NEVPT2 with the cluster expanded to the metal plus its nearest "
+        "coordinating atoms: 3Dy falls 4.75x (62.7 -> 13.2 cm^-1, relative error "
+        "1.2%). That expansion is this recipe's default whenever NEVPT2 is used.",
+    )
     boundaries = (
         "Core-contribution accounting (settled in the project's reading notes): the two "
         "expressions that appear across the DMET sources (sum over spatial orbitals with "
@@ -213,7 +233,9 @@ def plan_dmet(element: str = "Dy") -> DmetPlan:
                 "cluster/environment split, subspace R-DIIS with R = Delta S_E, "
                 "SA-CASSCF inside the cluster, SOMF state-interaction spin-orbit, "
                 "optional SC-NEVPT2; validated against all-electron CASSCF-SO on three "
-                "real Dy/Er SIMs (MAE 0.6-7.8 cm^-1 at the CASSCF-SO level)."
+                "real Dy/Er SIMs (MAE 0.6-7.8 cm^-1 at the CASSCF-SO level; with "
+                "SC-NEVPT2 8.8-62.7 cm^-1 on the metal-only cluster, back to 13.2 "
+                "cm^-1 when the cluster includes the nearest neighbours)."
             ),
             ref=(
                 "Ai Y., Li Z.-W., Guan Z.-B., Jiang H., J. Chem. Theory Comput., 2025, "
@@ -240,6 +262,7 @@ def plan_dmet(element: str = "Dy") -> DmetPlan:
         steps=steps,
         basis_notes=basis_notes,
         gates=gates,
+        expectations=expectations,
         boundaries=boundaries,
         evidence=evidence,
     )
@@ -260,6 +283,8 @@ def render(plan: DmetPlan) -> str:
     lines += [f"  - {note}" for note in plan.basis_notes]
     lines += ["", "Gates (run these before trusting any parameter):"]
     lines += [f"  - {item}" for item in plan.gates]
+    lines += ["", "Accuracy expectations (the source's own tables):"]
+    lines += [f"  - {item}" for item in plan.expectations]
     lines += ["", "Boundaries and settled conventions:"]
     lines += [f"  - {item}" for item in plan.boundaries]
     return "\n".join(lines)

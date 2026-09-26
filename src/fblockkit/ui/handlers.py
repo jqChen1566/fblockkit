@@ -16,7 +16,7 @@ import numpy as np
 
 from ..analysis import atomic_terms, avas, cf_declaration, crystal_field, point_charge
 from ..analysis import entropy_rdm, environment_spin
-from ..analysis import orbital_portrait
+from ..analysis import magnetic_doublets, orbital_portrait
 from ..analysis import orbital_space as orbital_space_analysis
 from ..analysis import evidence_for, run_all
 from ..analysis import geometry as geometry_analysis
@@ -1054,6 +1054,38 @@ def orbital_portrait_report(session: Session) -> None:
     session.say(f"Report written: {md_path}")
 
 
+# --- 16 magnetic doublets ----------------------------------------------------
+
+
+def magnetic_doublets_report(session: Session) -> None:
+    """Menu 16: the g_T * theta_3 criterion over a Kramers-doublet table (JSON in)."""
+    path_text = session.ask(
+        "Kramers-doublet table JSON path (per doublet: the three g values and theta3 "
+        "or the g3 axis; see the user guide)"
+    )
+    if not path_text:
+        session.say("Cancelled (no path given).")
+        return
+    path = Path(path_text)
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        table = magnetic_doublets.parse_doublets(payload)
+        section = magnetic_doublets.run(table)
+    except (OSError, ValueError) as exc:
+        session.say(
+            f"Magnetic-doublet reading failed: {exc}"
+        )
+        return
+    session.say(section.body)
+    report_lines = f"## {section.title}\n\n{section.body}\n"
+    refs = references_section(magnetic_doublets.evidence())
+    if refs is not None:
+        report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
+    md_path = path.with_name(path.name + ".magnetic.fbk.md")
+    md_path.write_text(report_lines, encoding="utf-8")
+    session.say(f"Report written: {md_path}")
+
+
 HANDLERS = {
     "report_output": report_output,
     "geometry_report": geometry_report,
@@ -1070,5 +1102,6 @@ HANDLERS = {
     "orbital_space": orbital_space,
     "avas_target": avas_target,
     "orbital_portrait": orbital_portrait_report,
+    "magnetic_doublets": magnetic_doublets_report,
     "quit": quit_session,
 }

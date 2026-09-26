@@ -10,6 +10,8 @@ derivation is pinned against the lanthanide series.
 from __future__ import annotations
 
 import io
+import json
+from pathlib import Path
 
 import pytest
 
@@ -17,6 +19,8 @@ from fblockkit.recipe import plan_dmet, render_dmet
 from fblockkit.recipe.dmet import DmetError
 from fblockkit.ui import Session
 from fblockkit.ui.handlers import HANDLERS
+
+FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "literature"
 
 
 # --- the f-count derivation ---------------------------------------------------
@@ -82,6 +86,34 @@ def test_evidence_carries_the_source():
     text = " ".join(entry.ref + " " + entry.text for entry in plan.evidence)
     assert "10.1021/acs.jctc.5c01336" in text
     assert "0.6-7.8" in text
+
+
+def test_the_expectations_and_the_cluster_default_match_the_precision_fixture():
+    """The recipe's accuracy numbers are the source's tables, transcribed once.
+
+    The fixture `fixtures/literature/lnsim_precision.json` is the transcription
+    of the source's Tables 1-3; every MAE it carries must appear in the rendered
+    recipe, and the NEVPT2 cluster expansion must be stated as the default.
+    """
+    fixture = json.loads((FIXTURES / "lnsim_precision.json").read_text(encoding="utf-8"))
+    text = render_dmet(plan_dmet("Dy"))
+    values = [
+        row["mae_cm-1"]
+        for tier in ("casscf_so", "nevpt2")
+        for row in fixture["final_accuracy"][tier]["rows"]
+    ]
+    values.append(fixture["low_level_failure"]["rows"][0]["mae_diis_cm-1"])
+    for value in values:
+        assert f"{value:g}" in text, f"the fixture's {value} is not in the recipe"
+    assert "4.75" in text and "default whenever NEVPT2 is used" in text
+    assert "expand the cluster of step 3" in text
+
+
+def test_the_expectations_are_printed_in_the_recipe():
+    text = render_dmet(plan_dmet("Dy"))
+    assert "Accuracy expectations (the source's own tables):" in text
+    assert "relative error within 2.3%" in text
+    assert "relative error 1.2%" in text
 
 
 # --- the menu-6 hook -----------------------------------------------------------

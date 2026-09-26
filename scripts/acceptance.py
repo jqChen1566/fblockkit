@@ -98,7 +98,7 @@ def main() -> int:
             [PY, str(EXAMPLES / "generate_inputs.py")], cwd=work, env=ENV, check=True,
             capture_output=True,
         )
-        for name in ("octahedron.xyz", "ce_atom.xyz", "ceo6.xyz", "cf_c3.json"):
+        for name in ("octahedron.xyz", "ce_atom.xyz", "ceo6.xyz", "cf_c3.json", "dy_doublets.json"):
             # the generator writes into its own examples/work directory
             shutil.copy(EXAMPLES / "work" / name, inputs / name)
 
@@ -128,6 +128,7 @@ def main() -> int:
                     "13", "work/canonical.json", "4 9", "work/localized.json", "4 9",
                     "14", "work/canonical.json", "0", "p", "2", "", "",
                     "15", "work/canonical.json", "",
+                    "16", "work/dy_doublets.json",
                     "8", "work/saved.txt",
                     "0",
                 ]
@@ -266,6 +267,17 @@ def main() -> int:
                 and "recommended active space" in avas
                 and "6 orbitals" in avas,
                 "menu 14 report: the N 2p target reads back the textbook (6, 6) space",
+            )
+
+            magnetic = read("dy_doublets.json.magnetic.fbk.md")
+            check(
+                "A10 magnetic-doublet criterion" in magnetic
+                and "facilitates QTM" in magnetic
+                and "supports excitation" in magnetic
+                and "DEGREES" in magnetic
+                and "15.31" in magnetic and "30.25" in magnetic,
+                "menu 16 report: the source's calibration row gets both sides of "
+                "the g_T*theta_3 line, with the domain and the gap",
             )
 
             check(product("saved.txt").is_file(), "menu 8 wrote the session script")

@@ -16,6 +16,7 @@ Available functions:
   13  Orbital-space comparison (two orca_2json exports: subspace fraction and space-change SVD)
   14  AVAS target projection (an orbital export + a target AO shell -> active-space size)
   15  Orbital portrait (an export -> occupation, bonding label, shell composition, extent)
+  16  Magnetic-doublet criterion (a Kramers-doublet table JSON -> g_T * theta_3 and the QTM line)
    0  Quit
 Choose a number (Enter = leave empty)> 5
 Search keywords (several words, space separated) (Enter = leave empty)> mokit
@@ -39,6 +40,7 @@ Available functions:
   13  Orbital-space comparison (two orca_2json exports: subspace fraction and space-change SVD)
   14  AVAS target projection (an orbital export + a target AO shell -> active-space size)
   15  Orbital portrait (an export -> occupation, bonding label, shell composition, extent)
+  16  Magnetic-doublet criterion (a Kramers-doublet table JSON -> g_T * theta_3 and the QTM line)
    0  Quit
 Choose a number (Enter = leave empty)> 6
 Tool index id (e.g. openmolcas; search with menu 5) (Enter = leave empty)> openmolcas
@@ -67,6 +69,7 @@ Available functions:
   13  Orbital-space comparison (two orca_2json exports: subspace fraction and space-change SVD)
   14  AVAS target projection (an orbital export + a target AO shell -> active-space size)
   15  Orbital portrait (an export -> occupation, bonding label, shell composition, extent)
+  16  Magnetic-doublet criterion (a Kramers-doublet table JSON -> g_T * theta_3 and the QTM line)
    0  Quit
 Choose a number (Enter = leave empty)> 6
 Tool index id (e.g. openmolcas; search with menu 5) (Enter = leave empty)> liblan
@@ -96,8 +99,8 @@ DMET embedding recipe for Dy (f^9 centre; from Ai et al., JCTC 2025, the fields 
      why: For f^n the seven-orbital window is the f shell itself; the source averages over the whole ground-term manifold (Dy: 21 sextets, Er: 35 quartets -- their settings; the multiplet decomposition itself is marked unchecked in the project's reading notes).
   7. Spin-orbit coupling: Diagonalise the cluster Hamiltonian (scalar + SOMF spin-orbit) in the CSF basis
      why: The state-interaction route, not a variational SOC; the CSFs come from step 6.
-  8. Dynamic correlation (optional): Strongly contracted NEVPT2 inside the cluster space
-     why: Optional; the source reports the accuracy cost of using it per system.
+  8. Dynamic correlation (optional): Strongly contracted NEVPT2 inside the cluster space; when NEVPT2 is used, expand the cluster of step 3 to the metal plus its nearest coordinating atoms (the CAS window of step 6 is unchanged)
+     why: Optional; with it the embedding error grows systematically (dynamic correlation is less local than the static part), and the metal-only cluster that serves CASSCF-SO is not enough -- expanding 3Dy's cluster to Dy + nearest C brings its error back by 4.75x (62.7 -> 13.2 cm^-1).
   9. Post-processing: Extract the model spin-Hamiltonian parameters from the SI multiplet energies and wave functions
      why: The source reports levels only; relaxation and fit-quality diagnostics are the crystal-field workflow's business (menus 10/11 and A4/A5 here).
 
@@ -111,6 +114,11 @@ Gates (run these before trusting any parameter):
   - Using a wrong low-level solution costs 42x in the fitted crystal-field MAE (357.7 against 8.6 cm^-1) -- so the gate runs before any parameter is fitted, not as a sanity check afterwards.
   - Convergence needs both the energy and the orbital gradient; the energy alone can look flat on a wrong solution.
   - The correct solution was lower in energy in the source's case, so a multi-start 'take the lowest' works there -- but that is this system's conclusion, not a rule (the project has counterexamples: the lowest stationary point is not always the target one).
+
+Accuracy expectations (the source's own tables):
+  - CASSCF-SO inside the cluster, embedded against the source's all-electron values (its Table 2): MAE 7.8 cm^-1 (1Dy), 0.6 (2Er), 6.7 (3Dy); relative error within 2.3% -- for SIM modelling the source calls this negligible.
+  - SC-NEVPT2, metal-only cluster (its Table 3): 10.5 / 8.8 / 62.7 cm^-1 -- the embedding error grows systematically, because dynamic correlation is less local than the static part the CASSCF handles.
+  - SC-NEVPT2 with the cluster expanded to the metal plus its nearest coordinating atoms: 3Dy falls 4.75x (62.7 -> 13.2 cm^-1, relative error 1.2%). That expansion is this recipe's default whenever NEVPT2 is used.
 
 Boundaries and settled conventions:
   - Core-contribution accounting (settled in the project's reading notes): the two expressions that appear across the DMET sources (sum over spatial orbitals with an explicit spin sum versus a per-spin-orbital sum) are the same quantity under two accountings; pair each expression with its own convention, or use the explicit Fock form, which is convention-free.
@@ -135,6 +143,7 @@ Available functions:
   13  Orbital-space comparison (two orca_2json exports: subspace fraction and space-change SVD)
   14  AVAS target projection (an orbital export + a target AO shell -> active-space size)
   15  Orbital portrait (an export -> occupation, bonding label, shell composition, extent)
+  16  Magnetic-doublet criterion (a Kramers-doublet table JSON -> g_T * theta_3 and the QTM line)
    0  Quit
 Choose a number (Enter = leave empty)> 0
 Goodbye.

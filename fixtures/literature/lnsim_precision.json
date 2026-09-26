@@ -1,0 +1,34 @@
+{
+  "provenance": {
+    "source": "Ai Y., Li Z.-W., Guan Z.-B., Jiang H., J. Chem. Theory Comput. 2025, 21(19), 9631-9640 (DOI 10.1021/acs.jctc.5c01336), Tables 1, 2 and 3: DMET embedding against all-electron SA-CASSCF(-SO) on three real 4f single-ion magnets",
+    "close_reading": "文献细读/细读_LnSIM_DMET_CASSCF-SO_JCTC2025.md (sections 5.2, 5.3)",
+    "transcribed": "2026-09-27",
+    "note": "All energies are cm^-1 and are the embedded calculation's error against the same system's all-electron value (the source's Tables 2 and 3); the pre-SOC energies of section 5.2 are the multi-state MAE of the low-level wave function problem. MARE is the mean absolute relative error. Each state corresponds to a degenerate Kramers-doublet pair (the source's own note on Tables 2 and 3)."
+  },
+  "low_level_failure": {
+    "quantity": "pre-SOC state energies against all-electron SA-CASSCF, by low-level SCF solution",
+    "rows": [
+      {"system": "1Dy (6H, 11 states)", "mae_diis_cm-1": 357.7, "mae_r_diis_cm-1": 8.6},
+      {"system": "2Er (4I, 13 states)", "mae_diis_cm-1": 47.1, "mae_r_diis_cm-1": 0.4}
+    ],
+    "gate_anchor": "The source's wrong low-level solution (default DIIS) gives Delta S_E = 2.766 instead of 0.007 and costs 357.7 against 8.6 cm^-1 on 1Dy -- 42x -- so the gate runs before any parameter is fitted. All-electron SA-CASSCF started from either solution gives nearly identical results: the failure is DMET-specific (wrong bath/core orbitals frozen in the cluster rotation)."
+  },
+  "final_accuracy": {
+    "casscf_so": {
+      "rows": [
+        {"system": "1Dy", "orbitals": [214, 679], "mae_cm-1": 7.8, "mare": 0.023},
+        {"system": "2Er", "orbitals": [188, 386], "mae_cm-1": 0.6, "mare": 0.003},
+        {"system": "3Dy", "orbitals": [218, 1030], "mae_cm-1": 6.7, "mare": 0.006}
+      ]
+    },
+    "nevpt2": {
+      "rows": [
+        {"system": "1Dy", "mae_cm-1": 10.5, "mare": 0.021},
+        {"system": "2Er", "mae_cm-1": 8.8, "mare": 0.035},
+        {"system": "3Dy", "mae_cm-1": 62.7, "mare": 0.057},
+        {"system": "3Dy with the cluster expanded to Dy + nearest C", "mae_cm-1": 13.2, "mare": 0.012}
+      ],
+      "reading": "Adding NEVPT2 makes the embedding error grow systematically (7.8 -> 10.5, 0.6 -> 8.8, 6.7 -> 62.7 cm^-1): dynamic correlation is less local than the static part, so the embedding approximation hurts it more. Expanding the cluster from the metal alone to the metal plus its nearest coordinating atoms brings 3Dy's NEVPT2 error back by 4.75x (62.7 -> 13.2 cm^-1)."
+    }
+  }
+}

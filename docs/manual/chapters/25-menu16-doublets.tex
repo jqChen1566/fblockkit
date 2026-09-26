@@ -1,0 +1,109 @@
+\chapter{Magnetic-doublet criterion (menu 16)}
+\label{ch:menu16}
+\menulabel{16}
+
+\section{Purpose}
+
+The empirical metric a Dy(III) single-molecule-magnet study reads off the
+Kramers-doublet ladder: which doublet can still act as a step of the relaxation
+barrier, and which one opens quantum tunnelling (QTM). For a doublet with
+principal $g$ values $g_1 \le g_2 \le g_3$ and $\theta_3$ the angle (in
+\emph{degrees}) between its $g_3$ axis and the ground doublet's $g_3$ axis,
+\[
+g_T = \frac{g_1 + g_2 + g_3 \sin\theta_3}{3},
+\qquad\text{line:}\quad g_T\,\theta_3 = 20 .
+\]
+Below the line the doublet supports excitation above it; at or above it, QTM is
+opened. The menu is pure post-processing --- the criterion needs nothing but the
+doublets' $g$ tensors --- so it runs from a small JSON table.
+
+\section{What you need}
+
+A JSON table of the doublets: per doublet the three principal $g$ values and
+\emph{either} \code{theta3} (as published tables give it) \emph{or}
+\code{axis3}, the unit axis of the largest value, from which the angle to the
+reference doublet's axis is computed here. The schema is in
+Chapter~\ref{ch:formats}.
+
+\section{Walkthrough}
+
+\lstinputlisting[style=fbkcode, firstline=21, lastline=38,
+  title={The menu-16 example session (the source's own calibration row for
+  [Dy(BC$_4$Ph$_5$)$_2$]$^-$)}]
+  {examples/expected/m16_doublets.txt}
+
+\section{What you get}
+
+The verdict table on screen and a report file
+(\file{<table>.magnetic.fbk.md}) that also carries the criteria, the
+applicability domain, the known outlier and the citations.
+
+\section{How to read the numbers}
+
+\begin{readbox}
+\begin{itemize}
+  \item \textbf{The angle is in degrees} --- a measured fact of the calibration
+    table, not a convention: recomputing its $g_T$ values in radians disagrees
+    in the second digit. The regression check pins all 38 tabulated doublets
+    down from the raw columns of the source's Table S2.
+  \item \textbf{The reference doublet} (marked \code{*}) is the one whose
+    $g_3$ axis is the quantisation axis the computed angles are measured
+    against; its own $\theta_3$ is 0 by definition. Give the angle directly on
+    every doublet and no axis is needed at all --- the numbers are then used as
+    given (that is how a published table reads). An angle computed from axes is
+    folded to $[0, 90]$ degrees, because a principal axis's sign is arbitrary
+    (the source's own values run to $89.9^\circ$).
+  \item \textbf{The criterion is empirical, not derived.}  The source states
+    that the $g_1/g_2$ weights should in principle be reduced as $g_3$ rotates
+    into the plane, but those historic calculations do not carry that
+    information; and the line's physical background --- the material's internal
+    dipolar field --- varies with packing and dilution, so the line is not a
+    universal constant.
+  \item \textbf{Applicability domain}: the line was calibrated on 19
+    mononuclear Dy(III) complexes (2016--2025, one consistent methodology:
+    9-in-7 active space, ANO-RCC three-tier basis, SA-CASSCF-SO in
+    (Open)Molcas). Other ions or nuclearities would need their own calibration.
+  \item \textbf{A known failure mode the criterion cannot see}: in the
+    source's own set exactly one doublet is misread ---
+    [Dy(Cp\textsuperscript{ttt})\textsubscript{2}]\textsuperscript{+}'s QTM
+    doublet falls deep in the safe zone (product 2.52), and the source offers
+    no explanation. A ``safe'' verdict is therefore the criterion's reading,
+    not a proof of barrier behaviour. On the calibration table the line sits in
+    the measured gap between 15.31 (largest safe product) and 30.25 (smallest
+    definite-QTM product).
+\end{itemize}
+\end{readbox}
+
+\section{Worked example}
+
+The example input (\file{examples/generate\_inputs.py}) is the source's
+calibration row for [Dy(BC$_4$Ph$_5$)$_2$]$^-$: the two doublets the published
+table records, with $\theta_3$ as given.  The run reads the source's own
+arithmetic back --- $g_T = 0.782$ and $2.993$ (the table's values), products
+7.44 and 52.62 --- and places the second doublet across the line: the first
+supports excitation, the second facilitates QTM.  That is the menu's purpose in
+one line: given the doublet table, say which side of the line each doublet is
+on, with the domain and the outlier named.
+
+\section{Refusals and related sections}
+
+\begin{refusalbox}
+\begin{itemize}
+  \item A doublet without three finite $g$ values, an angle outside
+    $[0, 180]$ degrees, a zero-length axis, a doublet with neither
+    \code{theta3} nor \code{axis3} (when no reference axis is available), or a
+    reference doublet that carries a nonzero \code{theta3} while providing the
+    axis --- each is refused with a next step.
+  \item The menu reads a table; it does not compute $g$ tensors. Those come
+    from your own magnetic-property calculation --- for the OpenMolcas chain
+    menu~\menu{3} generates, the doublet $g$ values are read from the
+    SINGLE\_ANISO output, and this menu is the chain's post-processing step.
+  \item The line is printed as source evidence with its domain and its
+    outlier; the menu does not extend the criterion to other ions or
+    nuclearities.
+\end{itemize}
+\end{refusalbox}
+
+Related: \menu{3} (the OpenMolcas magnetic-property chain the table comes
+from), \menu{10} (the crystal-field fit over the same doublet ladder), and
+Chapter~\ref{ch:criteria} for the threshold table.

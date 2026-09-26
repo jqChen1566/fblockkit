@@ -9,6 +9,8 @@ way it was cross-checked must be recorded.
 | `pucl3_s18.json` | Total energies (Hartree) of the 21 5f-occupation solutions of PuCl3 at the HF and CCSD(T) levels | Lu J.-B. et al., *J. Chem. Theory Comput.*, 2025, **21**, 170–182, DOI 10.1021/acs.jctc.4c01189 (SI Table S18) | Compared item by item with the numbers quoted in the literature review §4.6 (the three points No.1, No.3 and No.10, plus the full HF/CCSD(T) span and the 1.76 kcal/mol difference) |
 | `peng_s1_cf.json` | The 9 $B_k^q$ of Er-trensal (C3) (columns HF@HF / PBE0@HF / CASPT2) and 8 Kramers doublet levels (two columns) | Peng L. et al., *J. Phys. Chem. Lett.*, 2025, **16**, 12312–12320, DOI 10.1021/acs.jpclett.5c02971 (SI Table S1, S6) | Checked value by value against the converted SI text (`jz5c02971_si_001.md`); used as the known answer of the CF fitter (`analysis/crystal_field.py`) |
 | `peng_s2_s7_oh_cf.json` | The 4 $B_k^q$ of Cs2NaDyCl6 (Oh) (two columns) and 8 Kramers doublet levels (two columns) | As above (SI Table S2 first block, S7) | As above; two further independent pieces of evidence confirm that this block belongs to compound 2 -- cubic symmetry allows only 4 parameters, and the caption of Figure S7 says "4 $B_k^q$ parameters" |
+| `chilton_s2_dy19.json` | The 19 mononuclear Dy(III) SMM rows (a "safe" and a "definite QTM" doublet each: $g_1,g_2,g_3,\theta_3$ plus the tabulated $g_T$, and the experimental $U_{eff}$) | Chilton, *Chem. Soc. Rev.*, 2025, DOI 10.1039/d5cs00493d (SI Table S2 and the seven methodology items above it) | All 38 tabulated $g_T$ values recomputed from the raw columns (largest disagreement $8\times10^{-4}$); the claimed separation reproduced (largest safe product 15.31, smallest definite-QTM 30.25) with exactly one doublet on the wrong side of the line -- the source's recorded outlier. Regression fixture of `analysis.magnetic_doublets` (menu 16) |
+| `lnsim_precision.json` | The DMET-vs-all-electron errors of Ai et al. (Tables 1--3): pre-SOC state MAE by low-level solution, and the CASSCF-SO / NEVPT2 final accuracy (with the expanded-cluster variant) | Ai Y. et al., *J. Chem. Theory Comput.*, 2025, **21**, 9631--9640, DOI 10.1021/acs.jctc.5c01336 | Transcribed from the close reading (`文献细读/细读_LnSIM_DMET_CASSCF-SO_JCTC2025.md` section 5.3); the recipe's accuracy expectations (`recipe/dmet.py`) are checked against it in `tests/test_dmet.py` |
 
 Use:
 - `pucl3_s18.json` -- the regression fixture of `diagnosis.cross_level_check`, checking the
@@ -16,7 +18,12 @@ Use:
 - `peng_s1_cf.json`, `peng_s2_s7_oh_cf.json` -- the known answers of
   `analysis.crystal_field` (A4): the basic self-check is to build and diagonalise
   $\hat H_{\mathrm{CF}}$ from the tabulated $B_k^q$, which should reproduce the levels in
-  the same table.
+  the same table;
+- `chilton_s2_dy19.json` -- the regression fixture of `analysis.magnetic_doublets`
+  (menu 16): the criterion's $g_T$ arithmetic and its separation are checked against the
+  source's own table; a slice of it is also the menu-16 manual example;
+- `lnsim_precision.json` -- the numbers the DMET recipe's "accuracy expectations" section
+  prints, so that the product and the transcription cannot drift apart.
 
 Transcription discipline: the table data comes from the MinerU conversion of the SI text;
 any number cited in a test must agree with a number appearing in a close-reading file

@@ -545,6 +545,81 @@ benchmark found that a larger active space is not automatically a better one
 (autoCAS picked 17 orbitals for CH4 where a smaller space gave half the error),
 so read this panel as evidence for a choice, not as the choice.
 
+## 16 Magnetic-doublet criterion (a Kramers-doublet table JSON)
+
+**What it is for**: the empirical metric a Dy(III) single-molecule-magnet study
+reads off the Kramers-doublet ladder -- which doublet can still act as a step of
+the relaxation barrier and which one opens quantum tunnelling (QTM):
+
+```text
+g_T = (g1 + g2 + g3 * sin(theta3)) / 3        line:  g_T * theta3 = 20
+```
+
+with `g1 <= g2 <= g3` the doublet's principal g values and `theta3` (in
+**degrees**) the angle between its `g3` axis and the ground doublet's `g3` axis.
+Below the line the doublet supports excitation above it; at or above it, QTM is
+opened. Nothing here is computed by an engine: this is pure post-processing of
+the g tensors, so it runs from a small table you prepare.
+
+**What you need**: a JSON table of the doublets. Per doublet, the three
+principal g values and **either** `theta3` (as published tables give it)
+**or** `axis3` (the unit axis of the largest value, when you have the tensor
+directions), plus an optional `energy`:
+
+```json
+{
+  "system": "label, optional",
+  "reference": 0,
+  "doublets": [
+    {"label": "ground",       "g": [0.41, 0.44, 9.04], "energy": 0.0,
+     "axis3": [0.0, 0.0, 1.0]},
+    {"label": "1st excited",  "g": [0.41, 0.44, 9.04], "energy": 101.0,
+     "theta3": 9.52}
+  ]
+}
+```
+
+`reference` (an index or a label, default 0) names the doublet whose `g3` axis
+is the quantisation axis the computed angles are measured against; its own
+`theta3` is 0 by definition. If every doublet carries `theta3` given, no
+reference axis is needed.
+
+**How**: menu 16 -> table JSON path.
+
+**What you get**: the doublet table on screen with `theta3`, `g_T`,
+`g_T * theta3` and the verdict per doublet, plus a report file
+(`<table>.magnetic.fbk.md`) with the criteria, the applicability domain and the
+citations.
+
+**How to read it**:
+
+- the angle is in **degrees** -- that is a measured fact of the calibration
+  table (recomputing its values in radians disagrees in the second digit, and
+  the regression check pins all 38 tabulated doublets down);
+- an angle computed from `axis3` is folded to [0, 90] degrees, because a
+  principal axis's sign is arbitrary (the source's own values run to 89.9);
+- the reference doublet is marked `*`; for doublets that give `theta3`
+  directly, the number is used as given (the axis is not needed);
+- **the criterion is empirical, not derived**: the source states that the
+  `g1`/`g2` weights should in principle be reduced as `g3` rotates into the
+  plane, but those historic calculations do not carry that information, and the
+  line's physical background (the material's internal dipolar field) varies
+  with packing and dilution -- so the line is not a universal constant;
+- **applicability domain**: the line was calibrated on 19 mononuclear Dy(III)
+  complexes (2016-2025, one consistent methodology); other ions or nuclearities
+  need their own calibration;
+- **a known failure mode the criterion cannot see**: in the source's own set
+  exactly one doublet is misread (`[Dy(Cp^ttt)2]+`'s QTM doublet falls deep in
+  the safe zone, product 2.52). A "safe" verdict is the criterion's reading,
+  not a proof of barrier behaviour.
+
+**Boundaries**: this menu reads a table, it does not compute g tensors. The
+tensors come from your own magnetic-property calculation (for the OpenMolcas
+chain that menu 3's guidance generates, the doublet g values are read from the
+SINGLE_ANISO output; the toolkit's `g_T` check is the post-processing step of
+that chain). The line is printed as source evidence, and the report always
+carries the domain and the outlier note.
+
 ## Appendix A Command line
 
 ```text

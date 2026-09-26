@@ -101,3 +101,34 @@ payload = {
 }
 (WORK / "cf_c3.json").write_text(json.dumps(payload, indent=1) + "\n", encoding="utf-8")
 print("wrote work/cf_c3.json")
+
+# --- the magnetic-doublet table (menu 16): a slice of the source's calibration
+# table (fixtures/literature/chilton_s2_dy19.json), prepared the way a user would
+# from a published SINGLE_ANISO table -- the two doublets of [Dy(BC4Ph5)2]- with
+# theta3 as the source gives it (measured against the ground doublet, which the
+# published table does not list).
+
+SOURCE = HERE.parents[2] / "fixtures" / "literature" / "chilton_s2_dy19.json"
+calibration = json.loads(SOURCE.read_text(encoding="utf-8"))
+row = next(item for item in calibration["rows"] if item["compound"] == "[Dy(BC4Ph5)2]-")
+doublets = []
+for role, label in (
+    ("safe", "doublet that supports excitation"),
+    ("qtm", "doublet that facilitates QTM"),
+):
+    entry = row[role]
+    doublets.append(
+        {
+            "label": label,
+            "g": [entry["g1"], entry["g2"], entry["g3"]],
+            "theta3": entry["theta3_deg"],
+        }
+    )
+doublet_payload = {
+    "system": row["compound"] + " (the calibration table's row 7)",
+    "doublets": doublets,
+}
+(WORK / "dy_doublets.json").write_text(
+    json.dumps(doublet_payload, indent=1) + "\n", encoding="utf-8"
+)
+print("wrote work/dy_doublets.json")
