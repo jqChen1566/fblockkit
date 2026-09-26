@@ -270,7 +270,23 @@ def generate_input(session: Session) -> None:
         if not auxiliary:
             session.say("No /C auxiliary basis given -- the manual does not allow TRAH without one, switching to the default convergence tier.")
             difficulty = "default"
-    plan = plan_convergence(difficulty=difficulty, pt2=any("NEVPT2" in m for m in recommendation.method_chain))
+    maxcore_text = session.ask(
+        "MaxCore per process in MB (Enter = 2000; a measured f-block TRAH-CASSCF "
+        "needed 9345 MB)",
+        default="2000",
+    )
+    try:
+        maxcore = int(maxcore_text or "2000")
+        if maxcore <= 0:
+            raise ValueError
+    except ValueError:
+        session.say(f"Invalid MaxCore ({maxcore_text!r}) -- using 2000 MB.")
+        maxcore = 2000
+    plan = plan_convergence(
+        difficulty=difficulty,
+        pt2=any("NEVPT2" in m for m in recommendation.method_chain),
+        maxcore=maxcore,
+    )
     keywords = ["TightSCF"]
     if any("NEVPT2" in m for m in recommendation.method_chain):
         keywords.append("NEVPT2")
@@ -291,6 +307,7 @@ def generate_input(session: Session) -> None:
             casscf=casscf,
             convergence=plan,
             auxiliary=auxiliary,
+            maxcore=maxcore,
         )
     except RenderError as exc:
         session.say(f"Rendering failed: {exc}")
@@ -471,6 +488,17 @@ def scf_rescue(session: Session) -> None:
     except ParserError as exc:
         session.say(f"Parse failed: {exc}")
         return
+    block = result.sections.get("scf", {}).get("convergence_block") or ()
+    if block:
+        # the verbatim view: the check mode decides which rows are enforced, so the
+        # informational rows are shown exactly as printed and never interpreted here
+        session.say(
+            "SCF CONVERGENCE block, verbatim from the output (printed for reference; "
+            "the check mode decides which rows are actually enforced):"
+        )
+        for line in block:
+            session.say(line)
+        session.say("")
     try:
         findings = scf_triage(result)
     except ScfRescueError as exc:

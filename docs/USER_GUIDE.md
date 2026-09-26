@@ -103,7 +103,9 @@ plus plain run guidance.
 **How**: menu 3, then: element list -> charge -> spin multiplicity -> f-block
 metal valence -> targets (energy/geometry/excited/magnetic/spectra) -> structure
 file (XYZ) -> basis tier number -> active space `nel,norb,mult,nroots`
-(Enter = no `%casscf` block) -> convergence tier.
+(Enter = no `%casscf` block) -> convergence tier -> MaxCore per process in MB
+(Enter = 2000; a measured f-block TRAH-CASSCF needed 9345 MB, so raise it for
+large-basis hard cases).
 
 Starting active spaces are suggested first (G2): the f-only minimal space with
 its documented precedent, and an f+d double-shell option marked *provisional*,
@@ -213,10 +215,13 @@ and - if you give the matching input file - write corrected inputs for you.
 **How**: menu 9 -> ORCA output path -> input file path (Enter = skip the
 corrected inputs).
 
-**What you get**: findings from the SCF triage (each with the measured numbers -
-cycle counts, DIIS errors, achieved-vs-tolerance comparisons - and a suggested
-action), then one corrected input per applicable fix, written next to your input
-as `<name>.fix_<variant>.inp`. Your original files are never modified.
+**What you get**: the `SCF CONVERGENCE` block printed verbatim first (so the
+informational rows - density, DIIS error - can be read exactly as ORCA printed
+them; the check mode decides which rows are actually enforced, and nothing is
+interpreted there), then the findings from the SCF triage (each with the measured
+numbers - cycle counts, DIIS errors, achieved-vs-tolerance comparisons - and a
+suggested action), then one corrected input per applicable fix, written next to
+your input as `<name>.fix_<variant>.inp`. Your original files are never modified.
 
 **What it will and will not propose**: damping (`SlowConv`) with the manual's
 warning that it can converge closer to the initial guess; a two-step pre-SCF

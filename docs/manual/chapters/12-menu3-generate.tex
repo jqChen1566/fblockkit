@@ -16,12 +16,15 @@ plus plain guidance on how to run and what to check afterwards.
     (energy / geometry / excited / magnetic / spectra);
   \item a structure file (XYZ): generating an input needs a geometry;
   \item optionally the active space (as \code{nel,norb,mult,nroots}; Enter
-    skips the \code{\%casscf} block) and the convergence tier.
+    skips the \code{\%casscf} block), the convergence tier, and the
+    \code{MaxCore} per process in MB (Enter keeps the default 2000; a
+    measured $f$-block TRAH-CASSCF needed 9345 MB, so raise it for
+    large-basis hard cases -- the guidance quotes the value you chose).
 \end{itemize}
 
 \section{Walkthrough}
 
-\lstinputlisting[style=fbkcode, firstline=16, lastline=51,
+\lstinputlisting[style=fbkcode, firstline=17, lastline=55,
   title={The menu-3 example session (Ce\textsuperscript{3+}, 4f\textsuperscript{1})}]
   {examples/expected/m3_generate.txt}
 

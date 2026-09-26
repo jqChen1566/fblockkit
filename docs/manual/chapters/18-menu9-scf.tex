@@ -18,13 +18,25 @@ each with an auditable list of what changed and why.
 
 \section{Walkthrough}
 
-\lstinputlisting[style=fbkcode, firstline=16, lastline=32,
-  title={The menu-9 example session (an SCF that did not converge)}]
+\lstinputlisting[style=fbkcode, firstline=17, lastline=32,
+  title={The menu-9 example, part 1 (an SCF that did not converge: findings and
+  corrected inputs)}]
+  {examples/expected/m9_scf.txt}
+
+\lstinputlisting[style=fbkcode, firstline=48, lastline=61,
+  title={Menu 9 on a healthy run (part 2): the verbatim convergence block, then
+  silence from the triage}]
   {examples/expected/m9_scf.txt}
 
 \section{What you get}
 
-Findings from the triage (each with the measured numbers -- cycle counts, DIIS
+First the \code{SCF CONVERGENCE} block verbatim, exactly as ORCA printed it,
+whenever the output carries one -- the informational rows (density changes,
+DIIS error) are shown without any judgement, because the check mode decides
+which rows are enforced (on a healthy run a DIIS row far above its tolerance
+is informational, not a finding). The aborted run of the example prints no
+summary block, so it goes straight to the findings. Then findings from the
+triage (each with the measured numbers -- cycle counts, DIIS
 errors, achieved-versus-tolerance comparisons -- and a suggested action), then
 one corrected input per applicable fix, written next to your input as
 \file{name.fix\_\textit{variant}.inp}. The example wrote two:

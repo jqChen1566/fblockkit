@@ -38,6 +38,7 @@ Starting active-space suggestions (G2, suggestions only; Ce):
     4f (7 orbitals) plus the d shell (5 orbitals) at the same electron count: use when the d shell participates (bonding, An(IV) valence requirements, or when occupation analysis shows d weight in the correlated orbitals).
 Active space nel,norb,mult,nroots (Enter = leave empty)> 1,7,2,1
 Convergence tier (default = defaults first; difficult = use TRAH) (Enter = default)> default
+MaxCore per process in MB (Enter = 2000; a measured f-block TRAH-CASSCF needed 9345 MB) (Enter = 2000)> 
 Input file written: work\ce_atom.fbk.inp
 Run guidance:
 - Method chain: CASSCF + SC-NEVPT2

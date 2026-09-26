@@ -1,4 +1,6 @@
 9
 work/scf_noconv.out
 work/scf_noconv.inp
+9
+work/n2_hf_clean.out
 0

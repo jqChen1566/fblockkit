@@ -45,5 +45,34 @@ Available functions:
   11  Point-charge crystal-field estimate (read an XYZ structure + charges)
   12  Exact four-state entropy (CASSCF output + FCIDUMP; optional orca_2json exports for the localized basis)
    0  Quit
+Choose a number (Enter = leave empty)> 9
+ORCA output file path (Enter = leave empty)> work/n2_hf_clean.out
+SCF CONVERGENCE block, verbatim from the output (printed for reference; the check mode decides which rows are actually enforced):
+SCF CONVERGENCE
+---------------
+
+  Last Energy change         ...    2.0488e-07  Tolerance :   1.0000e-06
+  Last MAX-Density change    ...    5.8573e-05  Tolerance :   1.0000e-05
+  Last RMS-Density change    ...    8.9188e-06  Tolerance :   1.0000e-06
+  Last DIIS Error            ...    1.8058e-03  Tolerance :   1.0000e-06
+  Last Orbital Gradient      ...    1.4302e-05  Tolerance :   5.0000e-05
+  Last Orbital Rotation      ...    8.1326e-06  Tolerance :   5.0000e-05
+
+SCF looks healthy: no triage finding.
+
+Available functions:
+   1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)
+   2  Coordination geometry and symmetry hints (read an XYZ structure)
+   3  Generate an ORCA input (system profile -> input file + run guidance)
+   4  Basis-set / ECP recommendation (element/valence/targets)
+   5  Search the tool index (keywords)
+   6  Tool onboarding notes (by index id)
+   7  Cross-level solution consistency (records JSON input)
+   8  Save this session as a script
+   9  SCF rescue (triage + corrected input files)
+  10  Crystal-field fit (levels + coefficients JSON)
+  11  Point-charge crystal-field estimate (read an XYZ structure + charges)
+  12  Exact four-state entropy (CASSCF output + FCIDUMP; optional orca_2json exports for the localized basis)
+   0  Quit
 Choose a number (Enter = leave empty)> 0
 Goodbye.

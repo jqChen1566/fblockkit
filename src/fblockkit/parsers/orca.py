@@ -700,7 +700,39 @@ def _scan_scf_tables(lines: list[str]) -> dict[str, Any]:
         "criteria": tuple(criteria),
         "check_mode": check_mode,
         "check_mode_source": mode_source,
+        "convergence_block": _raw_convergence_block(lines),
     }
+
+
+def _raw_convergence_block(lines: list[str]) -> tuple[str, ...]:
+    """The last SCF CONVERGENCE block, verbatim (title plus the criterion rows).
+
+    The check mode decides which of these rows are actually enforced; the verbatim
+    view exists so the informational rows (density, DIIS error, ...) can be read
+    as printed, without any interpretation imposed on them.
+    """
+    start = None
+    for i, line in enumerate(lines):
+        if line.strip() == _CRITERIA_TITLE:
+            start = i
+    if start is None:
+        return ()
+    block: list[str] = []
+    row_seen = False
+    for line in lines[start:]:
+        if line.strip() == _CRITERIA_TITLE and not block:
+            block.append(line)
+            continue
+        stripped = line.strip()
+        if _CRITERION_RE.match(line) is not None:
+            block.append(line)
+            row_seen = True
+            continue
+        if not row_seen and (not stripped or set(stripped) <= _TABLE_DIVIDER_CHARS):
+            block.append(line)  # divider / blank line between the title and the table
+            continue
+        break
+    return tuple(block)
 
 
 def _parse_orbitals(lines: list[str]) -> dict[str, Any]:

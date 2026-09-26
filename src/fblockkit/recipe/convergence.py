@@ -115,6 +115,7 @@ def plan_convergence(
     difficulty: str = DIFFICULTY_DEFAULT,
     pt2: bool = False,
     maxiter: int = 300,
+    maxcore: int = 2000,
 ) -> ConvergencePlan:
     """Generate the G4 convergence/initial-guess settings.
 
@@ -151,10 +152,10 @@ def plan_convergence(
         notes.append("This route includes a perturbation layer: afterwards use the diagnosis layer to check orbital convergence and the reference weights/denominators.")
         evidence.append(_NEVPT2_ORBITAL)
     notes.append(
-        "Memory: the generated input sets %maxcore 2000 MB. A large-basis f-block CASSCF can "
-        "need several GB per process (measured: a Yb3+ CASSCF(13,7) with SARC2-DKH-QZVP under "
-        "TRAH asked for 9345 MB per process and aborted); raise %maxcore if ORCA reports out "
-        "of memory."
+        f"Memory: the generated input sets %maxcore {maxcore} MB. A large-basis f-block "
+        "CASSCF can need several GB per process (measured: a Yb3+ CASSCF(13,7) with "
+        "SARC2-DKH-QZVP under TRAH asked for 9345 MB per process and aborted); raise "
+        "%maxcore if ORCA reports out of memory."
     )
     evidence.append(_EVIDENCE_MEMORY)
     notes.append(

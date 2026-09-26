@@ -151,6 +151,7 @@ def test_menu_three_generates_input(tmp_path):
         "1",        # basis tier
         "1,7,2,1",  # active space
         "default",  # convergence tier
+        "2500",     # MaxCore per process (MB)
         "0",
     ]
     out, _ = _session_run(lines)
@@ -160,7 +161,9 @@ def test_menu_three_generates_input(tmp_path):
     text = inp.read_text(encoding="ascii")
     assert "SARC2-DKH-QZVP" in text
     assert "%casscf" in text and "nel 1" in text
+    assert "%maxcore 2500" in text  # the chosen value reaches the input
     assert "Run guidance" in out
+    assert "%maxcore 2500 MB" in out  # and the guidance quotes it
 
 
 def test_menu_four_basis_query(tmp_path):
@@ -210,6 +213,20 @@ def test_menu_nine_stays_silent_on_clean_run(tmp_path):
     copy = tmp_path / "n2_hf_clean.out"
     shutil.copy(FIXTURES / "n2_hf_clean.out", copy)
     out, _ = _session_run(["9", str(copy), "0"])
+    assert "SCF looks healthy: no triage finding." in out
+
+
+def test_menu_nine_prints_the_convergence_block_verbatim(tmp_path):
+    """The informational rows (which the check mode does not enforce) are shown
+    exactly as printed, on healthy runs too, and never interpreted here."""
+    copy = tmp_path / "n2_hf_clean.out"
+    shutil.copy(FIXTURES / "n2_hf_clean.out", copy)
+    out, _ = _session_run(["9", str(copy), "0"])
+    assert "SCF CONVERGENCE block, verbatim from the output" in out
+    assert "Last DIIS Error" in out
+    assert "Last Energy change" in out
+    # and it is still reported as healthy: the raw DIIS row above tolerance does
+    # not turn into a finding (it is informational under the default check mode)
     assert "SCF looks healthy: no triage finding." in out
 
 

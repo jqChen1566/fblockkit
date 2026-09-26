@@ -112,7 +112,7 @@ def main() -> int:
                     "1", "work/fhh_optts_freq.out",
                     "1", "work/n2_stretch_local_spin.out",
                     "2", "work/octahedron.xyz", "Oh",
-                    "3", "Ce", "3", "2", "3", "energy", "work/ce_atom.xyz", "1", "1,7,2,1", "default",
+                    "3", "Ce", "3", "2", "3", "energy", "work/ce_atom.xyz", "1", "1,7,2,1", "default", "5000",
                     "4", "Pu,Cl", "0", "2", "3", "energy",
                     "5", "dmrg",
                     "6", "openmolcas",
@@ -178,8 +178,9 @@ def main() -> int:
             generated = read("ce_atom.fbk.inp")
             check(
                 ("SARC2-DKH-QZVP" in generated and "%casscf" in generated and "nel 1" in generated
-                 and generated.isascii()),
-                "the generated ORCA input is ASCII with the SARC2 basis and the CASSCF block",
+                 and "%maxcore 5000" in generated and generated.isascii()),
+                "the generated ORCA input is ASCII with the SARC2 basis, the CASSCF block "
+                "and the chosen MaxCore",
             )
 
             fixed = sorted(p.name for p in inputs.glob("scf_noconv.fix_*.inp"))

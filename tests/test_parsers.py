@@ -507,3 +507,25 @@ def test_orbital_table_survives_negative_zero_occupation(tmp_path):
     assert tuple(occupations) == pytest.approx((1.0, -0.0, 0.0))
     energies = result.sections["orbitals"]["energies"]
     assert tuple(energies) == pytest.approx((-1.329467, -0.495719, -2.508227))
+
+
+# --- the verbatim SCF CONVERGENCE block (the verbose view) --------------------
+
+
+def test_scf_convergence_block_is_captured_verbatim():
+    """The last SCF CONVERGENCE block is captured as printed: title, divider,
+    blank line and the six criterion rows -- the informational rows included
+    (menu 9 shows them without judging them; the check mode decides)."""
+    result = parse_auto(FIXTURES / "n2_hf_clean.out")
+    block = result.sections["scf"]["convergence_block"]
+    assert len(block) == 9
+    assert block[0].strip() == "SCF CONVERGENCE"
+    assert set(block[1].strip()) <= {"-"}
+    assert "Last Energy change" in block[3]
+    assert any("Last DIIS Error" in line for line in block)
+
+
+def test_scf_convergence_block_absent_without_the_table(tmp_path):
+    """A CASSCF output carries no SCF CONVERGENCE table: the field is empty."""
+    result = parse_auto(FIXTURES / "n2_casscf_nevpt2.out")
+    assert result.sections["scf"].get("convergence_block", ()) == ()
