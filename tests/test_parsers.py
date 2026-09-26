@@ -477,3 +477,33 @@ def test_facts_drop_unknown_fields():
     assert facts["scf_cycles"] == 2
     assert facts["scf_converged"] is False
     assert "casscf_converged" not in facts
+
+
+# --- the Eu3+ fixture's "-0.0000" occupation (regression) --------------------
+
+
+def test_orbital_table_survives_negative_zero_occupation(tmp_path):
+    """ORCA prints tiny negative natural occupations as '-0.0000' (measured on
+    the Eu3+ fixture, 2026-09-26).  The row must match, or the table parse stops
+    there and every later orbital is lost."""
+    text = (
+        "                     *   *   *   *\n"
+        "                     * O   R   C   A *\n"
+        "                     *   *   *   *\n"
+        "ORBITAL ENERGIES\n"
+        "----------------\n"
+        "\n"
+        "  NO   OCC          E(Eh)            E(eV) \n"
+        "  32   1.0000      -1.329467       -36.1766 \n"
+        "  33   -0.0000      -0.495719       -13.4892 \n"
+        "  34   0.0000      -2.508227       -68.2523 \n"
+        "\n"
+        "trailing text\n"
+    )
+    path = tmp_path / "eu_fragment.out"
+    path.write_text(text, encoding="utf-8")
+    result = OrcaParser().parse(path)
+    occupations = result.sections["orbitals"]["occupations"]
+    assert tuple(occupations) == pytest.approx((1.0, -0.0, 0.0))
+    energies = result.sections["orbitals"]["energies"]
+    assert tuple(energies) == pytest.approx((-1.329467, -0.495719, -2.508227))

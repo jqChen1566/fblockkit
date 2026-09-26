@@ -87,6 +87,12 @@ def main() -> int:
             shutil.copy(FIXTURES / name, inputs / name)
         shutil.copy(FIXTURES / "inputs" / "scf_noconv.inp", inputs / "scf_noconv.inp")
         shutil.copy(REPO / "fixtures" / "literature" / "pucl3_s18.json", inputs / "pucl3_s18.json")
+        # the exact-entropy chain (menu 12): the converged CASSCF output, the
+        # FCIDUMP it dumped, and the two orca_2json exports of the gbw
+        shutil.copy(FIXTURES / "n2_fcidump_step_a.out", inputs / "n2_fcidump_step_a.out")
+        shutil.copy(FIXTURES / "n2_fcidump.fcidump", inputs / "FCIDUMP")
+        shutil.copy(FIXTURES / "n2_fcidump.canonical.json", inputs / "canonical.json")
+        shutil.copy(FIXTURES / "n2_fcidump.localized.json", inputs / "localized.json")
         subprocess.run(
             [PY, str(EXAMPLES / "generate_inputs.py")], cwd=work, env=ENV, check=True,
             capture_output=True,
@@ -114,6 +120,8 @@ def main() -> int:
                     "9", "work/scf_noconv.out", "work/scf_noconv.inp",
                     "10", "work/cf_c3.json",
                     "11", "work/ceo6.xyz", "O=-2", "",
+                    "12", "work/n2_fcidump_step_a.out", "work/FCIDUMP",
+                    "work/canonical.json", "work/localized.json", "4 9",
                     "8", "work/saved.txt",
                     "0",
                 ]
@@ -189,6 +197,20 @@ def main() -> int:
             pc = read("ceo6.xyz.fbk.md")
             check("S2 point-charge crystal-field estimate" in pc and "(4,0)" in pc and "(4,4)" in pc,
                   "the point-charge estimate reports the Oh non-zero pattern")
+
+            exact = read("FCIDUMP.fbk.md")
+            check(
+                all(
+                    marker in exact
+                    for marker in (
+                        "A2x exact four-state single-orbital entropy",
+                        "-108.950671945",
+                        "IAO-IBO",
+                        "Cross-checks against the engine",
+                    )
+                ),
+                "menu 12 report: the exact entropy route reproduces the engine numbers",
+            )
 
             check(product("saved.txt").is_file(), "menu 8 wrote the session script")
         except AssertionError as exc:

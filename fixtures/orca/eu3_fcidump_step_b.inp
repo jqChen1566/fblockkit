@@ -1,0 +1,15 @@
+! DKH2 SARC2-DKH-QZVP SARC2-DKH-QZVP/JK TightSCF FCIDUMP moread
+%maxcore 4000
+%scf
+MaxIter 300
+end
+%moinp "eu3_trah_a.gbw"
+%casscf
+  nel 6
+  norb 7
+  mult 7
+  nroots 1
+end
+* xyz 3 7
+Eu 0.0 0.0 0.0
+*

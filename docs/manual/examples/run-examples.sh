@@ -24,6 +24,12 @@ cp "$REPO/fixtures/orca/n2_hf_clean.out" work/
 cp "$REPO/fixtures/orca/scf_noconv.out" work/
 cp "$REPO/fixtures/orca/inputs/scf_noconv.inp" work/
 cp "$REPO/fixtures/literature/pucl3_s18.json" work/
+# the exact-entropy chain of menu 12 (converged CASSCF output, its FCIDUMP and
+# the two orca_2json exports of the gbw)
+cp "$REPO/fixtures/orca/n2_fcidump_step_a.out" work/
+cp "$REPO/fixtures/orca/n2_fcidump.fcidump" work/FCIDUMP
+cp "$REPO/fixtures/orca/n2_fcidump.canonical.json" work/canonical.json
+cp "$REPO/fixtures/orca/n2_fcidump.localized.json" work/localized.json
 
 for script in scripts/*.txt; do
   name=$(basename "$script" .txt)

@@ -1,0 +1,62 @@
+------------------------------------------------------------------------------
+                           ORCA ORBITAL LOCALIZATION
+------------------------------------------------------------------------------
+
+Input orbitals are from                  ... step_a.gbw
+Output orbitals are to                   ... step_a.loc.gbw
+Max. number of iterations                ... 128
+Localizations seeded randomly            ... on
+Convergence tolerance                    ... 1.000e-06
+Threshold for strong local MOs           ... 9.500e-01
+Threshold for bond MOs                   ... 8.500e-01
+Operator                                 ... 0
+Orbital range for localization           ... 4 to 9
+Localization criterion                   ... IAO-IBO
+Warning: cannot retrieve the overlap matrix S
+        ... Overlap was succesfully recalculated
+Entering Jacobi type localization:
+Using Cholesky decomposition as initial guess.
+Your calculation utilizes the IAOIBO localization method
+Cite in your paper:
+G. KNIZIA, INTRISIC ATOMIC ORBITALS: AN UNBIASED BRIDGE BETWEEN
+QUANTUM THEORY AND CHEMICAL CONCEPTS 
+J. CHEM. THEOTY COMPUT. 2013, 9, 4834~4843.
+
+-------------------
+IAO PARTIAL CHARGES 
+-------------------
+Warning!!! IAOs HAVE MEANING, only when all occupied MOs are involved.
+   0 N :    1.000352
+   1 N :    0.999648
+Sum of atomic charges:    2.0000000
+
+Initial value of the localization sum :     3.687742
+ITERATION   0 : L=    4.2500000926 DL=  5.62e-01 (MAX-T)=  11.783 
+ITERATION   1 : L=    4.2500000928 DL=  1.60e-10 (MAX-T)=   0.000 
+ITERATION   2 : L=    4.2500000928 DL=  0.00e+00 (MAX-T)=   0.000 
+LOCALIZATION SUM CONVERGED
+
+
+--------------------------------------------------------------------------------
+                    LOCALIZED MOLECULAR ORBITAL COMPOSITIONS
+--------------------------------------------------------------------------------
+
+The Mulliken populations for each LMO on each atom are computed
+The LMO`s will be ordered according to atom index and type
+  (A) Strongly localized MO`s have populations of >=0.950 on one atom
+  (B) Two center bond orbitals have populations of >=0.850 on two atoms
+  (C) Other MO`s are considered to be `delocalized`
+
+FOUND  -   4 strongly local MO`s
+       -   2 two center bond MO`s
+       -   0 significantly delocalized MO`s
+
+Rather strongly localized orbitals:
+MO   7:   1N  -   1.001851
+MO   6:   1N  -   1.001851
+MO   5:   0N  -   1.001851
+MO   4:   0N  -   1.001851
+Bond-like localized orbitals:
+MO   9:   1N  -   0.500002  and   0N  -   0.499998
+MO   8:   1N  -   0.500007  and   0N  -   0.499993
+Localized MO's were stored in: step_a.loc.gbw

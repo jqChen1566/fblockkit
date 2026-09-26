@@ -341,6 +341,53 @@ def test_eof_exits_cleanly():
     assert "(end of input, exiting.)" in out
 
 
+def _fcidump_chain(tmp_path):
+    fixtures = Path(__file__).resolve().parents[1] / "fixtures" / "orca"
+    out_file = tmp_path / "n2.out"
+    shutil.copy(fixtures / "n2_fcidump_step_a.out", out_file)
+    dump_file = tmp_path / "FCIDUMP"
+    shutil.copy(fixtures / "n2_fcidump.fcidump", dump_file)
+    canonical = tmp_path / "canonical.json"
+    shutil.copy(fixtures / "n2_fcidump.canonical.json", canonical)
+    localized = tmp_path / "localized.json"
+    shutil.copy(fixtures / "n2_fcidump.localized.json", localized)
+    return out_file, dump_file, canonical, localized
+
+
+def test_menu_twelve_exact_entropy_full_chain(tmp_path):
+    """Menu 12: the exact four-state entropy with the inferred window and the
+    localized step; the report carries the engine cross-checks."""
+    out_file, dump_file, canonical, localized = _fcidump_chain(tmp_path)
+    out, _ = _session_run(
+        ["12", str(out_file), str(dump_file), str(canonical), str(localized), "", "0"]
+    )
+    assert "Active window inferred: [4, 5, 6, 7, 8, 9]" in out
+    assert "Cross-checks against the engine" in out
+    assert "-108.950671945" in out  # the printed CASSCF energy, reproduced
+    assert "IAO-IBO" in out
+    assert "Report written" in out
+    report = Path(str(dump_file) + ".fbk.md").read_text(encoding="utf-8")
+    assert "A2x exact four-state single-orbital entropy" in report
+    assert "References" in report
+
+
+def test_menu_twelve_without_exports_skips_the_localized_step(tmp_path):
+    out_file, dump_file, _, _ = _fcidump_chain(tmp_path)
+    out, _ = _session_run(["12", str(out_file), str(dump_file), "", "", "4 9", "0"])
+    assert "Cross-checks against the engine" in out
+    assert "IAO-IBO" not in out
+
+
+def test_menu_twelve_refuses_a_non_casscf_output(tmp_path):
+    fixtures = Path(__file__).resolve().parents[1] / "fixtures" / "orca"
+    out_file = tmp_path / "hf.out"
+    shutil.copy(fixtures / "n2_hf_clean.out", out_file)
+    dump_file = tmp_path / "FCIDUMP"
+    shutil.copy(fixtures / "n2_fcidump.fcidump", dump_file)
+    out, _ = _session_run(["12", str(out_file), str(dump_file), "", "", "4 9", "0"])
+    assert "no CASSCF section" in out
+
+
 # --- CLI --------------------------------------------------------------------
 
 

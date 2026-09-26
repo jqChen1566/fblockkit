@@ -88,6 +88,48 @@ kept.
 | `generated_yb3_sarc2_trah.out` | `inputs/generated_yb3_sarc2_trah.inp` | the same system and basis with the difficult tier (`!TRAH` plus the /C auxiliary basis; ORCA confirms "now doing a TRAH-CASSCF calculation") | TRAH-CASSCF ran about 70 macro iterations and aborted with **OUT OF MEMORY** ("MINIMUM REQUIRED: 9345.2 MB / MAXCORE: 2000.0 MB"); the OOM lines are in the parse result's errors; this is the measured source of the `%maxcore` note in the generated run guidance | ORCA error termination |
 
 
+## FCIDUMP-route fixtures added 2026-09-26 (server 101, the same ORCA 6.1.1)
+
+The exact four-state entropy route (`analysis/entropy_rdm.py`) rebuilds the CAS-CI
+wavefunction from an FCIDUMP that ORCA writes when the converged CASSCF is rerun
+with `!moread` + `!FCIDUMP`. These nine files are one complete chain on N2 /
+def2-SVP CASSCF(6,6), all from the same working directory:
+
+| File | Step | Notes |
+|---|---|---|
+| `n2_fcidump_step_a.inp` / `.out` | the converged CASSCF (single root, so the dumped orbitals are unambiguous) | the reference numbers for the entropy tests: energy -108.950671945279 Eh and N(occ) = 1.99345 1.93634 1.93634 0.06599 0.06599 0.00190 |
+| `n2_fcidump.fcidump` | the dump itself (step B, `n2_fcidump_step_b.inp` / `.out`) | standard FCIDUMP: NORB=6, NELEC=6, MS2=0, effective one-electron integrals, chemist two-electron integrals, core energy -97.50438264495477 |
+| `n2_fcidump_step_c.loc.inp` / `.out` | `orca_loc` on the converged gbw, IAO-IBO, orbital range 4..9 (the active window in ORCA's 0-based orbital-energy table) | produces the localized gbw used below |
+| `n2_fcidump.canonical.json` / `n2_fcidump.localized.json` | `orca_2json` exports of the two gbw files (`{"MOCoefficients": true, "1elIntegrals": ["S"]}`) | the two ends of the active-block rotation; the S-Matrix lives in `Molecule.S-Matrix` |
+
+Behaviour of the dump run, measured: it saves the integrals after its first
+macro-iteration and then aborts with "This wavefunction IS NOT FULLY CONVERGED!" --
+that abort is inherent to the dump mode (the convergence flag is never set), the
+FCIDUMP is complete, and the entropy module's energy cross-check is what actually
+verifies the file against the run. The reaction of the 2-RDM export was measured on
+the same day and is recorded in the module docstring of `analysis/entropy_rdm.py`:
+`%autoci Density2` never produced a `.RDM2` file for CAS-type methods on 6.1.1, so
+this FCIDUMP route is the one that is actually available.
+
+The same day added the **f-block chain** on Eu3+ (4f6), files
+`eu3_fcidump_*`:
+
+| File | Step | Notes |
+|---|---|---|
+| `eu3_fcidump_step_a.inp` / `.out` | Eu3+ / DKH2 + SARC2-DKH-QZVP, CASSCF(6,7) mult 7 | the **difficult tier**: the default convergence aborted in the MPI CASSCF at macro-iteration 75 (signal 6); `!TRAH` with the /JK auxiliary converged. Reference numbers: energy -10826.615512593075 Eh, N(occ) = six 1.00000 + one 0.00000 (the occupied-orbital table prints that last one as **"-0.0000"** -- the reason `_ORB_ROW_RE` accepts a signed occupation) |
+| `eu3_fcidump.fcidump` | the dump (step B) | NORB=7, NELEC=6, **MS2=6**: the na=6, nb=0 sector, 7 determinants -- the maximum-Ms block of a high-spin f6 ion |
+| `eu3_fcidump_step_c.loc.inp` / `.out` | `orca_loc`, IAO-IBO, window 27..33 | **the default IAO basis fails on Eu** ("The minimal basis set is not defined for element Eu"); the working recipe fills all positional fields and selects ANO-RCC-MB (option 4) for the IAO basis: `gbw out 27 33 3 0 128 1e-6 0.0 0.95 0.85 2 1 1 4 0 0`. That is the f-block face of the MINAO coverage gap recorded in the Wave-0 notes |
+
+Validation of the Eu chain (measured 2026-09-26 with its two orca_2json exports,
+which at ~1.6 MB each stayed out of the repository): the reconstructed CI energy
+matches the printed value to 3.5e-11 Eh, `<S^2>` = 12.000 (the 7F term), the
+natural occupations are six 1.00000 and one 0.00000, and the four-state entropy
+spectrum is zero in every basis -- the maximal-weight 7F state is a single
+determinant in the m_l-like basis, and an orbital rotation cannot change that.
+A clean negative control for the f-block side, next to the strongly correlated
+N2 positive above. The localized-rotation orthogonality check on the Eu exports
+measured 1.3e-14.
+
 ## Known-behaviour notes
 
 - `generated_ce3_sarc2.out`: the active occupations are (1,0,0,0,0,0,0) -- putting the

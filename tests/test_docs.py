@@ -42,6 +42,7 @@ def test_doc_mentions_each_menu_title_topic():
         "Save this session as a script",
         "SCF rescue",
         "Crystal-field fit",
+        "Exact four-state entropy",
     ):
         assert keyword in text, keyword
 

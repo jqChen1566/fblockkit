@@ -313,6 +313,48 @@ extraction (the same caveat the section prints, with its citation). The
 `l`-basis numbers and Section 10's `B_k^q` are comparable only through their
 spectra, not parameter by parameter.
 
+## 12 Exact four-state entropy (CASSCF output + FCIDUMP; optional orca_2json exports for the localized basis)
+
+**What it is for**: the autoCAS single-orbital entropy itself - the four-state
+quantity `s_i = -sum w ln w` over the (empty / up / down / double) occupations
+of each active orbital - rebuilt exactly from your own calculation. Section 1
+reports a rigorous upper bound for the same number (an ORCA output alone cannot
+supply it, and ORCA's own 2-RDM export was measured to be unreachable for
+CAS-type methods on 6.1.1); this section reports the number, with its
+cross-checks.
+
+**What you need**: (a) the converged CASSCF output; (b) the FCIDUMP that ORCA
+writes when the same job is rerun with the converged orbitals plus the
+`!FCIDUMP` keyword (`!moread` and `%moinp "previous.gbw"`). The dump run then
+reports "IS NOT FULLY CONVERGED" and stops - that is how the keyword behaves;
+the cross-checks below verify the dumped data against the original run. For the
+localized-basis step (required before reading the 0.14 line): run `orca_loc` on
+the active window, then `orca_2json` on both gbw files (canonical and
+localized) with a configuration requesting the MO coefficients and the
+`S-Matrix`. On lanthanides give the IAO basis explicitly - the default minimal
+basis is not defined for them; ANO-RCC-MB (option 4) works, and the exact
+working `orca_loc` line is recorded in the fixtures README (Eu3+ chain).
+
+**How**: menu 12 -> output path -> FCIDUMP path -> canonical export (Enter =
+skip the localized step) -> localized export -> active window (Enter = infer
+from the occupation table). The inference grows the window away from the core
+when an active orbital prints as 0.0000 and validates it against the `N(occ)=`
+line; give the window explicitly whenever you prefer.
+
+**What you get**: the four occupation weights and entropy per orbital (canonical
+basis, informational), the same spectrum in the localized basis when the two
+exports are given, the engine cross-checks (reconstructed energy vs the printed
+CASSCF energy - the gate is 1e-6 Eh; the agreement is ~1e-10 against the
+summary line and reaches 1e-13 with a fuller-precision reference - and natural
+occupations vs `N(occ)`), the 0.14-line candidates and the plateau readout, and
+a report file next to the FCIDUMP with the complete citations.
+
+**What it is not**: the active space is taken as given (the usual window and
+solution-branch caveats apply; Section 1 checks them); the solver is a dense
+determinant CI capped at a few thousand determinants per M_s sector - far above
+the f-block windows it targets, but not a DMRG; and the numbers do not replace
+Section 1's diagnostics.
+
 ## Appendix A Command line
 
 ```text

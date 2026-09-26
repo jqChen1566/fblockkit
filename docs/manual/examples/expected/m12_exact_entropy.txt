@@ -1,0 +1,67 @@
+fBlockKit -- the f-block calculation toolkit (input generation + characterisation analysis; it runs no calculations)
+
+Available functions:
+   1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)
+   2  Coordination geometry and symmetry hints (read an XYZ structure)
+   3  Generate an ORCA input (system profile -> input file + run guidance)
+   4  Basis-set / ECP recommendation (element/valence/targets)
+   5  Search the tool index (keywords)
+   6  Tool onboarding notes (by index id)
+   7  Cross-level solution consistency (records JSON input)
+   8  Save this session as a script
+   9  SCF rescue (triage + corrected input files)
+  10  Crystal-field fit (levels + coefficients JSON)
+  11  Point-charge crystal-field estimate (read an XYZ structure + charges)
+  12  Exact four-state entropy (CASSCF output + FCIDUMP; optional orca_2json exports for the localized basis)
+   0  Quit
+Choose a number (Enter = leave empty)> 12
+Converged CASSCF output path (the run whose orbitals were dumped) (Enter = leave empty)> work/n2_fcidump_step_a.out
+FCIDUMP path (written by the !FCIDUMP dump run) (Enter = leave empty)> work/FCIDUMP
+orca_2json export of the canonical gbw (Enter = skip the localized-basis step) (Enter = leave empty)> work/canonical.json
+orca_2json export after orca_loc (the localized step needs both exports) (Enter = leave empty)> work/localized.json
+Active window 'first last' in ORCA's 0-based orbital numbering (Enter = infer) (Enter = leave empty)> 4 9
+Active space: 6 orbitals / 6 electrons (M_s sector with n_alpha=3, n_beta=3); determinants solved: 400; selected root 0 with <S^2> = 0.0000
+
+Cross-checks against the engine (the reconstruction is trusted only with them):
+  - CI energy + core energy = -108.950671945279 Eh vs the run's -108.950671945000 Eh (deviation 2.79e-10; the solver refuses a match beyond 1e-6)
+  - natural occupations vs the printed N(occ): max |deviation| = 4.56e-06 (the print precision is 1e-5)
+  - localization rotation orthogonality: max |u^T u - I| = 7.41e-14 (two exports of the same gbw, one localized window)
+
+Four-state single-orbital entropy (canonical orbital basis of the dump; informational -- the 0.14 line and the plateau reading are defined in a localized basis):
+  0.0223 0.2258 0.2258 0.2302 0.2302 0.0078
+
+Four-state single-orbital entropy (localized basis: IAO-IBO rotation of the active window [4, 5, 6, 7, 8, 9] from the user's orca_loc):
+  1.3547 1.3547 1.3547 1.3547 0.3732 0.3885
+  max s1 = 1.3547 vs the Stein & Reiher line 0.14: candidate orbitals (original numbering): [4, 5, 6, 7, 8, 9]
+  Plateau/cliff: the largest relative gap (71.3%) sits after item 4 of the descending order.
+
+Four weights per localized orbital (empty, up, down, double):
+  orbital 4: 0.1869 0.3125 0.3125 0.1881
+  orbital 5: 0.1869 0.3125 0.3125 0.1881
+  orbital 6: 0.1869 0.3125 0.3125 0.1881
+  orbital 7: 0.1869 0.3125 0.3125 0.1881
+  orbital 8: 0.9078 0.0459 0.0459 0.0003
+  orbital 9: 0.0026 0.0459 0.0459 0.9055
+
+Preconditions carried with these numbers:
+- The four-state density is diagonal for a fixed-particle-number state (an exact statement, not an approximation), so the three numbers n_up, n_down and p2 are complete -- and they exist only in a reconstruction like this one; a printed N(occ) line cannot supply them.
+- Read the threshold against the localized-basis spectrum only; the canonical spectrum is reported for orientation.
+- The solver is exact within the dumped active space; the usual active-space caveats (size, composition, solution branch) transfer unchanged.
+Report written: work\FCIDUMP.fbk.md
+
+Available functions:
+   1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)
+   2  Coordination geometry and symmetry hints (read an XYZ structure)
+   3  Generate an ORCA input (system profile -> input file + run guidance)
+   4  Basis-set / ECP recommendation (element/valence/targets)
+   5  Search the tool index (keywords)
+   6  Tool onboarding notes (by index id)
+   7  Cross-level solution consistency (records JSON input)
+   8  Save this session as a script
+   9  SCF rescue (triage + corrected input files)
+  10  Crystal-field fit (levels + coefficients JSON)
+  11  Point-charge crystal-field estimate (read an XYZ structure + charges)
+  12  Exact four-state entropy (CASSCF output + FCIDUMP; optional orca_2json exports for the localized basis)
+   0  Quit
+Choose a number (Enter = leave empty)> 0
+Goodbye.

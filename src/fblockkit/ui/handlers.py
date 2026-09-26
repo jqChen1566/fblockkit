@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any
 
 from ..analysis import cf_declaration, crystal_field, point_charge
+from ..analysis import entropy_rdm
 from ..analysis import evidence_for, run_all
 from ..analysis import geometry as geometry_analysis
 from ..diagnosis import SEVERITY_LABELS, build_report, diagnose, references_section, to_markdown
@@ -21,6 +22,8 @@ from ..diagnosis import ScfRescueError, propose_fixes
 from ..diagnosis import triage as scf_triage
 from ..knowledge.models import SystemProfile
 from ..parsers import ParserError, parse_auto
+from ..parsers.fcidump import parse_fcidump
+from ..parsers.orca_json import parse_orca_json
 from ..recipe import (
     BasisAdvice,
     BasisDataError,
@@ -603,6 +606,109 @@ def crystal_field_fit(session: Session) -> None:
             )
 
 
+def exact_entropy(session: Session) -> None:
+    """Menu 12: the exact four-state entropy from a CASSCF output + its FCIDUMP.
+
+    The route and its cross-checks live in ``analysis.entropy_rdm``; this handler
+    only collects the four paths, infers (or accepts) the active-orbital window,
+    and writes the report next to the FCIDUMP.
+    """
+    output_text = session.ask(
+        "Converged CASSCF output path (the run whose orbitals were dumped)"
+    )
+    if not output_text:
+        session.say("Cancelled (no output path given).")
+        return
+    fcidump_text = session.ask("FCIDUMP path (written by the !FCIDUMP dump run)")
+    if not fcidump_text:
+        session.say("Cancelled (no FCIDUMP path given).")
+        return
+    canonical_text = session.ask(
+        "orca_2json export of the canonical gbw (Enter = skip the localized-basis step)"
+    )
+    localized_text = ""
+    if canonical_text:
+        localized_text = session.ask(
+            "orca_2json export after orca_loc (the localized step needs both exports)"
+        )
+    window_text = session.ask(
+        "Active window 'first last' in ORCA's 0-based orbital numbering (Enter = infer)"
+    )
+    try:
+        result = parse_auto(Path(output_text))
+        casscf = result.sections.get("casscf", {})
+        if not casscf.get("present"):
+            session.say(
+                "This output has no CASSCF section. Next step: use the converged "
+                "CASSCF run whose orbitals the FCIDUMP was dumped from."
+            )
+            return
+        if not casscf.get("converged"):
+            session.say(
+                "The CASSCF did not report convergence, so the dumped Hamiltonian "
+                "describes intermediate orbitals and no engine number can validate "
+                "the reconstruction. Next step: converge the CASSCF (see the "
+                "convergence guidance) and dump again."
+            )
+            return
+        energy = casscf.get("energy")
+        if energy is None:
+            session.say(
+                "The CASSCF section carries no final energy to check against. "
+                "Next step: use the converged run's output file."
+            )
+            return
+        states = casscf.get("states") or ()
+        multiplicity = states[0].get("mult") if states else None
+        printed_occ = tuple(casscf.get("active_occupations") or ())
+        table_occ = tuple(result.sections.get("orbitals", {}).get("occupations") or ())
+        dump = parse_fcidump(Path(fcidump_text))
+        if window_text:
+            try:
+                first, last = (
+                    int(token) for token in window_text.replace(",", " ").split()
+                )
+            except ValueError:
+                session.say(
+                    "The window must be two integers, e.g. '4 9'. Cancelled."
+                )
+                return
+            window: tuple[int, ...] | None = tuple(range(first, last + 1))
+        else:
+            window, note = entropy_rdm.infer_active_window(
+                table_occ, dump.norb, reference_occupations=printed_occ or None
+            )
+            session.say(f"Active window inferred: {list(window)} ({note}).")
+        canonical = (
+            parse_orca_json(Path(canonical_text)) if canonical_text else None
+        )
+        localized = (
+            parse_orca_json(Path(localized_text)) if localized_text else None
+        )
+        analysis = entropy_rdm.analyze(
+            dump,
+            reference_energy=float(energy),
+            multiplicity=multiplicity,
+            reference_occupations=printed_occ or None,
+            canonical=canonical,
+            localized=localized,
+            active_window=window,
+        )
+        section = entropy_rdm.run(analysis)
+    except (ParserError, entropy_rdm.EntropyRdmError, OSError, ValueError) as exc:
+        session.say(f"Exact entropy analysis failed: {exc}")
+        return
+
+    session.say(section.body)
+    report_lines = f"## {section.title}\n\n{section.body}\n"
+    refs = references_section(entropy_rdm.evidence())
+    if refs is not None:
+        report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
+    md_path = Path(fcidump_text).with_name(Path(fcidump_text).name + ".fbk.md")
+    md_path.write_text(report_lines, encoding="utf-8")
+    session.say(f"Report written: {md_path}")
+
+
 HANDLERS = {
     "report_output": report_output,
     "geometry_report": geometry_report,
@@ -615,5 +721,6 @@ HANDLERS = {
     "scf_rescue": scf_rescue,
     "crystal_field_fit": crystal_field_fit,
     "point_charge_estimate": point_charge_estimate,
+    "exact_entropy": exact_entropy,
     "quit": quit_session,
 }

@@ -38,10 +38,18 @@ Quantity & Value & Meaning / limits & Source \\
 Single-orbital entropy line & max $s_i > 0.14$ & For the \emph{true four-state}
   entropy $s_i = -\sum_j \rho_{jj} \ln \rho_{jj}$ over the four occupation
   states of an orbital (ceiling $\ln 4$). An ORCA output gives only
-  spin-summed occupations, which do not determine that entropy; the program
+  spin-summed occupations, which do not determine that entropy; menu~\menu{1}
   computes a provable upper bound instead and applies 0.14 one-sidedly --
   bound $\le 0.14$ excludes, bound $> 0.14$ is indecisive &
   \textsf{[Literature]} Stein \& Reiher 2016; Wardzala et al.\ 2026 Eq.~(6) \\
+Exact four-state entropy & $s_i$ computed directly & Menu~\menu{12}
+  reconstructs $s_i$ from the user's FCIDUMP (converged CASSCF plus the
+  \code{!FCIDUMP} dump run) and reads 0.14 against the \emph{localized}-basis
+  spectrum; the reconstruction is gated by engine cross-checks (the CI energy
+  must reproduce the printed CASSCF energy, the natural occupations the
+  \code{N(occ)} line) &
+  \textsf{[Measured]} route validation 2026-09-26 (energy agreement $4\times
+  10^{-13}$ on the N2 fixture; \code{tests/test\_entropy\_rdm.py}) \\
 Weak-correlation cut & 1--2\% of max & Relative cut used with the ranking
   proxy when no plateau is found & \textsf{[Literature]} Stein \& Reiher 2016 \\
 $Z_{s(1)}$ line & 0.2 & A \emph{different} diagnostic; listed here only to say

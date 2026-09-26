@@ -67,8 +67,11 @@ _FINAL_ENERGY_RE = re.compile(r"FINAL SINGLE POINT ENERGY\s+(-?\d+\.\d+)")
 # --- ORBITAL ENERGIES table -------------------------------------------------
 
 _ORB_HEADER = "NO   OCC          E(Eh)"
+# The occupation column may carry a sign: ORCA prints tiny negative natural
+# occupations as "-0.0000" (measured, Eu3+ fixture 2026-09-26) -- without the
+# optional sign the row fails to match and the table parse stops there.
 _ORB_ROW_RE = re.compile(
-    r"^\s*(\d+)\s+(\d+\.\d{4})\s+(-?\d+\.\d+)\s+(-?\d+\.\d+)\s*$"
+    r"^\s*(\d+)\s+(-?\d+\.\d{4})\s+(-?\d+\.\d+)\s+(-?\d+\.\d+)\s*$"
 )
 
 # --- CASSCF -----------------------------------------------------------------

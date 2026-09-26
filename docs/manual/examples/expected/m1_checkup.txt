@@ -12,6 +12,7 @@ Available functions:
    9  SCF rescue (triage + corrected input files)
   10  Crystal-field fit (levels + coefficients JSON)
   11  Point-charge crystal-field estimate (read an XYZ structure + charges)
+  12  Exact four-state entropy (CASSCF output + FCIDUMP; optional orca_2json exports for the localized basis)
    0  Quit
 Choose a number (Enter = leave empty)> 1
 ORCA output file path (Enter = leave empty)> work/n2_casscf_nevpt2.out
@@ -32,6 +33,7 @@ Available functions:
    9  SCF rescue (triage + corrected input files)
   10  Crystal-field fit (levels + coefficients JSON)
   11  Point-charge crystal-field estimate (read an XYZ structure + charges)
+  12  Exact four-state entropy (CASSCF output + FCIDUMP; optional orca_2json exports for the localized basis)
    0  Quit
 Choose a number (Enter = leave empty)> 0
 Goodbye.

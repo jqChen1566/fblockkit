@@ -108,6 +108,10 @@ def _prepare_work() -> None:
         shutil.copy(FIXTURES / name, work / name)
     shutil.copy(FIXTURES / "inputs" / "scf_noconv.inp", work / "scf_noconv.inp")
     shutil.copy(REPO / "fixtures" / "literature" / "pucl3_s18.json", work / "pucl3_s18.json")
+    shutil.copy(FIXTURES / "n2_fcidump_step_a.out", work / "n2_fcidump_step_a.out")
+    shutil.copy(FIXTURES / "n2_fcidump.fcidump", work / "FCIDUMP")
+    shutil.copy(FIXTURES / "n2_fcidump.canonical.json", work / "canonical.json")
+    shutil.copy(FIXTURES / "n2_fcidump.localized.json", work / "localized.json")
 
 
 @pytest.fixture(scope="module")

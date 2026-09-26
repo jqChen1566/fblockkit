@@ -1,0 +1,13 @@
+! RHF def2-SVP def2-SVP/C TightSCF FCIDUMP moread
+%moinp "step_a.gbw"
+%maxcore 2000
+%casscf
+  nel 6
+  norb 6
+  mult 1
+  nroots 1
+end
+* xyz 0 1
+N 0 0 0
+N 0 0 1.094
+*
