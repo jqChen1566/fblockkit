@@ -136,6 +136,45 @@ read at their single-root dipole block (State: 0); a state-averaged output is
 refused.  Menu~\menu{19} writes this manifest (with the candidate list
 pre-filled) next to the batch.
 
+\section{The orca\_2json export and its request file (menus 12--15, 17, 21)}
+
+\code{orca\_2json <base>.gbw} rewrites an orbital file into
+\code{<base>.json}; which blocks it carries depends on the request file
+\code{<base>.json.conf} placed next to the \code{.gbw}.  The requests the
+menus use:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{4.6cm} X@{}}
+\toprule
+Request & Blocks and measured conventions \\
+\midrule
+\code{\{"MOCoefficients": true\}} & Orbitals, occupations, energies; the base of
+  every export. \\
+\code{"1elIntegrals": ["H", "S", "T", "V"]} & \code{S-}/\code{H-}/\code{T}-/\code{V-Matrix};
+  the cross-structure mapping (menu~\menu{17}) reads the kinetic matrix. \\
+\code{"FockMatrix": ["J", "K"]} & Density-derived Fock blocks, one square
+  matrix per spin; menu~\menu{21}.  Measured: the exported \code{K} block is
+  the exchange contribution as it enters the Fock, so the source's
+  $\tfrac12 K_{aa}$ equals $-\operatorname{diag}(CKC^{\mathsf T})_a =
+  \sum_i (ai|ai)$; the exported \code{F} block equals $J+K$ and \emph{excludes}
+  the core Hamiltonian ($H$ must be requested too for the full Fock). \\
+\code{"2elIntegrals": ["MO\_IAJB"]},\newline
+\code{"OrbWin": [i0, i1, a0, a1, 0, 0, 0, 0]} & Windowed two-electron
+  entries \code{[i, j, a, b, value]} with \code{value} the chemist-notation
+  $(ia|jb)$ and the internal indices first; menu~\menu{21} (\code{apcx}).  The
+  input window is \emph{eight} integers (the second window all zeros for one
+  window; the four-integer form is rejected by \code{orca\_2json}), inclusive
+  0-based; the record written back into the JSON is the four-integer form. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Measured on ORCA 6.1.1: a \code{FockMatrix} request is answered from the run's
+\code{<base>.densities} and \code{<base>.densitiesinfo} files, so the export
+must be produced where the run wrote (or with the whole file family moved
+together, names kept) -- a bare \code{.gbw} copy fails with ``NO densities are
+available''.
+
 \section{Structure and charge input (menus 2 and 11)}
 
 Standard XYZ (atom count, comment, \code{element x y z}). For \menu{11}, the

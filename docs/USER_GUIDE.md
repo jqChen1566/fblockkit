@@ -866,6 +866,78 @@ own recommendation puts CASCI-GDM-AS first; the per-state route (per-state
 densities crossed with the exported dipole integrals) is recorded as future
 work.
 
+## 21 APC orbital ranking (an export -> a ranked active space)
+
+**What it is for**: the ranked-orbital scheme of King & Gagliardi (JCTC 2021):
+score every candidate orbital (all doubly occupied ones plus a window of the
+lowest virtuals) by the approximate pair coefficient, then keep the top of the
+ranking up to a cap on the number of configuration state functions (CSFs).
+
+**What you need**: one `orca_2json` export of a converged RHF run (closed
+shell), with a `<base>.json.conf` requesting the Fock blocks:
+
+```json
+{ "MOCoefficients": true, "1elIntegrals": ["H"], "FockMatrix": ["J", "K"] }
+```
+
+Produce the export where the run wrote it: the Fock terms are read from the
+run's `<base>.densities` / `<base>.densitiesinfo` pair (measured on ORCA
+6.1.1), so a bare `.gbw` copy cannot be exported for them. The default `apc`
+variant needs only the `K` block; the `apcx` variant (the source's
+exact-integral comparison) additionally needs the windowed two-electron
+block, requested as a *second window*:
+
+```json
+{ "MOCoefficients": true, "2elIntegrals": ["MO_IAJB"],
+  "OrbWin": [0, 6, 7, 16, 0, 0, 0, 0] }
+```
+
+Write the window as eight integers -- the second window all zeros for a single
+window, because the four-integer form is rejected by `orca_2json`; the numbers
+are inclusive 0-based indices, first/last internal then first/last external.
+
+**How**: menu 21 -> export path; the ranking variant (`apc` default, `apcx`
+for the exact-integral comparison); the candidate window (default 23 lowest
+virtuals in energy, the source's general-scheme choice); the CSF cap
+(`max(7,6)` = 490, `max(8,8)` = 1764, `max(10,10)` = 19404, `max(12,12)` =
+226512, or any integer); the model gap source (`energies` default, or `fock`
+for the Fock diagonal, which is the correct choice for localized orbitals).
+For the default there is no extra ORCA run and no integral transformation: the
+ranking needs only the export.
+
+**What you get**: the ranked table on screen and a report
+(`<export>.apc.fbk.md`) with the citations.
+
+**How to read it**:
+
+- the cap is the only binding constraint: the selection drops the
+  lowest-ranked orbital until the CSF count (equation 2 of the source) fits,
+  never leaving fewer than one occupied and two unoccupied orbitals in the
+  space (the source's CASSCF-stability floor; anything kept by the floor is
+  listed);
+- the ranking is the result, not the winner alone; the entropies depend on
+  the candidate window, so the window is printed with the table;
+- APC is a cheap screening scheme calibrated on small molecules: the source
+  measures it to overestimate doubly-occupied orbital entropies (R^2 0.64,
+  MAE 0.0240 against DMRG) and expects degradation in much larger systems or
+  where the HF determinant is a poor reference. The report states this with
+  every run; treat a selection as a screening answer, not a converged one;
+- APC and APCX on the same window usually agree on the top set: in the
+  manual's N2 example the pi/pi* quartet ranks in the top four of both while
+  the magnitudes differ by an order of magnitude (the diagonal-sum
+  approximation overestimates; the source finds APC still ranks better
+  because the errors cancel);
+- the source's `max(a,b)` labels are ambiguous in its own text ((7e, 6o)
+  evaluates to 210 CSFs; its listed 490 is a seven-orbital space). This tool
+  carries the labels and numbers verbatim and treats the CSF count as the
+  constraint.
+
+**Not implemented, with the reason**: open-shell references (ROHF/UHF). The
+source assigns singly occupied orbitals the maximum approximated entropy, and
+the UNO variant needs unrestricted exports; the per-spin Fock-block
+conventions are not measured yet, so the menu refuses non-RHF exports with
+the instruction to run RHF.
+
 ## Appendix A Command line
 
 ```text

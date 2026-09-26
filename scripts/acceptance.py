@@ -123,6 +123,7 @@ def main() -> int:
             "h2o_dm_casci_e8o8.out",
             "h2o_dm_casci_e10o8.out",
             "h2o_dm_casci_e6o6_sa4.out",
+            "n2_apc.json",
         ):
             # the generator writes into its own examples/work directory
             shutil.copy(EXAMPLES / "work" / name, inputs / name)
@@ -158,6 +159,7 @@ def main() -> int:
                     "18", "work/guess_manifest.json",
                     "19", "work/h2o.xyz", "", "", "", "", "", "",
                     "20", "work/dm_manifest.json",
+                    "21", "work/n2_apc.json", "apc", "23", "max(10,10)", "fock",
                     "8", "work/saved.txt",
                     "0",
                 ]
@@ -365,6 +367,17 @@ def main() -> int:
                 and "( 6e,  8o)     2.0720" in selection,
                 "menu 20 report: the water scan selects (6e, 8o) against the PBE0 "
                 "reference",
+            )
+
+            ranking = read("n2_apc.json.apc.fbk.md")
+            check(
+                "Ranked-orbital active-space selection (APC)" in ranking
+                and "Fock diagonal as the model gap" in ranking
+                and "cap max(10,10) = 19404 CSFs; selected (10e, 10o)" in ranking
+                and "active orbitals: 2, 3, 4, 5, 6, 7, 8, 9, 10, 17" in ranking
+                and "screening device" in ranking,
+                "menu 21 report: the N2 ranking selects the source's (10,10) level "
+                "(19404 CSFs) from the Fock-diagonal branch of the model gap",
             )
 
             check(product("saved.txt").is_file(), "menu 8 wrote the session script")

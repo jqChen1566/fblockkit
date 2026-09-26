@@ -21,6 +21,7 @@ Available functions:
   18  WASP guess transfer (neighbour orbitals -> an interpolated, gbw-ready mkl for a geometry series)
   19  Dipole-moment candidate batch (a structure -> prep + CASCI inputs + manifest for the DM-AS scan)
   20  Dipole-moment selection (the batch outputs + a reference -> the active space by DM-AS)
+  21  APC orbital ranking (an export with the Fock exchange block -> ranked active space at a CSF cap)
    0  Quit
 Choose a number (Enter = leave empty)> 12
 Converged CASSCF output path (the run whose orbitals were dumped) (Enter = leave empty)> work/n2_fcidump_step_a.out
@@ -96,6 +97,7 @@ Available functions:
   18  WASP guess transfer (neighbour orbitals -> an interpolated, gbw-ready mkl for a geometry series)
   19  Dipole-moment candidate batch (a structure -> prep + CASCI inputs + manifest for the DM-AS scan)
   20  Dipole-moment selection (the batch outputs + a reference -> the active space by DM-AS)
+  21  APC orbital ranking (an export with the Fock exchange block -> ranked active space at a CSF cap)
    0  Quit
 Choose a number (Enter = leave empty)> 0
 Goodbye.

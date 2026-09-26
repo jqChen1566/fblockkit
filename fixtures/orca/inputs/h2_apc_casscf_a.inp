@@ -1,0 +1,8 @@
+! RHF STO-3G
+%maxcore 500
+%casscf nel 2 norb 2 mult 1 nroots 1
+end
+* xyz 0 1
+H 0.0 0.0 0.0
+H 0.0 0.0 0.74
+*

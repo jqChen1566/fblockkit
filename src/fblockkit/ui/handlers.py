@@ -16,7 +16,7 @@ import numpy as np
 
 from ..analysis import atomic_terms, avas, cf_declaration, crystal_field, point_charge
 from ..analysis import entropy_rdm, environment_spin
-from ..analysis import dm_selection, magnetic_doublets, orbital_mapping, orbital_portrait
+from ..analysis import apc, dm_selection, magnetic_doublets, orbital_mapping, orbital_portrait
 from ..recipe import dm_batch, guess_transfer
 from ..analysis import orbital_space as orbital_space_analysis
 from ..analysis import evidence_for, run_all
@@ -1336,6 +1336,75 @@ def dm_select(session: Session) -> None:
     session.say(f"Report written: {md_path}")
 
 
+def apc_ranking(session: Session) -> None:
+    """Menu 21: rank orbitals by the approximate pair coefficient (APC) and select the
+    active space at a CSF cap (an orca_2json export in)."""
+    path_text = session.ask(
+        "orca_2json export path (needs the FockMatrix K-Matrix block; the user guide "
+        "has the exact request)"
+    )
+    if not path_text:
+        session.say("Cancelled (no export path given).")
+        return
+    variant_text = session.ask("Ranking variant: apc or apcx (Enter = apc)").strip().lower()
+    if variant_text not in ("", "apc", "apcx"):
+        session.say(f"Cancelled (unknown variant {variant_text!r}; use apc or apcx).")
+        return
+    window_text = session.ask(
+        "Candidate window: the N lowest virtuals in energy (Enter = 23, the source's "
+        "general scheme)"
+    ).strip()
+    cap_text = session.ask(
+        "CSF cap: max(7,6), max(8,8), max(10,10), max(12,12) or an integer "
+        "(Enter = max(8,8))"
+    ).strip()
+    delta_text = session.ask(
+        "Model gap: energies or fock (Enter = energies; choose fock for localized orbitals)"
+    ).strip().lower()
+    if delta_text not in ("", "energies", "fock"):
+        session.say(f"Cancelled (unknown model-gap source {delta_text!r}).")
+        return
+    try:
+        window_size = int(window_text) if window_text else apc.DEFAULT_WINDOW
+    except ValueError:
+        session.say(f"Cancelled (the window must be an integer, got {window_text!r}).")
+        return
+    if not cap_text:
+        cap, cap_label = apc.CSF_CAPS["max(8,8)"], "max(8,8)"
+    elif cap_text in apc.CSF_CAPS:
+        cap, cap_label = apc.CSF_CAPS[cap_text], cap_text
+    else:
+        try:
+            cap, cap_label = int(cap_text), cap_text
+        except ValueError:
+            session.say(
+                f"Cancelled (unknown cap {cap_text!r}; use a preset or an integer)."
+            )
+            return
+    path = Path(path_text)
+    try:
+        export = parse_orca_json(path)
+        section = apc.run(
+            export,
+            variant="APCX" if variant_text == "apcx" else "APC",
+            window_size=window_size,
+            delta=delta_text or "energies",
+            cap=cap,
+            cap_label=cap_label,
+        )
+    except (ParserError, apc.ApcError, OSError, ValueError) as exc:
+        session.say(f"APC ranking failed: {exc}")
+        return
+    session.say(section.body)
+    report_lines = f"## {section.title}\n\n{section.body}\n"
+    refs = references_section(apc.evidence())
+    if refs is not None:
+        report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
+    md_path = path.with_name(path.name + ".apc.fbk.md")
+    md_path.write_text(report_lines, encoding="utf-8")
+    session.say(f"Report written: {md_path}")
+
+
 HANDLERS = {
     "report_output": report_output,
     "geometry_report": geometry_report,
@@ -1357,5 +1426,6 @@ HANDLERS = {
     "wasp_guess": wasp_guess,
     "dm_batch": dm_batch_generate,
     "dm_select": dm_select,
+    "apc_ranking": apc_ranking,
     "quit": quit_session,
 }

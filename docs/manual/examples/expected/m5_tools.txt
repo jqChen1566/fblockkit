@@ -21,6 +21,7 @@ Available functions:
   18  WASP guess transfer (neighbour orbitals -> an interpolated, gbw-ready mkl for a geometry series)
   19  Dipole-moment candidate batch (a structure -> prep + CASCI inputs + manifest for the DM-AS scan)
   20  Dipole-moment selection (the batch outputs + a reference -> the active space by DM-AS)
+  21  APC orbital ranking (an export with the Fock exchange block -> ranked active space at a CSF cap)
    0  Quit
 Choose a number (Enter = leave empty)> 5
 Search keywords (several words, space separated) (Enter = leave empty)> mokit
@@ -49,6 +50,7 @@ Available functions:
   18  WASP guess transfer (neighbour orbitals -> an interpolated, gbw-ready mkl for a geometry series)
   19  Dipole-moment candidate batch (a structure -> prep + CASCI inputs + manifest for the DM-AS scan)
   20  Dipole-moment selection (the batch outputs + a reference -> the active space by DM-AS)
+  21  APC orbital ranking (an export with the Fock exchange block -> ranked active space at a CSF cap)
    0  Quit
 Choose a number (Enter = leave empty)> 6
 Tool index id (e.g. openmolcas; search with menu 5) (Enter = leave empty)> openmolcas
@@ -82,6 +84,7 @@ Available functions:
   18  WASP guess transfer (neighbour orbitals -> an interpolated, gbw-ready mkl for a geometry series)
   19  Dipole-moment candidate batch (a structure -> prep + CASCI inputs + manifest for the DM-AS scan)
   20  Dipole-moment selection (the batch outputs + a reference -> the active space by DM-AS)
+  21  APC orbital ranking (an export with the Fock exchange block -> ranked active space at a CSF cap)
    0  Quit
 Choose a number (Enter = leave empty)> 6
 Tool index id (e.g. openmolcas; search with menu 5) (Enter = leave empty)> liblan
@@ -160,6 +163,7 @@ Available functions:
   18  WASP guess transfer (neighbour orbitals -> an interpolated, gbw-ready mkl for a geometry series)
   19  Dipole-moment candidate batch (a structure -> prep + CASCI inputs + manifest for the DM-AS scan)
   20  Dipole-moment selection (the batch outputs + a reference -> the active space by DM-AS)
+  21  APC orbital ranking (an export with the Fock exchange block -> ranked active space at a CSF cap)
    0  Quit
 Choose a number (Enter = leave empty)> 0
 Goodbye.

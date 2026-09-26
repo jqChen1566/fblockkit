@@ -1,0 +1,9 @@
+! RHF STO-3G FCIDUMP moread
+%maxcore 500
+%moinp "h2_apc_casscf_a.gbw"
+%casscf nel 2 norb 2 mult 1 nroots 1
+end
+* xyz 0 1
+H 0.0 0.0 0.0
+H 0.0 0.0 0.74
+*

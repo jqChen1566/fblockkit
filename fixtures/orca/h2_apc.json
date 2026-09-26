@@ -1,0 +1,201 @@
+{
+  "ORCA Header": {
+    "Date": "2025-11-21 10:33:24 +0100",
+    "Git": "487d211c",
+    "Version": "6.1.1"
+  },
+  "Citations": [
+    {
+      "RN231": {
+        "author": [
+          "Neese,F."
+        ],
+        "title": "Software update: The ORCA program system—Version 5.0",
+        "journal": "WIRES Comput. Molec. Sci.",
+        "year": "2022",
+        "volume": "12",
+        "number": "1",
+        "pages": "e1606",
+        "doi": "10.1002/wcms.1606",
+        "type": "journal article"
+      }
+    },
+    {
+      "RN232": {
+        "author": [
+          "Neese,F."
+        ],
+        "title": "The SHARK Integral Generation and Digestion System",
+        "journal": "J. Comp. Chem.",
+        "year": "2022",
+        "volume": "44",
+        "number": "3",
+        "pages": "381",
+        "doi": "10.1002/jcc.26942",
+        "type": "journal article"
+      }
+    }
+  ],
+  "Molecule": {
+    "Atoms": [
+      {
+        "Coords": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "ElementLabel": "H",
+        "ElementNumber": 1,
+        "Idx": 0,
+        "NuclearCharge": 1.0
+      },
+      {
+        "Coords": [
+          0.0,
+          0.0,
+          0.7399999999999998
+        ],
+        "ElementLabel": "H",
+        "ElementNumber": 1,
+        "Idx": 1,
+        "NuclearCharge": 1.0
+      }
+    ],
+    "BaseName": "h2_apc",
+    "MolecularOrbitals": {
+      "EnergyUnit": "Eh",
+      "MOs": [
+        {
+          "MOCoefficients": [
+            0.5488422754850468,
+            0.5488422754850473
+          ],
+          "Occupancy": 2.0,
+          "OrbitalEnergy": -0.5785538583146363,
+          "OrbitalSymLabel": "A",
+          "OrbitalSymmetry": 0
+        },
+        {
+          "MOCoefficients": [
+            -1.2124519159065685,
+            1.2124519159065683
+          ],
+          "Occupancy": 0.0,
+          "OrbitalEnergy": 0.6711434881298263,
+          "OrbitalSymLabel": "A",
+          "OrbitalSymmetry": 0
+        }
+      ],
+      "OrbitalLabels": [
+        "0H   1s",
+        "1H   1s"
+      ]
+    },
+    "CoordinateUnits": "Angs",
+    "Multiplicity": 1,
+    "Charge": 0,
+    "HFTyp": "RHF",
+    "PointGroup": "C1",
+    "Origin": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "S-Matrix": [
+      [
+        1.0,
+        0.6598731193752961
+      ],
+      [
+        0.6598731193752961,
+        1.0
+      ]
+    ],
+    "H-Matrix": [
+      [
+        -1.120959453911932,
+        -0.9593757675130417
+      ],
+      [
+        -0.9593757675130417,
+        -1.120959453911932
+      ]
+    ],
+    "T-Matrix": [
+      [
+        0.7600318835666088,
+        0.23696026284637758
+      ],
+      [
+        0.23696026284637758,
+        0.7600318835666088
+      ]
+    ],
+    "V-Matrix": [
+      [
+        -1.880991337478541,
+        -1.196336030359419
+      ],
+      [
+        -1.196336030359419,
+        -1.880991337478541
+      ]
+    ],
+    "F-Matrix": [
+      [
+        [
+          0.7549334256828577,
+          0.3650757982147863
+        ],
+        [
+          0.3650757982147863,
+          0.7549334256828574
+        ]
+      ]
+    ],
+    "J-Matrix": [
+      [
+        [
+          1.3457553122573405,
+          0.8942631355379471
+        ],
+        [
+          0.8942631355379471,
+          1.3457553122573405
+        ]
+      ]
+    ],
+    "K-Matrix": [
+      [
+        [
+          -0.5908218865744828,
+          -0.5291873373231608
+        ],
+        [
+          -0.5291873373231608,
+          -0.5908218865744831
+        ]
+      ]
+    ],
+    "2elIntegrals": {
+      "OrbWin": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "Thresh": 1e-15,
+      "MO_IAJB": {
+        "alpha/alpha": [
+          [
+            0,
+            0,
+            1,
+            1,
+            0.18121046221962572
+          ]
+        ]
+      }
+    }
+  }
+}

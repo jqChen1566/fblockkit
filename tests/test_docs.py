@@ -51,6 +51,7 @@ def test_doc_mentions_each_menu_title_topic():
         "WASP guess transfer",
         "Dipole-moment candidate batch",
         "Dipole-moment selection",
+        "APC orbital ranking",
     ):
         assert keyword in text, keyword
 

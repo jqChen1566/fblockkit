@@ -45,6 +45,36 @@ the fixtures below (ORCA 6.1.1). The manual page for ``orca_2json`` additionally
 documents the overlap as an optional entry of the requested-integrals block; an
 export carrying it only there is not covered yet.
 
+The Fock blocks and the windowed MO integrals (menus 21)
+--------------------------------------------------------
+
+Two further request families are read here because the APC orbital ranking
+(``analysis/apc``) consumes them:
+
+- ``"FockMatrix"`` entries ``"J"``, ``"K"`` and ``"F"`` become ``coulomb`` /
+  ``exchange`` / ``coulomb_exchange``.  Unlike the one-electron blocks, these
+  carry an outer spin dimension (manual: ``N_spin x N_AO x N_AO``; one block for
+  the RHF exports measured here).  Measured conventions on ORCA 6.1.1
+  (``fixtures/orca/n2_apc.json``, ``h2_apc.json``): the exported ``F`` block is
+  exactly ``J + K`` and **excludes the core Hamiltonian**, so the full Fock in
+  the MO basis is ``diag(C (H + J + K) C^T) = eps`` (matched to 6e-10); and the
+  exported ``K`` block is the exchange contribution *as it enters the Fock*
+  (prefactors included), i.e. in the MO basis
+  ``-diag(C K C^T)[a] = sum_i (a i | a i)`` over the doubly occupied ``i``
+  (matched to 4e-12 against the ``MO_IAJB`` entries).  The paper the ranking
+  follows writes its ``0.5 K_aa`` for exactly that sum, so the two conventions
+  agree up to the sign of this block -- see ``analysis/apc``.
+- ``"2elIntegrals": ["MO_IAJB"]`` with an ``"OrbWin"`` becomes ``mo_iajb``
+  (entries ``(i, j, a, b, value)`` with ``value = (i a | j b)`` in chemist
+  notation, internal indices first) and the recorded ``mo_iajb_window``.
+  Measured: the *input* ``OrbWin`` must be written as eight integers (the
+  second window all zeros for a single window) -- the four-integer form is
+  rejected by ``orca_2json`` with "Something is wrong with the orbital
+  windows!", while the *recorded* window is the four-integer, inclusive form;
+  entries below ``Thresh`` are simply absent.  The ``MO_IAJB`` block is keyed
+  by spin pair; the RHF exports measured here carry ``alpha/alpha`` only, which
+  is what this reader takes.
+
 Measured caveat for the localized export
 ----------------------------------------
 
@@ -137,9 +167,13 @@ class AoLabel:
 class OrcaJson:
     """One ``orca_2json`` orbital export (auxiliary data, not a program output).
 
-    ``mo_coefficients[mo][ao]`` and ``overlap`` are stored as tuples of tuples so
-    that the object is immutable and hashable like every other model of this
-    package; ``overlap`` is ``None`` when the export has no ``S-Matrix`` block.
+    ``mo_coefficients[mo][ao]`` and the matrices are stored as tuples of tuples
+    so that the object is immutable and hashable like every other model of this
+    package.  ``overlap``, ``kinetic``, ``hamiltonian`` are ``None`` when the
+    export has no such block; ``coulomb`` / ``exchange`` / ``coulomb_exchange``
+    are the ``FockMatrix`` spin blocks (outer index = spin, one for the RHF
+    exports measured here); ``mo_iajb`` carries the requested ``MO_IAJB``
+    entries and ``mo_iajb_window`` the window record from the export itself.
     """
 
     base_name: str
@@ -157,6 +191,12 @@ class OrcaJson:
     overlap: tuple[tuple[float, ...], ...] | None = None
     kinetic: tuple[tuple[float, ...], ...] | None = None
     ao_labels: tuple[AoLabel, ...] | None = None
+    hamiltonian: tuple[tuple[float, ...], ...] | None = None
+    coulomb: tuple[tuple[tuple[float, ...], ...], ...] | None = None
+    exchange: tuple[tuple[tuple[float, ...], ...], ...] | None = None
+    coulomb_exchange: tuple[tuple[tuple[float, ...], ...], ...] | None = None
+    mo_iajb: tuple[tuple[int, int, int, int, float], ...] | None = None
+    mo_iajb_window: tuple[int, int, int, int] | None = None
 
 
 def parse_orca_json(path: str | Path) -> OrcaJson:
@@ -216,14 +256,28 @@ def parse_orca_json(path: str | Path) -> OrcaJson:
             )
 
     atoms, coordinates = _atom_labels(molecule)
-    # Absent S-Matrix / T-Matrix: documented export variants (the requested
-    # blocks depend on the export configuration), not defects.
+    # Absent S-Matrix / T-Matrix / H-Matrix: documented export variants (the
+    # requested blocks depend on the export configuration), not defects.
     overlap = None
     if "S-Matrix" in molecule:
         overlap = _square_matrix(molecule["S-Matrix"], "Molecule.S-Matrix", n_ao)
     kinetic = None
     if "T-Matrix" in molecule:
         kinetic = _square_matrix(molecule["T-Matrix"], "Molecule.T-Matrix", n_ao)
+    hamiltonian = None
+    if "H-Matrix" in molecule:
+        hamiltonian = _square_matrix(molecule["H-Matrix"], "Molecule.H-Matrix", n_ao)
+    # The density-derived Fock blocks carry an outer spin dimension.
+    coulomb = None
+    if "J-Matrix" in molecule:
+        coulomb = _spin_matrices(molecule["J-Matrix"], "Molecule.J-Matrix", n_ao)
+    exchange = None
+    if "K-Matrix" in molecule:
+        exchange = _spin_matrices(molecule["K-Matrix"], "Molecule.K-Matrix", n_ao)
+    coulomb_exchange = None
+    if "F-Matrix" in molecule:
+        coulomb_exchange = _spin_matrices(molecule["F-Matrix"], "Molecule.F-Matrix", n_ao)
+    mo_iajb, mo_iajb_window = _mo_integrals(molecule, len(coefficients))
     # Absent OrbitalLabels: likewise a documented export variant; when present
     # the list is positional (AO column k <-> label k) and must fit n_ao.
     ao_labels = None
@@ -250,6 +304,12 @@ def parse_orca_json(path: str | Path) -> OrcaJson:
         overlap=overlap,
         kinetic=kinetic,
         ao_labels=ao_labels,
+        hamiltonian=hamiltonian,
+        coulomb=coulomb,
+        exchange=exchange,
+        coulomb_exchange=coulomb_exchange,
+        mo_iajb=mo_iajb,
+        mo_iajb_window=mo_iajb_window,
     )
 
 
@@ -410,3 +470,87 @@ def _square_matrix(value: Any, where: str, dimension: int) -> tuple[tuple[float,
                 _SAME_SOURCE_HINT,
             )
     return rows
+
+
+def _spin_matrices(
+    value: Any, where: str, dimension: int
+) -> tuple[tuple[tuple[float, ...], ...], ...]:
+    """Read a Fock-family block: a list of square matrices, one per spin."""
+    if not isinstance(value, list):
+        raise _fail(f"{where} is a JSON {type(value).__name__}, not a list of matrices.", _EXPORT_HINT)
+    if not value:
+        raise _fail(
+            f"{where} is empty: a Fock-family block carries at least one spin matrix.",
+            _EXPORT_HINT,
+        )
+    return tuple(
+        _square_matrix(block, f"{where}[{index}]", dimension)
+        for index, block in enumerate(value)
+    )
+
+
+def _mo_integrals(
+    molecule: Mapping[str, Any], n_mo: int
+) -> tuple[tuple[tuple[int, int, int, int, float], ...] | None, tuple[int, int, int, int] | None]:
+    """Read the requested ``MO_IAJB`` window entries and the recorded window.
+
+    Absent ``2elIntegrals`` block: a documented export variant (the request
+    depends on the configuration), like the absent one-electron matrices.  A
+    block present without the measured ``MO_IAJB`` member or without the
+    measured ``alpha/alpha`` spin key is not guessed at: the reader reports the
+    key so it can be extended once such an export is measured.
+    """
+    block = molecule.get("2elIntegrals")
+    if block is None:
+        return None, None
+    block = _mapping(block, "Molecule.2elIntegrals")
+    if "MO_IAJB" not in block:
+        return None, None
+    window_raw = _entry(block, "OrbWin", "Molecule.2elIntegrals")
+    window = _int_row(window_raw, "Molecule.2elIntegrals.OrbWin")
+    if len(window) != 4:
+        raise _fail(
+            f"Molecule.2elIntegrals.OrbWin is {window_raw!r}; the exports measured here "
+            "record the window as four inclusive integers (first/last internal, first/last "
+            "external).",
+            "report the window record so the reader can be extended.",
+        )
+    iajb = _mapping(block["MO_IAJB"], "Molecule.2elIntegrals.MO_IAJB")
+    if "alpha/alpha" not in iajb:
+        raise _fail(
+            f"Molecule.2elIntegrals.MO_IAJB carries the spin keys {sorted(iajb)!r}; the "
+            "RHF exports measured here carry 'alpha/alpha' only.",
+            "report the spin key so the reader can be extended.",
+        )
+    entries = iajb["alpha/alpha"]
+    if not isinstance(entries, list):
+        raise _fail(
+            f"Molecule.2elIntegrals.MO_IAJB['alpha/alpha'] is a JSON "
+            f"{type(entries).__name__}, not a list of entries.",
+            _EXPORT_HINT,
+        )
+    parsed: list[tuple[int, int, int, int, float]] = []
+    for index, entry in enumerate(entries):
+        where = f"Molecule.2elIntegrals.MO_IAJB['alpha/alpha'][{index}]"
+        if not isinstance(entry, list) or len(entry) != 5:
+            raise _fail(
+                f"{where} is {entry!r}, not a five-item [i, j, a, b, value] entry.",
+                "report the entry shape so the reader can be extended.",
+            )
+        i, j, a, b = (_integer(item, f"{where}[{k}]") for k, item in enumerate(entry[:4]))
+        for label, orbital in (("i", i), ("j", j), ("a", a), ("b", b)):
+            if not 0 <= orbital < n_mo:
+                raise _fail(
+                    f"{where} names orbital index {orbital} for {label} while the export "
+                    f"carries {n_mo} molecular orbitals.",
+                    _SAME_SOURCE_HINT,
+                )
+        parsed.append((i, j, a, b, _number(entry[4], f"{where}[4]")))
+    return tuple(parsed), window
+
+
+def _int_row(value: Any, where: str) -> tuple[int, ...]:
+    """Read a list of integers (the window record)."""
+    if not isinstance(value, list):
+        raise _fail(f"{where} is a JSON {type(value).__name__}, not a list.", _EXPORT_HINT)
+    return tuple(_integer(item, f"{where}[{index}]") for index, item in enumerate(value))

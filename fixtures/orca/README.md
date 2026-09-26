@@ -155,6 +155,31 @@ f-character check and the atomic-term check are for.
 | `n2_scan_1.600.json` (canonical) and `n2_scan_1.600.mkl` | the same 1.600-Angstrom run's canonical-orbital export and the Molekel mkl of its gbw (`orca_2mkl n2_scan_1.600 -mkl`) | the write-back pair (`parsers/mkl.py`, menu 18): the mkl parse is validated against the canonical export (reader reproduces the gbw-convention coefficients to 5e-8, pinning the measured p-shell row order (y,z,x) vs the export's (z,x,y)), and the mkl is the template menu 18 writes the WASP guess into |
 | `h2o_dm_*.out` (H2O / def2-TZVP, xyz in each file) | the dipole-moment selection chain (menus 19/20): `h2o_dm_ref_pbe0.out` (PBE0 SCF reference, dipole 2.0801 D); `h2o_dm_prep_mp2.out` (RHF + `%mp2 NatOrbs true`, three dipole blocks: SCF 2.1640 / MP2-unrelaxed 2.1404 / MP2-relaxed 2.1146 D); six single-root CASCI candidates on the MP2 orbitals (`!NoIter moread` + `%casscf nel/norb/nroots 1`: e6o6 2.1046, e6o7 2.1017, e6o8 2.0720, e8o7 2.0974, e8o8 2.0960, e10o8 2.0974 D -- each printed in its own "DIPOLE MOMENT" block, State: 0, relaxed density); and `h2o_dm_casci_e6o6_sa4.out` (the same space with `nroots 4`), whose only block is the state average (State: -1) | the DM-AS fixture chain: anchors the selection (winner (6e, 8o), deviation 0.0081 D against the PBE0 reference) and the refusal (a state-averaged output carries no S0 block). Measured on ORCA 6.1.1, 2026-09-27 |
 
+## APC-ranking fixtures added 2026-09-27 (server 101, the same ORCA 6.1.1)
+
+| Output | Input | Job | Parsing/analysis points covered | Run outcome |
+|---|---|---|---|---|
+| `h2_apc.json` (+ `h2_apc.out`, `h2_apc.fcidump`, `h2_apc_casscf_a.out`) | `inputs/h2_apc.inp` (+ `inputs/h2_apc_casscf_{a,b}.inp`) | H2/STO-3G RHF with the full export request (`inputs/h2_apc.json.conf`: H/S/T/V + J/K/F + the one `MO_IAJB` entry), plus a CAS(2,2) FCIDUMP dump | the H2 two-configuration model, where the source's eq. (18) is exact: the exported exchange diagonal equals the exact `(12|12)` (7e-16) and the FCIDUMP 2x2 CI reproduces the engine's CASSCF energy to 12 digits | all steps terminated normally (the FCIDUMP dump step exits 126 by design) |
+| `n2_apc.json` (+ `n2_apc.out`) | `inputs/n2_apc.inp` | N2/def2-SVP RHF at 1.094 Angstrom with `inputs/n2_apc.json.conf` (H + J/K + windowed `MO_IAJB`, `OrbWin` [0, 6, 7, 16, 0, 0, 0, 0]) | the APC ranked-orbital regression: the exchange identity `-diag(C K C^T)[a] = sum_i (ai|ai)` (4e-12), the Fock diagonal reproducing the orbital energies (6e-10), the window record `[0, 6, 7, 16]` and the 2425 `(i, j, a, b, value)` entries, and the max(10,10) selection landing exactly on the source's (10,10) = 19404 entry | terminated normally |
+
+Measured export conventions from this batch (also in the `parsers/orca_json.py`
+docstring):
+
+- the `FockMatrix` request is answered from the run's `<base>.densities` +
+  `<base>.densitiesinfo` sidecar pair -- a bare `.gbw` copy fails with "NO densities
+  are available", and copying the sidecars under a *different* base name fails too
+  (name coupling); export where the run wrote, or move the whole family unchanged;
+- the exported `F` block equals `J + K` and excludes the core Hamiltonian; the full
+  Fock in the MO basis is `diag(C (H + J + K) C^T)` (= the orbital energies on
+  `n2_apc.json` to 6e-10);
+- the input `OrbWin` must be eight integers (the second window all zeros for a single
+  window); the four-integer form -- even when identical to the auto-chosen value --
+  is rejected by `orca_2json` with "Something is wrong with the orbital windows!"
+  (exit 55), while the *recorded* window is the four-integer inclusive form;
+- the `MO_IAJB` entries are `[i, j, a, b, value]` with the internal indices first and
+  `value` the chemist-notation `(ia|jb)` (the single H2 entry 0.1812104622 matches
+  the FCIDUMP element bit-for-bit).
+
 ## Known-behaviour notes
 
 - `generated_ce3_sarc2.out`: the active occupations are (1,0,0,0,0,0,0) -- putting the

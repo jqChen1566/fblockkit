@@ -10,6 +10,12 @@ line printed by the CASSCF step in ``n2_fcidump_step_a.out``.
 
 The reader is not part of ``parse_auto`` (an orbital export is auxiliary data, not a
 program output); the last test pins that decision down.
+
+The ``n2_apc`` / ``h2_apc`` fixtures (one RHF run each, 2026-09-27) additionally
+carry the ``FockMatrix`` family and the windowed ``MO_IAJB`` block the APC
+ranking consumes; their section pins the measured shapes (one spin matrix for
+RHF, the four-integer inclusive window record, the (i, j, a, b, value) entry
+layout) and the refusal paths for unmeasured variants.
 """
 
 from __future__ import annotations
@@ -28,6 +34,8 @@ from fblockkit.parsers.orca_json import parse_orca_json
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "orca"
 CANONICAL = FIXTURES / "n2_fcidump.canonical.json"
 LOCALIZED = FIXTURES / "n2_fcidump.localized.json"
+APC_N2 = FIXTURES / "n2_apc.json"
+APC_H2 = FIXTURES / "h2_apc.json"
 
 # orca_loc localized this window only (n2_fcidump_step_c.loc.out: "4 to 9", 0-based)
 LOCALIZED_RANGE = range(4, 10)
@@ -267,6 +275,111 @@ def test_an_orca_output_is_not_a_json_export():
     with pytest.raises(ParserError, match="Next step: ") as excinfo:
         parse_orca_json(FIXTURES / "n2_fcidump_step_a.out")
     assert "not valid JSON" in str(excinfo.value)
+
+
+# --- the Fock family and the MO_IAJB window (menu 21) ------------------------
+
+
+def _apc_variant(tmp_path: Path, mutate: Callable[[dict[str, Any]], None]) -> Path:
+    """Write a copy of the n2_apc export with ``mutate`` applied to its Molecule block."""
+    document = json.loads(APC_N2.read_text(encoding="utf-8"))
+    mutate(document["Molecule"])
+    target = tmp_path / "apc_variant.json"
+    target.write_text(json.dumps(document), encoding="utf-8")
+    return target
+
+
+def test_the_fock_family_blocks_are_read():
+    """The density-derived blocks carry one spin dimension (manual: N_spin x N_AO x
+    N_AO); the n2_apc request asked for J and K only, the h2_apc request adds F."""
+    n2 = parse_orca_json(APC_N2)
+    assert n2.hamiltonian is not None and len(n2.hamiltonian) == n2.n_ao
+    assert n2.coulomb is not None and len(n2.coulomb) == 1
+    assert n2.exchange is not None and len(n2.exchange) == 1
+    assert len(n2.exchange[0]) == n2.n_ao
+    assert n2.coulomb_exchange is None
+    h2 = parse_orca_json(APC_H2)
+    assert h2.coulomb_exchange is not None and len(h2.coulomb_exchange) == 1
+
+
+def test_the_mo_iajb_entries_and_window_are_read():
+    """Entries are (i, j, a, b, value) with the internal indices first and value the
+    chemist-notation (ia|jb); the recorded window is the four-integer inclusive form."""
+    n2 = parse_orca_json(APC_N2)
+    assert n2.mo_iajb_window == (0, 6, 7, 16)
+    assert n2.mo_iajb is not None and len(n2.mo_iajb) == 2425
+    assert n2.mo_iajb[0] == (0, 0, 7, 7, pytest.approx(0.01160806221516865))
+    assert all(0 <= i <= 6 and 0 <= j <= 6 for i, j, _, _, _ in n2.mo_iajb)
+    assert all(7 <= a <= 16 and 7 <= b <= 16 for _, _, a, b, _ in n2.mo_iajb)
+    h2 = parse_orca_json(APC_H2)
+    assert h2.mo_iajb == ((0, 0, 1, 1, 0.18121046221962572),)
+    assert h2.mo_iajb_window == (0, 0, 1, 1)
+
+
+def test_exports_without_the_window_blocks_are_accepted():
+    """The older exports carry no Fock family and no 2elIntegrals: documented variants,
+    returned as None, not defects.  Whether the core Hamiltonian is present depends on
+    the ``1elIntegrals`` request of the run (the mapping fixture asked for it, the
+    entropy fixture did not)."""
+    canonical = parse_orca_json(CANONICAL)
+    assert canonical.hamiltonian is None
+    assert canonical.coulomb is None and canonical.exchange is None
+    assert canonical.coulomb_exchange is None
+    assert canonical.mo_iajb is None and canonical.mo_iajb_window is None
+    mapping = parse_orca_json(FIXTURES / "n2_scan_1.600.json")
+    assert mapping.hamiltonian is not None
+    assert mapping.coulomb is None and mapping.exchange is None
+    assert mapping.mo_iajb is None
+
+
+def test_an_eight_integer_window_record_is_reported(tmp_path):
+    """The input syntax is eight integers, but the *record* the measurements found is
+    the four-integer inclusive form; a record of any other shape is refused so the
+    reader cannot silently mis-read a window."""
+    def mutate(molecule: dict[str, Any]) -> None:
+        molecule["2elIntegrals"]["OrbWin"] = [0, 6, 7, 16, 0, 0, 0, 0]
+
+    variant = _apc_variant(tmp_path, mutate)
+    with pytest.raises(ParserError, match="four inclusive integers"):
+        parse_orca_json(variant)
+
+
+def test_an_unmeasured_spin_key_is_reported(tmp_path):
+    def mutate(molecule: dict[str, Any]) -> None:
+        block = molecule["2elIntegrals"]["MO_IAJB"]
+        block["beta/beta"] = block.pop("alpha/alpha")
+
+    variant = _apc_variant(tmp_path, mutate)
+    with pytest.raises(ParserError, match="spin keys") as excinfo:
+        parse_orca_json(variant)
+    assert "beta/beta" in str(excinfo.value)
+
+
+def test_a_malformed_iajb_entry_is_rejected(tmp_path):
+    def mutate(molecule: dict[str, Any]) -> None:
+        molecule["2elIntegrals"]["MO_IAJB"]["alpha/alpha"][0] = [0, 0, 7, 0.5]
+
+    variant = _apc_variant(tmp_path, mutate)
+    with pytest.raises(ParserError, match="five-item"):
+        parse_orca_json(variant)
+
+
+def test_an_out_of_range_iajb_index_is_rejected(tmp_path):
+    def mutate(molecule: dict[str, Any]) -> None:
+        molecule["2elIntegrals"]["MO_IAJB"]["alpha/alpha"][0] = [0, 0, 7, 28, 0.5]
+
+    variant = _apc_variant(tmp_path, mutate)
+    with pytest.raises(ParserError, match="molecular orbitals"):
+        parse_orca_json(variant)
+
+
+def test_a_fock_block_of_the_wrong_size_is_rejected(tmp_path):
+    def mutate(molecule: dict[str, Any]) -> None:
+        molecule["K-Matrix"][0][0].pop()
+
+    variant = _apc_variant(tmp_path, mutate)
+    with pytest.raises(ParserError, match="K-Matrix"):
+        parse_orca_json(variant)
 
 
 # --- registry decision ------------------------------------------------------

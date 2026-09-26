@@ -49,6 +49,9 @@ cp "$REPO/fixtures/orca/h2o_dm_casci_e8o7.out" work/
 cp "$REPO/fixtures/orca/h2o_dm_casci_e8o8.out" work/
 cp "$REPO/fixtures/orca/h2o_dm_casci_e10o8.out" work/
 cp "$REPO/fixtures/orca/h2o_dm_casci_e6o6_sa4.out" work/
+# the APC ranking export of menu 21 (N2/def2-SVP RHF with the Fock family and
+# the windowed MO_IAJB block)
+cp "$REPO/fixtures/orca/n2_apc.json" work/
 
 for script in scripts/*.txt; do
   name=$(basename "$script" .txt)

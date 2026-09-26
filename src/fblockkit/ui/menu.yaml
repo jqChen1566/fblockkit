@@ -66,6 +66,9 @@ items:
   - number: "20"
     title: "Dipole-moment selection (the batch outputs + a reference -> the active space by DM-AS)"
     handler: dm_select
+  - number: "21"
+    title: "APC orbital ranking (an export with the Fock exchange block -> ranked active space at a CSF cap)"
+    handler: apc_ranking
   - number: "0"
     title: Quit
     handler: quit

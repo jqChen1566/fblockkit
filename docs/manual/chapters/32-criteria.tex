@@ -68,6 +68,21 @@ Dipole-moment selection (DM-AS) & no threshold; smallest deviation wins
   state-averaged runs and no TDDFT state dipoles (measured) &
   \textsf{[Literature]} Kaufold et al.\ 2023, 2026; \textsf{[Measured]} the
   H$_2$O chain \\
+APC ranked-orbital selection & no threshold; CSF cap & Menu~\menu{21}:
+  candidate orbitals (all doubly occupied plus the lowest virtuals, default
+  23, the source's general scheme) ranked by the approximate pair coefficient
+  $c_{ia} = -x_a/(D_{ia}+\sqrt{x_a^2+D_{ia}^2})$, $x_a = \tfrac12 K_{aa}$,
+  $D_{ia} = \varepsilon_a-\varepsilon_i$; the selection drops the lowest until
+  the CSF count $\binom{L}{\alpha}\binom{L}{\beta} -
+  \binom{L}{\alpha+1}\binom{L}{\beta-1}$ fits the cap, keeping at least one
+  occupied and two unoccupied orbitals (the source's stability floor).
+  The source's error record travels with every report (doubly-occupied
+  entropy $R^2=0.64$, MAE $0.0240$ against DMRG; precision about $88\%$);
+  entropies agreeing to $10^{-12}$ rank by orbital index (BLAS determinism).
+  Measured anchor: the N$_2$ max(10,10) selection lands exactly on the
+  source's $(10,10)=19404$ entry &
+  \textsf{[Literature]} King \& Gagliardi 2021 \S3.2, 3.12;
+  \textsf{[Measured]} \code{tests/test\_apc.py} \\
 \bottomrule
 \end{tabularx}
 \end{center}

@@ -1,0 +1,109 @@
+\chapter{APC orbital ranking (menu 21)}
+\label{ch:menu21}
+\menulabel{21}
+
+\section{Purpose}
+
+The ranked-orbital scheme of King and Gagliardi (JCTC 2021): separate the
+question \emph{how the orbitals are made} from the question \emph{how they are
+ranked}; score every candidate orbital -- all doubly occupied ones plus a
+window of the lowest virtuals -- by the approximate pair coefficient (APC),
+and keep the top of the ranking up to a cap on the number of configuration
+state functions (CSFs).  The cap, not a threshold, fixes the size, which is
+what makes the scheme comparable across systems.
+
+The pair coefficient comes from a two-configuration model
+$|\psi\rangle = |20\rangle + c\,|02\rangle$ whose exact coefficient is
+$c = -(12|12)/(\Delta + \sqrt{(12|12)^2 + \Delta^2})$.  APC replaces the
+exchange integral by the exchange-matrix diagonal and the model gap by the
+orbital-energy difference,
+$c_{ia} = -x_a/(D_{ia} + \sqrt{x_a^2 + D_{ia}^2})$ with $x_a = \tfrac12 K_{aa}$
+and $D_{ia} = \varepsilon_a - \varepsilon_i$ (eqs.~18--19 of the source), and
+the one-orbital entropies are the binary entropies of the gathered
+coefficients (eqs.~12--13).  No integral transformation is involved: the
+ranking reads the Hartree--Fock exchange block the SCF already built.
+
+\section{What you need}
+
+One \code{orca\_2json} export of a converged RHF run (closed shell), with the
+export request written as \code{<base>.json.conf} next to the \code{.gbw}:
+
+\begin{lstlisting}[style=fbkcode]
+{ "MOCoefficients": true, "1elIntegrals": ["H"], "FockMatrix": ["J", "K"] }
+\end{lstlisting}
+
+Produce the export in the directory where the run wrote its files: the Fock
+terms are read from the run's \code{<base>.densities} and
+\code{<base>.densitiesinfo} pair (measured), so a bare \code{.gbw} copy cannot
+be exported for them.  The default \code{apc} variant needs only the \code{K}
+block; the \code{apcx} variant -- the source's exact-integral comparison --
+additionally needs the windowed two-electron block:
+
+\begin{lstlisting}[style=fbkcode]
+{ "MOCoefficients": true, "2elIntegrals": ["MO_IAJB"],
+  "OrbWin": [0, 6, 7, 16, 0, 0, 0, 0] }
+\end{lstlisting}
+
+Write the window as \emph{eight} integers -- the second window all zeros for a
+single window, because the four-integer form is rejected by
+\code{orca\_2json}; the numbers are inclusive 0-based indices, first/last
+internal then first/last external.  The block schema is in
+Chapter~\ref{ch:formats}.
+
+\section{Walkthrough}
+
+\lstinputlisting[style=fbkcode, firstline=26, lastline=75,
+  title={The menu-21 example session (N2/def2-SVP at the max(10,10) cap: the
+  ranking puts the $\pi/\pi^*$ quartet first and the selection lands exactly
+  on the source's (10,10) = 19404 CSF entry)}]
+  {examples/expected/m21_apc.txt}
+
+\section{What you get}
+
+The ranked table on screen and a report (\file{<export>.apc.fbk.md}) with the
+citations.
+
+\section{How to read it}
+
+\begin{readbox}
+\begin{itemize}
+  \item \textbf{The cap is the only binding constraint} -- the selection drops
+    the lowest-ranked orbital until the CSF count (equation~2 of the source)
+    fits, never leaving fewer than one occupied and two unoccupied orbitals in
+    the space (the source's CASSCF-stability floor; anything kept by the floor
+    is listed in the report);
+  \item the ranking is the result, not the winner alone, and the entropies
+    depend on the candidate window -- both the window and the cap are printed
+    with the table;
+  \item APC is a screening scheme calibrated on small molecules: the source
+    measures it to overestimate doubly-occupied orbital entropies
+    ($R^2 = 0.64$, MAE $0.0240$ against DMRG; virtuals $0.83/0.0064$) and
+    expects degradation in much larger systems or where the HF determinant is
+    a poor reference.  The report repeats this with every run;
+  \item APC and APCX on the same window usually agree on the top set: in the
+    example both rank the $\pi/\pi^*$ quartet in the top four while the
+    magnitudes differ by an order of magnitude (the diagonal-sum
+    approximation overestimates; the source finds APC still ranks better
+    because the errors cancel);
+  \item the source's \code{max(a,b)} labels are ambiguous in its own text
+    ((7e, 6o) evaluates to 210 CSFs; its listed 490 is a seven-orbital
+    space).  This tool carries the labels and their numbers verbatim and
+    treats the CSF count as the constraint;
+  \item entropies that agree to $10^{-12}$ rank by orbital index -- a
+    determinism rule so a report does not depend on the BLAS the exchange
+    transform ran under (physically degenerate partners differ only in the
+    last floating-point digits).
+\end{itemize}
+\end{readbox}
+
+\section{Boundaries}
+
+Open-shell references (ROHF/UHF) are refused with the instruction to run RHF:
+the source assigns singly occupied orbitals the maximum approximated entropy,
+and its UNO variant needs unrestricted exports whose per-spin Fock-block
+conventions are not measured yet.  For non-canonical orbital sets (localized
+orbitals) choose the \code{fock} model gap at the prompt: the gap then uses
+the Fock diagonal in the export's own basis, which the reader builds as
+$H + J + K$ (the exported \code{F} block alone excludes the core Hamiltonian;
+measured, and asserted in the regression tests where the two sources agree to
+$6\times10^{-10}$ for canonical orbitals).
