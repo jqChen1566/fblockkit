@@ -376,7 +376,7 @@ def test_menu_twelve_exact_entropy_full_chain(tmp_path):
     localized step; the report carries the engine cross-checks."""
     out_file, dump_file, canonical, localized = _fcidump_chain(tmp_path)
     out, _ = _session_run(
-        ["12", str(out_file), str(dump_file), str(canonical), str(localized), "", "0"]
+        ["12", str(out_file), str(dump_file), str(canonical), str(localized), "", "0", "0"]
     )
     assert "Active window inferred: [4, 5, 6, 7, 8, 9]" in out
     assert "Cross-checks against the engine" in out
@@ -386,6 +386,11 @@ def test_menu_twelve_exact_entropy_full_chain(tmp_path):
     report = Path(str(dump_file) + ".fbk.md").read_text(encoding="utf-8")
     assert "A2x exact four-state single-orbital entropy" in report
     assert "References" in report
+    # the environment-spin section runs from the localized pair (cluster centre 0;
+    # N2 has no f-block element, so the atomic-term section stays absent)
+    assert "Environment spin-polarisation entropy" in report
+    assert "Delta S_E = 0.000000" in report  # a singlet has no polarisation
+    assert "Atomic-term check" not in report
 
 
 def test_menu_twelve_without_exports_skips_the_localized_step(tmp_path):
@@ -393,6 +398,52 @@ def test_menu_twelve_without_exports_skips_the_localized_step(tmp_path):
     out, _ = _session_run(["12", str(out_file), str(dump_file), "", "", "4 9", "0"])
     assert "Cross-checks against the engine" in out
     assert "IAO-IBO" not in out
+
+
+def test_menu_thirteen_orbital_space_identity(tmp_path):
+    """Menu 13: the same active space before and after a localisation reads as
+    unchanged (sigma_F = 1, smallest singular value 1) -- the check must be blind
+    to a rotation inside one space."""
+    canonical = tmp_path / "canonical.json"
+    localized = tmp_path / "localized.json"
+    shutil.copy(FIXTURES / "n2_fcidump.canonical.json", canonical)
+    shutil.copy(FIXTURES / "n2_fcidump.localized.json", localized)
+    out, _ = _session_run(
+        ["13", str(canonical), "4 9", str(localized), "4 9", "0"]
+    )
+    assert "sigma_F = ||M||_F / sqrt(min(n_A, n_B)) = 1.000000" in out
+    assert "essentially the same space" in out
+    report = Path(str(canonical) + ".fbk.md").read_text(encoding="utf-8")
+    assert "sayfutyarova2017avas" in report or "10.1021/acs.jctc.7b00128" in report
+    assert "References" in report
+
+
+def test_menu_thirteen_flags_a_shifted_window(tmp_path):
+    """A window shifted by one orbital shares five of six directions: the report
+    must name the deviation instead of reading 'contained'."""
+    canonical = tmp_path / "canonical.json"
+    shutil.copy(FIXTURES / "n2_fcidump.canonical.json", canonical)
+    out, _ = _session_run(["13", str(canonical), "4 9", str(canonical), "5 10", "0"])
+    assert "sigma_F = ||M||_F / sqrt(min(n_A, n_B)) = 0." in out
+    assert "contained only approximately" in out or "misses a substantial part" in out
+
+
+def test_menu_thirteen_reports_a_basis_mismatch(tmp_path):
+    canonical = tmp_path / "canonical.json"
+    localized = tmp_path / "localized.json"
+    shutil.copy(FIXTURES / "n2_fcidump.canonical.json", canonical)
+    shutil.copy(FIXTURES / "n2_fcidump.localized.json", localized)
+    # drop one AO from the overlap of the second export: the two files then no
+    # longer belong to the same basis and the reader must refuse the second one
+    import json
+
+    document = json.loads(localized.read_text(encoding="utf-8"))
+    matrix = document["Molecule"]["S-Matrix"]
+    document["Molecule"]["S-Matrix"] = [row[:-1] for row in matrix[:-1]]
+    tampered = tmp_path / "tampered.json"
+    tampered.write_text(json.dumps(document), encoding="utf-8")
+    out, _ = _session_run(["13", str(canonical), "", str(tampered), "", "0"])
+    assert "Orbital-space comparison failed" in out
 
 
 def test_menu_twelve_refuses_a_non_casscf_output(tmp_path):

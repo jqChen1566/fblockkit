@@ -1,4 +1,4 @@
-\chapter{Exact four-state entropy (menu 12)}
+\chapter{Exact active-space analysis (menu 12)}
 \label{ch:menu12}
 \menulabel{12}
 
@@ -42,7 +42,80 @@ numbers before reporting anything.
 The active window is given explicitly here (\code{4 9}); pressing Enter
 instead infers it from the occupation table, grows it away from the core when
 an active orbital prints as $0.0000$, and validates the result against the
-\code{N(occ)=} line.
+\code{N(occ)=} line. The last prompt names the cluster centre for the
+environment-spin partition below (Enter = the $f$-block centre, when the
+molecule has one).
+
+\section{Two further analyses of the same state}
+
+When the exports are given, the same pass appends two more sections; both read
+the state the entropy section already validated.
+
+\subsection*{Environment spin-polarisation entropy}
+
+The quantity $\Delta S_E$ of Eq.~\eqref{eq:delta-se} answers ``is the spin
+polarisation all on the metal centre?''.
+
+\begin{equation}
+\Delta S_E = -2\,\mathrm{Tr}\!\left(\frac{D_E}{2}\ln\frac{D_E}{2}\right)
+  + \mathrm{Tr}\bigl(D_E^\alpha \ln D_E^\alpha\bigr)
+  + \mathrm{Tr}\bigl(D_E^\beta \ln D_E^\beta\bigr),
+\qquad D_E = D_E^\alpha + D_E^\beta
+\label{eq:delta-se}
+\end{equation}
+
+Every active orbital is assigned to the centre of its largest L\"owdin
+population, the orbitals off the cluster centre form the environment, and
+$D_E^\sigma$ are the environment sub-blocks of the spin densities. The value
+is zero exactly when the two spin blocks are equal; the source's own anchors
+are $0.007$ for its correct solution and $2.766$ for its wrong one, the latter
+costing a factor $42$ in the fitted crystal-field MAE. Two boundaries travel
+with the number: the inactive orbitals of a CASSCF wave function are doubly
+occupied by construction, so this is the \emph{active} environment (a
+mean-field solution's ligand spin polarisation is diagnosed by the local-spin
+table of menu~\menu{1} instead), and a closed-shell state has $\Delta S_E =
+0$ in every basis by the spin-flip symmetry.
+
+\subsection*{Atomic-term check}
+
+The effective $L$, $S$ and $J$ of the computed state, from the expectations of
+$L^2$, $S^2$ and $L\cdot S$: the angular-momentum operators are built by
+projecting the active orbitals onto the $f$ atomic orbitals of the $f$-block
+centre (the export's AO labels carry the centre and the component, and the
+measured structure of ORCA's $f$ block -- ordered by shell and component, its
+overlap exactly $R\otimes I$ -- separates the orthonormal shell basis from the
+pure angular matrices). The operators are derived from the solid-harmonic
+polynomials inside the program rather than transcribed, and pinned by the
+commutators, the Casimir and the $m$ spectrum.
+
+The verdict compares $(L_{\mathrm{eff}}, S_{\mathrm{eff}})$ with Hund's rules
+for the projected shell occupation -- the check the crystal-field workflow asks
+for before a mean-field density is used: the source's Hartree-Fock density
+carries the Hund value $J = 7.5$ for Dy\textsuperscript{3+}, while several
+functionals drift to $5.9$--$7.3$. In a spin-orbit-free calculation the
+computed component of a Hund term carries $J = L + S$ (the maximal-$J$
+component), which is what the source's rule names; the physical Hund
+third-rule $J$ ($|L - S|$ for a less-than-half-filled shell) is only reached
+after spin-orbit coupling. The report therefore classifies $J$ as the maximal,
+minimal or a non-stretched component and treats only a mismatch in $L$ or $S$
+as a defect. The $f$ character of each active orbital is printed as the quality
+measure of the projection, and the Hund verdict is withheld below the
+provisional $0.9$ line -- which is also how the $f$-block wrong-solution mode
+appears (the electrons sit in $d$/$s$/$p$ orbitals and the $f$ shell is empty).
+
+\section{The environment section in the example capture}
+
+\lstinputlisting[style=fbkcode, firstline=52, lastline=69,
+  title={The environment-spin section of the same session (the N\textsubscript{2}
+  active space partitioned at centre 0; the $\sigma$ and $\sigma^*$ pair at
+  population $0.5000$ is the visible ambiguity of the largest-weight rule)}]
+  {examples/expected/m12_exact_entropy.txt}
+
+The example is a singlet, so the reading is the by-construction zero: the
+criterion cannot fire for a closed-shell state, and the report says so rather
+than presenting the zero as a pass. Its companion numbers (the eigenvalues of
+$D_E$, the electron counts per spin) are printed for orientation.
+
 
 \section{What you get}
 

@@ -40,8 +40,11 @@ items:
     title: Point-charge crystal-field estimate (read an XYZ structure + charges)
     handler: point_charge_estimate
   - number: "12"
-    title: Exact four-state entropy (CASSCF output + FCIDUMP; optional orca_2json exports for the localized basis)
+    title: "Exact active-space analysis (CASSCF output + FCIDUMP: four-state entropy, environment spin entropy, atomic-term check; optional orca_2json exports)"
     handler: exact_entropy
+  - number: "13"
+    title: "Orbital-space comparison (two orca_2json exports: subspace fraction and space-change SVD)"
+    handler: orbital_space
   - number: "0"
     title: Quit
     handler: quit

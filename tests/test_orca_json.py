@@ -81,6 +81,54 @@ def test_export_is_immutable():
         export.n_mo = 12  # type: ignore[misc]
 
 
+# --- AO labels --------------------------------------------------------------
+
+
+def test_ao_labels_are_split_into_center_angular_and_component():
+    export = parse_orca_json(CANONICAL)
+    assert export.ao_labels is not None
+    assert len(export.ao_labels) == export.n_ao
+    # def2-SVP on N2: 3 s + 2 p shells per atom, then the d polarization shell
+    first = export.ao_labels[:6]
+    assert [(label.center, label.element) for label in first] == [(0, "N")] * 6
+    assert [(label.shell, label.angular, label.component) for label in first] == [
+        (1, "s", ""),
+        (2, "s", ""),
+        (3, "s", ""),
+        (1, "p", "z"),
+        (1, "p", "x"),
+        (1, "p", "y"),
+    ]
+    second_atom = [label for label in export.ao_labels if label.center == 1]
+    assert len(second_atom) == 14
+    assert {label.element for label in second_atom} == {"N"}
+    # the raw label is kept verbatim next to the split fields
+    assert first[0].raw == "0N   1s"
+
+
+def test_missing_ao_labels_are_accepted(tmp_path):
+    path = _variant(tmp_path, lambda molecule: molecule["MolecularOrbitals"].pop("OrbitalLabels"))
+    assert parse_orca_json(path).ao_labels is None
+
+
+def test_ao_label_count_mismatch_is_rejected(tmp_path):
+    def drop_one(molecule: dict[str, Any]) -> None:
+        molecule["MolecularOrbitals"]["OrbitalLabels"].pop()
+
+    path = _variant(tmp_path, drop_one)
+    with pytest.raises(ParserError, match="do not belong to these coefficients"):
+        parse_orca_json(path)
+
+
+def test_an_unparsable_ao_label_is_rejected(tmp_path):
+    def break_one(molecule: dict[str, Any]) -> None:
+        molecule["MolecularOrbitals"]["OrbitalLabels"][3] = "N pz"
+
+    path = _variant(tmp_path, break_one)
+    with pytest.raises(ParserError, match="does not split into the measured ORCA grammar"):
+        parse_orca_json(path)
+
+
 # --- numbers ----------------------------------------------------------------
 
 

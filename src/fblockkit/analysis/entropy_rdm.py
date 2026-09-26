@@ -524,6 +524,101 @@ def energy_from_densities(dump: Fcidump, dens: SpinDensities) -> float:
     return energy
 
 
+def spin_orbital_blocks(operator: np.ndarray, norb: int) -> tuple[np.ndarray, ...]:
+    """Split a spin-orbital matrix into its (alpha-alpha, alpha-beta, beta-alpha, beta-beta) blocks.
+
+    The block order of the spin-orbital index is ``[(0, alpha), ..., (n-1, alpha),
+    (0, beta), ..., (n-1, beta)]``, matching :func:`expectation_product`.
+    """
+    matrix = np.asarray(operator)
+    if matrix.shape != (2 * norb, 2 * norb):
+        raise EntropyRdmError(
+            f"the operator matrix is {matrix.shape} but the active space has {norb} "
+            f"orbitals (a spin-orbital matrix must be {2 * norb} x {2 * norb}). "
+            "Next step: build it with spin_orbital_matrix()."
+        )
+    return (
+        matrix[:norb, :norb],
+        matrix[:norb, norb:],
+        matrix[norb:, :norb],
+        matrix[norb:, norb:],
+    )
+
+
+def spin_orbital_matrix(spatial: np.ndarray, norb: int, *, spin: str = "both") -> np.ndarray:
+    """Embed a spatial one-body matrix into the spin-orbital index (2n x 2n).
+
+    ``spin="both"`` puts the spatial matrix into both spin blocks (a spin-free
+    operator); ``spin="alpha"`` / ``"beta"`` puts it into one block only.
+    """
+    matrix = np.asarray(spatial)
+    if matrix.shape != (norb, norb):
+        raise EntropyRdmError(
+            f"the spatial matrix is {matrix.shape} but the active space has {norb} "
+            "orbitals. Next step: build the shell projection first."
+        )
+    out = np.zeros((2 * norb, 2 * norb), dtype=np.result_type(matrix, np.complex128))
+    out[:norb, :norb] = matrix
+    if spin == "both":
+        out[norb:, norb:] = matrix
+    elif spin == "beta":
+        out[:norb, :norb] = 0
+    elif spin != "alpha":
+        raise EntropyRdmError(
+            f"spin={spin!r} is not one of 'both', 'alpha', 'beta'. Next step: pass a "
+            "valid spin block name."
+        )
+    return out
+
+
+def expectation_product(a: np.ndarray, b: np.ndarray, dens: SpinDensities) -> complex:
+    """``<A B>`` for two one-body operators in the state whose densities are given.
+
+    Exact for any CI state via its 1- and 2-RDMs.  With the block convention of
+    :class:`SpinDensities`, ``g[P,Q,R,S] = <a+_P a+_R a_S a_Q>``, the
+    spin-orbital anticommutator ``a_Q a+_R = delta_QR - a+_R a_Q`` gives
+
+        <A B> = sum_{P,S} (A B)_PS gamma_PS + sum_{P,Q,R,S} A_PQ B_RS g[P,Q,R,S]
+
+    (the second sum carries a plus because the block definition orders the two
+    annihilation operators the other way round than the anticommutator step --
+    this is exactly the sign that a hand derivation gets wrong).
+
+    ``a`` / ``b`` are 2n x 2n spin-orbital matrices.  The sum runs over the six
+    spin patterns whose creator/annihilator spin multisets match; four are the
+    measured blocks and two are their index-swapped partners, the terms that
+    carry the spin-flip action of operators like S_x.  Hermitian input gives a
+    real result; the caller rounds, and the imaginary residue is a diagnostic of
+    inconsistent densities.
+    """
+    norb = dens.norb
+    aaa, aab, aba, abb = spin_orbital_blocks(a, norb)
+    baa, bab, bba, bbb = spin_orbital_blocks(b, norb)
+    gamma_a, gamma_b = dens.gamma_a, dens.gamma_b
+    # sum_{P,S} (A B)_PS gamma_PS, written as traces over the spin blocks
+    # (gamma .T because the definition has gamma_PS = <a+_P a_S> while trace(X Y)
+    # contracts X_ij Y_ji)
+    trace = (
+        np.trace(aaa @ baa @ gamma_a.T)
+        + np.trace(aab @ bba @ gamma_a.T)
+        + np.trace(aba @ bab @ gamma_b.T)
+        + np.trace(abb @ bbb @ gamma_b.T)
+    )
+    g_aa, g_ab = dens.g_aa, dens.g_ab
+    g_ba, g_bb = dens.g_ba, dens.g_bb
+    contraction = (
+        np.einsum("pq,rs,pqrs->", aaa, baa, g_aa, optimize=True)
+        + np.einsum("pq,rs,pqrs->", aaa, bbb, g_ab, optimize=True)
+        + np.einsum("pq,rs,pqrs->", abb, baa, g_ba, optimize=True)
+        + np.einsum("pq,rs,pqrs->", abb, bbb, g_bb, optimize=True)
+        # (P,Q,R,S) = (alpha, beta, beta, alpha): g = -g_ba[r, q, p, s]
+        - np.einsum("pq,rs,rqps->", aab, bba, g_ba, optimize=True)
+        # (P,Q,R,S) = (beta, alpha, alpha, beta): g = -g_ab[r, q, p, s]
+        - np.einsum("pq,rs,rqps->", aba, bab, g_ab, optimize=True)
+    )
+    return complex(trace + contraction)
+
+
 # --------------------------------------------------------------------------
 # rotation to the localised basis
 # --------------------------------------------------------------------------

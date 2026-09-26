@@ -43,6 +43,7 @@ def test_doc_mentions_each_menu_title_topic():
         "SCF rescue",
         "Crystal-field fit",
         "Exact four-state entropy",
+        "Orbital-space comparison",
     ):
         assert keyword in text, keyword
 

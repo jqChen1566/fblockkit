@@ -1,8 +1,6 @@
-12
-work/n2_fcidump_step_a.out
-work/FCIDUMP
+13
 work/canonical.json
+4 9
 work/localized.json
 4 9
-0
 0

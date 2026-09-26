@@ -121,7 +121,8 @@ def main() -> int:
                     "10", "work/cf_c3.json",
                     "11", "work/ceo6.xyz", "O=-2", "",
                     "12", "work/n2_fcidump_step_a.out", "work/FCIDUMP",
-                    "work/canonical.json", "work/localized.json", "4 9",
+                    "work/canonical.json", "work/localized.json", "4 9", "0",
+                    "13", "work/canonical.json", "4 9", "work/localized.json", "4 9",
                     "8", "work/saved.txt",
                     "0",
                 ]
@@ -211,6 +212,19 @@ def main() -> int:
                     )
                 ),
                 "menu 12 report: the exact entropy route reproduces the engine numbers",
+            )
+            check(
+                "Environment spin-polarisation entropy" in exact
+                and "Delta S_E = 0.000000" in exact
+                and "partitioned at centre" not in exact,
+                "menu 12 report: the environment-spin section runs from the localised pair",
+            )
+
+            space = read("canonical.json.fbk.md")
+            check(
+                "sigma_F = ||M||_F / sqrt(min(n_A, n_B)) = 1.000000" in space
+                and "essentially the same space" in space,
+                "menu 13 report: the same space before and after a localisation reads unchanged",
             )
 
             check(product("saved.txt").is_file(), "menu 8 wrote the session script")

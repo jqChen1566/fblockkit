@@ -318,11 +318,12 @@ extraction (the same caveat the section prints, with its citation). The
 `l`-basis numbers and Section 10's `B_k^q` are comparable only through their
 spectra, not parameter by parameter.
 
-## 12 Exact four-state entropy (CASSCF output + FCIDUMP; optional orca_2json exports for the localized basis)
+## 12 Exact active-space analysis (CASSCF output + FCIDUMP; optional orca_2json exports)
 
-**What it is for**: the autoCAS single-orbital entropy itself - the four-state
-quantity `s_i = -sum w ln w` over the (empty / up / down / double) occupations
-of each active orbital - rebuilt exactly from your own calculation. Section 1
+**What it is for**: Exact four-state entropy of the active space, rebuilt from
+your own calculation - the autoCAS single-orbital entropy itself, the
+four-state quantity `s_i = -sum w ln w` over the (empty / up / down / double)
+occupations of each active orbital. Section 1
 reports a rigorous upper bound for the same number (an ORCA output alone cannot
 supply it, and ORCA's own 2-RDM export was measured to be unreachable for
 CAS-type methods on 6.1.1); this section reports the number, with its
@@ -359,6 +360,75 @@ solution-branch caveats apply; Section 1 checks them); the solver is a dense
 determinant CI capped at a few thousand determinants per M_s sector - far above
 the f-block windows it targets, but not a DMRG; and the numbers do not replace
 Section 1's diagnostics.
+
+**Two further analyses of the same state** run in the same pass when the
+exports are given:
+
+- *environment spin-polarisation entropy* (Delta S_E of Ai et al., Eq. 9):
+  with the localized export, every active orbital is assigned to the centre of
+  its largest Löwdin population, the orbitals not on the cluster centre form
+  the environment, and Delta S_E = -2 Tr[(D/2) ln(D/2)] + Tr[D_a ln D_a] +
+  Tr[D_b ln D_b] measures the spin polarisation that sits there instead of on
+  the metal. The criterion's zero is exact; the source's own anchors are 0.007
+  for its correct solution and 2.766 for its wrong one (a factor 42 in the
+  fitted crystal-field MAE). Two boundaries are reported with the number: the
+  inactive orbitals of a CASSCF wave function are doubly occupied by
+  construction, so this is the *active* environment (a mean-field solution's
+  ligand spin polarisation is diagnosed by Section 1's local-spin table
+  instead), and a closed-shell state has Delta S_E = 0 in every basis. The
+  cluster centre is asked for explicitly (Enter = the f-block centre);
+- *atomic-term check*: the effective L, S and J of the computed state from
+  <L^2>, <S^2>, <L.S> - the operators are built by projecting the active
+  orbitals onto the f AOs of the f-block centre (the export's AO labels carry
+  the centre and the component), and the expectations are exact for the CI
+  state. The verdict compares (L_eff, S_eff) with Hund's rules for the shell
+  occupation, the check that decides whether a mean-field density may be used
+  for a crystal-field fit; the J value is classified as the maximal-J
+  component (what a scalar stretched density carries), the minimal-J one, or a
+  non-stretched component, and only a mismatch in L or S is a defect. The
+  f character of each active orbital is reported as the quality measure, and
+  the Hund verdict is withheld below the provisional 0.9 line - which is also
+  how the f-block wrong-solution mode shows up (the electrons sit in d/s/p
+  orbitals and the f shell is empty).
+
+Both readings need the canonical export (and the localized one for Delta S_E)
+and the active window; they are appended to the same report file.
+
+## 13 Orbital-space comparison (two orca_2json exports)
+
+**What it is for**: two zero-external-reference checks of an orbital space, both
+read from the singular values of `M = C_A^T S C_B` between two orbital sets
+(each set is orthonormalized internally first; the source states the result is
+independent of the orthonormalization scheme):
+
+- the *subspace fraction* sigma_F = ||M||_F / sqrt(min(|A|, |B|)) answers "how
+  much of space B is contained in space A" - use it to rank a recommended
+  active space against a fuller reference space (the deficit 1 - sigma_F
+  orders like the energy error in the source; a saturated sigma_F does not
+  exclude that A is too large);
+- the *space-change SVD* compares two sets of the same size (an initial and a
+  final active space of one optimization): singular values near 1 mean the
+  space did not move, and a value near 0 means one initial active orbital was
+  replaced by an unrelated one, i.e. the initial space lacked an element.
+
+**What you need**: two `orca_2json` exports of the same system in the same
+basis (for the identity case: the same gbw before and after `orca_loc`, which
+exercises the check's blind spot - a rotation inside one space must come out as
+"unchanged").
+
+**How**: menu 13 -> first export path -> its window `first last` in ORCA's
+0-based orbital numbering (Enter = all orbitals) -> second export path -> its
+window. A window that is not given covers every orbital of the export.
+
+**What you get**: the singular values, sigma_F and the deficit, the smallest
+singular value, and the two readings with their provisional bands (anchored on
+the DMET source's own numbers: 1 - sigma_F = 2.9e-3 for a deliberately loose
+start and 6.8e-5 after a localization; the AVAS source's SVD range 0.65-0.99).
+The report file is written next to the first export, citations included.
+
+**What it is not**: an energy - the checks rank spaces and flag replaced
+orbitals; they do not evaluate the spaces. The bands are provisional and the
+intended use is comparison across candidate spaces for one system.
 
 ## Appendix A Command line
 

@@ -20,6 +20,11 @@ What this reader returns
   geometries may permute or phase-flip their columns and that alignment is the
   consumer's decision, not the reader's;
 - ``atoms``: the element labels of the ``Atoms`` block, in file order;
+- ``ao_labels``: the positional ``OrbitalLabels`` block split into
+  :class:`AoLabel` records (or ``None`` when the export omits it). The labels
+  are the only atom/angular-momentum information the export carries, so the
+  analyses that project onto one centre's l shell (atomic terms) or partition
+  by centre (environment spin) read them from here;
 - ``n_ao`` is the number of AO coefficients per MO; an ``S-Matrix`` present in the
   file must be square with that same dimension, otherwise the export is refused
   (an overlap matrix from another system or basis set cannot be combined with
@@ -64,13 +69,14 @@ a "Next step: " hint, and a partly-filled object is never returned.
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Mapping
 
 from .base import ParserError, read_text
 
-__all__ = ["OrcaJson", "parse_orca_json"]
+__all__ = ["AoLabel", "OrcaJson", "parse_orca_json"]
 
 # Every failure names a concrete next action; the call form is the manual's
 # (``orca_2json <basename>.gbw``, the default output being ``<basename>.json``).
@@ -90,6 +96,29 @@ _SAME_SOURCE_HINT = (
     "overlap matrix from a different system, basis set or export cannot be combined "
     "with these coefficients."
 )
+
+
+@dataclass(frozen=True)
+class AoLabel:
+    """One AO column of the export, split from ORCA's own label (``raw``).
+
+    ORCA writes the ``OrbitalLabels`` entries as ``<atom index><element>
+    <shell><letter><component>`` with the atom index 0-based and the shell
+    counter 1-based within each (centre, angular momentum) pair -- measured on
+    the fixtures, e.g. ``"0N   1pz"`` (first p shell of N0, component ``z``),
+    ``"0Eu  1f+1"`` (first f shell of Eu0, component ``+1``).  The component
+    spelling is the reader's business to interpret: p/d labels use the real
+    solid-harmonic names (``z``, ``x``, ``y``; ``z2``, ``xz``, ``yz``,
+    ``x2y2``, ``xy``), while f and higher labels use the m_l-like spelling
+    (``0``, ``+1``, ``-1``, ... -- measured on the Eu export).
+    """
+
+    raw: str
+    center: int
+    element: str
+    shell: int
+    angular: str
+    component: str
 
 
 @dataclass(frozen=True)
@@ -113,6 +142,7 @@ class OrcaJson:
     mo_occupations: tuple[float, ...]
     mo_energies: tuple[float, ...]
     overlap: tuple[tuple[float, ...], ...] | None = None
+    ao_labels: tuple[AoLabel, ...] | None = None
 
 
 def parse_orca_json(path: str | Path) -> OrcaJson:
@@ -176,6 +206,11 @@ def parse_orca_json(path: str | Path) -> OrcaJson:
     overlap = None
     if "S-Matrix" in molecule:
         overlap = _square_matrix(molecule["S-Matrix"], "Molecule.S-Matrix", n_ao)
+    # Absent OrbitalLabels: likewise a documented export variant; when present
+    # the list is positional (AO column k <-> label k) and must fit n_ao.
+    ao_labels = None
+    if "OrbitalLabels" in orbital_block:
+        ao_labels = _ao_labels(orbital_block["OrbitalLabels"], n_ao)
 
     return OrcaJson(
         base_name=_text(_entry(molecule, "BaseName", "the Molecule block"), "Molecule.BaseName"),
@@ -194,6 +229,7 @@ def parse_orca_json(path: str | Path) -> OrcaJson:
         mo_occupations=tuple(occupations),
         mo_energies=tuple(energies),
         overlap=overlap,
+        ao_labels=ao_labels,
     )
 
 
@@ -264,6 +300,57 @@ def _atom_labels(molecule: Mapping[str, Any]) -> tuple[str, ...]:
         where = f"Molecule.Atoms[{index}]"
         atom = _mapping(entry, where)
         labels.append(_text(_entry(atom, "ElementLabel", where), f"{where}.ElementLabel"))
+    return tuple(labels)
+
+
+# ORCA's AO label grammar, measured on the fixtures (N2 and Eu exports of ORCA
+# 6.1.1): "<atom index><element>  <shell><letter><component>".  The element is
+# one or two letters directly after the digits of the atom index (``0N``,
+# ``0Eu``), which is why the two are not separated by whitespace.
+_AO_LABEL_RE = re.compile(
+    r"^(?P<center>\d+)(?P<element>[A-Za-z]{1,2})\s+"
+    r"(?P<shell>\d+)(?P<angular>[spdfghi])(?P<component>[A-Za-z0-9+-]*)$"
+)
+
+
+def _ao_labels(value: Any, dimension: int) -> tuple[AoLabel, ...]:
+    """Parse the positional ``OrbitalLabels`` block against the AO dimension."""
+    if not isinstance(value, list):
+        raise _fail(
+            f"Molecule.MolecularOrbitals.OrbitalLabels is a JSON {type(value).__name__}, "
+            "not a list.",
+            _EXPORT_HINT,
+        )
+    if len(value) != dimension:
+        raise _fail(
+            f"Molecule.MolecularOrbitals.OrbitalLabels has {len(value)} entries while the "
+            f"MO coefficients have {dimension} AO columns: the labels do not belong to "
+            "these coefficients.",
+            _SAME_SOURCE_HINT,
+        )
+    labels: list[AoLabel] = []
+    for index, entry in enumerate(value):
+        where = f"Molecule.MolecularOrbitals.OrbitalLabels[{index}]"
+        raw = _text(entry, where)
+        match = _AO_LABEL_RE.match(raw.strip())
+        if match is None:
+            raise _fail(
+                f"{where} is {raw!r}, which does not split into the measured ORCA grammar "
+                "'<atom index><element> <shell><angular letter><component>'.",
+                "the AO-labelling consumers (atomic-term and environment-partition "
+                "analyses) need the label grammar; report the label so the reader can be "
+                "extended.",
+            )
+        labels.append(
+            AoLabel(
+                raw=raw,
+                center=int(match.group("center")),
+                element=match.group("element"),
+                shell=int(match.group("shell")),
+                angular=match.group("angular"),
+                component=match.group("component"),
+            )
+        )
     return tuple(labels)
 
 

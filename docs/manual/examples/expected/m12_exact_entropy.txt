@@ -12,7 +12,8 @@ Available functions:
    9  SCF rescue (triage + corrected input files)
   10  Crystal-field fit (levels + coefficients JSON)
   11  Point-charge crystal-field estimate (read an XYZ structure + charges)
-  12  Exact four-state entropy (CASSCF output + FCIDUMP; optional orca_2json exports for the localized basis)
+  12  Exact active-space analysis (CASSCF output + FCIDUMP: four-state entropy, environment spin entropy, atomic-term check; optional orca_2json exports)
+  13  Orbital-space comparison (two orca_2json exports: subspace fraction and space-change SVD)
    0  Quit
 Choose a number (Enter = leave empty)> 12
 Converged CASSCF output path (the run whose orbitals were dumped) (Enter = leave empty)> work/n2_fcidump_step_a.out
@@ -20,6 +21,7 @@ FCIDUMP path (written by the !FCIDUMP dump run) (Enter = leave empty)> work/FCID
 orca_2json export of the canonical gbw (Enter = skip the localized-basis step) (Enter = leave empty)> work/canonical.json
 orca_2json export after orca_loc (the localized step needs both exports) (Enter = leave empty)> work/localized.json
 Active window 'first last' in ORCA's 0-based orbital numbering (Enter = infer) (Enter = leave empty)> 4 9
+Cluster centres for the environment-spin partition (comma-separated atom indices; Enter = the f-block centre, if any) (Enter = leave empty)> 0
 Active space: 6 orbitals / 6 electrons (M_s sector with n_alpha=3, n_beta=3); determinants solved: 400; selected root 0 with <S^2> = 0.0000
 
 Cross-checks against the engine (the reconstruction is trusted only with them):
@@ -47,6 +49,23 @@ Preconditions carried with these numbers:
 - The four-state density is diagonal for a fixed-particle-number state (an exact statement, not an approximation), so the three numbers n_up, n_down and p2 are complete -- and they exist only in a reconstruction like this one; a printed N(occ) line cannot supply them.
 - Read the threshold against the localized-basis spectrum only; the canonical spectrum is reported for orientation.
 - The solver is exact within the dumped active space; the usual active-space caveats (size, composition, solution branch) transfer unchanged.
+Partition of the active orbitals (largest Löwdin population per centre; the centres treated as the cluster: 0):
+  orbital 0: centre 0 (population 0.9517) -> cluster
+  orbital 1: centre 0 (population 0.9517) -> cluster
+  orbital 2: centre 1 (population 0.9517) -> environment
+  orbital 3: centre 1 (population 0.9517) -> environment
+  orbital 4: centre 1 (population 0.5000) -> environment
+  orbital 5: centre 1 (population 0.5000) -> environment
+
+Environment: 4 active orbital(s) [2, 3, 4, 5]; electrons in the environment block: 1.998836 alpha + 1.998836 beta
+  eigenvalues of D_E (alpha+beta): 0.001897 1.001164 1.001164 1.993449
+  Delta S_E = -2 Tr[(D/2) ln(D/2)] + Tr[D_a ln D_a] + Tr[D_b ln D_b]
+            = 1.405324 - 0.702662 - 0.702662 = 0.000000
+
+Reading (provisional line; the source's anchors are 0.007 for its correct solution and 2.766 for its wrong one, and the criterion's zero is exact):
+  - the environment carries no appreciable spin polarisation (Delta S_E = 0.000000)
+
+Boundary of this route: the inactive orbitals of the CASSCF wave function are doubly occupied and carry no spin by construction, so this is the *active* environment. A mean-field solution's ligand spin polarisation is diagnosed by the local-spin analysis of the SCF output (menu 1) instead.
 Report written: work\FCIDUMP.fbk.md
 
 Available functions:
@@ -61,7 +80,8 @@ Available functions:
    9  SCF rescue (triage + corrected input files)
   10  Crystal-field fit (levels + coefficients JSON)
   11  Point-charge crystal-field estimate (read an XYZ structure + charges)
-  12  Exact four-state entropy (CASSCF output + FCIDUMP; optional orca_2json exports for the localized basis)
+  12  Exact active-space analysis (CASSCF output + FCIDUMP: four-state entropy, environment spin entropy, atomic-term check; optional orca_2json exports)
+  13  Orbital-space comparison (two orca_2json exports: subspace fraction and space-change SVD)
    0  Quit
 Choose a number (Enter = leave empty)> 0
 Goodbye.

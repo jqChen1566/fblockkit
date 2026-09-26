@@ -120,15 +120,33 @@ The same day added the **f-block chain** on Eu3+ (4f6), files
 | `eu3_fcidump.fcidump` | the dump (step B) | NORB=7, NELEC=6, **MS2=6**: the na=6, nb=0 sector, 7 determinants -- the maximum-Ms block of a high-spin f6 ion |
 | `eu3_fcidump_step_c.loc.inp` / `.out` | `orca_loc`, IAO-IBO, window 27..33 | **the default IAO basis fails on Eu** ("The minimal basis set is not defined for element Eu"); the working recipe fills all positional fields and selects ANO-RCC-MB (option 4) for the IAO basis: `gbw out 27 33 3 0 128 1e-6 0.0 0.95 0.85 2 1 1 4 0 0`. That is the f-block face of the MINAO coverage gap recorded in the Wave-0 notes |
 
-Validation of the Eu chain (measured 2026-09-26 with its two orca_2json exports,
-which at ~1.6 MB each stayed out of the repository): the reconstructed CI energy
-matches the printed value to 3.5e-11 Eh, `<S^2>` = 12.000 (the 7F term), the
-natural occupations are six 1.00000 and one 0.00000, and the four-state entropy
-spectrum is zero in every basis -- the maximal-weight 7F state is a single
-determinant in the m_l-like basis, and an orbital rotation cannot change that.
-A clean negative control for the f-block side, next to the strongly correlated
-N2 positive above. The localized-rotation orthogonality check on the Eu exports
-measured 1.3e-14.
+Validation of the Eu chain (measured 2026-09-26 with its two orca_2json
+exports, which at ~1.6 MB each stayed out of the repository): the reconstructed
+CI energy matches the printed value to 3.5e-11 Eh, `<S^2>` = 12.000, the
+natural occupations are six 1.00000 and one 0.00000, and the four-state
+entropy spectrum is zero in every basis -- a single determinant in the
+m_l-like basis, and an orbital rotation cannot change that. The
+localized-rotation orthogonality check on the Eu exports measured 1.3e-14.
+
+**Correction (2026-09-27): this chain is a d-solution, not the 4f6 one.** The
+table above and an earlier note called the state "the 7F term"; that reading
+was never checked against the composition data and is wrong. What the files
+actually show, read from ORCA's own `LOEWDIN REDUCED ACTIVE MOs` table of
+`eu3_fcidump_step_a.out`: the seven active orbitals (indices 27..33) are
+5d/6s/6p combinations (e.g. 85.5% dxz, 88.0% dz2, 67.2% dxy), while the seven
+4f orbitals sit *below* them at -2.508 Eh with zero occupation -- i.e. the
+model-potential guess placed the f shell in the virtual space and the CASSCF
+converged on a higher-energy d-based solution (the same failure mode the Ce3+
+fixtures show, and the one `DG-ACTIVE-ORBITALS-WITHOUT-F-CHARACTER` flags).
+Measured directly on the export: the Loewdin f-population of the seven 4f
+orbitals is 1.000, and of the seven active orbitals 0.000. The `<S^2>` = 12.000
+and the all-zero entropy remain correct statements -- they just describe a
+sextet in a d-based active space, not 7F. Widening the window to the union of
+both shells (CASSCF(6,14) from the same gbw) drops the energy by several
+hartree, which is how wrong-solution the d-based one is; a clean 4f6 chain is
+being generated for a future wave of the toolkit. The files themselves
+stay in the repository: as a *negative* fixture the chain is exactly what the
+f-character check and the atomic-term check are for.
 
 ## Known-behaviour notes
 

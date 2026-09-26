@@ -12,7 +12,8 @@ Available functions:
    9  SCF rescue (triage + corrected input files)
   10  Crystal-field fit (levels + coefficients JSON)
   11  Point-charge crystal-field estimate (read an XYZ structure + charges)
-  12  Exact four-state entropy (CASSCF output + FCIDUMP; optional orca_2json exports for the localized basis)
+  12  Exact active-space analysis (CASSCF output + FCIDUMP: four-state entropy, environment spin entropy, atomic-term check; optional orca_2json exports)
+  13  Orbital-space comparison (two orca_2json exports: subspace fraction and space-change SVD)
    0  Quit
 Choose a number (Enter = leave empty)> 2
 XYZ structure file path (Enter = leave empty)> work/octahedron.xyz
@@ -42,7 +43,8 @@ Available functions:
    9  SCF rescue (triage + corrected input files)
   10  Crystal-field fit (levels + coefficients JSON)
   11  Point-charge crystal-field estimate (read an XYZ structure + charges)
-  12  Exact four-state entropy (CASSCF output + FCIDUMP; optional orca_2json exports for the localized basis)
+  12  Exact active-space analysis (CASSCF output + FCIDUMP: four-state entropy, environment spin entropy, atomic-term check; optional orca_2json exports)
+  13  Orbital-space comparison (two orca_2json exports: subspace fraction and space-change SVD)
    0  Quit
 Choose a number (Enter = leave empty)> 1
 ORCA output file path (Enter = leave empty)> work/n2_hf_clean.out
@@ -63,7 +65,8 @@ Available functions:
    9  SCF rescue (triage + corrected input files)
   10  Crystal-field fit (levels + coefficients JSON)
   11  Point-charge crystal-field estimate (read an XYZ structure + charges)
-  12  Exact four-state entropy (CASSCF output + FCIDUMP; optional orca_2json exports for the localized basis)
+  12  Exact active-space analysis (CASSCF output + FCIDUMP: four-state entropy, environment spin entropy, atomic-term check; optional orca_2json exports)
+  13  Orbital-space comparison (two orca_2json exports: subspace fraction and space-change SVD)
    0  Quit
 Choose a number (Enter = leave empty)> 8
 Script save path (Enter = fbk_session.txt)> work/saved_session.txt
@@ -81,7 +84,8 @@ Available functions:
    9  SCF rescue (triage + corrected input files)
   10  Crystal-field fit (levels + coefficients JSON)
   11  Point-charge crystal-field estimate (read an XYZ structure + charges)
-  12  Exact four-state entropy (CASSCF output + FCIDUMP; optional orca_2json exports for the localized basis)
+  12  Exact active-space analysis (CASSCF output + FCIDUMP: four-state entropy, environment spin entropy, atomic-term check; optional orca_2json exports)
+  13  Orbital-space comparison (two orca_2json exports: subspace fraction and space-change SVD)
    0  Quit
 Choose a number (Enter = leave empty)> 0
 Goodbye.

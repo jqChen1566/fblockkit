@@ -346,10 +346,15 @@ EU_REFERENCE_ENERGY = -10826.615512593075
 
 
 def test_eu3_high_spin_chain():
-    """The f-block fixture: Eu3+ 4f6 in the MS2=6 sector (7 determinants).
-    The maximal-weight 7F state is a single determinant, so the reconstruction
-    must reproduce the printed energy, give <S^2> = 12 exactly and a zero
-    entropy spectrum -- a clean negative control next to the N2 positive."""
+    """The f-block fixture: the MS2=6 sector of the Eu3+ chain (7 determinants).
+
+    The maximal-weight component of a high-spin sextet is a single determinant,
+    so the reconstruction must reproduce the printed energy, give <S^2> = 12
+    exactly and a zero entropy spectrum -- a clean negative control next to the
+    N2 positive.  Note (measured 2026-09-27): this chain is a d-based solution,
+    *not* the 4f6 one -- the active orbitals carry zero f character (see
+    fixtures/orca/README.md). The energy and S^2 statements are unaffected; the
+    test only asserts those."""
     dump = parse_fcidump(EU_DUMP)
     assert (dump.norb, dump.nelec, dump.ms2) == (7, 6, 6)
     state = solve_fci(dump, reference_energy=EU_REFERENCE_ENERGY, multiplicity=7)

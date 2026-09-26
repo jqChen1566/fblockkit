@@ -12,8 +12,11 @@ import json
 from pathlib import Path
 from typing import Any
 
-from ..analysis import cf_declaration, crystal_field, point_charge
-from ..analysis import entropy_rdm
+import numpy as np
+
+from ..analysis import atomic_terms, cf_declaration, crystal_field, point_charge
+from ..analysis import entropy_rdm, environment_spin
+from ..analysis import orbital_space as orbital_space_analysis
 from ..analysis import evidence_for, run_all
 from ..analysis import geometry as geometry_analysis
 from ..diagnosis import SEVERITY_LABELS, build_report, diagnose, references_section, to_markdown
@@ -662,6 +665,14 @@ def exact_entropy(session: Session) -> None:
     window_text = session.ask(
         "Active window 'first last' in ORCA's 0-based orbital numbering (Enter = infer)"
     )
+    cluster_text = (
+        session.ask(
+            "Cluster centres for the environment-spin partition (comma-separated atom "
+            "indices; Enter = the f-block centre, if any)"
+        )
+        if localized_text
+        else ""
+    )
     try:
         result = parse_auto(Path(output_text))
         casscf = result.sections.get("casscf", {})
@@ -723,18 +734,171 @@ def exact_entropy(session: Session) -> None:
             active_window=window,
         )
         section = entropy_rdm.run(analysis)
+        extras: list[tuple[Any, tuple[Any, ...]]] = []
+        if canonical is not None and analysis.active_window is not None:
+            term_sections = atomic_terms.analyze_export(
+                analysis.densities,
+                analysis.state.s2,
+                canonical,
+                analysis.active_window,
+            )
+            if term_sections:
+                extras.append((term_sections, atomic_terms.evidence()))
+        if localized is not None and analysis.active_window is not None:
+            cluster_centres = _cluster_centres(cluster_text, canonical)
+            if cluster_centres is None:
+                session.say(
+                    "Environment-spin partition skipped: no cluster centre was given and "
+                    "the molecule has no f-block element. Next step: give the cluster "
+                    "centre index when the environment-spin entropy is wanted."
+                )
+            else:
+                rotation = entropy_rdm.rotation_from_coefficients(
+                    np.array(canonical.mo_coefficients).T,
+                    np.array(localized.mo_coefficients).T,
+                    np.array(canonical.overlap),
+                    active=analysis.active_window,
+                )
+                rotated = entropy_rdm.rotate_densities(analysis.densities, rotation)
+                local_coefficients = np.array(localized.mo_coefficients).T[
+                    :, list(analysis.active_window)
+                ]
+                extras.append(
+                    (
+                        (
+                            environment_spin.analyze(
+                                rotated,
+                                local_coefficients,
+                                np.array(localized.overlap),
+                                localized.ao_labels,
+                                len(localized.atoms),
+                                cluster_centres=cluster_centres,
+                            ),
+                        ),
+                        environment_spin.evidence(),
+                    )
+                )
     except (ParserError, entropy_rdm.EntropyRdmError, OSError, ValueError) as exc:
         session.say(f"Exact entropy analysis failed: {exc}")
         return
 
     session.say(section.body)
     report_lines = f"## {section.title}\n\n{section.body}\n"
-    refs = references_section(entropy_rdm.evidence())
+    evidence_entries = list(entropy_rdm.evidence())
+    for sections, entries in extras:
+        for extra in sections:
+            session.say(extra.body)
+            report_lines += f"\n## {extra.title}\n\n{extra.body}\n"
+        evidence_entries.extend(entries)
+    refs = references_section(tuple(evidence_entries))
     if refs is not None:
         report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
     md_path = Path(fcidump_text).with_name(Path(fcidump_text).name + ".fbk.md")
     md_path.write_text(report_lines, encoding="utf-8")
     session.say(f"Report written: {md_path}")
+
+
+def _cluster_centres(text: str, canonical) -> tuple[int, ...] | None:
+    """Parse the cluster-centre prompt; None when there is nothing to partition on."""
+    from ..knowledge.elements import is_f_element
+
+    if text:
+        try:
+            return tuple(int(token) for token in text.replace(",", " ").split())
+        except ValueError:
+            return None
+    if canonical is not None:
+        detected = tuple(
+            index for index, symbol in enumerate(canonical.atoms) if is_f_element(symbol)
+        )
+        if detected:
+            return detected
+    return None
+
+
+# --- 13 orbital-space comparison ---------------------------------------------
+
+
+def orbital_space(session: Session) -> None:
+    """Menu 13: sigma_F and the space-change SVD from two orca_2json exports.
+
+    Both readings come from the singular values of C_A^T S C_B; the handler only
+    collects the two exports and their orbital windows (ORCA's 0-based numbering,
+    the same convention as menu 12) and writes the report next to the first
+    export.
+    """
+    first_text = session.ask("First orca_2json export (space A) path")
+    if not first_text:
+        session.say("Cancelled (no export path given).")
+        return
+    first_window_text = session.ask(
+        "Window 'first last' of space A in ORCA's 0-based orbital numbering "
+        "(Enter = all orbitals)"
+    )
+    second_text = session.ask("Second orca_2json export (space B) path")
+    if not second_text:
+        session.say("Cancelled (no second export path given).")
+        return
+    second_window_text = session.ask(
+        "Window 'first last' of space B (Enter = all orbitals)"
+    )
+    try:
+        first = parse_orca_json(Path(first_text))
+        second = parse_orca_json(Path(second_text))
+        overlap = np.array(first.overlap)
+        if first.overlap is None or second.overlap is None:
+            session.say(
+                "One of the exports carries no S-Matrix, so the overlap of the two "
+                "spaces cannot be formed. Next step: re-export both gbw files with "
+                "orca_2json (the S-Matrix is part of the default export)."
+            )
+            return
+        coefficients_a = np.array(first.mo_coefficients).T[
+            :, _window(first_window_text, first.n_mo)
+        ]
+        coefficients_b = np.array(second.mo_coefficients).T[
+            :, _window(second_window_text, second.n_mo)
+        ]
+        if first.n_ao != second.n_ao or not np.allclose(
+            overlap, np.array(second.overlap), atol=1e-8
+        ):
+            session.say(
+                "The two exports do not share one basis: their AO dimensions or overlap "
+                "matrices differ. Next step: compare spaces of the same system in the "
+                "same basis set (e.g. before and after orca_loc)."
+            )
+            return
+        comparison = orbital_space_analysis.compare_spaces(coefficients_a, coefficients_b, overlap)
+        section = orbital_space_analysis.run(
+            comparison,
+            label_a=_space_label(first, first_window_text),
+            label_b=_space_label(second, second_window_text),
+        )
+    except (ParserError, orbital_space_analysis.OrbitalSpaceError, OSError, ValueError) as exc:
+        session.say(f"Orbital-space comparison failed: {exc}")
+        return
+
+    session.say(section.body)
+    report_lines = f"## {section.title}\n\n{section.body}\n"
+    refs = references_section(orbital_space_analysis.evidence())
+    if refs is not None:
+        report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
+    md_path = Path(first_text).with_name(Path(first_text).name + ".fbk.md")
+    md_path.write_text(report_lines, encoding="utf-8")
+    session.say(f"Report written: {md_path}")
+
+
+def _window(text: str, n_mo: int) -> list[int]:
+    """A 'first last' window in ORCA's 0-based numbering; empty text means everything."""
+    if not text:
+        return list(range(n_mo))
+    first, last = (int(token) for token in text.replace(",", " ").split())
+    return list(range(first, last + 1))
+
+
+def _space_label(export, window_text: str) -> str:
+    span = window_text.strip() or f"0..{export.n_mo - 1}"
+    return f"{Path(export.base_name).name} [{span}]"
 
 
 HANDLERS = {
@@ -750,5 +914,6 @@ HANDLERS = {
     "crystal_field_fit": crystal_field_fit,
     "point_charge_estimate": point_charge_estimate,
     "exact_entropy": exact_entropy,
+    "orbital_space": orbital_space,
     "quit": quit_session,
 }
