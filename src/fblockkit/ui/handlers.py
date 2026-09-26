@@ -16,8 +16,8 @@ import numpy as np
 
 from ..analysis import atomic_terms, avas, cf_declaration, crystal_field, point_charge
 from ..analysis import entropy_rdm, environment_spin
-from ..analysis import magnetic_doublets, orbital_mapping, orbital_portrait
-from ..recipe import guess_transfer
+from ..analysis import dm_selection, magnetic_doublets, orbital_mapping, orbital_portrait
+from ..recipe import dm_batch, guess_transfer
 from ..analysis import orbital_space as orbital_space_analysis
 from ..analysis import evidence_for, run_all
 from ..analysis import geometry as geometry_analysis
@@ -1203,6 +1203,139 @@ def wasp_guess(session: Session) -> None:
     session.say(f"Report written: {md_path}")
 
 
+# --- 19 dipole-moment candidate batch ----------------------------------------
+
+
+def dm_batch_generate(session: Session) -> None:
+    """Menu 19: write the DM-AS candidate batch (prep + CASCI inputs + manifest)."""
+    xyz_text = session.ask("Structure file (XYZ) path")
+    if not xyz_text:
+        session.say("Cancelled (no structure given).")
+        return
+    path = Path(xyz_text)
+    try:
+        structure = path.read_text(encoding="utf-8")
+    except OSError as exc:
+        session.say(f"Reading the structure failed: {exc}")
+        return
+    charge_text = session.ask("Charge (Enter = 0)")
+    mult_text = session.ask("Multiplicity (Enter = 1; the protocol is built for singlets)")
+    basis = session.ask("Basis keyword (Enter = def2-TZVP)") or "def2-TZVP"
+    prep = session.ask(
+        "Orbital preparation: Enter = MP2 natural orbitals (the source's choice); 'hf' = "
+        "plain HF orbitals"
+    ) or "mp2"
+    max_norb_text = session.ask("Largest active space in orbitals (Enter = 14)")
+    extras_text = session.ask(
+        "Include the PASS+ extras (the 4-electron and two-virtual rows; Enter = no)"
+    )
+    try:
+        batch = dm_batch.plan_batch(
+            xyz_text=structure,
+            charge=int(charge_text) if charge_text else 0,
+            multiplicity=int(mult_text) if mult_text else 1,
+            basis=basis.strip(),
+            prep=prep.strip().lower(),
+            include_pass_plus=bool(extras_text.strip()),
+            max_norb=int(max_norb_text) if max_norb_text else 14,
+        )
+    except (ValueError, dm_batch.DmBatchError) as exc:
+        session.say(f"Batch generation failed: {exc}")
+        return
+    directory = path.with_name(path.stem + ".fbk.dm")
+    try:
+        directory.mkdir(exist_ok=True)
+        (directory / batch.prep_name).write_text(batch.prep_input(), encoding="utf-8")
+        for candidate in batch.candidates:
+            (directory / batch.candidate_name(candidate)).write_text(
+                batch.candidate_input(candidate), encoding="utf-8"
+            )
+        (directory / batch.script_name).write_text(batch.render_script(), encoding="utf-8")
+        (directory / batch.manifest_name).write_text(
+            dm_batch.manifest_text(batch), encoding="utf-8"
+        )
+    except OSError as exc:
+        session.say(f"Writing the batch failed: {exc}")
+        return
+    session.say(f"DM-AS candidate batch written: {directory}")
+    session.say(
+        f"  {len(batch.candidates)} candidate input(s) + {batch.prep_name} "
+        f"({batch.prep} orbitals) + {batch.script_name} + {batch.manifest_name}"
+    )
+    session.say("  each candidate: !NoIter moread + %moinp the prep gbw + "
+                "%casscf nel/norb/nroots 1 (the form whose S0 dipole ORCA prints)")
+    session.say(f"Next step: run the script on the cluster ({batch.script_name}), fill the "
+                "reference output into the manifest, then use menu 20.")
+
+
+# --- 20 dipole-moment selection ----------------------------------------------
+
+
+def dm_select(session: Session) -> None:
+    """Menu 20: rank the candidate spaces by dipole-moment deviation (DM-AS)."""
+    path_text = session.ask("Batch manifest JSON path (from menu 19, reference filled in)")
+    if not path_text:
+        session.say("Cancelled (no manifest given).")
+        return
+    path = Path(path_text)
+
+    def _resolve(entry) -> Path:
+        candidate = Path(str(entry))
+        return candidate if candidate.is_absolute() else path.parent / candidate
+
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        readings = []
+        for entry in payload["candidates"]:
+            result = parse_auto(_resolve(entry["output"]))
+            magnitude, vector, _ = dm_selection.candidate_dipole(
+                result.sections, str(entry["output"])
+            )
+            readings.append((int(entry["nel"]), int(entry["norb"]), magnitude, vector))
+        reference_entry = payload.get("reference")
+        if not isinstance(reference_entry, dict):
+            raise dm_selection.DmSelectionError(
+                "the manifest carries no reference block. Next step: give "
+                '{"output": "dft.out"} or {"magnitude_debye": ..., "source": ...}.'
+            )
+        if "output" in reference_entry:
+            result = parse_auto(_resolve(reference_entry["output"]))
+            magnitude, vector, method = dm_selection.reference_dipole(
+                result.sections, str(reference_entry["output"])
+            )
+            source = f"{reference_entry['output']} ({method} block)"
+        elif "magnitude_debye" in reference_entry:
+            magnitude = float(reference_entry["magnitude_debye"])
+            vector = reference_entry.get("vector")
+            source = str(reference_entry.get("source") or "supplied value")
+        else:
+            raise dm_selection.DmSelectionError(
+                "the reference block carries neither 'output' nor 'magnitude_debye'. "
+                'Next step: give one of the two.'
+            )
+        selection = dm_selection.analyze(
+            readings,
+            (magnitude, tuple(vector) if vector is not None else None, source),
+            protocol=str(payload.get("protocol") or "gdm"),
+        )
+    except (OSError, KeyError, TypeError, ValueError, ParserError) as exc:
+        session.say(f"Dipole-moment selection failed: {exc}")
+        return
+    body = dm_selection.render(selection)
+    session.say(body)
+    section = ReportSection(
+        title="A12 dipole-moment active-space selection",
+        body=body,
+    )
+    report_lines = f"## {section.title}\n\n{section.body}\n"
+    refs = references_section(dm_selection.evidence())
+    if refs is not None:
+        report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
+    md_path = path.with_name(path.name + ".dm_select.fbk.md")
+    md_path.write_text(report_lines, encoding="utf-8")
+    session.say(f"Report written: {md_path}")
+
+
 HANDLERS = {
     "report_output": report_output,
     "geometry_report": geometry_report,
@@ -1222,5 +1355,7 @@ HANDLERS = {
     "magnetic_doublets": magnetic_doublets_report,
     "orbital_mapping": orbital_mapping_report,
     "wasp_guess": wasp_guess,
+    "dm_batch": dm_batch_generate,
+    "dm_select": dm_select,
     "quit": quit_session,
 }

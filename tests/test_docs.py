@@ -49,6 +49,8 @@ def test_doc_mentions_each_menu_title_topic():
         "Magnetic-doublet criterion",
         "Cross-structure orbital mapping",
         "WASP guess transfer",
+        "Dipole-moment candidate batch",
+        "Dipole-moment selection",
     ):
         assert keyword in text, keyword
 

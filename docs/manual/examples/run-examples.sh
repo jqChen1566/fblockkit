@@ -39,6 +39,16 @@ cp "$REPO/fixtures/orca/n2_scan_1.610.loc.json" work/
 cp "$REPO/fixtures/orca/n2_scan_2.600.loc.json" work/
 cp "$REPO/fixtures/orca/n2_scan_1.600.json" work/
 cp "$REPO/fixtures/orca/n2_scan_1.600.mkl" work/
+# the dipole-moment chain of menus 19/20 (six single-root candidates + reference)
+cp "$REPO/fixtures/orca/h2o_dm_ref_pbe0.out" work/
+cp "$REPO/fixtures/orca/h2o_dm_prep_mp2.out" work/
+cp "$REPO/fixtures/orca/h2o_dm_casci_e6o6.out" work/
+cp "$REPO/fixtures/orca/h2o_dm_casci_e6o7.out" work/
+cp "$REPO/fixtures/orca/h2o_dm_casci_e6o8.out" work/
+cp "$REPO/fixtures/orca/h2o_dm_casci_e8o7.out" work/
+cp "$REPO/fixtures/orca/h2o_dm_casci_e8o8.out" work/
+cp "$REPO/fixtures/orca/h2o_dm_casci_e10o8.out" work/
+cp "$REPO/fixtures/orca/h2o_dm_casci_e6o6_sa4.out" work/
 
 for script in scripts/*.txt; do
   name=$(basename "$script" .txt)
@@ -54,11 +64,12 @@ echo "captured expected/m8_replay.txt"
 cp work/saved_session.txt expected/saved_session.txt
 
 # products written next to the inputs (reports, generated inputs, corrected inputs,
-# and the gbw-ready mkl of menu 18)
+# the gbw-ready mkl of menu 18, and the menu-19 batch directory)
 cp work/*.fbk.md expected/products/
 cp work/*.fbk.json expected/products/
 cp work/*.fbk.inp expected/products/
 cp work/*.fbk.mkl expected/products/
 cp work/*.fix_*.inp expected/products/
+cp -r work/*.fbk.dm expected/products/
 
 echo "done; products in expected/products/"

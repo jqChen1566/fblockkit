@@ -166,3 +166,26 @@ guess_payload = {
     json.dumps(guess_payload, indent=1) + "\n", encoding="utf-8"
 )
 print("wrote work/guess_manifest.json")
+
+# --- the dipole-moment (DM-AS) examples: the water structure for menu 19, and
+# the filled manifest over the shipped candidate outputs for menu 20.
+
+write(
+    "h2o.xyz",
+    "3\nwater (manual example)\n"
+    "O  0.000000  0.000000  0.117790\n"
+    "H  0.000000  0.757000 -0.471160\n"
+    "H  0.000000 -0.757000 -0.471160\n",
+)
+dm_manifest = {
+    "candidates": [
+        {"nel": nel, "norb": norb, "output": f"h2o_dm_casci_e{nel}o{norb}.out"}
+        for nel, norb in ((6, 6), (6, 7), (6, 8), (8, 7), (8, 8), (10, 8))
+    ],
+    "reference": {"output": "h2o_dm_ref_pbe0.out"},
+    "protocol": "gdm",
+}
+(WORK / "dm_manifest.json").write_text(
+    json.dumps(dm_manifest, indent=1) + "\n", encoding="utf-8"
+)
+print("wrote work/dm_manifest.json")

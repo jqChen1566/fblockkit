@@ -1,0 +1,78 @@
+\chapter{Dipole-moment selection (menu 20)}
+\label{ch:menu20}
+\menulabel{20}
+
+\section{Purpose}
+
+The second half of the DM-AS protocol: read the candidate outputs, rank the
+spaces by their dipole-moment deviation from the reference, and report the
+chosen one -- with the ranking, because the ranking is the result.
+
+\section{What you need}
+
+The filled manifest from menu~\menu{19}: one entry per candidate
+(\code{nel}, \code{norb}, \code{output}) plus the reference -- either another
+run's output (\code{\{"output": "dft.out"\}}, whose SCF block is used; a
+KS-DFT value is what the source used) or a supplied number
+(\code{\{"magnitude\_debye": 1.85, "source": "NIST (gas phase)"\}}), with an
+optional \code{vector} for the directional protocol.  The schema is in
+Chapter~\ref{ch:formats}.
+
+\section{Walkthrough}
+
+\lstinputlisting[style=fbkcode, firstline=25, lastline=49,
+  title={The menu-20 example session (six water candidates against the PBE0
+  reference; the winner is $(6e, 8o)$ at 0.0081 D)}]
+  {examples/expected/m20_dm_select.txt}
+
+\section{What you get}
+
+The ranking table on screen and a report
+(\file{<manifest>.dm\_select.fbk.md}) with the citations.
+
+\section{How to read it}
+
+\begin{readbox}
+\begin{itemize}
+  \item \textbf{The smallest deviation wins; ties go to the smaller space} --
+    the protocol's purpose is a suitable space, not an unnecessarily large
+    one.  The protocol's resolution is visible in the spread: in the water
+    example the six candidates run from 0.0081~D to 0.0245~D against the
+    PBE0 reference.
+  \item \textbf{The reference value drives the choice}: the source tested
+    experimental (NIST) dipole moments and KS-DFT values from several
+    functionals; to publish a selection, state the reference and its origin.
+  \item \textbf{Each candidate is read from its single-root dipole block}
+    (State: 0, relaxed density).  A state-averaged output prints only the
+    average (State: $-1$) and is refused with the rerun instruction; the
+    source averaged six states, and the difference from the single-root
+    densities travels with the report.
+  \item \textbf{Not implemented, with the reason}: the per-state variants
+    (EDM-AS, D$^2$DM-AS) compare per-state dipoles with per-state TD-DFT
+    values; measured on ORCA 6.1.1 a state-averaged run prints only the
+    average and TDDFT prints transition dipoles but no state dipoles, so
+    their data is not obtainable from ORCA outputs.  The source's own
+    recommendations put CASCI-GDM-AS first; the per-state route (per-state
+    densities crossed with the exported dipole integrals) is recorded as
+    future work.
+  \item \textbf{For a potential-energy scan} the protocol does not guarantee
+    the same space at every geometry: select at one geometry and carry the
+    space with menu~\menu{17}.
+\end{itemize}
+\end{readbox}
+
+\section{Boundaries and related sections}
+
+\begin{refusalbox}
+\begin{itemize}
+  \item A candidate whose output lacks the dipole block, or whose only block
+    is the state average, is refused with the next step named.
+  \item The directional protocol (\code{vgdm}, \code{protocol} in the
+    manifest) needs the reference vector; the source found no consistent
+    benefit over the plain form, so \code{gdm} is the default.
+\end{itemize}
+\end{refusalbox}
+
+Related: \menu{19} (the batch this reads), \menu{12} and \menu{15} (other
+criteria on the same question), \menu{17} (cross-structure consistency), and
+Chapter~\ref{ch:criteria}.

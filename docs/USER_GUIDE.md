@@ -774,6 +774,98 @@ silently -- the RMSD is taken as given). The written mkl is a *guess*: ORCA
 re-optimises; nothing here is a converged result. The machine-readable form of
 the mkl (and the reader/writer) is documented in the format appendix.
 
+## 19 Dipole-moment candidate batch (a structure -> the DM-AS scan inputs)
+
+**What it is for**: preparing the scan behind the dipole-moment active-space
+selection (Kaufold et al. 2023; the CASCI sequel 2026). The protocol runs the
+ground state of every candidate space, compares each space's dipole moment
+with a reliable reference, and keeps the closest -- a selection whose numbers
+are, in principle, experimentally checkable. Menu 19 writes the batch; menu 20
+reads it and makes the choice.
+
+**What you need**: the structure (XYZ) and a few settings. The protocol is
+built for neutral singlet ground states with a nonzero dipole moment (both
+restrictions are the source's, and the menu refuses the rest with the reason).
+
+**How**: menu 19 -> structure file -> charge (Enter = 0) -> multiplicity
+(Enter = 1) -> basis keyword (Enter = def2-TZVP) -> orbital preparation
+(Enter = MP2 natural orbitals, the source's choice; `hf` for plain HF
+orbitals) -> largest active space in orbitals (Enter = 14) -> include the
+PASS+ extras (Enter = no).
+
+**What you get**: a directory next to the structure
+(`<structure>.fbk.dm/`) with the preparation input (`prep.inp`: RHF + MP2
+with `NatOrbs true` -- the natural orbitals stay in the gbw), one CASCI input
+per candidate (`cand_e{ne}o{no}.inp`: `!NoIter moread` + `%moinp` the prep
+gbw + `%casscf nel/norb/nroots 1`), a run script (`run_scan.sh`) and a
+manifest (`manifest.json`) whose candidate outputs are already named; fill in
+the reference after the runs and hand it to menu 20.
+
+**How to read it**:
+
+- the candidate family is the source's PASS set: 6-14 active electrons (even),
+  with `n_e/2 + 3 <= n_o <= 14`; the PASS+ extras (the 4-electron and
+  two-virtual rows) can be included -- the source kept them in its scanning
+  set but flagged them as generally poor (35 candidates by default, 51 with
+  the extras);
+- the candidates share one orbital source: the MP2 natural orbitals of the
+  preparation run. The source's own benchmark found MP2 the best starting
+  point for the CASCI dipole moments; `hf` is the documented fallback;
+- each candidate is a CAS-CI (no orbital optimisation -- that is what makes
+  the scan cheap) and prints its own dipole moment, which is what the
+  selection reads.
+
+**Boundaries**: the batch runs nothing (this toolkit never does); the script is
+yours to run. The source excludes charged systems (the dipole of a charged
+molecule depends on the coordinate origin), and the protocol needs a nonzero
+dipole moment.
+
+## 20 Dipole-moment selection (the batch outputs + a reference)
+
+**What it is for**: the second half -- rank the candidate spaces by
+`|mu(candidate) - mu(reference)|` and report the chosen space.
+
+**What you need**: the filled manifest. The reference is either another run's
+output (`{"output": "dft.out"}` -- its SCF block is used, a KS-DFT value is
+what the source used) or a number you supply (`{"magnitude_debye": 1.85,
+"source": "NIST (gas phase)"}`), optionally with its `vector` for the
+directional protocol.
+
+**How**: menu 20 -> manifest path. `protocol` (optional) is `gdm` (default;
+the source's own recommendation names CASCI-GDM-AS the sensible default) or
+`vgdm` (the directional variant, which needs the reference vector).
+
+**What you get**: the ranking table on screen and a report
+(`<manifest>.dm_select.fbk.md`) with the citations.
+
+**How to read it**:
+
+- the smallest deviation wins; ties go to the smaller space -- the protocol's
+  purpose is a suitable space, not an unnecessarily large one;
+- the ranking, not the winner alone, is the result: in the manual's water
+  example the six candidates run from 0.0081 D ((6e, 8o), selected) to
+  0.0245 D against the PBE0 reference (2.0801 D), and the spread is the
+  protocol's resolution;
+- the reference value drives the choice -- the source tested experimental
+  (NIST) and several functionals' values, and to publish a selection you
+  should state the reference and its origin;
+- each candidate is read from its **single-root** dipole block (State: 0). A
+  state-averaged output prints only the average (State: -1) and is refused
+  with the rerun instruction; the source averaged six states, and the
+  difference from the single-root densities is documented in the report;
+- for a potential-energy scan, the protocol does not guarantee the same space
+  at every geometry: select at one geometry and carry the space with menu 17
+  when consistency matters.
+
+**Not implemented, with the reason**: the per-state variants (EDM-AS,
+D2DM-AS) compare per-state dipole moments with per-state TD-DFT values;
+measured on ORCA 6.1.1, a state-averaged CASSCF/CASCI run prints only the
+state-average dipole and the TDDFT module prints transition dipoles but no
+state dipoles, so their data is not obtainable from ORCA outputs. The source's
+own recommendation puts CASCI-GDM-AS first; the per-state route (per-state
+densities crossed with the exported dipole integrals) is recorded as future
+work.
+
 ## Appendix A Command line
 
 ```text

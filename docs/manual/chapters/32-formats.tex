@@ -117,6 +117,25 @@ verbatim \code{\$BASIS}, grouped coefficients, occupations); the toolkit's
 reader/writer translates its measured p-shell row order to and from the
 export convention.
 
+\section{Input JSON: DM-AS selection manifest (menu 20)}
+
+\begin{codeblock}
+{
+  "candidates": [                         # one entry per scanned space
+    {"nel": 6, "norb": 8, "output": "cand_e6o8.out"}
+  ],
+  "reference": {"output": "dft.out"},     # the SCF block of that output is used
+  "protocol": "gdm"                       # optional: gdm (default) | vgdm
+}
+\end{codeblock}
+
+The reference may instead be a supplied value,
+\code{\{"magnitude\_debye": 1.85, "source": "NIST (gas phase)"\}}, optionally
+with a \code{vector} for the directional protocol.  Candidate outputs are
+read at their single-root dipole block (State: 0); a state-averaged output is
+refused.  Menu~\menu{19} writes this manifest (with the candidate list
+pre-filled) next to the batch.
+
 \section{Structure and charge input (menus 2 and 11)}
 
 Standard XYZ (atom count, comment, \code{element x y z}). For \menu{11}, the

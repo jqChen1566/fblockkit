@@ -60,6 +60,12 @@ items:
   - number: "18"
     title: "WASP guess transfer (neighbour orbitals -> an interpolated, gbw-ready mkl for a geometry series)"
     handler: wasp_guess
+  - number: "19"
+    title: "Dipole-moment candidate batch (a structure -> prep + CASCI inputs + manifest for the DM-AS scan)"
+    handler: dm_batch
+  - number: "20"
+    title: "Dipole-moment selection (the batch outputs + a reference -> the active space by DM-AS)"
+    handler: dm_select
   - number: "0"
     title: Quit
     handler: quit

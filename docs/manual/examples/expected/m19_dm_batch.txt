@@ -22,24 +22,18 @@ Available functions:
   19  Dipole-moment candidate batch (a structure -> prep + CASCI inputs + manifest for the DM-AS scan)
   20  Dipole-moment selection (the batch outputs + a reference -> the active space by DM-AS)
    0  Quit
-Choose a number (Enter = leave empty)> 16
-Kramers-doublet table JSON path (per doublet: the three g values and theta3 or the g3 axis; see the user guide) (Enter = leave empty)> work/dy_doublets.json
-Magnetic-doublet criterion (g_T = (g1 + g2 + g3 sin(theta3)) / 3, degrees; line g_T * theta3 = 20):
-  #   doublet                             E(cm-1)      g1      g2      g3  theta3(deg)      g_T  g_T*theta3  reading
-  0 * doublet that supports excitation          -    0.41    0.44    9.04         9.52    0.782        7.44  supports excitation
-  1   doublet that facilitates QTM              -    3.45    3.73    5.96        17.58    2.993       52.62  facilitates QTM
-  (* = the reference row; every theta3 was given in the table, no axis was used)
-
-Criteria and boundaries:
-  - the criterion: g_T = (g1 + g2 + g3 sin(theta3)) / 3 with theta3 in DEGREES, compared with g_T * theta3 = 20: below the line the doublet can still act as a step of the barrier (supports excitation above it), at or above it the doublet facilitates quantum tunnelling
-  - the three principal values are sorted internally, the largest taking the sin term (the source's convention); a 'axis3' entry is the axis of that largest value
-  - every theta3 is used as given (as a published table measures it, against the ground doublet it refers to); entry 0 ('doublet that supports excitation') is marked as the table's reference row -- set 'reference' to mark another entry
-  - an angle computed from axes is folded to [0, 90] degrees (a principal axis's sign is arbitrary); theta3 given in the table is used as given
-  - calibration context: on the source's 19-system table the line sits in the gap between the largest 'safe' product (15.31) and the smallest 'definite QTM' product (30.25)
-  - The metric is empirical, not derived: the source states that the g1/g2 weights should in principle be reduced as g3 rotates into the plane, but those historic calculations do not carry that information. The line's physical background is the material's internal dipolar field, which varies with packing and dilution, so the line is not a universal constant.
-  - Applicability domain: the line was calibrated on 19 mononuclear Dy(III) complexes (2016-2025, one consistent methodology -- 9-in-7 active space, ANO-RCC three-tier basis, SA-CASSCF-SO in (Open)Molcas). Other ions or nuclearities would need their own calibration.
-  - Known failure mode the criterion cannot see: in the source's set exactly one doublet is misread -- [Dy(Cp^ttt)2]+'s QTM doublet falls deep in the safe zone (product 2.52), and the source offers no explanation. A 'safe' verdict here is therefore the criterion's reading, not a proof of barrier behaviour.
-Report written: work\dy_doublets.json.magnetic.fbk.md
+Choose a number (Enter = leave empty)> 19
+Structure file (XYZ) path (Enter = leave empty)> work/h2o.xyz
+Charge (Enter = 0) (Enter = leave empty)> 
+Multiplicity (Enter = 1; the protocol is built for singlets) (Enter = leave empty)> 
+Basis keyword (Enter = def2-TZVP) (Enter = leave empty)> 
+Orbital preparation: Enter = MP2 natural orbitals (the source's choice); 'hf' = plain HF orbitals (Enter = leave empty)> 
+Largest active space in orbitals (Enter = 14) (Enter = leave empty)> 
+Include the PASS+ extras (the 4-electron and two-virtual rows; Enter = no) (Enter = leave empty)> 
+DM-AS candidate batch written: work\h2o.fbk.dm
+  35 candidate input(s) + prep.inp (mp2 orbitals) + run_scan.sh + manifest.json
+  each candidate: !NoIter moread + %moinp the prep gbw + %casscf nel/norb/nroots 1 (the form whose S0 dipole ORCA prints)
+Next step: run the script on the cluster (run_scan.sh), fill the reference output into the manifest, then use menu 20.
 
 Available functions:
    1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)

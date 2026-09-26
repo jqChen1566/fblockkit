@@ -1,0 +1,90 @@
+\chapter{Dipole-moment candidate batch (menu 19)}
+\label{ch:menu19}
+\menulabel{19}
+
+\section{Purpose}
+
+The scan behind the dipole-moment active-space selection: run the ground state
+of every candidate space $\mathrm{A}_n = (n_\mathrm{e}, n_\mathrm{o})$ from one
+cheap orbital source, compare each space's dipole moment with a reliable
+reference, and keep the closest,
+
+\[
+\mathrm{dev}_n = \bigl| \mu(S_0, \mathrm{A}_n) - \mu(S_0, \mathrm{ref}) \bigr|,
+\qquad \text{choose } \arg\min_n \mathrm{dev}_n ,
+\]
+
+a protocol whose numbers are in principle experimentally checkable.  This menu
+writes the batch; menu~\menu{20} reads it and makes the choice.
+
+\section{What you need}
+
+The structure (XYZ) and a few settings.  The protocol is built for neutral
+singlet ground states with a nonzero dipole moment; the menu refuses the rest
+with the source's reason (the dipole of a charged molecule depends on the
+coordinate origin).
+
+\section{Walkthrough}
+
+\lstinputlisting[style=fbkcode, firstline=25, lastline=36,
+  title={The menu-19 example session (water: 35 candidates, MP2-orbital
+  preparation)}]
+  {examples/expected/m19_dm_batch.txt}
+
+The batch's own files: the preparation input and the head of the manifest that
+menu~\menu{20} will read (the candidate outputs are already named):
+
+\lstinputlisting[style=fbkcode,
+  title={examples/products excerpt: \file{h2o.fbk.dm/prep.inp}}]
+  {examples/expected/products/h2o.fbk.dm/prep.inp}
+
+\lstinputlisting[style=fbkcode, firstline=1, lastline=11,
+  title={examples/products excerpt: the head of \file{h2o.fbk.dm/manifest.json}
+  (35 candidates; the reference line is filled in after the runs)}]
+  {examples/expected/products/h2o.fbk.dm/manifest.json}
+
+\section{What you get}
+
+A directory next to the structure (\file{<structure>.fbk.dm/}) with the
+preparation input, one CASCI input per candidate, a run script and the
+manifest.  The batch runs nothing -- this toolkit never does.
+
+\section{How to read it}
+
+\begin{readbox}
+\begin{itemize}
+  \item \textbf{The candidate family is the source's PASS set}: 6--14 active
+    electrons (even), $n_\mathrm{e}/2 + 3 \le n_\mathrm{o} \le 14$ (35
+    candidates); the PASS+ extras (the 4-electron and two-virtual rows) can be
+    included -- the source kept them in its scanning set but flagged them as
+    generally poor performers (51 candidates).
+  \item \textbf{One orbital source for the whole scan}: the MP2 natural
+    orbitals of the preparation run (\code{NatOrbs true}; they stay in the
+    gbw the candidates read).  The source's own benchmark (its Figure~S5)
+    found MP2 the best starting point for CASCI dipole moments; \code{hf} is
+    the documented fallback.
+  \item \textbf{Every candidate is a CAS-CI}: \code{!NoIter} with
+    \code{moread} takes the input occupations and skips the orbital
+    optimisation -- that is what makes the scan cheap (measured: ORCA prints
+    ``MaxMacroIter 1 detected >>> CAS-CI''), and each single-root run prints
+    its own dipole moment, which is exactly what the selection reads.
+  \item \textbf{\code{nroots 1} is deliberate}: the protocol needs the
+    $S_0$ dipole, and a state-averaged run prints only the state average.
+\end{itemize}
+\end{readbox}
+
+\section{Boundaries and related sections}
+
+\begin{refusalbox}
+\begin{itemize}
+  \item Charged systems and non-singlet ground states are refused (the
+    source's own restrictions, with the reasons).
+  \item The script is yours to run; the batch is text and nothing here
+    touches an engine.
+\end{itemize}
+\end{refusalbox}
+
+Related: \menu{20} (the selection that reads the batch), \menu{12} (the
+entropy-based selection, a different criterion on the same question),
+\menu{17} (carrying the chosen space across a geometry series), and
+Chapter~\ref{ch:criteria}.

@@ -121,6 +121,19 @@ def _prepare_work() -> None:
         )
     shutil.copy(FIXTURES / "n2_scan_1.600.json", work / "n2_scan_1.600.json")
     shutil.copy(FIXTURES / "n2_scan_1.600.mkl", work / "n2_scan_1.600.mkl")
+    # the dipole-moment chain of menus 19/20 (reference, prep and the candidates)
+    for name in (
+        "h2o_dm_ref_pbe0.out",
+        "h2o_dm_prep_mp2.out",
+        "h2o_dm_casci_e6o6.out",
+        "h2o_dm_casci_e6o7.out",
+        "h2o_dm_casci_e6o8.out",
+        "h2o_dm_casci_e8o7.out",
+        "h2o_dm_casci_e8o8.out",
+        "h2o_dm_casci_e10o8.out",
+        "h2o_dm_casci_e6o6_sa4.out",
+    ):
+        shutil.copy(FIXTURES / name, work / name)
 
 
 @pytest.fixture(scope="module")
@@ -178,6 +191,11 @@ def test_manual_example_products_match_the_captures(prepared_examples, monkeypat
     expected_dir = EXAMPLES / "expected" / "products"
     for expected in sorted(expected_dir.iterdir()):
         produced = EXAMPLES / "work" / expected.name
+        if expected.is_dir():
+            # a product directory (the menu-19 batch): its shape is checked by the
+            # replay capture and by the acceptance walk; here only its presence
+            assert produced.is_dir(), f"{expected.name}/ was not produced by the examples"
+            continue
         assert produced.is_file(), f"{expected.name} was not produced by the examples"
         assert _matches(
             expected.read_text(encoding="utf-8"),

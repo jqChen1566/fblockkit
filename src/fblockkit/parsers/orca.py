@@ -568,6 +568,67 @@ def _parse_local_spin(lines: list[str]) -> dict[str, Any]:
 _TS_MODE_RE = re.compile(r"Following TS mode number")
 _ECHO_KEYWORD_RE = re.compile(r"^\|\s*\d+>\s*!(.*)$")
 _GEOM_CYCLE_RE = re.compile(r"GEOMETRY OPTIMIZATION CYCLE\s+\d+")
+
+# --- dipole-moment blocks (SCF / CASSCF / CASCI, one format) ------------------
+# Measured on ORCA 6.1.1 (2026-09-27): the SCF block has no State line, the
+# CASSCF/CASCI block prints "State: <n>" (single root: 0, relaxed density; a
+# state-averaged run prints one block with "Method: CASSCF/ALL STATES AVERAGE",
+# "State: -1" and the unrelaxed density -- per-state dipoles are not printed).
+_DIPOLE_TITLE = "DIPOLE MOMENT"
+_DIPOLE_INT_RE = {
+    "state": re.compile(r"^State\s*:\s*(-?\d+)\s*$"),
+    "multiplicity": re.compile(r"^Multiplicity\s*:\s*(-?\d+)\s*$"),
+    "irrep": re.compile(r"^Irrep\s*:\s*(-?\d+)\s*$"),
+}
+_DIPOLE_TOTAL_RE = re.compile(
+    r"^Total Dipole Moment\s*:\s*([-\d.eE+]+)\s+([-\d.eE+]+)\s+([-\d.eE+]+)\s*$"
+)
+_DIPOLE_AU_RE = re.compile(r"^Magnitude \(a\.u\.\)\s*:\s*([-\d.eE+]+)\s*$")
+_DIPOLE_DEBYE_RE = re.compile(r"^Magnitude \(Debye\)\s*:\s*([-\d.eE+]+)\s*$")
+
+
+def _parse_dipole(lines: list[str]) -> dict[str, Any]:
+    """Every DIPOLE MOMENT block of the output, in file order.
+
+    One format serves SCF, CASSCF and CASCI runs (measured); a block is kept
+    only when it carries the total vector and both magnitudes, so the property
+    summary lines (``Dipole moment ... YES``) do not produce phantom blocks.
+    """
+    blocks = []
+    for index, line in enumerate(lines):
+        if line.strip() != _DIPOLE_TITLE:
+            continue
+        block = _parse_dipole_block(lines[index : index + 30])
+        if block is not None:
+            blocks.append(block)
+    return {"present": bool(blocks), "blocks": tuple(blocks)}
+
+
+def _parse_dipole_block(chunk: list[str]) -> dict[str, Any] | None:
+    block: dict[str, Any] = {}
+    for line in chunk:
+        stripped = line.strip()
+        if stripped.startswith("Method") and ":" in stripped:
+            block["method"] = stripped.split(":", 1)[1].strip()
+        elif stripped.startswith("Level") and ":" in stripped:
+            block["level"] = stripped.split(":", 1)[1].strip()
+        elif stripped.startswith("Energy") and ":" in stripped:
+            block["energy"] = float(stripped.split(":", 1)[1].strip().split()[0])
+        else:
+            for key, pattern in _DIPOLE_INT_RE.items():
+                if (match := pattern.match(stripped)) is not None:
+                    block[key] = int(match.group(1))
+                    break
+            else:
+                if (match := _DIPOLE_TOTAL_RE.match(stripped)) is not None:
+                    block["total"] = tuple(float(match.group(i)) for i in (1, 2, 3))
+                elif (match := _DIPOLE_AU_RE.match(stripped)) is not None:
+                    block["magnitude_au"] = float(match.group(1))
+                elif (match := _DIPOLE_DEBYE_RE.match(stripped)) is not None:
+                    block["magnitude_debye"] = float(match.group(1))
+    if "total" not in block or "magnitude_debye" not in block:
+        return None
+    return block
 _OPT_CONVERGED_RE = re.compile(r"THE OPTIMIZATION HAS CONVERGED", re.IGNORECASE)
 _OPT_NOT_CONVERGED_RE = re.compile(r"THE OPTIMIZATION HAS NOT YET CONVERGED", re.IGNORECASE)
 
@@ -1050,6 +1111,7 @@ class OrcaParser:
             "frequencies": frequencies,
             "local_spin": _parse_local_spin(lines),
             "optimization": optimization,
+            "dipole": _parse_dipole(lines),
             "soc_present": bool(_SOC_MARKERS_RE.search(text)),
             "errors": errors,
             "warnings": warnings,

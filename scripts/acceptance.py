@@ -112,6 +112,17 @@ def main() -> int:
             "n2_scan_2.600.loc.json",
             "n2_scan_1.600.json",
             "n2_scan_1.600.mkl",
+            "h2o.xyz",
+            "dm_manifest.json",
+            "h2o_dm_ref_pbe0.out",
+            "h2o_dm_prep_mp2.out",
+            "h2o_dm_casci_e6o6.out",
+            "h2o_dm_casci_e6o7.out",
+            "h2o_dm_casci_e6o8.out",
+            "h2o_dm_casci_e8o7.out",
+            "h2o_dm_casci_e8o8.out",
+            "h2o_dm_casci_e10o8.out",
+            "h2o_dm_casci_e6o6_sa4.out",
         ):
             # the generator writes into its own examples/work directory
             shutil.copy(EXAMPLES / "work" / name, inputs / name)
@@ -145,6 +156,8 @@ def main() -> int:
                     "16", "work/dy_doublets.json",
                     "17", "work/mapping_manifest.json",
                     "18", "work/guess_manifest.json",
+                    "19", "work/h2o.xyz", "", "", "", "", "", "",
+                    "20", "work/dm_manifest.json",
                     "8", "work/saved.txt",
                     "0",
                 ]
@@ -328,6 +341,30 @@ def main() -> int:
             check(
                 "$COEFF_ALPHA" in written and "$BASIS" in written and "$OCC_ALPHA" in written,
                 "menu 18 wrote the gbw-ready mkl next to the template",
+            )
+
+            batch_dir = inputs / "h2o.fbk.dm"
+            batch_files = sorted(p.name for p in batch_dir.iterdir()) if batch_dir.is_dir() else []
+            check(
+                len(batch_files) == 38  # 35 candidates + prep + script + manifest
+                and "cand_e6o6.inp" in batch_files
+                and "prep.inp" in batch_files
+                and "manifest.json" in batch_files,
+                "menu 19 wrote the candidate batch (35 inputs + prep + script + manifest)",
+            )
+            manifest = json.loads((inputs / "h2o.fbk.dm" / "manifest.json").read_text(encoding="utf-8"))
+            check(
+                len(manifest["candidates"]) == 35 and manifest["candidates"][0]["nel"] == 6,
+                "the batch manifest lists the PASS candidates for menu 20",
+            )
+
+            selection = read("dm_manifest.json.dm_select.fbk.md")
+            check(
+                "Selected active space: (6e, 8o)" in selection
+                and "reference: 2.0801 D" in selection
+                and "( 6e,  8o)     2.0720" in selection,
+                "menu 20 report: the water scan selects (6e, 8o) against the PBE0 "
+                "reference",
             )
 
             check(product("saved.txt").is_file(), "menu 8 wrote the session script")
