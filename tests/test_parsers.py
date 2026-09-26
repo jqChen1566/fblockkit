@@ -116,6 +116,39 @@ def test_scf_history_ignores_density_matrix_rows():
     assert scf["energies"] == ()
 
 
+def test_scf_tables_are_parsed():
+    """The DIIS iteration table and the SCF convergence summary are parser output since
+    v0.2 (the diagnosis layer's SCF triage works on the parse result alone)."""
+    scf = _sections("n2_hf_clean.out")["scf"]
+    assert scf["solver_seen"] is True
+    assert scf["diis_rows"] == ((1, 0.0941), (2, 0.0682), (3, 0.0471), (4, 0.0336))
+    assert scf["diis_switch_cycle"] == 2
+    assert scf["diis_error_at_switch"] == pytest.approx(0.0682)
+    assert scf["converger_switches"] == ("SOSCF",)
+    assert len(scf["criteria"]) == 6
+    names = [name for name, _value, _tol in scf["criteria"]]
+    assert "Energy change" in names and "Orbital Gradient" in names
+    assert scf["check_mode"] == 2
+    assert "Total+1el-Energy" in scf["check_mode_source"]
+
+
+def test_scf_tables_absent_without_an_scf_section():
+    """A CASSCF-type job prints no SCF tables: the fields stay empty and the mode is the
+    documented default, with the source saying that it was assumed."""
+    scf = _sections("co_plus_soc.out")["scf"]
+    assert scf["solver_seen"] is False
+    assert scf["diis_rows"] == ()
+    assert scf["criteria"] == ()
+    assert scf["check_mode"] == 2
+    assert "assumed default" in scf["check_mode_source"]
+
+
+def test_scf_diis_resets_are_counted():
+    scf = _sections("fblock_dft_la_complex.out")["scf"]
+    assert scf["diis_resets"] == 1
+    assert len(scf["diis_rows"]) == 29
+
+
 # --- orbital table ----------------------------------------------------------
 
 

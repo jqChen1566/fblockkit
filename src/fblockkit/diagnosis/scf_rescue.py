@@ -44,19 +44,17 @@ from the echoed input setting, else from the printed label, else assumed to be t
 documented default -- and the finding always names which of the three it used, so an
 unrecognized future label degrades to the default instead of to a warning.
 
-Text-reader scope
------------------
-The DIIS/SOSCF iteration tables and the ``SCF CONVERGENCE`` summary are read from the
-output text here, because the parser's ``scf`` section exposes only
-converged/cycles/energy (``parsers/orca.py``). Both readers are header-driven and were
-developed against the fixtures in ``fixtures/orca/``. If the parser ever publishes
-these tables, this local reader should be replaced by it.
+Reader location (v0.2)
+----------------------
+The DIIS/SOSCF iteration tables and the ``SCF CONVERGENCE`` summary are read by the
+parser layer (``parsers/orca.py``, the ``scf`` section: ``diis_rows``, ``criteria``,
+``check_mode`` and the rest) and consumed here from the parse result, so ``triage()`` is
+a pure in-memory function and never re-reads the file. Both readers are header-driven
+and were developed against the fixtures in ``fixtures/orca/``.
 """
 
 from __future__ import annotations
 
-import math
-import re
 import textwrap
 from dataclasses import dataclass
 from typing import Iterable, Sequence
@@ -68,8 +66,14 @@ from ..knowledge.models import (
     Finding,
     ParseResult,
 )
-from ..parsers import ParserError, read_text
-from ..parsers.base import float_or_none
+# The SCF tables and the ConvCheckMode semantics are read by the parser layer; the mode
+# constants are re-exported here because the findings below reason about them.
+from ..parsers.orca import (
+    CONVCHECK_ALL,
+    CONVCHECK_ENERGY,
+    CONVCHECK_ONE_IS_ENOUGH,
+    DEFAULT_CONVCHECK_MODE,
+)
 
 # --- public constants -------------------------------------------------------
 
@@ -92,20 +96,8 @@ DIIS_REBOUND_FACTOR = 2.0
 #: excursions do not produce noise.
 CRITERIA_MARGIN = 5.0
 
-#: ConvCheckMode values (ORCA 6.1 manual §2.6.1): 0 = every criterion has to be
-#: satisfied, 1 = one criterion is enough, 2 = the total-energy and one-electron-energy
-#: changes. Mode 2 is ORCA's default and is what every standard preset sets, so it is also
-#: what we assume when an output says nothing about the mode.
-CONVCHECK_ALL = 0
-CONVCHECK_ONE_IS_ENOUGH = 1
-CONVCHECK_ENERGY = 2
-DEFAULT_CONVCHECK_MODE = CONVCHECK_ENERGY
-
-#: Printed mode labels. ORCA does not document these labels in the manual; the mapping
-#: below is measured on the fixtures (every output there that prints the SCF settings shows
-#: it) and it agrees with the manual's wording for mode 2. An unrecognized label falls back
-#: to the default mode, and the finding says so.
-_CONVCHECK_LABELS = {"total+1el-energy": CONVCHECK_ENERGY}
+# ConvCheckMode values and the printed-label mapping live in the parser layer
+# (parsers/orca.py) and are imported above; the findings here read them.
 
 RULE_NOT_CONVERGED = "SCF-NOT-CONVERGED"
 RULE_ABORTED_NO_VERDICT = "SCF-ABORTED-NO-VERDICT"
@@ -404,7 +396,11 @@ class FixProposal:
 
 @dataclass(frozen=True)
 class _ScfScan:
-    """Measured signals read from the output text (everything optional)."""
+    """Measured SCF signals, as a view over the parser's ``scf`` section.
+
+    Everything is optional; the parse-result fields carry the same names (see
+    ``parsers/orca.py``). The view exists so the findings below keep a typed interface.
+    """
 
     solver_seen: bool = False
     diis_rows: tuple[tuple[int, float], ...] = ()
@@ -418,179 +414,23 @@ class _ScfScan:
     check_mode_source: str = "assumed default (the output does not print the mode)"
 
 
-# --- text reader ------------------------------------------------------------
-
-_ITER_TABLE_RE = re.compile(r"^\s*Iteration\s+Energy \(Eh\)")
-_DIVIDER_CHARS = frozenset("- ")
-_TURN_ON_DIIS = "***Turning on AO-DIIS***"
-_DIIS_RESET = "****Resetting DIIS****"
-_CONVERGER_SWITCH_RE = re.compile(r"\*\*\*\s*Initializing\s+(\w+)\s*\*\*\*")
-#: AutoTRAH announces itself in prose rather than with an "Initializing" banner.
-_AUTO_TRAH_MARKER = "Leaving SCF to start the TRAH-SCF procedure"
-_SCF_SOLVER_BANNER = "ORCA LEAN-SCF"
-_CRITERIA_TITLE = "SCF CONVERGENCE"
-_CRITERION_RE = re.compile(
-    r"^\s*Last\s+(?P<name>.+?)\s*\.\.\.\s*"
-    r"(?P<value>[-+]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)\s+"
-    r"Tolerance\s*:\s*(?P<tolerance>[-+]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)\s*$"
-)
-#: "Convergence Check Mode ConvCheckMode   .... Total+1el-Energy"
-_MODE_LABEL_RE = re.compile(r"Convergence Check Mode\s+ConvCheckMode\s*\.*\s*(?P<label>\S.*?)\s*$")
-#: ORCA echoes the input file at the top of the output ("|  7>   MaxIter 3"), which is where
-#: an explicit mode setting or the !ExtremeSCF keyword can be seen.
-_ECHO_LINE_RE = re.compile(r"^\s*\|\s*\d+>")
-_MODE_SETTING_RE = re.compile(r"ConvCheckMode\s+(\d)", re.IGNORECASE)
-_EXTREME_KEYWORD_RE = re.compile(r"\bExtremeSCF\b", re.IGNORECASE)
-
-
-def _columns_of(header: str) -> tuple[str, ...]:
-    """Column names of an SCF iteration table.
-
-    A unit token such as ``(Eh)`` continues the previous name, so the number of names
-    equals the number of data fields in a row.
-    """
-    names: list[str] = []
-    for token in header.split():
-        if token.startswith("(") and names:
-            names[-1] = f"{names[-1]} {token}"
-        else:
-            names.append(token)
-    return tuple(names)
-
-
-def _finite(values: Iterable[float | None]) -> bool:
-    return all(value is not None and math.isfinite(value) for value in values)
-
-
-def _scan_text(text: str) -> _ScfScan:
-    """Read the SCF tables and the convergence summary from an ORCA output text.
-
-    A row is attributed to the table whose header most recently preceded it, and it is
-    accepted only when its first field continues the iteration count. Both guards are
-    needed: ORCA prints many other numeric tables, and the TRAH table (``Iter.``) is not
-    an ``Iteration`` table at all.
-    """
-    solver_seen = False
-    columns: tuple[str, ...] = ()
-    diis_rows: list[tuple[int, float]] = []
-    energy_steps: list[float] = []
-    diis_at_switch: float | None = None
-    diis_switch_cycle: int | None = None
-    resets = 0
-    switches: list[str] = []
-    criteria: list[tuple[str, float, float]] = []
-    expected_index = 0
-    in_criteria = False
-    mode_label = ""
-    echo: list[str] = []
-
-    for line in text.splitlines():
-        stripped = line.strip()
-        if _ECHO_LINE_RE.match(line) is not None:
-            echo.append(line.split(">", 1)[1])
-        if (label := _MODE_LABEL_RE.search(line)) is not None:
-            mode_label = label.group("label")
-        if in_criteria:
-            match = _CRITERION_RE.match(line)
-            if match is not None:
-                value = float_or_none(match.group("value"))
-                tolerance = float_or_none(match.group("tolerance"))
-                if value is not None and tolerance is not None:
-                    criteria.append((match.group("name").strip(), value, tolerance))
-                continue
-            if not criteria and (not stripped or set(stripped) <= _DIVIDER_CHARS):
-                continue  # divider and blank line between the title and the table
-            in_criteria = False  # block ended; fall through to the other readers
-
-        if _SCF_SOLVER_BANNER in line:
-            solver_seen = True
-        if _ITER_TABLE_RE.match(line) is not None:
-            columns = _columns_of(line)
-            expected_index = 0
-            continue
-        if columns and stripped:
-            fields = line.split()
-            index = _int_or_none(fields[0])
-            values = [float_or_none(token) for token in fields[1:]]
-            if (
-                len(fields) == len(columns)
-                and index == expected_index + 1
-                and _finite(values)
-            ):
-                expected_index = index
-                if "DIISErr" in columns:
-                    diis_rows.append((index, values[columns.index("DIISErr") - 1]))
-                    if "Delta-E" in columns:
-                        energy_steps.append(abs(values[columns.index("Delta-E") - 1]))
-                continue
-
-        if _TURN_ON_DIIS in line and diis_at_switch is None and diis_rows:
-            diis_at_switch = diis_rows[-1][1]
-            diis_switch_cycle = diis_rows[-1][0]
-        if _DIIS_RESET in line:
-            resets += 1
-        if (match := _CONVERGER_SWITCH_RE.search(line)) is not None:
-            switches.append(match.group(1).upper())
-        if _AUTO_TRAH_MARKER in line:
-            switches.append("TRAH")
-        if stripped == _CRITERIA_TITLE:
-            in_criteria = True
-
-    check_mode, mode_source = _resolve_check_mode(" ".join(echo), mode_label)
+def _scan_from_result(result: ParseResult) -> _ScfScan:
+    """Build the scan view from one parse result (no file access)."""
+    scf = result.sections.get("scf") or {}
     return _ScfScan(
-        solver_seen=solver_seen,
-        diis_rows=tuple(diis_rows),
-        diis_error_at_switch=diis_at_switch,
-        diis_switch_cycle=diis_switch_cycle,
-        diis_resets=resets,
-        converger_switches=tuple(switches),
-        max_abs_energy_step=max(energy_steps) if energy_steps else None,
-        criteria=tuple(criteria),
-        check_mode=check_mode,
-        check_mode_source=mode_source,
+        solver_seen=bool(scf.get("solver_seen", False)),
+        diis_rows=tuple((int(row[0]), float(row[1])) for row in scf.get("diis_rows") or ()),
+        diis_error_at_switch=scf.get("diis_error_at_switch"),
+        diis_switch_cycle=scf.get("diis_switch_cycle"),
+        diis_resets=int(scf.get("diis_resets") or 0),
+        converger_switches=tuple(scf.get("converger_switches") or ()),
+        max_abs_energy_step=scf.get("max_abs_energy_step"),
+        criteria=tuple(tuple(row) for row in scf.get("criteria") or ()),
+        check_mode=int(scf.get("check_mode", DEFAULT_CONVCHECK_MODE)),
+        check_mode_source=str(
+            scf.get("check_mode_source", "assumed default (the output does not print the mode)")
+        ),
     )
-
-
-def _resolve_check_mode(echo_text: str, mode_label: str) -> tuple[int, str]:
-    """Which ConvCheckMode the run used, and where that was read from.
-
-    An explicit setting in the echoed input wins (it is what ORCA was told to do); the
-    printed label comes next; otherwise the documented default is assumed and the source
-    string says so, so the finding never claims more than it knows.
-    """
-    setting = _MODE_SETTING_RE.search(echo_text)
-    if setting is not None and setting.group(1) in "012":
-        return int(setting.group(1)), f"the echoed input setting 'ConvCheckMode {setting.group(1)}'"
-    if _EXTREME_KEYWORD_RE.search(echo_text) is not None:
-        return CONVCHECK_ALL, "the echoed input keyword '!ExtremeSCF' (mode 0)"
-    if mode_label:
-        known = _CONVCHECK_LABELS.get(mode_label.lower())
-        if known is not None:
-            return known, f"the printed mode label {mode_label!r}"
-        return DEFAULT_CONVCHECK_MODE, (
-            f"assumed default: the printed mode label {mode_label!r} is not one we know"
-        )
-    return DEFAULT_CONVCHECK_MODE, "assumed default (the output does not print the mode)"
-
-
-def _int_or_none(token: str) -> int | None:
-    try:
-        return int(token)
-    except ValueError:
-        return None
-
-
-def _read_output_text(result: ParseResult) -> str:
-    try:
-        return read_text(result.path)
-    except ParserError as exc:
-        raise ScfRescueError(
-            f"cannot re-read the output file {result.path!r} to extract the SCF tables "
-            f"({exc}). Next step: call triage() with a ParseResult whose path still "
-            "exists -- the DIIS table and the SCF CONVERGENCE block are read from the "
-            "file text, so an in-memory result cannot be triaged."
-        ) from exc
-
 
 # --- findings ---------------------------------------------------------------
 
@@ -864,7 +704,7 @@ def triage(result: ParseResult) -> tuple[Finding, ...]:
     energies = tuple(scf.get("energies") or ())
     terminated = sections.get("terminated_normally")
     errors = tuple(sections.get("errors") or ())
-    scan = _scan_text(_read_output_text(result))
+    scan = _scan_from_result(result)
 
     findings: list[Finding] = []
     if converged is False:

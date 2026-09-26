@@ -10,6 +10,7 @@ synthetic output keeps the layout of the real ones (banner, DIIS table, verdict,
 from __future__ import annotations
 
 import difflib
+import shutil
 from pathlib import Path
 
 import pytest
@@ -491,10 +492,21 @@ def test_other_programs_are_refused():
         triage(ParseResult(program="molcas", path="job.out"))
 
 
-def test_unreadable_output_path_is_reported_with_a_next_step(tmp_path):
-    result = ParseResult(program="orca", path=str(tmp_path / "gone.out"), sections={})
-    with pytest.raises(ScfRescueError, match="Next step"):
-        triage(result)
+def test_triage_is_pure_in_memory(tmp_path):
+    """v0.2: the DIIS table and the SCF convergence summary are read by the parser, so
+    the triage works on the parse result alone -- a result whose file is gone is still
+    triaged, with the same findings (it never re-reads the path)."""
+    source = FIXTURES / "scf_noconv.out"
+    copy = tmp_path / source.name
+    shutil.copy(source, copy)
+    result = parse_auto(copy)
+    findings_before = triage(result)
+
+    copy.unlink()
+    findings_after = triage(result)
+
+    assert [f.rule_id for f in findings_after] == [f.rule_id for f in findings_before]
+    assert findings_after, "the non-converged fixture must still be triaged"
 
 
 # --- helpers ----------------------------------------------------------------

@@ -1,12 +1,14 @@
 """ORCA output parser (architecture design v0.1 §3 L1).
 
 Coverage (v0.1, deep): program version, normal-termination marker, SCF
-convergence block (cycle count and energy history), orbital energy/occupation
-table, CASSCF convergence and states, NEVPT2/CASPT2 results (reference weight and
-smallest energy denominator -- the fact source for the D3 criteria), SOC markers,
-the coupled-cluster T1 diagnostic, vibrational frequencies (imaginary-mode
-count), the local spin analysis block (fragment expectation values), geometry
-optimisation and transition-state context, errors and warnings.
+convergence block (cycle count, energy history, and -- since v0.2 -- the
+header-driven DIIS/SOSCF iteration tables and the SCF convergence summary with
+the ConvCheckMode), orbital energy/occupation table, CASSCF convergence and
+states, NEVPT2/CASPT2 results (reference weight and smallest energy denominator
+-- the fact source for the D3 criteria), SOC markers, the coupled-cluster T1
+diagnostic, vibrational frequencies (imaginary-mode count), the local spin
+analysis block (fragment expectation values), geometry optimisation and
+transition-state context, errors and warnings.
 
 Every regular expression was checked against real ORCA 6.1.1 output (fixtures in
 ``fixtures/orca/``; their provenance and generation are recorded in
@@ -31,6 +33,7 @@ Conventions:
 
 from __future__ import annotations
 
+import math
 import re
 from pathlib import Path
 from typing import Any
@@ -507,6 +510,186 @@ def _parse_scf(lines: list[str]) -> dict[str, Any]:
         "cycles": cycles,
         "energy": energy,
         "energies": tuple(energies),
+        # the header-driven tables and the convergence summary (see above); read here
+        # so that the diagnosis layer works on the parse result alone
+        **_scan_scf_tables(lines),
+    }
+
+
+# --- SCF convergence tables (the reader lives here since v0.2) ---------------
+# The DIIS/SOSCF iteration table and the "SCF CONVERGENCE" summary are parsed here so
+# that the diagnosis layer can triage an SCF from the parse result alone, without
+# re-reading the file.  Both readers are header-driven and were developed against
+# fixtures/orca/ (see the fixture table): a row is attributed to the table whose header
+# most recently preceded it, and it is accepted only when its first field continues the
+# cycle count -- ORCA prints many other numeric tables, and the TRAH table ("Iter.") is
+# not an "Iteration" table at all.
+_ITER_TABLE_RE = re.compile(r"^\s*Iteration\s+Energy \(Eh\)")
+_TABLE_DIVIDER_CHARS = frozenset("- ")
+_TURN_ON_DIIS = "***Turning on AO-DIIS***"
+_DIIS_RESET = "****Resetting DIIS****"
+_CONVERGER_SWITCH_RE = re.compile(r"\*\*\*\s*Initializing\s+(\w+)\s*\*\*\*")
+#: AutoTRAH announces itself in prose rather than with an "Initializing" banner.
+_AUTO_TRAH_MARKER = "Leaving SCF to start the TRAH-SCF procedure"
+_SCF_SOLVER_BANNER = "ORCA LEAN-SCF"
+_CRITERIA_TITLE = "SCF CONVERGENCE"
+_CRITERION_RE = re.compile(
+    r"^\s*Last\s+(?P<name>.+?)\s*\.\.\.\s*"
+    r"(?P<value>[-+]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)\s+"
+    r"Tolerance\s*:\s*(?P<tolerance>[-+]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)\s*$"
+)
+#: "Convergence Check Mode ConvCheckMode   .... Total+1el-Energy"
+_MODE_LABEL_RE = re.compile(r"Convergence Check Mode\s+ConvCheckMode\s*\.*\s*(?P<label>\S.*?)\s*$")
+#: ORCA echoes the input file at the top of the output; explicit settings and the
+#: !ExtremeSCF keyword can be seen there.
+_ECHO_LINE_RE = re.compile(r"^\s*\|\s*\d+>")
+_MODE_SETTING_RE = re.compile(r"ConvCheckMode\s+(\d)", re.IGNORECASE)
+_EXTREME_KEYWORD_RE = re.compile(r"\bExtremeSCF\b", re.IGNORECASE)
+
+#: ConvCheckMode values (ORCA 6.1 manual §2.6.1): 0 = every criterion has to be
+#: satisfied, 1 = one criterion is enough, 2 = the total-energy and one-electron-energy
+#: changes.  Mode 2 is ORCA's default and is what every standard preset sets, so it is
+#: the assumption when an output says nothing about the mode.
+CONVCHECK_ALL = 0
+CONVCHECK_ONE_IS_ENOUGH = 1
+CONVCHECK_ENERGY = 2
+DEFAULT_CONVCHECK_MODE = CONVCHECK_ENERGY
+
+#: Printed mode labels.  ORCA does not document these labels in the manual; the mapping
+#: is measured on the fixtures (every output there that prints the SCF settings shows it)
+#: and it agrees with the manual's wording for mode 2.  An unrecognized label falls back
+#: to the default mode, and the consumer is told so through ``check_mode_source``.
+_CONVCHECK_LABELS = {"total+1el-energy": CONVCHECK_ENERGY}
+
+
+def _table_columns(header: str) -> tuple[str, ...]:
+    """Column names of an SCF iteration table.
+
+    A unit token such as ``(Eh)`` continues the previous name, so the number of names
+    equals the number of data fields in a row.
+    """
+    names: list[str] = []
+    for token in header.split():
+        if token.startswith("(") and names:
+            names[-1] = f"{names[-1]} {token}"
+        else:
+            names.append(token)
+    return tuple(names)
+
+
+def _resolve_check_mode(echo_text: str, mode_label: str) -> tuple[int, str]:
+    """Which ConvCheckMode the run used, and where that was read from.
+
+    An explicit setting in the echoed input wins (it is what ORCA was told to do); the
+    printed label comes next; otherwise the documented default is assumed and the source
+    string says so, so a consumer never claims more than it knows.
+    """
+    setting = _MODE_SETTING_RE.search(echo_text)
+    if setting is not None and setting.group(1) in "012":
+        return int(setting.group(1)), f"the echoed input setting 'ConvCheckMode {setting.group(1)}'"
+    if _EXTREME_KEYWORD_RE.search(echo_text) is not None:
+        return CONVCHECK_ALL, "the echoed input keyword '!ExtremeSCF' (mode 0)"
+    if mode_label:
+        known = _CONVCHECK_LABELS.get(mode_label.lower())
+        if known is not None:
+            return known, f"the printed mode label {mode_label!r}"
+        return DEFAULT_CONVCHECK_MODE, (
+            f"assumed default: the printed mode label {mode_label!r} is not one we know"
+        )
+    return DEFAULT_CONVCHECK_MODE, "assumed default (the output does not print the mode)"
+
+
+def _scan_scf_tables(lines: list[str]) -> dict[str, Any]:
+    """Read the SCF iteration tables and the convergence summary.
+
+    Returns the measured signals (everything optional): whether the LEAN-SCF solver
+    banner was seen, the DIIS-error history, the error at the AO-DIIS switch, DIIS
+    resets, converger switches (SOSCF/TRAH), the largest absolute energy step, the
+    printed convergence criteria with their tolerances, and the ConvCheckMode with the
+    source it was read from.
+    """
+    solver_seen = False
+    columns: tuple[str, ...] = ()
+    diis_rows: list[tuple[int, float]] = []
+    energy_steps: list[float] = []
+    diis_at_switch: float | None = None
+    diis_switch_cycle: int | None = None
+    resets = 0
+    switches: list[str] = []
+    criteria: list[tuple[str, float, float]] = []
+    expected_index = 0
+    in_criteria = False
+    mode_label = ""
+    echo: list[str] = []
+
+    for line in lines:
+        stripped = line.strip()
+        if _ECHO_LINE_RE.match(line) is not None:
+            echo.append(line.split(">", 1)[1])
+        if (label := _MODE_LABEL_RE.search(line)) is not None:
+            mode_label = label.group("label")
+        if in_criteria:
+            match = _CRITERION_RE.match(line)
+            if match is not None:
+                value = float_or_none(match.group("value"))
+                tolerance = float_or_none(match.group("tolerance"))
+                if value is not None and tolerance is not None:
+                    criteria.append((match.group("name").strip(), value, tolerance))
+                continue
+            if not criteria and (not stripped or set(stripped) <= _TABLE_DIVIDER_CHARS):
+                continue  # divider and blank line between the title and the table
+            in_criteria = False  # block ended; fall through to the other readers
+
+        if _SCF_SOLVER_BANNER in line:
+            solver_seen = True
+        if _ITER_TABLE_RE.match(line) is not None:
+            columns = _table_columns(line)
+            expected_index = 0
+            continue
+        if columns and stripped:
+            fields = line.split()
+            try:
+                index = int(fields[0])
+            except ValueError:
+                index = None
+            values = [float_or_none(token) for token in fields[1:]]
+            if (
+                index is not None
+                and len(fields) == len(columns)
+                and index == expected_index + 1
+                and all(value is not None and math.isfinite(value) for value in values)
+            ):
+                expected_index = index
+                if "DIISErr" in columns:
+                    diis_rows.append((index, values[columns.index("DIISErr") - 1]))
+                    if "Delta-E" in columns:
+                        energy_steps.append(abs(values[columns.index("Delta-E") - 1]))
+                continue
+
+        if _TURN_ON_DIIS in line and diis_at_switch is None and diis_rows:
+            diis_at_switch = diis_rows[-1][1]
+            diis_switch_cycle = diis_rows[-1][0]
+        if _DIIS_RESET in line:
+            resets += 1
+        if (match := _CONVERGER_SWITCH_RE.search(line)) is not None:
+            switches.append(match.group(1).upper())
+        if _AUTO_TRAH_MARKER in line:
+            switches.append("TRAH")
+        if stripped == _CRITERIA_TITLE:
+            in_criteria = True
+
+    check_mode, mode_source = _resolve_check_mode(" ".join(echo), mode_label)
+    return {
+        "solver_seen": solver_seen,
+        "diis_rows": tuple(diis_rows),
+        "diis_error_at_switch": diis_at_switch,
+        "diis_switch_cycle": diis_switch_cycle,
+        "diis_resets": resets,
+        "converger_switches": tuple(switches),
+        "max_abs_energy_step": max(energy_steps) if energy_steps else None,
+        "criteria": tuple(criteria),
+        "check_mode": check_mode,
+        "check_mode_source": mode_source,
     }
 
 
