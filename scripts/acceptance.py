@@ -124,6 +124,7 @@ def main() -> int:
             "h2o_dm_casci_e10o8.out",
             "h2o_dm_casci_e6o6_sa4.out",
             "n2_apc.json",
+            "n2_ass1st.json",
         ):
             # the generator writes into its own examples/work directory
             shutil.copy(EXAMPLES / "work" / name, inputs / name)
@@ -160,6 +161,8 @@ def main() -> int:
                     "19", "work/h2o.xyz", "", "", "", "", "", "",
                     "20", "work/dm_manifest.json",
                     "21", "work/n2_apc.json", "apc", "23", "max(10,10)", "fock",
+                    "22", "work/h2o.xyz", "0", "1", "4,4", "1", "", "",
+                    "23", "work/n2_ass1st.json", "0.03", "", "", "",
                     "8", "work/saved.txt",
                     "0",
                 ]
@@ -378,6 +381,31 @@ def main() -> int:
                 and "screening device" in ranking,
                 "menu 21 report: the N2 ranking selects the source's (10,10) level "
                 "(19404 CSFs) from the Fock-diagonal branch of the model gap",
+            )
+
+            round_one = read("h2o.r1.inp")
+            check(
+                "FIC-NEVPT2 KeepDens" in round_one
+                and "Density Unrelaxed" in round_one
+                and "  nel 4" in round_one
+                and product("h2o.r1.json.conf").is_file(),
+                "menu 22 wrote the ASS1ST round-1 input with the FIC density blocks",
+            )
+
+            round_report = read("n2_ass1st.json.ass1st.fbk.md")
+            check(
+                "ASS1ST selection round" in round_report
+                and "next space: (4e, 4o) -- from (6e, 6o)" in round_report
+                and "SC-NEVPT2 first-order density" in round_report
+                and "1.98196" in round_report,
+                "menu 23 report: the N2 round reproduces the block quasi-NOON "
+                "anchors and suggests the pi/pi* quartet",
+            )
+            next_input = read("n2_ass1st.r2.inp")
+            check(
+                "  nel 4" in next_input and "  norb 4" in next_input
+                and "PTSettings" in next_input,
+                "menu 23 wrote the next round's input at the suggested space",
             )
 
             check(product("saved.txt").is_file(), "menu 8 wrote the session script")

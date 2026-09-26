@@ -1,0 +1,63 @@
+\chapter{ASS1ST round-1 input (menu 22)}
+\label{ch:menu22}
+\menulabel{22}
+
+\section{Purpose}
+
+The first round of the ASS1ST active-space construction (Khedkar and Roemelt,
+JCTC 2019/2020): a CASSCF calculation whose perturbation-theory density is
+kept, so that menu~\menu{23} can read the quasi-natural occupation numbers and
+propose the next active space.  The scheme builds an active space bottom-up
+from a small but chemically reasonable starting point, which is what this menu
+generates.
+
+\section{What you need}
+
+A structure in XYZ format and the initial active space $(n_{\mathrm{e}},
+n_{\mathrm{o}})$ -- small but chemically reasonable, in the source's sense:
+singly occupied orbitals for open shells, the metal $d$ shell for first-row
+transition metals, a few $\pi/\pi^{*}$ orbitals for conjugated systems.  The
+outcome depends on this choice, but with conservative thresholds different
+sensible initials converge together (the source's own observation).
+
+\section{Walkthrough}
+
+\lstinputlisting[style=fbkcode, firstline=28, lastline=54,
+  title={The menu-22 example session (water at an initial (4,4) space: the
+  generated input carries the FIC-NEVPT2 + KeepDens keywords and the
+  \code{PTSettings} block the round needs)}]
+  {examples/expected/m22_ass1st_start.txt}
+
+\section{What you get}
+
+\file{<stem>.r1.inp} (the round-1 input) and \file{<stem>.r1.json.conf} (the
+export request), both written next to the structure file, plus the run and
+export guidance printed on screen.
+
+The generated input carries the blocks the round needs, each measured on ORCA
+6.1.1: \code{FIC-NEVPT2} (the unrelaxed density exists only for the FIC
+ansatz; SC is refused), \code{KeepDens} (the density is read from the run's
+\code{<base>.densities} sidecar), and the CASSCF \code{PTSettings} block with
+\code{Density Unrelaxed} and \code{NatOrbs true}.
+
+\section{How to read it}
+
+\begin{readbox}
+\begin{itemize}
+  \item run the input (\code{orca <stem>.r1.inp}), export it
+    (\code{orca\_2json <stem>.r1.gbw}; the \code{.json.conf} sits beside the
+    \code{.gbw}), and feed \file{<stem>.r1.json} to menu~\menu{23};
+  \item \textbf{the round's active orbitals are selected by ORCA's own default
+    window from its starting guess} -- the source's near-ideal quasi-natural
+    restart (feeding the previous round's rotated orbitals back) is not
+    written yet.  Check the active orbitals in menu~\menu{23}'s output (it
+    prints their CASSCF occupations): if the window missed the intended set,
+    adjust the input before continuing the chain;
+  \item the number of states decides the round's character: more than one
+    makes it state-averaged, and menu~\menu{23} then averages the per-state
+    densities with the state weights (equal by default);
+  \item subsequent rounds are written by menu~\menu{23} as
+    \file{<stem>.r2}, \file{<stem>.r3},~\dots\ -- the chain keeps the
+    structure's name.
+\end{itemize}
+\end{readbox}

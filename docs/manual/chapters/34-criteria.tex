@@ -83,6 +83,21 @@ APC ranked-orbital selection & no threshold; CSF cap & Menu~\menu{21}:
   source's $(10,10)=19404$ entry &
   \textsf{[Literature]} King \& Gagliardi 2021 \S3.2, 3.12;
   \textsf{[Measured]} \code{tests/test\_apc.py} \\
+ASS1ST quasi-NOON band & $[T, 2-T]$; $T=0.05$ conservative, $0.03$ relaxed
+  (two independent lines allowed, e.g. $0.03/1.96$) & Menus~\menu{22}/\menu{23}:
+  block eigenvalues of the perturbation-theory density are taken as strongly
+  correlated inside the band; bookkeeping adds $+2$e$+1$o (internal) or
+  $+0$e$+1$o (external) and reassigns drifting active orbitals out
+  ($-2$e$-1$o / $-0$e$-1$o).  Substitution carried: ORCA answers the
+  unrelaxed density only for FIC-NEVPT2 (measured), the source uses
+  SC-NEVPT2 --- same object family, different contraction, counts near the
+  thresholds may shift.  Measured anchors: N2 CAS(6,6) internal block
+  2.00000, 2.00000, 1.98196, 1.97680 and the $(6,6)\to(4,4)$ suggestion,
+  from both the single-root and the three-singlet round; the CASSCF
+  reference density pins the sidecar convention $D_{AO}=S D_{\mathrm{json}} S$
+  (exactly diagonal in its natural-orbital basis, couplings $10^{-15}$) &
+  \textsf{[Literature]} Khedkar \& Roemelt 2019 \S2.4, 2020 \S2.4;
+  \textsf{[Measured]} \code{tests/test\_ass1st.py} \\
 \bottomrule
 \end{tabularx}
 \end{center}

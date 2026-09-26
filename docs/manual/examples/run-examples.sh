@@ -52,6 +52,9 @@ cp "$REPO/fixtures/orca/h2o_dm_casci_e6o6_sa4.out" work/
 # the APC ranking export of menu 21 (N2/def2-SVP RHF with the Fock family and
 # the windowed MO_IAJB block)
 cp "$REPO/fixtures/orca/n2_apc.json" work/
+# the ASS1ST round export of menu 23 (N2/def2-SVP CAS(6,6) + FIC-NEVPT2 with
+# the unrelaxed NEVPT2 density in the sidecar)
+cp "$REPO/fixtures/orca/n2_ass1st.json" work/
 
 for script in scripts/*.txt; do
   name=$(basename "$script" .txt)

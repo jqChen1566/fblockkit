@@ -52,6 +52,8 @@ def test_doc_mentions_each_menu_title_topic():
         "Dipole-moment candidate batch",
         "Dipole-moment selection",
         "APC orbital ranking",
+        "ASS1ST round-1 input",
+        "ASS1ST selection round",
     ):
         assert keyword in text, keyword
 

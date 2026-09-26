@@ -938,6 +938,101 @@ the UNO variant needs unrestricted exports; the per-spin Fock-block
 conventions are not measured yet, so the menu refuses non-RHF exports with
 the instruction to run RHF.
 
+## 22 ASS1ST round-1 input (a structure + an initial active space)
+
+**What it is for**: first round of the ASS1ST active-space construction
+(Khedkar & Roemelt 2019/2020): a CASSCF calculation whose
+perturbation-theory density is kept, so that menu 23 can read the
+quasi-natural occupation numbers and propose the next space.
+
+**What you need**: a structure (XYZ) and a *small but chemically reasonable*
+initial active space -- the source's advice: singly occupied orbitals for open
+shells, the metal d shell for first-row transition metals, a few pi/pi*
+orbitals for conjugated systems. The outcome depends on this choice, but with
+conservative thresholds different sensible initials converge together.
+
+**How**: menu 22 -> structure path; charge and multiplicity (Enter = 0 and 1);
+the initial space `nel,norb`; the number of states (Enter = 1; more than one
+makes it a state-averaged round for menu 23); the method/basis keyword line
+(Enter = `RHF def2-SVP TightSCF`); MaxCore in MB (Enter = 2000). The menu
+writes `<stem>.r1.inp` and, next to it, `<stem>.r1.json.conf`.
+
+The generated input carries the blocks the round needs (measured on ORCA
+6.1.1): `FIC-NEVPT2` (the unrelaxed density exists only for the FIC ansatz),
+`KeepDens` (the density is read from the run's sidecar), and the CASSCF
+`PTSettings` block with `Density Unrelaxed` + `NatOrbs true`.
+
+**Then**: run the input (`orca <stem>.r1.inp`), export it
+(`orca_2json <stem>.r1.gbw`; the request file is already beside the `.gbw`),
+and feed `<stem>.r1.json` to menu 23.
+
+**Boundary to know**: the round's active orbitals are selected by ORCA's own
+default window from its starting guess -- the source's near-ideal
+quasi-natural restart is not written yet. Check the active orbitals in menu
+23's output (it prints their CASSCF occupations) and, if the window missed the
+intended set, adjust the input before continuing the chain.
+
+## 23 ASS1ST selection round (an export -> the next round's input)
+
+**What it is for**: one selection step of ASS1ST: read the round's NEVPT2
+unrelaxed density, diagonalize its internal/internal and external/external
+blocks separately (the source's construction), and propose the next active
+space from the threshold band.
+
+**What you need**: the `orca_2json` export of a finished round, with the
+request `{"MOCoefficients": true, "1elIntegrals": ["S"], "Densities": ["all"]}`
+(menu 22 writes it); the run must have produced its density sidecar
+(`KeepDens` + the `PTSettings` block, both in the generated input).
+
+**How**: menu 23 -> export path; the threshold band (`0.05` means the window
+[0.05, 1.95] -- the source's conservative value, `0.03` is its relaxed one;
+two independent lines `T_ext,T_int` are allowed, e.g. `0.03,1.96`); state
+weights (Enter = equal; used when the round averaged several states); the
+spaces you have visited so far (`ne,no`, space-separated -- this is what
+enables the cycle warning); the method/basis keywords for the next round
+(Enter = as in the example).
+
+**What you get**: the block quasi-occupation tables with the band marked, the
+active orbitals with their CASSCF occupations, the next-space suggestion, and
+a report (`<export>.ass1st.fbk.md`) with the citations. Unless the round is
+self-consistent, the menu also writes the next round's input
+`<stem>.r{N+1}.inp` (and its `.json.conf`) with the suggested space.
+
+**How to read it**:
+
+- every quasi-occupation is a *block* eigenvalue of the exported NEVPT2
+  unrelaxed density -- the source's construction. ORCA's own printed
+  "Natural Orbital Occupation Numbers" block is the whole-space
+  naturalization and is *not* what the scheme reads (measured); the external
+  block in particular is far from diagonal, so the block step matters;
+- band bookkeeping (the source's): an internal quasi-orbital inside the band
+  adds +2 electrons and +1 orbital to the active space, an external one adds
+  +0 electrons and +1 orbital; an active orbital whose CASSCF occupation has
+  drifted to the top of the band is reassigned to internal (-2 e, -1 o), one
+  at the bottom to external (-0 e, -1 o).  The source allows the space to
+  shrink as well as grow;
+- `self-consistent` means no orbital crossed the band in either block and no
+  active orbital drifted: use that space for the production calculation. If
+  the same space was visited before, the source warns of cycling between
+  spaces -- break the tie by chemical judgment;
+- **the density is ORCA's FIC-NEVPT2 unrelaxed density**: the source uses the
+  SC-NEVPT2 first-order density, and ORCA answers the unrelaxed density only
+  for the FIC ansatz (measured: SC + `Density Unrelaxed` is refused).  Same
+  object family (the density of the zeroth-plus-first-order wavefunction),
+  different contraction -- counts near the thresholds may shift, and no
+  literature comparison exists for the exchange.  The report states this;
+- the source's own caveats apply: results depend on the initial space (stated
+  above) and on the potential-energy point (run the scheme at the geometries
+  you care about, not just one).
+
+**Measured chain behaviour (in the fixtures)**: on N2/def2-SVP, round 1
+CAS(6,6) suggests shrinking the sigma pair out -- (6e, 6o) -> (4e, 4o), the
+pi/pi* quartet -- and a rerun of that space from the default guess converged
+to a *different-shaped* (4,4) solution, which the next analysis then reports
+as a further shrink.  It is the multi-solution behaviour this project records
+elsewhere, and the reason for the boundary note in menu 22: check the round's
+active orbitals each time.
+
 ## Appendix A Command line
 
 ```text

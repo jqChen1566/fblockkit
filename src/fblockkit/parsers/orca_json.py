@@ -74,6 +74,20 @@ Two further request families are read here because the APC orbital ranking
   entries below ``Thresh`` are simply absent.  The ``MO_IAJB`` block is keyed
   by spin pair; the RHF exports measured here carry ``alpha/alpha`` only, which
   is what this reader takes.
+- ``"Densities": ["all"]`` becomes ``densities``: the named density matrices of
+  the run's ``<base>.densities`` sidecar, one square AO matrix per entry.  The
+  measured names include ``scfp`` (the SCF/reference density) and, for a
+  ``FIC-NEVPT2`` run with ``%casscf ... PTSettings: Density Unrelaxed``,
+  ``Tdens-CASNEV.mult.<M>.root.<R>.p`` per state -- the NEVPT2 unrelaxed
+  density (``Tdens-CAS.mult.<M>.root.<R>.p`` is its CASSCF reference).  The
+  measured convention is ``D_AO = S D_json S`` (validated against the known
+  CASSCF density: recovered exactly diagonal in its natural-orbital basis with
+  the printed occupations, block couplings 1e-15; and the recovered NEVPT2
+  density's eigenvalues reproduce ORCA's printed "Natural Orbital Occupation
+  Numbers" to the print precision, 5e-9).  Measured companion fact: the printed
+  NOON list is the *whole-space* naturalization of the unrelaxed density, not
+  a per-orbital diagonal; consumers that need the source's block-wise
+  construction diagonalize the blocks themselves (``analysis/ass1st``).
 
 Measured caveat for the localized export
 ----------------------------------------
@@ -197,6 +211,7 @@ class OrcaJson:
     coulomb_exchange: tuple[tuple[tuple[float, ...], ...], ...] | None = None
     mo_iajb: tuple[tuple[int, int, int, int, float], ...] | None = None
     mo_iajb_window: tuple[int, int, int, int] | None = None
+    densities: tuple[tuple[str, tuple[tuple[float, ...], ...]], ...] | None = None
 
 
 def parse_orca_json(path: str | Path) -> OrcaJson:
@@ -278,6 +293,7 @@ def parse_orca_json(path: str | Path) -> OrcaJson:
     if "F-Matrix" in molecule:
         coulomb_exchange = _spin_matrices(molecule["F-Matrix"], "Molecule.F-Matrix", n_ao)
     mo_iajb, mo_iajb_window = _mo_integrals(molecule, len(coefficients))
+    densities = _densities(molecule, n_ao)
     # Absent OrbitalLabels: likewise a documented export variant; when present
     # the list is positional (AO column k <-> label k) and must fit n_ao.
     ao_labels = None
@@ -310,6 +326,7 @@ def parse_orca_json(path: str | Path) -> OrcaJson:
         coulomb_exchange=coulomb_exchange,
         mo_iajb=mo_iajb,
         mo_iajb_window=mo_iajb_window,
+        densities=densities,
     )
 
 
@@ -554,3 +571,31 @@ def _int_row(value: Any, where: str) -> tuple[int, ...]:
     if not isinstance(value, list):
         raise _fail(f"{where} is a JSON {type(value).__name__}, not a list.", _EXPORT_HINT)
     return tuple(_integer(item, f"{where}[{index}]") for index, item in enumerate(value))
+
+
+def _densities(
+    molecule: Mapping[str, Any], dimension: int
+) -> tuple[tuple[str, tuple[tuple[float, ...], ...]], ...] | None:
+    """Read the named AO density matrices of a ``Densities`` request.
+
+    Absent block: a documented export variant, like the other request-dependent
+    blocks.  Present: a JSON object title -> square matrix; a matrix that is not
+    square with the AO dimension is refused (it cannot pair with these
+    orbitals), and a title whose value is not a plain matrix (an unmeasured
+    per-spin shape) is reported rather than guessed at.
+    """
+    block = molecule.get("Densities")
+    if block is None:
+        return None
+    block = _mapping(block, "Molecule.Densities")
+    entries: list[tuple[str, tuple[tuple[float, ...], ...]]] = []
+    for title, value in block.items():
+        where = f"Molecule.Densities[{title!r}]"
+        if isinstance(value, dict):
+            raise _fail(
+                f"{where} is a JSON object with keys {sorted(value)!r}, not a plain "
+                "matrix; the exports measured here carry one square matrix per title.",
+                "report the density shape so the reader can be extended.",
+            )
+        entries.append((title, _square_matrix(value, where, dimension)))
+    return tuple(entries)

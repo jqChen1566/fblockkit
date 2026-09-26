@@ -25,21 +25,61 @@ Available functions:
   22  ASS1ST round-1 input (a structure + an initial active space -> a CASSCF+FIC-NEVPT2 round)
   23  ASS1ST selection round (a NEVPT2-density export -> quasi-NOON tables + the next round's input)
    0  Quit
-Choose a number (Enter = leave empty)> 2
-XYZ structure file path (Enter = leave empty)> work/octahedron.xyz
-Point group (optional) (Enter = leave empty)> Oh
-Structure: 7 atoms; central atom Ce1
-Coordination shell: 6 ligands (cutoff distance 2.40 Å)
-  Ligands and distances (Å): O2 2.40, O3 2.40, O4 2.40, O5 2.40, O6 2.40, O7 2.40
+Choose a number (Enter = leave empty)> 23
+orca_2json export path (a CASSCF + FIC-NEVPT2 round; the user guide has the exact request) (Enter = leave empty)> work/n2_ass1st.json
+NOON band: T (band [T, 2-T]) or T_ext,T_int (Enter = 0.05) (Enter = leave empty)> 0.03
+State weights, comma-separated (Enter = equal; used only for state-averaged rounds) (Enter = leave empty)> 
+Previously visited spaces 'ne,no' space-separated (Enter = none; enables the cycle warning) (Enter = leave empty)> 
+Method/basis keywords for the next round (Enter = RHF def2-SVP TightSCF) (Enter = leave empty)> 
+ASS1ST selection round (NEVPT2 quasi-natural occupation numbers):
+  system: n2_ass1st; 6 active orbitals (6e) against 4 internal and 18 external; single state
+  band: external line 0.03, internal line 1.97 (the source's quasi-NOON window; 2 - T for a single threshold T)
 
-Symmetry hints (geometric distribution, not a rigorous point-group determination):
-  - Direction distribution: direction distribution nearly isotropic (octahedral-style high-symmetry coordination, or nearly spherical) (second-moment eigenvalue ratios λ2/λ1 = 1.00, λ3/λ1 = 1.00)
-  - Inversion pairs: 3/6 (pairs of ligands in an approximately centrosymmetric arrangement)
+  internal block    occupation  in band
+                       2.00000  
+                       2.00000  
+                       1.98196  
+                       1.97680  
+  external block    occupation  in band
+                       0.01566  
+                       0.00818  
+                       0.00531  
+                       0.00492  
+                       0.00492  
+                       0.00377  
+                       0.00377  
+                       0.00344  
+                       0.00344  
+                       0.00153  
+                       0.00153  
+                       0.00148  
+                       0.00148  
+                       0.00136  
+                       0.00087  
+                       0.00070  
+                       0.00070  
+                       0.00012  
 
-Number of CF parameters (applies once the point group is confirmed): C3 → 9 B_k^q; Oh → 4 B_k^q; none → 27 B_k^q
-  Rule: only even k is kept (time-reversal symmetry), k <= 6 (4f); a fit that needs 27 means the frame used carries no true symmetry -- the z-axis convention must then be declared.
-  Point group confirmed by the user, Oh: 4 B_k^q allowed.
-Report written: work\octahedron.xyz.fbk.md
+Active orbitals (CASSCF natural occupations of this round):
+  MO   4  occupation 1.99345
+  MO   5  occupation 1.93634
+  MO   6  occupation 1.93634
+  MO   7  occupation 0.06599
+  MO   8  occupation 0.06599
+  MO   9  occupation 0.00190
+
+Suggestion:
+  reassign active to internal (occupation at the top of the band): 4
+  reassign active to external (occupation at the bottom of the band): 9
+  next space: (4e, 4o) -- from (6e, 6o)
+
+Boundaries and checks:
+  - the density is ORCA's FIC-NEVPT2 unrelaxed density; the source works with the SC-NEVPT2 first-order density -- same object family (the 0+1-order density), different contraction, so counts near the thresholds may shift (carried as an honest substitution; no literature comparison exists)
+  - the source's own caveats: the outcome depends on the initial space (different sensible initials converge together only with conservative thresholds), and growing plus shrinking can cycle between two spaces -- break ties by chemical judgment
+  - every block table is this tool's own block diagonalization of the exported density (the source's construction); ORCA's printed NOON list is the whole-space naturalization and is not used
+  - multiplicity 1; the next round's input is generated next to this report by the menu
+Report written: work\n2_ass1st.json.ass1st.fbk.md
+Next round written: work\n2_ass1st.r2.inp at (4e, 4o), with work\n2_ass1st.r2.json.conf. Run it, export n2_ass1st.r2.json, and feed that back to this menu; give the visited spaces (including this round's) to get the cycle warning right.
 
 Available functions:
    1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)

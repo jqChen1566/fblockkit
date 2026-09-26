@@ -69,6 +69,12 @@ items:
   - number: "21"
     title: "APC orbital ranking (an export with the Fock exchange block -> ranked active space at a CSF cap)"
     handler: apc_ranking
+  - number: "22"
+    title: "ASS1ST round-1 input (a structure + an initial active space -> a CASSCF+FIC-NEVPT2 round)"
+    handler: ass1st_start
+  - number: "23"
+    title: "ASS1ST selection round (a NEVPT2-density export -> quasi-NOON tables + the next round's input)"
+    handler: ass1st_round
   - number: "0"
     title: Quit
     handler: quit

@@ -175,6 +175,45 @@ must be produced where the run wrote (or with the whole file family moved
 together, names kept) -- a bare \code{.gbw} copy fails with ``NO densities are
 available''.
 
+\section{The ASS1ST round files (menus 22 and 23)}
+
+A round is one CASSCF + FIC-NEVPT2 calculation with the density kept.  The
+generated input (menu~\menu{22}, and menu~\menu{23} for the suggested space)
+has the shape:
+
+\begin{codeblock}
+! <keywords> FIC-NEVPT2 KeepDens
+%maxcore <MB>
+%casscf
+  nel <n>          # the active space of this round
+  norb <m>
+  mult <M>
+  nroots <R>       # >1 makes it a state-averaged round
+  PTSettings
+    Density Unrelaxed
+    NatOrbs true
+  end
+end
+* xyz <charge> <M>
+...
+\end{codeblock}
+
+Every piece is load-bearing (measured): \code{FIC-NEVPT2} because ORCA answers
+the unrelaxed density only for the FIC ansatz; \code{KeepDens} because the
+density is read from the run's \code{<base>.densities} sidecar (under
+\code{Tdens-CASNEV.mult.<M>.root.<R>.p}, one entry per state); the
+\code{PTSettings} block because \code{Density Unrelaxed} makes the density the
+perturbation-theory one and \code{NatOrbs true} keeps the natural-orbital
+basis.  The companion export request, written as \code{<base>.json.conf}:
+
+\begin{lstlisting}[style=fbkcode]
+{ "MOCoefficients": true, "1elIntegrals": ["S"], "Densities": ["all"] }
+\end{lstlisting}
+
+Round names chain: menu~\menu{22} writes \file{<stem>.r1.*}, and
+menu~\menu{23}, fed \file{<stem>.rN.json}, writes \file{<stem>.r\{N+1\}.inp}
+and its \code{.json.conf} beside the report.
+
 \section{Structure and charge input (menus 2 and 11)}
 
 Standard XYZ (atom count, comment, \code{element x y z}). For \menu{11}, the

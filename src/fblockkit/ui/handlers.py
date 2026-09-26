@@ -16,7 +16,9 @@ import numpy as np
 
 from ..analysis import atomic_terms, avas, cf_declaration, crystal_field, point_charge
 from ..analysis import entropy_rdm, environment_spin
-from ..analysis import apc, dm_selection, magnetic_doublets, orbital_mapping, orbital_portrait
+from ..analysis import apc, ass1st, dm_selection, magnetic_doublets, orbital_mapping
+from ..analysis import orbital_portrait
+from ..recipe import ass1st as ass1st_recipe
 from ..recipe import dm_batch, guess_transfer
 from ..analysis import orbital_space as orbital_space_analysis
 from ..analysis import evidence_for, run_all
@@ -1405,6 +1407,163 @@ def apc_ranking(session: Session) -> None:
     session.say(f"Report written: {md_path}")
 
 
+def _ass1st_coordinates(atoms) -> tuple[tuple[str, float, float, float], ...]:
+    return tuple((atom.element, atom.x, atom.y, atom.z) for atom in atoms)
+
+
+def ass1st_start(session: Session) -> None:
+    """Menu 22: write the ASS1ST round-1 input (structure + initial space in)."""
+    xyz_text = session.ask("Structure file (XYZ) path")
+    if not xyz_text:
+        session.say("Cancelled (no structure given).")
+        return
+    charge_text = session.ask("Charge (Enter = 0)").strip()
+    mult_text = session.ask("Multiplicity (Enter = 1)").strip()
+    space_text = session.ask(
+        "Initial active space nel,norb (small but chemically reasonable; the user "
+        "guide has the source's advice)"
+    ).strip()
+    states_text = session.ask("States to average, nroots (Enter = 1)").strip()
+    keywords_text = session.ask("Method/basis keywords (Enter = RHF def2-SVP TightSCF)").strip()
+    maxcore_text = session.ask("MaxCore in MB (Enter = 2000)").strip()
+    path = Path(xyz_text)
+    try:
+        charge = int(charge_text) if charge_text else 0
+        multiplicity = int(mult_text) if mult_text else 1
+        tokens = [token for token in space_text.replace(",", " ").split() if token]
+        if len(tokens) != 2:
+            raise ass1st_recipe.Ass1stInputError(
+                f"the initial active space {space_text!r} is not 'nel,norb'."
+            )
+        n_electrons, n_orbitals = (int(token) for token in tokens)
+        n_states = int(states_text) if states_text else 1
+        maxcore = int(maxcore_text) if maxcore_text else 2000
+        atoms = geometry_analysis.parse_xyz(path)
+        text = ass1st_recipe.round_one_input(
+            _ass1st_coordinates(atoms),
+            charge=charge,
+            multiplicity=multiplicity,
+            n_electrons=n_electrons,
+            n_orbitals=n_orbitals,
+            n_states=n_states,
+            keywords=keywords_text or "RHF def2-SVP TightSCF",
+            maxcore=maxcore,
+        )
+    except (
+        ass1st_recipe.Ass1stInputError,
+        geometry_analysis.StructureError,
+        OSError,
+        ValueError,
+    ) as exc:
+        session.say(f"ASS1ST round-1 input failed: {exc}")
+        return
+    stem = ass1st_recipe.round_one_stem(path.stem)
+    inp_path = path.with_name(f"{stem}.inp")
+    conf_path = path.with_name(f"{stem}.json.conf")
+    inp_path.write_text(text, encoding="utf-8")
+    conf_path.write_text(ass1st_recipe.export_conf(), encoding="utf-8")
+    session.say(text)
+    session.say(
+        f"Written: {inp_path} (the round-1 input) and {conf_path} (the export "
+        "request). Next steps:\n"
+        f"  1. run it:        orca {inp_path}\n"
+        f"  2. export it:     orca_2json {stem}.gbw   (the .json.conf is already "
+        "beside the .gbw)\n"
+        f"  3. select:        menu 23 with {stem}.json -> the quasi-NOON tables and "
+        "the next round's input"
+    )
+
+
+def ass1st_round(session: Session) -> None:
+    """Menu 23: analyse one ASS1ST round and write the next round's input."""
+    path_text = session.ask(
+        "orca_2json export path (a CASSCF + FIC-NEVPT2 round; the user guide has the "
+        "exact request)"
+    )
+    if not path_text:
+        session.say("Cancelled (no export path given).")
+        return
+    band_text = session.ask(
+        "NOON band: T (band [T, 2-T]) or T_ext,T_int (Enter = 0.05)"
+    ).strip()
+    weights_text = session.ask(
+        "State weights, comma-separated (Enter = equal; used only for state-averaged "
+        "rounds)"
+    ).strip()
+    prev_text = session.ask(
+        "Previously visited spaces 'ne,no' space-separated (Enter = none; enables the "
+        "cycle warning)"
+    ).strip()
+    keywords_text = session.ask(
+        "Method/basis keywords for the next round (Enter = RHF def2-SVP TightSCF)"
+    ).strip()
+    path = Path(path_text)
+    try:
+        export = parse_orca_json(path)
+        band = ass1st.parse_band(band_text) if band_text else (
+            ass1st.ASS1ST_RECOMMENDED_THRESHOLD,
+            2.0 - ass1st.ASS1ST_RECOMMENDED_THRESHOLD,
+        )
+        weights = None
+        if weights_text:
+            tokens = [token for token in weights_text.replace(",", " ").split() if token]
+            weights = tuple(float(token) for token in tokens)
+        previous = []
+        for token in prev_text.split():
+            pair = token.replace(",", " ").split()
+            if len(pair) != 2:
+                raise ass1st.Ass1stError(
+                    f"the visited space {token!r} is not 'ne,no'."
+                )
+            previous.append((int(pair[0]), int(pair[1])))
+        round_ = ass1st.analyze_round(
+            export, weights=weights, band=band, previous_spaces=tuple(previous)
+        )
+    except (ParserError, ass1st.Ass1stError, OSError, ValueError) as exc:
+        session.say(f"ASS1ST round failed: {exc}")
+        return
+    section = ass1st.run(export, weights=weights, band=band, previous_spaces=tuple(previous))
+    session.say(section.body)
+    report_lines = f"## {section.title}\n\n{section.body}\n"
+    refs = references_section(ass1st.evidence())
+    if refs is not None:
+        report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
+    md_path = path.with_name(path.name + ".ass1st.fbk.md")
+    md_path.write_text(report_lines, encoding="utf-8")
+    session.say(f"Report written: {md_path}")
+    if round_.suggestion.self_consistent:
+        session.say(
+            f"Self-consistent at ({round_.partition.n_electrons}e, "
+            f"{round_.partition.n_orbitals}o): no next round is needed. Use this "
+            "active space for the production calculation."
+        )
+        return
+    suggestion = round_.suggestion
+    stem = ass1st_recipe.next_round_stem(export.base_name)
+    coordinates = tuple(
+        (element, *position) for element, position in zip(export.atoms, export.coordinates)
+    )
+    text = ass1st_recipe.next_round_input(
+        coordinates,
+        charge=export.charge,
+        multiplicity=export.multiplicity,
+        n_electrons=suggestion.n_electrons,
+        n_orbitals=suggestion.n_orbitals,
+        n_states=round_.n_states,
+        keywords=keywords_text or "RHF def2-SVP TightSCF",
+    )
+    inp_path = path.with_name(f"{stem}.inp")
+    conf_path = path.with_name(f"{stem}.json.conf")
+    inp_path.write_text(text, encoding="utf-8")
+    conf_path.write_text(ass1st_recipe.export_conf(), encoding="utf-8")
+    session.say(
+        f"Next round written: {inp_path} at ({suggestion.n_electrons}e, "
+        f"{suggestion.n_orbitals}o), with {conf_path}. Run it, export "
+        f"{stem}.json, and feed that back to this menu; give the visited spaces "
+        "(including this round's) to get the cycle warning right."
+    )
+
+
 HANDLERS = {
     "report_output": report_output,
     "geometry_report": geometry_report,
@@ -1427,5 +1586,7 @@ HANDLERS = {
     "dm_batch": dm_batch_generate,
     "dm_select": dm_select,
     "apc_ranking": apc_ranking,
+    "ass1st_start": ass1st_start,
+    "ass1st_round": ass1st_round,
     "quit": quit_session,
 }

@@ -134,8 +134,9 @@ def _prepare_work() -> None:
         "h2o_dm_casci_e6o6_sa4.out",
     ):
         shutil.copy(FIXTURES / name, work / name)
-    # the APC ranking export of menu 21
+    # the APC ranking export of menu 21 and the ASS1ST round export of menu 23
     shutil.copy(FIXTURES / "n2_apc.json", work / "n2_apc.json")
+    shutil.copy(FIXTURES / "n2_ass1st.json", work / "n2_ass1st.json")
 
 
 @pytest.fixture(scope="module")

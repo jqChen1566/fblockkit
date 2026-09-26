@@ -25,21 +25,36 @@ Available functions:
   22  ASS1ST round-1 input (a structure + an initial active space -> a CASSCF+FIC-NEVPT2 round)
   23  ASS1ST selection round (a NEVPT2-density export -> quasi-NOON tables + the next round's input)
    0  Quit
-Choose a number (Enter = leave empty)> 2
-XYZ structure file path (Enter = leave empty)> work/octahedron.xyz
-Point group (optional) (Enter = leave empty)> Oh
-Structure: 7 atoms; central atom Ce1
-Coordination shell: 6 ligands (cutoff distance 2.40 Å)
-  Ligands and distances (Å): O2 2.40, O3 2.40, O4 2.40, O5 2.40, O6 2.40, O7 2.40
+Choose a number (Enter = leave empty)> 22
+Structure file (XYZ) path (Enter = leave empty)> work/h2o.xyz
+Charge (Enter = 0) (Enter = leave empty)> 0
+Multiplicity (Enter = 1) (Enter = leave empty)> 1
+Initial active space nel,norb (small but chemically reasonable; the user guide has the source's advice) (Enter = leave empty)> 4,4
+States to average, nroots (Enter = 1) (Enter = leave empty)> 1
+Method/basis keywords (Enter = RHF def2-SVP TightSCF) (Enter = leave empty)> 
+MaxCore in MB (Enter = 2000) (Enter = leave empty)> 
+! RHF def2-SVP TightSCF FIC-NEVPT2 KeepDens
+%maxcore 2000
+%casscf
+  nel 4
+  norb 4
+  mult 1
+  nroots 1
+  PTSettings
+    Density Unrelaxed
+    NatOrbs true
+  end
+end
+* xyz 0 1
+O      0.0000000000     0.0000000000     0.1177900000
+H      0.0000000000     0.7570000000    -0.4711600000
+H      0.0000000000    -0.7570000000    -0.4711600000
+*
 
-Symmetry hints (geometric distribution, not a rigorous point-group determination):
-  - Direction distribution: direction distribution nearly isotropic (octahedral-style high-symmetry coordination, or nearly spherical) (second-moment eigenvalue ratios λ2/λ1 = 1.00, λ3/λ1 = 1.00)
-  - Inversion pairs: 3/6 (pairs of ligands in an approximately centrosymmetric arrangement)
-
-Number of CF parameters (applies once the point group is confirmed): C3 → 9 B_k^q; Oh → 4 B_k^q; none → 27 B_k^q
-  Rule: only even k is kept (time-reversal symmetry), k <= 6 (4f); a fit that needs 27 means the frame used carries no true symmetry -- the z-axis convention must then be declared.
-  Point group confirmed by the user, Oh: 4 B_k^q allowed.
-Report written: work\octahedron.xyz.fbk.md
+Written: work\h2o.r1.inp (the round-1 input) and work\h2o.r1.json.conf (the export request). Next steps:
+  1. run it:        orca work\h2o.r1.inp
+  2. export it:     orca_2json h2o.r1.gbw   (the .json.conf is already beside the .gbw)
+  3. select:        menu 23 with h2o.r1.json -> the quasi-NOON tables and the next round's input
 
 Available functions:
    1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)

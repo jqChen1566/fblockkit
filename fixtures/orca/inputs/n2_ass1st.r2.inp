@@ -1,0 +1,16 @@
+! RHF def2-SVP TightSCF FIC-NEVPT2 KeepDens
+%maxcore 2000
+%casscf
+  nel 4
+  norb 4
+  mult 1
+  nroots 1
+  PTSettings
+    Density Unrelaxed
+    NatOrbs true
+  end
+end
+* xyz 0 1
+N      0.0000000000     0.0000000000     0.0000000000
+N      0.0000000000     0.0000000000     1.0940000000
+*

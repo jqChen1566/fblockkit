@@ -22,6 +22,8 @@ Available functions:
   19  Dipole-moment candidate batch (a structure -> prep + CASCI inputs + manifest for the DM-AS scan)
   20  Dipole-moment selection (the batch outputs + a reference -> the active space by DM-AS)
   21  APC orbital ranking (an export with the Fock exchange block -> ranked active space at a CSF cap)
+  22  ASS1ST round-1 input (a structure + an initial active space -> a CASSCF+FIC-NEVPT2 round)
+  23  ASS1ST selection round (a NEVPT2-density export -> quasi-NOON tables + the next round's input)
    0  Quit
 Choose a number (Enter = leave empty)> 1
 ORCA output file path (Enter = leave empty)> work/n2_casscf_nevpt2.out
@@ -52,6 +54,8 @@ Available functions:
   19  Dipole-moment candidate batch (a structure -> prep + CASCI inputs + manifest for the DM-AS scan)
   20  Dipole-moment selection (the batch outputs + a reference -> the active space by DM-AS)
   21  APC orbital ranking (an export with the Fock exchange block -> ranked active space at a CSF cap)
+  22  ASS1ST round-1 input (a structure + an initial active space -> a CASSCF+FIC-NEVPT2 round)
+  23  ASS1ST selection round (a NEVPT2-density export -> quasi-NOON tables + the next round's input)
    0  Quit
 Choose a number (Enter = leave empty)> 1
 ORCA output file path (Enter = leave empty)> work/n2_diffuse.out
@@ -82,6 +86,8 @@ Available functions:
   19  Dipole-moment candidate batch (a structure -> prep + CASCI inputs + manifest for the DM-AS scan)
   20  Dipole-moment selection (the batch outputs + a reference -> the active space by DM-AS)
   21  APC orbital ranking (an export with the Fock exchange block -> ranked active space at a CSF cap)
+  22  ASS1ST round-1 input (a structure + an initial active space -> a CASSCF+FIC-NEVPT2 round)
+  23  ASS1ST selection round (a NEVPT2-density export -> quasi-NOON tables + the next round's input)
    0  Quit
 Choose a number (Enter = leave empty)> 0
 Goodbye.

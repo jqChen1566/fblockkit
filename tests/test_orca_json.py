@@ -36,6 +36,8 @@ CANONICAL = FIXTURES / "n2_fcidump.canonical.json"
 LOCALIZED = FIXTURES / "n2_fcidump.localized.json"
 APC_N2 = FIXTURES / "n2_apc.json"
 APC_H2 = FIXTURES / "h2_apc.json"
+ASS1ST_ST = FIXTURES / "n2_ass1st.json"
+ASS1ST_SA = FIXTURES / "n2_ass1st_sa.json"
 
 # orca_loc localized this window only (n2_fcidump_step_c.loc.out: "4 to 9", 0-based)
 LOCALIZED_RANGE = range(4, 10)
@@ -379,6 +381,60 @@ def test_a_fock_block_of_the_wrong_size_is_rejected(tmp_path):
 
     variant = _apc_variant(tmp_path, mutate)
     with pytest.raises(ParserError, match="K-Matrix"):
+        parse_orca_json(variant)
+
+
+# --- the density sidecar block (menus 23) -------------------------------------
+
+
+def _ass1st_variant(tmp_path: Path, mutate: Callable[[dict[str, Any]], None]) -> Path:
+    """Write a copy of the n2_ass1st export with ``mutate`` applied to its Molecule block."""
+    document = json.loads(ASS1ST_ST.read_text(encoding="utf-8"))
+    mutate(document["Molecule"])
+    target = tmp_path / "ass1st_variant.json"
+    target.write_text(json.dumps(document), encoding="utf-8")
+    return target
+
+
+def test_the_density_blocks_are_read():
+    """The Densities request returns the named sidecar matrices: the CASSCF
+    reference (Tdens-CAS.*), the NEVPT2 unrelaxed density per state
+    (Tdens-CASNEV.*) and scfp; one square AO matrix per title."""
+    st = parse_orca_json(ASS1ST_ST)
+    assert st.densities is not None
+    names = [name for name, _ in st.densities]
+    assert names == [
+        "Tdens-CAS.mult.1.root.0.p",
+        "Tdens-CASNEV.mult.1.root.0.p",
+        "scfp",
+    ]
+    assert all(len(block) == st.n_ao for _, block in st.densities)
+    sa = parse_orca_json(ASS1ST_SA)
+    assert sa.densities is not None
+    assert len([n for n, _ in sa.densities if n.startswith("Tdens-CASNEV")]) == 3
+
+
+def test_exports_without_densities_are_accepted():
+    """The density request is optional, like the other request-dependent blocks."""
+    assert parse_orca_json(CANONICAL).densities is None
+    assert parse_orca_json(APC_N2).densities is None
+
+
+def test_a_density_of_the_wrong_size_is_rejected(tmp_path):
+    def mutate(molecule: dict[str, Any]) -> None:
+        molecule["Densities"]["scfp"].pop()
+
+    variant = _ass1st_variant(tmp_path, mutate)
+    with pytest.raises(ParserError, match="scfp"):
+        parse_orca_json(variant)
+
+
+def test_an_unmeasured_density_shape_is_reported(tmp_path):
+    def mutate(molecule: dict[str, Any]) -> None:
+        molecule["Densities"]["scfp"] = {"alpha": molecule["Densities"]["scfp"]}
+
+    variant = _ass1st_variant(tmp_path, mutate)
+    with pytest.raises(ParserError, match="one square matrix per title"):
         parse_orca_json(variant)
 
 
