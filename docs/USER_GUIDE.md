@@ -168,6 +168,14 @@ not verified are marked "to verify".
 notes of a single tool.
 
 **How**: menu 6 -> tool id (for example `openmolcas`; search first with Section 5).
+Some entries carry a **workflow recipe** as well; the DMET code (`liblan`) is the
+first one, and menu 6 prints the recipe after the guide -- the source's settings
+(the loose double convergence criterion, the Loewdin cluster/environment split at
+the f centre, subspace R-DIIS with the residual Delta S_E, the cluster SA-CASSCF,
+the SOMF spin-orbit step, the ANO-RCC basis tiers) plus the gates that decide
+whether a low-level wave function may be used. Two of those gates are this
+toolkit's own sections: Delta S_E (Section 12) and the local-spin table
+(Section 1).
 
 ## 7 Cross-level solution consistency
 

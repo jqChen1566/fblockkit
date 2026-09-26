@@ -39,6 +39,27 @@ it says so.
 
 \section{Worked example}
 
+One entry carries more than a note: the DMET code (liblan) has a workflow
+recipe, and menu 6 prints it with the guide.  The recipe is method guidance
+built from the source's own settings -- the loose double convergence criterion,
+the L\"owdin cluster/environment split at the f centre, the subspace R-DIIS
+whose residual is $\Delta S_E$, the cluster SA-CASSCF, the SOMF spin-orbit
+step, the ANO-RCC basis tiers -- together with the gates that decide whether
+a low-level wave function may be used at all:
+
+\lstinputlisting[style=fbkcode, firstline=78, lastline=136,
+  title={The DMET recipe as menu 6 prints it (the session asks for the liblan
+  entry after the OpenMolcas one)}]
+  {examples/expected/m5_tools.txt}
+
+Two of those gates are implemented in this toolkit rather than quoted:
+$\Delta S_E$ is the same quantity as menu~\menu{12}'s environment-spin section
+(and menu~\menu{1}'s local-spin table answers the SCF-side version of the
+question), and the source's failure mode -- a low-level solution with four of
+five singly occupied orbitals on the ligands, $\Delta S_E = 2.766$ instead of
+$0.007$, costs a factor $42$ in the fitted crystal-field MAE -- is the reason
+the gate runs \emph{before} any parameter is fitted.
+
 \begin{codeblock}
 fblockkit guide openmolcas     # the same entry, from the command line
 fblockkit guide no-such-tool   # an actionable error (exit code 2)

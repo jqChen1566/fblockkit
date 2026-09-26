@@ -363,6 +363,24 @@ def tool_guide(session: Session) -> None:
         session.say(tool_guide_text(tool_id))
     except ToolIndexError as exc:
         session.say(f"{exc}")
+        return
+    recipe = _tool_recipe(tool_id)
+    if recipe is not None:
+        session.say(recipe)
+
+
+def _tool_recipe(tool_id: str) -> str | None:
+    """The workflow recipe for the tools that have one (menu 6 prints it with the guide)."""
+    if tool_id.strip().lower() == "liblan":
+        from ..recipe import plan_dmet, render_dmet
+
+        plan = plan_dmet("Dy")
+        return (
+            render_dmet(plan)
+            + "\n\n(printed for Dy as the example: the cluster CAS size follows the f "
+            "count of the centre, (f-count)e,7o for any Ln3+/An3+ ion)"
+        )
+    return None
 
 
 # --- 7 cross-level consistency ----------------------------------------------

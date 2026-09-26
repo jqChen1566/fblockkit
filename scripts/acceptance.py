@@ -118,6 +118,7 @@ def main() -> int:
                     "4", "Pu,Cl", "0", "2", "3", "energy",
                     "5", "dmrg",
                     "6", "openmolcas",
+                    "6", "liblan",
                     "7", "work/pucl3_s18.json",
                     "9", "work/scf_noconv.out", "work/scf_noconv.inp",
                     "10", "work/cf_c3.json",
@@ -182,6 +183,12 @@ def main() -> int:
                 and "ranking (most diffuse channel first)" in diffuse,
                 "menu 1 report: the rule-G panel ranks the active orbitals by channel "
                 "diffuseness with the run's own exponents",
+            )
+
+            check(
+                "DMET embedding recipe for Dy" in out and "42x" in out,
+                "menu 6 prints the DMET workflow recipe with the liblan entry (the "
+                "source's gates included)",
             )
 
             geometry = read("octahedron.xyz.fbk.md")

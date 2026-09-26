@@ -65,5 +65,72 @@ Available functions:
   13  Orbital-space comparison (two orca_2json exports: subspace fraction and space-change SVD)
   14  AVAS target projection (an orbital export + a target AO shell -> active-space size)
    0  Quit
+Choose a number (Enter = leave empty)> 6
+Tool index id (e.g. openmolcas; search with menu 5) (Enter = leave empty)> liblan
+liblan (LnSIM DMET code) -- C registered (index)
+Purpose: DMET/SA-CASSCF-SO workflows for lanthanide SIMs
+Status: registered (not in use)
+License: to be checked (against the official repository)
+Source: https://github.com/IrisA144/liblan_preview
+Note: Its ΔS_E criterion and recipe rules have entered our literature review; the code licence must be checked first.
+Provenance:
+  - [literature] Implementation and SI data are available upstream (github.com/IrisA144/liblan_preview); the DeltaS_E criterion entered our literature review (Ai Y., Li Z.-W., Guan Z.-B., Jiang H., J. Chem. Theory Comput., 2025, 21(19), 9631-9640, DOI 10.1021/acs.jctc.5c01336)
+DMET embedding recipe for Dy (f^9 centre; from Ai et al., JCTC 2025, the fields above) -- method guidance, the external code is not bundled:
+
+  0. Scalar relativity: SFX2C-1e (the one-electron spin-free X2C variant)
+     why: The source uses PySCF's built-in one-electron variant; the project's basis and ECP notes apply unchanged (ORCA 6.1 has no DKH3).
+  1. Low-level SCF: ROHF from the default minimal-atomic-orbital guess
+     why: ROHF over UHF, so the orbitals stay spin-pure for the later spin-orbit step; the guess may be wrong -- that is what the gates below catch.
+  2. Loose convergence (deliberate): Default DIIS to delta E < 1e-4 AND |g| < 0.01
+     why: Both bounds: the project's standing rule is that an energy alone does not show convergence, and the source uses the same pair here.
+  3. Embedding construction: Loewdin-orthogonalised localised orbitals; cluster A = the lanthanide's orbitals, environment B = the rest; bath threshold 1e-13
+     why: One-shot DMET (no correlation-potential self-consistency). The Loewdin orthogonality between cluster and core orbitals is a precondition of the mean-field potential, not a detail; the impurity integrals scale as |A|^4 rather than N_AO^4 -- the source of the cost advantage.
+  4. Subspace R-DIIS: Apply the regularised residual R = Delta S_E inside the cluster subspace
+     why: R-DIIS forbids convergence to a solution with R != 0 instead of trying to start nearer the right one; inside the subspace each iteration is 12-64x cheaper than in the full space (and the subspace integrals fit in memory).
+  5. Full-space finish: Return to the full space for a few tight R-DIIS rounds
+     why: By then Delta S_E is near zero and the iteration behaves like plain DIIS.
+  6. Static correlation: SA-CASSCF inside the cluster space: CAS(9e,7o) for a Dy3+ centre
+     why: For f^n the seven-orbital window is the f shell itself; the source averages over the whole ground-term manifold (Dy: 21 sextets, Er: 35 quartets -- their settings; the multiplet decomposition itself is marked unchecked in the project's reading notes).
+  7. Spin-orbit coupling: Diagonalise the cluster Hamiltonian (scalar + SOMF spin-orbit) in the CSF basis
+     why: The state-interaction route, not a variational SOC; the CSFs come from step 6.
+  8. Dynamic correlation (optional): Strongly contracted NEVPT2 inside the cluster space
+     why: Optional; the source reports the accuracy cost of using it per system.
+  9. Post-processing: Extract the model spin-Hamiltonian parameters from the SI multiplet energies and wave functions
+     why: The source reports levels only; relaxation and fit-quality diagnostics are the crystal-field workflow's business (menus 10/11 and A4/A5 here).
+
+Basis rules:
+  - ANO-RCC-VTZP for the magnetic centre and its nearest coordinating atoms (the source: Dy with O; Er with B; Dy with the nearest C).
+  - ANO-RCC-VDZP for every other atom.
+  - Cholesky decomposition for the integral storage.
+
+Gates (run these before trusting any parameter):
+  - Delta S_E is the selection gate, and this toolkit computes the same quantity: the environment-spin section of menu 12 (from an exact active-space state) and menu 1's local-spin table (from an SCF output) both answer 'is the spin polarisation on the metal?'. The source's 1Dy numbers: 0.007 for the correct ROHF solution against 2.766 for the default one.
+  - Using a wrong low-level solution costs 42x in the fitted crystal-field MAE (357.7 against 8.6 cm^-1) -- so the gate runs before any parameter is fitted, not as a sanity check afterwards.
+  - Convergence needs both the energy and the orbital gradient; the energy alone can look flat on a wrong solution.
+  - The correct solution was lower in energy in the source's case, so a multi-start 'take the lowest' works there -- but that is this system's conclusion, not a rule (the project has counterexamples: the lowest stationary point is not always the target one).
+
+Boundaries and settled conventions:
+  - Core-contribution accounting (settled in the project's reading notes): the two expressions that appear across the DMET sources (sum over spatial orbitals with an explicit spin sum versus a per-spin-orbital sum) are the same quantity under two accountings; pair each expression with its own convention, or use the explicit Fock form, which is convention-free.
+  - One-shot DMET: the source does not make the correlation potential self-consistent, and neither does this recipe.
+  - The external code (liblan) has not been licence-checked and is neither called nor bundled; this recipe is method guidance only.
+
+(printed for Dy as the example: the cluster CAS size follows the f count of the centre, (f-count)e,7o for any Ln3+/An3+ ion)
+
+Available functions:
+   1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)
+   2  Coordination geometry and symmetry hints (read an XYZ structure)
+   3  Generate an ORCA input (system profile -> input file + run guidance)
+   4  Basis-set / ECP recommendation (element/valence/targets)
+   5  Search the tool index (keywords)
+   6  Tool onboarding notes (by index id)
+   7  Cross-level solution consistency (records JSON input)
+   8  Save this session as a script
+   9  SCF rescue (triage + corrected input files)
+  10  Crystal-field fit (levels + coefficients JSON)
+  11  Point-charge crystal-field estimate (read an XYZ structure + charges)
+  12  Exact active-space analysis (CASSCF output + FCIDUMP: four-state entropy, environment spin entropy, atomic-term check; optional orca_2json exports)
+  13  Orbital-space comparison (two orca_2json exports: subspace fraction and space-change SVD)
+  14  AVAS target projection (an orbital export + a target AO shell -> active-space size)
+   0  Quit
 Choose a number (Enter = leave empty)> 0
 Goodbye.

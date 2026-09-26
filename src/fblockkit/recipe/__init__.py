@@ -33,6 +33,7 @@ from .basis_ecp import (
     recommend_basis_ecp,
 )
 from .convergence import ConvergencePlan, plan_convergence
+from .dmet import DmetError, DmetPlan, plan_dmet, render as render_dmet
 from .openmolcas import (
     Deviation,
     OpenMolcasChainSpec,
@@ -54,6 +55,10 @@ __all__ = [
     "BasisDataError",
     "BasisEntry",
     "ConvergencePlan",
+    "DmetError",
+    "DmetPlan",
+    "plan_dmet",
+    "render_dmet",
     "Deviation",
     "OpenMolcasChainSpec",
     "OpenMolcasSpecError",
