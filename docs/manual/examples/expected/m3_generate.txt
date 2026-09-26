@@ -46,6 +46,7 @@ Run guidance:
 - Initial guess: the default !PModel often does not give the right starting orbitals; in the f block prefer a fragment guess (compute the fragments first, then combine), or AVAS to select the atomic valence space; when all of that fails, read existing orbitals with !moread + %moinp.
 - If the default settings struggle to converge, switch to !TRAH then (do not add MaxIter as the first step).
 - This route includes a perturbation layer: afterwards use the diagnosis layer to check orbital convergence and the reference weights/denominators.
+- Memory: the generated input sets %maxcore 2000 MB. A large-basis f-block CASSCF can need several GB per process (measured: a Yb3+ CASSCF(13,7) with SARC2-DKH-QZVP under TRAH asked for 9345 MB per process and aborted); raise %maxcore if ORCA reports out of memory.
 - !SlowConv is available but needs caution: the manual warns that it can converge to a solution closer to the initial guess -- a correct initial guess comes first.
 - Reminders:
   - Matched at metal valence 3 (entries that do not list a valence are treated as the general tier).

@@ -41,6 +41,8 @@ ALL_FIXTURES = (
     "fhh_optts_freq.out",
     "n2_stretch_local_spin.out",
     "n2_stretch_casscf_local_spin.out",
+    "generated_yb3_sarc2.out",
+    "generated_yb3_sarc2_trah.out",
 )
 
 
@@ -437,6 +439,24 @@ def test_solution_branch_facts_from_the_composition_table():
     plain = facts_from(parse_auto(FIXTURES / "n2_hf_clean.out"))
     assert "f_block_element_present" not in plain
     assert "active_f_weight_max" not in plain
+
+
+# --- aborted-CASSCF fixtures (the Yb end-to-end arc) ------------------------
+
+
+def test_aborted_casscf_fixtures_capture_their_abort_reasons():
+    """Measured: an unconverged-wavefunction abort and an out-of-memory abort are both
+    reported in the parse result's errors (the error markers are case-insensitive --
+    ORCA writes "Aborting the run" here and "aborting the run" in the LEANSCF abort)."""
+    default = _sections("generated_yb3_sarc2.out")
+    assert default["terminated_normally"] is False
+    assert any("IS NOT FULLY CONVERGED" in e for e in default["errors"])
+    assert any("Aborting the run" in e for e in default["errors"])
+    assert default["casscf"]["present"] is True
+    assert default["casscf"]["converged"] is None
+    trah = _sections("generated_yb3_sarc2_trah.out")
+    assert trah["terminated_normally"] is False
+    assert any("OUT OF MEMORY" in e for e in trah["errors"])
 
 
 # --- fact-field mapping -----------------------------------------------------

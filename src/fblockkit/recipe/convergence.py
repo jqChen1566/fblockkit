@@ -50,6 +50,19 @@ _TRAH_NEEDS_AUX = Evidence(
     url="https://www.faccts.de/docs/orca/6.1/manual/contents/modelchemistries/CASSCF.html",
 )
 
+
+_EVIDENCE_MEMORY = Evidence(
+    kind=EVIDENCE_MEASURED,
+    text=(
+        "A large-basis f-block CASSCF can need several GB per process while the generated "
+        "input sets %maxcore 2000: a Yb3+ CASSCF(13,7) with SARC2-DKH-QZVP, run under TRAH, "
+        "aborted after several hours of macro iterations with 'MINIMUM REQUIRED: 9345.2 MB "
+        "/ MAXCORE: 2000.0 MB' (ORCA 6.1.1, measured 2026-09-26). Raise %maxcore when ORCA "
+        "reports an out-of-memory abort."
+    ),
+    ref="measured on server 101 (fixture generated_yb3_sarc2_trah.out)",
+)
+
 _GUESS_STRATEGY = Evidence(
     kind=EVIDENCE_MANUAL,
     text=(
@@ -137,6 +150,13 @@ def plan_convergence(
         scf_block.append("# NEVPT2/CASPT2 route: orbital convergence matters more than energy convergence (measured by this group)")
         notes.append("This route includes a perturbation layer: afterwards use the diagnosis layer to check orbital convergence and the reference weights/denominators.")
         evidence.append(_NEVPT2_ORBITAL)
+    notes.append(
+        "Memory: the generated input sets %maxcore 2000 MB. A large-basis f-block CASSCF can "
+        "need several GB per process (measured: a Yb3+ CASSCF(13,7) with SARC2-DKH-QZVP under "
+        "TRAH asked for 9345 MB per process and aborted); raise %maxcore if ORCA reports out "
+        "of memory."
+    )
+    evidence.append(_EVIDENCE_MEMORY)
     notes.append(
         "!SlowConv is available but needs caution: the manual warns that it can converge to a "
         "solution closer to the initial guess -- a correct initial guess comes first."

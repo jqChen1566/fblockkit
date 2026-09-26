@@ -1,0 +1,19 @@
+# fBlockKit-generated ORCA input (f-block toolkit)
+# simple input line: DKH2 SARC2-DKH-QZVP SARC2-DKH-QZVP/JK TightSCF NEVPT2 TRAH
+# note: TRAH requested; auxiliary (type /C) is included as given
+# note: run the diagnostics afterwards (see the run guide)
+! DKH2 SARC2-DKH-QZVP SARC2-DKH-QZVP/JK TightSCF NEVPT2 TRAH
+%pal nprocs 8 end
+%maxcore 2000
+%scf
+MaxIter 300
+end
+%casscf
+  nel 13
+  norb 7
+  mult 2
+  nroots 1
+end
+* xyz 3 2
+Yb 0.0 0.0 0.0
+*

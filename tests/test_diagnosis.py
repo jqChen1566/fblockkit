@@ -142,6 +142,14 @@ def test_aborted_runs_reported():
     assert "DG-SCF-PSEUDO-CONVERGENCE" not in _findings("scf_noconv.out")
 
 
+def test_aborted_casscf_runs_raise_the_run_aborted_error():
+    """The Yb end-to-end fixtures (an unconverged-wavefunction abort and an OOM abort)
+    both get the error-level "did not terminate normally" finding."""
+    for name in ("generated_yb3_sarc2.out", "generated_yb3_sarc2_trah.out"):
+        findings = _findings(name)
+        assert findings.get("DG-RUN-ABORTED") == "error", name
+
+
 def test_pseudo_convergence_fires_only_when_converged():
     findings = diagnose_facts({"scf_converged": True, "scf_cycles": 2})
     assert {f.rule_id for f in findings} >= {"DG-SCF-PSEUDO-CONVERGENCE"}

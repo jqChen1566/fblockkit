@@ -469,11 +469,17 @@ def _parse_optimization(lines: list[str]) -> dict[str, Any]:
 # --- errors and warnings ----------------------------------------------------
 
 _ERROR_MARKERS = (
-    re.compile(r"ORCA finished by error termination"),
-    re.compile(r"mpirun noticed that process rank"),
-    re.compile(r"Segmentation fault"),
-    re.compile(r"aborting the run"),
-    re.compile(r"Error \(ORCA"),
+    # case-insensitive: measured on the Yb fixtures, ORCA writes "Aborting the run"
+    # where the LEANSCF abort writes "aborting the run"
+    re.compile(r"ORCA finished by error termination", re.IGNORECASE),
+    re.compile(r"mpirun noticed that process rank", re.IGNORECASE),
+    re.compile(r"Segmentation fault", re.IGNORECASE),
+    re.compile(r"aborting the run", re.IGNORECASE),
+    re.compile(r"Error \(ORCA", re.IGNORECASE),
+    # measured on generated_yb3_sarc2*.out: the unconverged-wavefunction abort and the
+    # out-of-memory abort (both are explicit ORCA abort reasons worth reporting)
+    re.compile(r"IS NOT FULLY CONVERGED", re.IGNORECASE),
+    re.compile(r"OUT OF MEMORY", re.IGNORECASE),
 )
 _WARNING_LINE_RE = re.compile(r"^\s*(?:WARNING|Warning)\s*:")
 

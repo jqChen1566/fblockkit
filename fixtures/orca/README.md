@@ -74,6 +74,20 @@ untrimmed bytes.
 | `fhh_optts_nofreq.out` | `inputs/fhh_optts_nofreq.inp` | the same guess, `OptTS` without `Freq` | a converged TS optimisation with **no** frequency analysis (the "no verification" case) | terminated normally |
 | `nh3_planar_optts_freq.out` | `inputs/nh3_planar_optts_freq.inp` | planar NH3, r2SCAN-3c `OptTS Freq` | a TS optimisation that hit the 50-cycle limit without converging; ORCA then **skipped** the requested `Freq` step (no frequency block at all) | terminated normally (with the explicit "the optimization did not converge but reached the maximum" message) |
 
+## End-to-end fixtures added 2026-09-26 (a generated input that failed, twice)
+
+These two come from the same acceptance arc: menu 3 generated a Yb3+ (4f13) input,
+ORCA 6.1.1 ran it on server 101, the run failed, the toolkit diagnosed it, the
+difficult tier (TRAH) was generated and run, and that failed too -- on memory. The
+outputs are the untrimmed bytes; the two failure signatures are the reason they are
+kept.
+
+| Output | Input | Job | Parsing points covered | Run outcome |
+|---|---|---|---|---|
+| `generated_yb3_sarc2.out` | `inputs/generated_yb3_sarc2.inp` | **recipe-generated**: Yb3+ / DKH2 + SARC2-DKH-QZVP, CASSCF(13,7) mult 2, default convergence tier | a real run of a generated input that aborted: the CASSCF reached its macro-iteration limit without meeting the orbital-gradient criterion (the energy had converged to 1e-9); the abort text ("This wavefunction IS NOT FULLY CONVERGED!" / "Aborting the run ...") is captured in the parse result's errors; the singly occupied active natural orbital is 100% Yb-p -- no f character (the solution-branch rule fires) | ORCA error termination (75 macro iterations) |
+| `generated_yb3_sarc2_trah.out` | `inputs/generated_yb3_sarc2_trah.inp` | the same system and basis with the difficult tier (`!TRAH` plus the /C auxiliary basis; ORCA confirms "now doing a TRAH-CASSCF calculation") | TRAH-CASSCF ran about 70 macro iterations and aborted with **OUT OF MEMORY** ("MINIMUM REQUIRED: 9345.2 MB / MAXCORE: 2000.0 MB"); the OOM lines are in the parse result's errors; this is the measured source of the `%maxcore` note in the generated run guidance | ORCA error termination |
+
+
 ## Known-behaviour notes
 
 - `generated_ce3_sarc2.out`: the active occupations are (1,0,0,0,0,0,0) -- putting the
