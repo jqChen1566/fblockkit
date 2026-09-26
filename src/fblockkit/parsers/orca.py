@@ -38,6 +38,7 @@ import re
 from pathlib import Path
 from typing import Any
 
+from ..knowledge.elements import ElementError, is_f_element
 from ..knowledge.models import ParseResult
 from .base import ParserError, float_or_none, read_text, register
 
@@ -913,6 +914,31 @@ def facts(result: ParseResult) -> dict[str, Any]:
         for name, value in state.get("classes", {}).items()
         if name in ("V1_i", "Vm1_a")
     ]
+    # Composition-derived signals for the "f-block system, but no f character in the
+    # active orbitals" check (a d-type solution branch; see the rule file): the element
+    # presence comes from the composition table's own atom labels, and the f weight of
+    # an orbital is the sum over its f-shell rows. Active orbitals are those with a
+    # fractional occupation (the same 0.02-1.98 window the other checks use).
+    composition = s.get("orbital_composition", {})
+    orbitals = composition.get("orbitals") or ()
+    f_block_element_present: bool | None = None
+    active_f_weight_max: float | None = None
+    if orbitals:
+        elements = {shell["element"] for orbital in orbitals for shell in orbital["shells"]}
+        f_block_element_present = False
+        for element in sorted(elements):
+            try:
+                f_block_element_present = f_block_element_present or is_f_element(element)
+            except ElementError:
+                continue  # an unexpected label never turns into a verdict
+        f_weights = [
+            sum(shell["weight"] for shell in orbital["shells"] if shell["shell"] == "f")
+            for orbital in orbitals
+            if orbital["occupation"] is not None
+            and 0.02 < orbital["occupation"] < 1.98
+        ]
+        active_f_weight_max = max(f_weights) if f_weights else None
+
     candidates: dict[str, Any] = {
         "terminated_normally": s.get("terminated_normally"),
         "scf_cycles": scf.get("cycles"),
@@ -927,6 +953,8 @@ def facts(result: ParseResult) -> dict[str, Any]:
         "caspt2_min_reference_weight": caspt2.get("min_reference_weight"),
         "caspt2_min_denominator": caspt2.get("min_denominator"),
         "soc_present": s.get("soc_present"),
+        "f_block_element_present": f_block_element_present,
+        "active_f_weight_max": active_f_weight_max,
         "ts_optimization": optimization.get("ts", False),
         "optimization_converged": optimization.get("converged"),
         "frequency_present": frequencies.get("present"),

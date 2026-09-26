@@ -18,7 +18,7 @@ ORCA output file path (Enter = leave empty)> work/generated_ce3_sarc2.out
 Report written: work\generated_ce3_sarc2.out.fbk.md
 Data written: work\generated_ce3_sarc2.out.fbk.json
 Analysis sections: 3.
-Diagnosis: Warning 1 (details in the report file).
+Diagnosis: Warning 2 (details in the report file).
 
 Available functions:
    1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)

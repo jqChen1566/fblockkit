@@ -3,7 +3,7 @@
   "sections": [
     {
       "title": "Summary",
-      "body": "Subject: work\\generated_ce3_sarc2.out\nCounts: Warning 1"
+      "body": "Subject: work\\generated_ce3_sarc2.out\nCounts: Warning 2"
     },
     {
       "title": "A1 orbital composition (per MO, Loewdin)",
@@ -29,6 +29,13 @@
       "rule_id": "DG-ACTIVE-SPACE-NEAR-EMPTY",
       "suggested_fix": "Check the active-orbital window: an active orbital with an occupation below 0.02 does not really take part in the correlation, so the space may be too large or the window poorly chosen; consider narrowing the active space by occupation and rerunning, and confirm whether that orbital was meant to be included at all.",
       "refusals": []
+    },
+    {
+      "severity": "warn",
+      "message": "No active orbital carries f character on an f-block system (a d-type solution branch?)",
+      "rule_id": "DG-ACTIVE-ORBITALS-WITHOUT-F-CHARACTER",
+      "suggested_fix": "Check the initial guess and the active-orbital window before using anything from this f-block calculation: the active orbitals carry essentially no f character, which is the signature of an SCF/CASSCF that found a d-type solution branch instead of the f^n branch. Measured examples: a Ce3+ CASSCF(1,7) run whose singly occupied active orbital came out 100% Ce-d with all seven 4f orbitals virtual (largest f weight over the active orbitals 0.0%), and the multi-solution SCF/CASSCF records of this group (EuF branches differ by 33 kcal/mol in De). Next steps, in the manual's order: give the SCF better starting orbitals (a fragment guess, or the target orbitals by hand), revise the active-orbital window, or restart from several starting points and keep the branch that matches the target configuration -- then rerun this check-up.",
+      "refusals": []
     }
   ],
   "provenance": [
@@ -37,6 +44,24 @@
       "text": "\"All orbitals between occupation number say 1.98 down to 0.02 will be included in the active space.\" (auto-ICE's automatic window convention; this rule borrows the 0.02/1.98 interval as a check-up threshold)",
       "ref": "ORCA 6.1 manual §3.14 (ICE-CI and auto-ICE)",
       "url": "https://www.faccts.de/docs/orca/6.1/manual/contents/modelchemistries/iceci.html"
+    },
+    {
+      "kind": "measured",
+      "text": "Both Ce3+ fixtures (ce3_orbcomp.out and the recipe-generated generated_ce3_sarc2.out, ORCA 6.1.1) landed on the d1 solution: the singly occupied active orbital (MO 27, occupation 1.0) is 100% Ce-d, every 4f orbital is virtual, and the largest f weight over the active orbitals is 0.0%.",
+      "ref": "Fixtures fixtures/orca/ce3_orbcomp.out and generated_ce3_sarc2.out (the A1 note in fixtures/orca/README.md)",
+      "url": ""
+    },
+    {
+      "kind": "measured",
+      "text": "This group's multi-solution records: f-block SCF/CASSCF runs converge to different solution branches from different starting guesses (EuF: two branches 33 kcal/mol apart in De; EuO: the branch judgement has to be made at the method level), so the branch actually found must be checked, not assumed.",
+      "ref": "Group's records (EuF/EuO multi-solution notes, B1_可微分DFT_cjq6)",
+      "url": ""
+    },
+    {
+      "kind": "measured",
+      "text": "Threshold choice (ours, provisional): the flagged case sits at 0.0% while a genuine f window would show ~100% (the Ce fixture's 4f orbitals are 100% Ce-f, merely virtual), so 10% separates the two sides with a wide margin; f/d-mixed windows are handled correctly because the maximum is taken over all active orbitals (one f-carrying orbital is enough to keep the check silent).",
+      "ref": "measured on the fixtures above (the threshold is this module's own choice)",
+      "url": ""
     },
     {
       "kind": "measured",

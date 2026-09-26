@@ -178,6 +178,18 @@ def test_frequency_fact_fields_evaluate():
     assert evaluate(Predicate("frequency_imaginary_count", "ge", 1), {}) is False
 
 
+def test_solution_branch_fact_fields_evaluate():
+    """Evaluation cases for the composition-derived fields (vocabulary in
+    rules/README.md): the f-block element presence and the largest f weight over the
+    active orbitals."""
+    facts = {"f_block_element_present": True, "active_f_weight_max": 0.0}
+    assert evaluate(Predicate("f_block_element_present", "eq", True), facts)
+    assert evaluate(Predicate("active_f_weight_max", "lt", 10.0), facts)
+    # without the composition table both fields are absent: neither comparison fires
+    assert evaluate(Predicate("f_block_element_present", "eq", True), {}) is False
+    assert evaluate(Predicate("active_f_weight_max", "lt", 10.0), {}) is False
+
+
 # --- regression: two defects that were fixed --------------------------------
 
 

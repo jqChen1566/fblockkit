@@ -84,6 +84,8 @@ producing function is `parsers.facts_from`):
 | `frequency_after_geometry` | bool | the last frequency block comes after the last geometry-optimisation cycle (i.e. it describes the optimised structure); absent without a frequency block |
 | `frequency_imaginary_count` | int | number of imaginary modes in the last frequency block |
 | `frequency_min_imaginary` | float | the most negative wavenumber (the strongest imaginary mode, negative by definition); only present when at least one imaginary mode exists |
+| `f_block_element_present` | bool | a lanthanide/actinide element appears in the per-MO composition table (present only when that table was printed) |
+| `active_f_weight_max` | float | the largest f-shell weight (Loewdin %, summed over the f rows) over the *active* orbitals (0.02 < occ < 1.98); present only when the composition table carries active orbitals |
 
 A field that is missing from the file does not enter the fact table; False is a
 valid fact and is kept. When adding a field: register it in this table first,

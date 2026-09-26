@@ -419,6 +419,26 @@ def test_frequency_facts_for_clean_minimum():
     assert "frequency_min_imaginary" not in facts
 
 
+# --- solution-branch facts (composition table) -------------------------------
+
+
+def test_solution_branch_facts_from_the_composition_table():
+    """Both Ce fixtures landed on the d1 branch (the singly occupied active orbital is
+    100% Ce-d, so the largest f weight over the active orbitals is 0.0%); the N2 fixture
+    carries no f-block element, and a run without the composition table carries neither
+    fact."""
+    ce = facts_from(parse_auto(FIXTURES / "ce3_orbcomp.out"))
+    assert ce["f_block_element_present"] is True
+    assert ce["active_f_weight_max"] == pytest.approx(0.0)
+    generated = facts_from(parse_auto(FIXTURES / "generated_ce3_sarc2.out"))
+    assert generated["active_f_weight_max"] == pytest.approx(0.0)
+    n2 = facts_from(parse_auto(FIXTURES / "n2_casscf_orbcomp.out"))
+    assert n2["f_block_element_present"] is False
+    plain = facts_from(parse_auto(FIXTURES / "n2_hf_clean.out"))
+    assert "f_block_element_present" not in plain
+    assert "active_f_weight_max" not in plain
+
+
 # --- fact-field mapping -----------------------------------------------------
 
 

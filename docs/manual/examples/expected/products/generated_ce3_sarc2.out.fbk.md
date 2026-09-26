@@ -3,7 +3,7 @@
 ## Summary
 
 Subject: work\generated_ce3_sarc2.out
-Counts: Warning 1
+Counts: Warning 2
 
 ## A1 orbital composition (per MO, Loewdin)
 
@@ -72,9 +72,24 @@ Caveats (carried with the verdict):
   - [Manual] "All orbitals between occupation number say 1.98 down to 0.02 will be included in the active space." (auto-ICE's automatic window convention; this rule borrows the 0.02/1.98 interval as a check-up threshold)
     - Source: ORCA 6.1 manual §3.14 (ICE-CI and auto-ICE) (https://www.faccts.de/docs/orca/6.1/manual/contents/modelchemistries/iceci.html)
 
+### 2. [Warning] No active orbital carries f character on an f-block system (a d-type solution branch?)
+
+- Suggested action: Check the initial guess and the active-orbital window before using anything from this f-block calculation: the active orbitals carry essentially no f character, which is the signature of an SCF/CASSCF that found a d-type solution branch instead of the f^n branch. Measured examples: a Ce3+ CASSCF(1,7) run whose singly occupied active orbital came out 100% Ce-d with all seven 4f orbitals virtual (largest f weight over the active orbitals 0.0%), and the multi-solution SCF/CASSCF records of this group (EuF branches differ by 33 kcal/mol in De). Next steps, in the manual's order: give the SCF better starting orbitals (a fragment guess, or the target orbitals by hand), revise the active-orbital window, or restart from several starting points and keep the branch that matches the target configuration -- then rerun this check-up.
+- Rule: DG-ACTIVE-ORBITALS-WITHOUT-F-CHARACTER
+- Evidence:
+  - [Measured] Both Ce3+ fixtures (ce3_orbcomp.out and the recipe-generated generated_ce3_sarc2.out, ORCA 6.1.1) landed on the d1 solution: the singly occupied active orbital (MO 27, occupation 1.0) is 100% Ce-d, every 4f orbital is virtual, and the largest f weight over the active orbitals is 0.0%.
+    - Source: Fixtures fixtures/orca/ce3_orbcomp.out and generated_ce3_sarc2.out (the A1 note in fixtures/orca/README.md)
+  - [Measured] This group's multi-solution records: f-block SCF/CASSCF runs converge to different solution branches from different starting guesses (EuF: two branches 33 kcal/mol apart in De; EuO: the branch judgement has to be made at the method level), so the branch actually found must be checked, not assumed.
+    - Source: Group's records (EuF/EuO multi-solution notes, B1_可微分DFT_cjq6)
+  - [Measured] Threshold choice (ours, provisional): the flagged case sits at 0.0% while a genuine f window would show ~100% (the Ce fixture's 4f orbitals are 100% Ce-f, merely virtual), so 10% separates the two sides with a wide margin; f/d-mixed windows are handled correctly because the maximum is taken over all active orbitals (one f-carrying orbital is enough to keep the check silent).
+    - Source: measured on the fixtures above (the threshold is this module's own choice)
+
 ## Provenance
 
 - [Manual] ORCA 6.1 manual §3.14 (ICE-CI and auto-ICE)
+- [Measured] Fixtures fixtures/orca/ce3_orbcomp.out and generated_ce3_sarc2.out (the A1 note in fixtures/orca/README.md)
+- [Measured] Group's records (EuF/EuO multi-solution notes, B1_可微分DFT_cjq6)
+- [Measured] measured on the fixtures above (the threshold is this module's own choice)
 - [Measured] This group's differentiable multireference stack records: composition-split-needs-two-shells / rank-within-partition-not-across (2026-09)
 - [Literature] Wardzala J. J. et al., Chem. Rev., 2026, 126(8), 4592-4618, DOI 10.1021/acs.chemrev.5c00866 (Eq. (6))
 - [Literature] Stein C. J., Reiher M., J. Chem. Theory Comput., 2016, 12(4), 1760-1771, DOI 10.1021/acs.jctc.6b00156

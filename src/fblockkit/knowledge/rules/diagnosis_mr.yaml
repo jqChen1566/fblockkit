@@ -281,3 +281,49 @@
         signal 11"). Neither prints "****ORCA TERMINATED NORMALLY****".
       ref: Fixtures scf_noconv.out / fblock_dft_gd_crash.out (ORCA 6.1.1)
   confidence: confirmed
+
+# --- solution branch of an f-block calculation -------------------------------
+
+- id: DG-ACTIVE-ORBITALS-WITHOUT-F-CHARACTER
+  kind: diagnosis
+  severity: warn
+  title: No active orbital carries f character on an f-block system (a d-type solution branch?)
+  condition:
+    all:
+      - { field: f_block_element_present, op: eq, value: true }
+      - { field: active_f_weight_max, op: lt, value: 10.0 }
+  action: >-
+    Check the initial guess and the active-orbital window before using anything from this
+    f-block calculation: the active orbitals carry essentially no f character, which is
+    the signature of an SCF/CASSCF that found a d-type solution branch instead of the
+    f^n branch. Measured examples: a Ce3+ CASSCF(1,7) run whose singly occupied active
+    orbital came out 100% Ce-d with all seven 4f orbitals virtual (largest f weight over
+    the active orbitals 0.0%), and the multi-solution SCF/CASSCF records of this group
+    (EuF branches differ by 33 kcal/mol in De). Next steps, in the manual's order: give
+    the SCF better starting orbitals (a fragment guess, or the target orbitals by hand),
+    revise the active-orbital window, or restart from several starting points and keep
+    the branch that matches the target configuration -- then rerun this check-up.
+  evidence:
+    - kind: measured
+      text: >-
+        Both Ce3+ fixtures (ce3_orbcomp.out and the recipe-generated
+        generated_ce3_sarc2.out, ORCA 6.1.1) landed on the d1 solution: the singly
+        occupied active orbital (MO 27, occupation 1.0) is 100% Ce-d, every 4f orbital is
+        virtual, and the largest f weight over the active orbitals is 0.0%.
+      ref: Fixtures fixtures/orca/ce3_orbcomp.out and generated_ce3_sarc2.out (the A1 note in fixtures/orca/README.md)
+    - kind: measured
+      text: >-
+        This group's multi-solution records: f-block SCF/CASSCF runs converge to different
+        solution branches from different starting guesses (EuF: two branches 33 kcal/mol
+        apart in De; EuO: the branch judgement has to be made at the method level), so the
+        branch actually found must be checked, not assumed.
+      ref: Group's records (EuF/EuO multi-solution notes, B1_可微分DFT_cjq6)
+    - kind: measured
+      text: >-
+        Threshold choice (ours, provisional): the flagged case sits at 0.0% while a
+        genuine f window would show ~100% (the Ce fixture's 4f orbitals are 100% Ce-f,
+        merely virtual), so 10% separates the two sides with a wide margin; f/d-mixed
+        windows are handled correctly because the maximum is taken over all active
+        orbitals (one f-carrying orbital is enough to keep the check silent).
+      ref: measured on the fixtures above (the threshold is this module's own choice)
+  confidence: provisional

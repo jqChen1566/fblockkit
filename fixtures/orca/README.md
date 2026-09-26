@@ -82,15 +82,18 @@ untrimmed bytes.
   is a warn-level "please confirm" rather than an error: taking the whole f shell into the
   window is a routine choice in magnetic/spectroscopic studies. The same applies to the
   analogous case (a nearly full orbital).
-- `ce3_orbcomp.out` (and every run of the same input): **this calculation landed on the d1
-  solution** -- A1 composition analysis gives the singly occupied active orbital as 100%
-  Ce-d (dz2/dyz/dx2-y2) with all seven 4f orbitals virtual (occ = 0). That is, the
+- `ce3_orbcomp.out` (and every run of the same input, including the recipe-generated
+  `generated_ce3_sarc2.out`): **this calculation landed on the d1 solution** -- A1
+  composition analysis gives the singly occupied active orbital as 100% Ce-d
+  (dz2/dyz/dx2-y2) with all seven 4f orbitals virtual (occ = 0). That is, the
   ROHF/CASSCF initial guess put the single electron into 5d rather than 4f (another
-  instance of this group's "multiple solutions" experience). Use: a regression sample for
-  A1 detecting "the active-orbital composition does not match the target"; if the target is
-  the 4f1 solution, the initial guess must be changed (fragment guess / explicit active
-  orbitals) or the calculation restarted from several starting points -- a candidate
-  diagnostic rule, not implemented yet.
+  instance of this group's "multiple solutions" experience). Use: a regression sample
+  for A1 detecting "the active-orbital composition does not match the target" -- and
+  for the diagnosis rule that now surfaces it, `DG-ACTIVE-ORBITALS-WITHOUT-F-CHARACTER`
+  (the largest f weight over the active orbitals is 0.0%, against ~100% for a genuine f
+  window). If the target is the 4f1 solution, the initial guess must be changed
+  (fragment guess / explicit active orbitals) or the calculation restarted from
+  several starting points.
 
 ## Discipline for extending the fixtures
 
