@@ -430,6 +430,58 @@ The report file is written next to the first export, citations included.
 orbitals; they do not evaluate the spaces. The bands are provisional and the
 intended use is comparison across candidate spaces for one system.
 
+## 14 AVAS target projection (an orbital export + a target AO shell)
+
+**What it is for**: the AVAS construction of an active space from target atomic
+orbitals (Sayfutyarova et al. 2017). The target shell is projected onto the
+occupied and the virtual orbital blocks of an SCF/CASSCF export; the overlap
+eigenvalues say which orbitals carry target character, and the report gives the
+resulting `(n_electrons, n_orbitals)` at the chosen truncation threshold.
+
+**What you need**: one `orca_2json` export (the MO coefficients, the
+occupations and the S matrix), plus the target: a centre, an angular momentum
+and the shell numbers as the export's AO labels spell them.
+
+**How**: menu 14 -> export path -> target centre (Enter = the f-block element)
+-> angular-momentum letter (Enter = `f`) -> shell number(s) (Enter = every shell
+of that momentum) -> truncation threshold (Enter = 0.1, the source's range is
+0.05-0.1) -> open-shell option (Enter = 3).
+
+**What you get**: the occupied-side and virtual-side overlap spectra, the
+orbitals kept at the threshold with their indices, the `(n_el, n_orb)`
+recommendation, the ready `%scf avas` block for ORCA, and a report file next to
+the export with the citations.
+
+**How to read it**:
+
+- values near 1 on the occupied side are essentially the target AO itself;
+  low values among the kept ones name orbitals strongly mixed with their
+  environment (in the N2 example the three kept occupied overlaps are 0.70,
+  0.56, 0.56 - the sigma and the pi pair - and the recommendation comes out as
+  the textbook (6 electrons, 6 orbitals));
+- **the virtual side decides whether AVAS suits the system**: if no virtual
+  orbital passes the threshold, the antibonding target character is
+  ligand-centred (the source's [CuCl4]2- case) and the remedy is to add ligand
+  AOs to the target, or to read it as "this target is not suited";
+- the open-shell **option 3** (the default here) keeps every singly occupied
+  orbital in the active space regardless of its target overlap. The source's
+  option 2 can force an unoccupied beta orbital into the core, after which
+  CASCI may lie above the variational HF energy - the reason the f block is
+  advised to use option 3;
+- both AVAS quality criteria are falsify-only (the source states it): a clean
+  reading does not establish that the space is best. Section 13's space-change
+  SVD and the "CASCI below the variational HF energy" check can still falsify
+  it.
+
+**Boundaries**: the target set here is a subset of the calculation's own AOs -
+the source's non-minimal-ANO variant, which is what makes the projection
+computable from an export alone and is the only route open to the f block
+(ORCA's own AVAS minimal basis was measured to have no f-block entries, Eu).
+ORCA's CASSCF takes its active space by orbital order, not by an index list, so
+the deliverable is the size and the verdict on a window, not a restart file;
+the emitted `%scf avas` block covers the systems where ORCA's built-in AVAS
+works.
+
 ## Appendix A Command line
 
 ```text

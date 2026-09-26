@@ -400,6 +400,27 @@ def test_menu_twelve_without_exports_skips_the_localized_step(tmp_path):
     assert "IAO-IBO" not in out
 
 
+def test_menu_fourteen_avas_target(tmp_path):
+    """Menu 14: the AVAS projection of the two N 2p shells on the N2 export reads
+    back the textbook (6 electrons, 6 orbitals) active space."""
+    export = tmp_path / "canonical.json"
+    shutil.copy(FIXTURES / "n2_fcidump.canonical.json", export)
+    out, _ = _session_run(["14", str(export), "0", "p", "2", "", "", "0"])
+    assert "Occupied-side target overlaps" in out
+    assert "recommended active space" in out
+    assert "6 orbitals" in out
+    assert "%scf" in out and "m_l" in out  # the ready ORCA block
+    report = Path(str(export) + ".avas.fbk.md").read_text(encoding="utf-8")
+    assert "AVAS target projection" in report and "References" in report
+
+
+def test_menu_fourteen_refuses_an_unknown_letter(tmp_path):
+    export = tmp_path / "canonical.json"
+    shutil.copy(FIXTURES / "n2_fcidump.canonical.json", export)
+    out, _ = _session_run(["14", str(export), "0", "q", "", "", "", "0"])
+    assert "not an angular-momentum letter" in out
+
+
 def test_menu_thirteen_orbital_space_identity(tmp_path):
     """Menu 13: the same active space before and after a localisation reads as
     unchanged (sigma_F = 1, smallest singular value 1) -- the check must be blind

@@ -1,0 +1,116 @@
+\chapter{AVAS target projection (menu 14)}
+\label{ch:menu14}
+\menulabel{14}
+
+\section{Purpose}
+
+The AVAS construction of an active space (Sayfutyarova, Sun, Chan and Knizia,
+Eqs.~2--10): a set $\mathcal{A}$ of target atomic orbitals is projected onto the
+occupied and the virtual orbital blocks of an SCF wave function,
+
+\begin{equation}
+S^{\mathcal{A}}_{\mathrm{occ}} = (S\,C_{\mathrm{occ}})_{\mathcal{A}}^{\mathsf{T}}
+  \,\sigma^{-1}\,(S\,C_{\mathrm{occ}})_{\mathcal{A}},
+\qquad \sigma = S[\mathcal{A},\mathcal{A}],
+\label{eq:avas}
+\end{equation}
+
+and the rotation that diagonalises each block splits it into the part that
+carries target character (into the active space, at most $|\mathcal{A}|$
+orbitals per block) and the part that does not. The truncation threshold
+($0.05$--$0.1$ in the source) is the only user-chosen number besides the target
+and the SCF state.
+
+\section{What you need}
+
+\begin{itemize}
+  \item one \code{orca\_2json} export (the MO coefficients, the occupations and
+    the $S$ matrix);
+  \item the target: a centre, an angular momentum and the shell numbers as the
+    export's AO labels spell them. With no shell given, every shell of that
+    angular momentum on the centre is taken.
+\end{itemize}
+
+\section{Walkthrough}
+
+\lstinputlisting[style=fbkcode, firstline=18, lastline=57,
+  title={The menu-14 example session (the N\textsubscript{2} export, target =
+  the two nitrogen 2p shells at centre 0)}]
+  {examples/expected/m14_avas.txt}
+
+The thresholds and the open-shell option are prompted with their defaults; the
+shell numbers follow the label grammar of the export (the \code{1p}/\code{2p}
+numbering measured in Chapter~\ref{ch:menu12}'s fixtures).
+
+\section{What you get}
+
+The occupied-side and the virtual-side overlap spectra, the orbitals kept at
+the threshold with their 0-based indices, the resulting
+\code{(n\_electrons, n\_orbitals)}, the ready \code{\%scf avas} block for
+ORCA's own implementation, and a report file next to the export with the
+citations.
+
+\section{How to read the numbers}
+
+\begin{readbox}
+\begin{itemize}
+  \item \textbf{Values near one are the target AO itself.} On the occupied
+    side, the largest eigenvalues are orbitals that essentially are a target
+    AO; the lower ones among those kept name orbitals strongly mixed with
+    their environment. In the example the three kept occupied overlaps are
+    $0.70$, $0.56$, $0.56$ -- the $\sigma$ and the $\pi$ pair of
+    N\textsubscript{2} -- and the recommendation comes out as the textbook
+    $(6,6)$ active space.
+  \item \textbf{The virtual side decides whether AVAS suits the system at
+    all.} If no virtual orbital passes the threshold, the antibonding target
+    character is ligand-centred (the source's $[\mathrm{CuCl}_4]^{2-}$ case):
+    the remedy is to add ligand AOs to the target, or to read the result as
+    ``this target is not suited''.
+  \item \textbf{The eigenvector count is bounded.} At most $|\mathcal{A}|$
+    eigenvalues per block are non-zero, because $\mathrm{span}(\mathcal{A})$
+    has that dimension -- a spectrum with more would mean the projection is
+    inconsistent.
+  \item \textbf{Open shells default to option 3.} The source's option 2 uses
+    the alpha orbitals only and can force an unoccupied beta orbital into the
+    core, after which CASCI may lie above the variational HF energy; option 3
+    keeps every singly occupied orbital in the active space and is what the
+    f block should use. The report says when option 3 changed the selection.
+  \item \textbf{Both AVAS criteria are falsify-only} (the source states it):
+    a clean reading does not establish that the space is the best one.
+    Chapter~\ref{ch:menu13}'s space-change SVD and the ``CASCI below the
+    variational HF energy'' check can still falsify it.
+\end{itemize}
+\end{readbox}
+
+\section{Worked example}
+
+The session above runs on the shipped N\textsubscript{2} export. For a
+lanthanide the target is an $f$ shell, and the route matters: this menu builds
+the target from the calculation's \emph{own} AOs (the source's non-minimal
+ANO variant, its outlook Section~5.1), because ORCA's own AVAS minimal basis
+was measured to have no entry for Eu -- the same coverage gap that
+\code{orca\_loc} shows, recorded in the fixtures README. The emitted
+\code{\%scf avas} block is for the systems where ORCA's built-in implementation
+does work; on the f block, the target-AO analysis here plus a window chosen
+from it is the available route.
+
+\section{Caveats, refusals and related sections}
+
+\begin{refusalbox}
+\begin{itemize}
+  \item An export without an $S$ matrix or without AO labels is refused.
+  \item A target shell that does not exist on the centre is refused with the
+    label grammar quoted; a linearly dependent target set is refused.
+  \item A correlated (CASSCF) export carries fractional occupations: the
+    occupied/virtual split is then a convention, not the SCF aufbau, and the
+    report says so. For a pure AVAS construction use an SCF export.
+  \item ORCA's CASSCF takes its active space by \emph{orbital order}, not by
+    an index list: the deliverable here sizes the input and judges a window;
+    it does not name the orbitals to a restart (the reorder-and-read route was
+    measured unavailable on 6.1.1).
+\end{itemize}
+\end{refusalbox}
+
+Related: \menu{12} (the exact analysis of the space once chosen),
+\menu{13} (the space-change criterion that falsifies it), and
+Chapter~\ref{ch:criteria} for the threshold table.

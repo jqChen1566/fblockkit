@@ -76,7 +76,12 @@ from typing import Any, Mapping
 
 from .base import ParserError, read_text
 
-__all__ = ["AoLabel", "OrcaJson", "parse_orca_json"]
+__all__ = ["ANGULAR_LETTERS", "AoLabel", "OrcaJson", "parse_orca_json"]
+
+#: Angular-momentum letter per l, as it appears in ORCA's AO labels (measured:
+#: s, p, d for the light shells and f for the lanthanide exports; g and h follow
+#: the same series and are listed for completeness).
+ANGULAR_LETTERS = {0: "s", 1: "p", 2: "d", 3: "f", 4: "g", 5: "h"}
 
 # Every failure names a concrete next action; the call form is the manual's
 # (``orca_2json <basename>.gbw``, the default output being ``<basename>.json``).

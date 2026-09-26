@@ -123,6 +123,7 @@ def main() -> int:
                     "12", "work/n2_fcidump_step_a.out", "work/FCIDUMP",
                     "work/canonical.json", "work/localized.json", "4 9", "0",
                     "13", "work/canonical.json", "4 9", "work/localized.json", "4 9",
+                    "14", "work/canonical.json", "0", "p", "2", "", "",
                     "8", "work/saved.txt",
                     "0",
                 ]
@@ -225,6 +226,14 @@ def main() -> int:
                 "sigma_F = ||M||_F / sqrt(min(n_A, n_B)) = 1.000000" in space
                 and "essentially the same space" in space,
                 "menu 13 report: the same space before and after a localisation reads unchanged",
+            )
+
+            avas = read("canonical.json.avas.fbk.md")
+            check(
+                "AVAS target projection" in avas
+                and "recommended active space" in avas
+                and "6 orbitals" in avas,
+                "menu 14 report: the N 2p target reads back the textbook (6, 6) space",
             )
 
             check(product("saved.txt").is_file(), "menu 8 wrote the session script")

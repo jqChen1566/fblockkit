@@ -44,6 +44,7 @@ def test_doc_mentions_each_menu_title_topic():
         "Crystal-field fit",
         "Exact four-state entropy",
         "Orbital-space comparison",
+        "AVAS target projection",
     ):
         assert keyword in text, keyword
 

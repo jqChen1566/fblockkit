@@ -45,6 +45,9 @@ items:
   - number: "13"
     title: "Orbital-space comparison (two orca_2json exports: subspace fraction and space-change SVD)"
     handler: orbital_space
+  - number: "14"
+    title: "AVAS target projection (an orbital export + a target AO shell -> active-space size)"
+    handler: avas_target
   - number: "0"
     title: Quit
     handler: quit

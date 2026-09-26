@@ -40,6 +40,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from ..parsers.orca_json import ANGULAR_LETTERS
 from ..knowledge.models import (
     EVIDENCE_LITERATURE,
     EVIDENCE_MEASURED,
@@ -70,9 +71,6 @@ __all__ = [
 class AtomicTermError(ValueError):
     """The atomic-term check cannot run on the given data (with a next step)."""
 
-
-#: Angular-momentum letter per l, for matching ORCA's AO labels.
-_ANGULAR_LETTERS = {0: "s", 1: "p", 2: "d", 3: "f", 4: "g", 5: "h"}
 
 #: |<f|f> - 1| tolerance when verifying the measured (shell, component) block structure.
 _BLOCK_TOLERANCE = 1e-8
@@ -161,11 +159,11 @@ class ShellProjection:
 
 def _component_order(labels, angular: int, center: int) -> tuple[list[int], list[int], str]:
     """Index and shell number of the AOs of ``(center, angular)`` in component order."""
-    wanted = _ANGULAR_LETTERS.get(angular)
+    wanted = ANGULAR_LETTERS.get(angular)
     if wanted is None:
         raise AtomicTermError(
             f"angular momentum l={angular} has no ORCA label letter recorded. "
-            "Next step: extend _ANGULAR_LETTERS."
+            "Next step: extend ANGULAR_LETTERS in the export reader."
         )
     components = component_labels(angular)
     selected = [

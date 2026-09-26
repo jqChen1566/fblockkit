@@ -1,0 +1,76 @@
+fBlockKit -- the f-block calculation toolkit (input generation + characterisation analysis; it runs no calculations)
+
+Available functions:
+   1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)
+   2  Coordination geometry and symmetry hints (read an XYZ structure)
+   3  Generate an ORCA input (system profile -> input file + run guidance)
+   4  Basis-set / ECP recommendation (element/valence/targets)
+   5  Search the tool index (keywords)
+   6  Tool onboarding notes (by index id)
+   7  Cross-level solution consistency (records JSON input)
+   8  Save this session as a script
+   9  SCF rescue (triage + corrected input files)
+  10  Crystal-field fit (levels + coefficients JSON)
+  11  Point-charge crystal-field estimate (read an XYZ structure + charges)
+  12  Exact active-space analysis (CASSCF output + FCIDUMP: four-state entropy, environment spin entropy, atomic-term check; optional orca_2json exports)
+  13  Orbital-space comparison (two orca_2json exports: subspace fraction and space-change SVD)
+  14  AVAS target projection (an orbital export + a target AO shell -> active-space size)
+   0  Quit
+Choose a number (Enter = leave empty)> 14
+orca_2json export path (any gbw export) (Enter = leave empty)> work/canonical.json
+Target centre (atom index, 0-based; Enter = the f-block element, when there is one) (Enter = leave empty)> 0
+Target angular momentum as a letter (s/p/d/f/g; Enter = f) (Enter = f)> p
+Target shell number(s), comma separated as ORCA labels them (Enter = every shell of that angular momentum) (Enter = leave empty)> 2
+Truncation threshold (Enter = 0.1; the source's range is 0.05-0.1) (Enter = leave empty)> 
+Open-shell option (2 = alpha orbitals only; Enter = 3, keep every singly occupied orbital) (Enter = leave empty)> 
+Target and blocks:
+  - target: 3 l=1 AO(s) of N at centre 0, shell(s) [2]
+  - occupied block: 7 orbital(s) (occupation > 0.5); virtual block: 21
+  - the export carries 3 fractional occupation(s) (0.0660, 0.0660, 0.0019): this is a correlated export (CASSCF), so the occupied/virtual split is a convention, not the SCF aufbau. For a pure AVAS construction use an SCF export
+
+Occupied-side target overlaps (descending):
+  0.6963 0.5595 0.5595 0.0000 0.0000 0.0000 0.0000
+Virtual-side target overlaps (descending):
+  0.4405 0.4405 0.3037 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000
+
+Recommendation (0.1 truncation, option 3): (6.13388 electrons, 6 orbitals) -- occupied [0, 1, 2], virtual [7, 8, 9] (0-based orbital indices of the export)
+
+Reading:
+  - occupied side: 3 orbital(s) above the 0.1 threshold; the largest overlap(s) 0.6963 0.5595 0.5595 0.0000 ... -- values near 1 are essentially the target AO itself, and low values among the kept ones name orbitals strongly mixed with their environment
+  - virtual side: 3 orbital(s) above the threshold (largest 0.4405) -- these are the target-centred antibonding combinations that belong in the active space
+  - recommended active space: (6.13388 electrons, 6 orbitals) = 3 occupied + 3 virtual above the threshold (the electron count uses each active orbital's own occupation from the export, so a correlated export contributes its fractional occupations)
+  - both AVAS criteria are of the falsify-only kind (the source states it): a reading here that shows nothing wrong does not establish that the space is the best one -- the space-change SVD and the 'CASCI below the variational HF energy' check can still falsify it
+
+For the same target, ORCA's built-in AVAS block (when its own minimal basis covers the element):
+  %scf
+    avas
+      system
+        shell  2, 2, 2
+        l      1, 1, 1
+        m_l    z, x, y
+        center 0, 0, 0
+      end
+    end
+  end
+
+Boundary of this route: the target set here is a subset of the calculation's own AOs (the source's non-minimal-ANO variant), which is what makes the projection computable from an export alone and is the only route open to the f block -- ORCA's AVAS minimal basis was measured to have no f-block entries (Eu). And ORCA's CASSCF takes its active space by orbital order, not by an index list: the (n_el, n_orb) above sizes the input and the window, it does not name the orbitals to a restart.
+Report written: work\canonical.json.avas.fbk.md
+
+Available functions:
+   1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)
+   2  Coordination geometry and symmetry hints (read an XYZ structure)
+   3  Generate an ORCA input (system profile -> input file + run guidance)
+   4  Basis-set / ECP recommendation (element/valence/targets)
+   5  Search the tool index (keywords)
+   6  Tool onboarding notes (by index id)
+   7  Cross-level solution consistency (records JSON input)
+   8  Save this session as a script
+   9  SCF rescue (triage + corrected input files)
+  10  Crystal-field fit (levels + coefficients JSON)
+  11  Point-charge crystal-field estimate (read an XYZ structure + charges)
+  12  Exact active-space analysis (CASSCF output + FCIDUMP: four-state entropy, environment spin entropy, atomic-term check; optional orca_2json exports)
+  13  Orbital-space comparison (two orca_2json exports: subspace fraction and space-change SVD)
+  14  AVAS target projection (an orbital export + a target AO shell -> active-space size)
+   0  Quit
+Choose a number (Enter = leave empty)> 0
+Goodbye.

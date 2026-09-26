@@ -50,6 +50,18 @@ Exact four-state entropy & $s_i$ computed directly & Menu~\menu{12}
   \code{N(occ)} line) &
   \textsf{[Measured]} route validation 2026-09-26 (energy agreement $4\times
   10^{-13}$ on the N2 fixture; \code{tests/test\_entropy\_rdm.py}) \\
+AVAS truncation & $0.1$ (default; the source's range $0.05$--$0.1$) &
+  Overlap eigenvalues of the target-shell projection (menu~\menu{14}); orbitals
+  below the threshold leave the active space. The source notes the threshold is
+  the only user-chosen number besides the target and the SCF state, and that a
+  cut of low-overlap orbitals is what keeps CASCI below the variational HF
+  energy &
+  \textsf{[Literature]} Sayfutyarova et al.\ 2017 \S2.4; range $0.05$--$0.1$ \\
+AVAS virtual side & no published line & A virtual-side spectrum with no
+  eigenvalue above the threshold means the antibonding target character is
+  ligand-centred (the source's $[\mathrm{CuCl}_4]^{2-}$ case): add ligand AOs
+  to the target or record the target as unsuited &
+  \textsf{[Literature]} Sayfutyarova et al.\ 2017 \S4.5 (worked examples) \\
 Environment spin entropy & $0.05$ (provisional);
   source anchors $0.007$ / $2.766$ & $\Delta S_E$ of Eq.~\eqref{eq:delta-se}
   (menu~\menu{12}): zero exactly when the environment's two spin densities are
@@ -232,7 +244,7 @@ $\Delta S_E$ boundary & not available from tables & Local spin analysis is not
   the environment spin-polarisation entropy; the real quantity needs the
   two-step \code{orca\_2json} + \code{orca\_loc} route; the measured scale it
   stands in for: $\Delta S_E$ 2.766 (wrong solution) vs 0.007 (correct), and a
-  downstream MAE of 357.7 vs 8.6~cm$^{-1}$ & \textsf{[Literature]} Ai et al.\
+  downstream MAE of 357.7 vs 8.6~cm$^{-1}$ & \textsf{[Literature]} Ai et al.\\
   2025; \textsf{[Manual]} ORCA 6.1 \S5.1.10 \\
 \bottomrule
 \end{tabularx}

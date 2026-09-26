@@ -14,7 +14,7 @@ from typing import Any
 
 import numpy as np
 
-from ..analysis import atomic_terms, cf_declaration, crystal_field, point_charge
+from ..analysis import atomic_terms, avas, cf_declaration, crystal_field, point_charge
 from ..analysis import entropy_rdm, environment_spin
 from ..analysis import orbital_space as orbital_space_analysis
 from ..analysis import evidence_for, run_all
@@ -901,6 +901,81 @@ def _space_label(export, window_text: str) -> str:
     return f"{Path(export.base_name).name} [{span}]"
 
 
+
+# --- 14 AVAS target projection -----------------------------------------------
+
+
+def avas_target(session: Session) -> None:
+    """Menu 14: the AVAS projection of a target AO shell onto an orbital export."""
+    export_text = session.ask("orca_2json export path (any gbw export)")
+    if not export_text:
+        session.say("Cancelled (no export path given).")
+        return
+    centre_text = session.ask(
+        "Target centre (atom index, 0-based; Enter = the f-block element, when there is one)"
+    )
+    angular_text = session.ask(
+        "Target angular momentum as a letter (s/p/d/f/g; Enter = f)", default="f"
+    )
+    shells_text = session.ask(
+        "Target shell number(s), comma separated as ORCA labels them (Enter = every shell "
+        "of that angular momentum)"
+    )
+    threshold_text = session.ask(
+        f"Truncation threshold (Enter = {avas.DEFAULT_THRESHOLD:g}; the source's range is 0.05-0.1)"
+    )
+    option_text = session.ask(
+        "Open-shell option (2 = alpha orbitals only; Enter = 3, keep every singly "
+        "occupied orbital)"
+    )
+    letters = {letter: value for value, letter in _ANGULAR_LETTERS().items()}
+    try:
+        export = parse_orca_json(Path(export_text))
+        centre = int(centre_text) if centre_text else None
+        key = (angular_text or "f").strip().lower()
+        if key.isdigit():
+            angular = int(key)
+        elif key in letters:
+            angular = letters[key]
+        else:
+            session.say(f"{angular_text!r} is not an angular-momentum letter (s/p/d/f/g).")
+            return
+        shells = (
+            {int(token) for token in shells_text.replace(",", " ").split()}
+            if shells_text
+            else None
+        )
+        threshold = float(threshold_text) if threshold_text else avas.DEFAULT_THRESHOLD
+        option = int(option_text) if option_text else avas.DEFAULT_OPTION
+        analysis = avas.analyze(
+            export,
+            centre=centre,
+            angular=angular,
+            shells=shells,
+            threshold=threshold,
+            option=option,
+        )
+        section = avas.run(analysis)
+    except (ParserError, avas.AvasError, OSError, ValueError) as exc:
+        session.say(f"AVAS projection failed: {exc}")
+        return
+
+    session.say(section.body)
+    report_lines = f"## {section.title}\n\n{section.body}\n"
+    refs = references_section(avas.evidence())
+    if refs is not None:
+        report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
+    md_path = Path(export_text).with_name(Path(export_text).name + ".avas.fbk.md")
+    md_path.write_text(report_lines, encoding="utf-8")
+    session.say(f"Report written: {md_path}")
+
+
+def _ANGULAR_LETTERS() -> dict:
+    from ..parsers.orca_json import ANGULAR_LETTERS
+
+    return dict(ANGULAR_LETTERS)
+
+
 HANDLERS = {
     "report_output": report_output,
     "geometry_report": geometry_report,
@@ -915,5 +990,6 @@ HANDLERS = {
     "point_charge_estimate": point_charge_estimate,
     "exact_entropy": exact_entropy,
     "orbital_space": orbital_space,
+    "avas_target": avas_target,
     "quit": quit_session,
 }
