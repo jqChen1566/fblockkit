@@ -132,3 +132,20 @@ doublet_payload = {
     json.dumps(doublet_payload, indent=1) + "\n", encoding="utf-8"
 )
 print("wrote work/dy_doublets.json")
+
+# --- the cross-structure mapping manifest (menu 17): the frozen N2 scan's three
+# localized exports, with a selection on one bond orbital of the first structure
+# -- the run reads back the consistent space (the degenerate bond triad) that
+# selection implies in every structure.
+
+mapping_payload = {
+    "structures": [
+        {"name": f"r={r}", "export": f"n2_scan_{r}.loc.json"}
+        for r in ("1.094", "1.600", "2.600")
+    ],
+    "selections": {"r=1.094": [4]},
+}
+(WORK / "mapping_manifest.json").write_text(
+    json.dumps(mapping_payload, indent=1) + "\n", encoding="utf-8"
+)
+print("wrote work/mapping_manifest.json")

@@ -98,7 +98,17 @@ def main() -> int:
             [PY, str(EXAMPLES / "generate_inputs.py")], cwd=work, env=ENV, check=True,
             capture_output=True,
         )
-        for name in ("octahedron.xyz", "ce_atom.xyz", "ceo6.xyz", "cf_c3.json", "dy_doublets.json"):
+        for name in (
+            "octahedron.xyz",
+            "ce_atom.xyz",
+            "ceo6.xyz",
+            "cf_c3.json",
+            "dy_doublets.json",
+            "mapping_manifest.json",
+            "n2_scan_1.094.loc.json",
+            "n2_scan_1.600.loc.json",
+            "n2_scan_2.600.loc.json",
+        ):
             # the generator writes into its own examples/work directory
             shutil.copy(EXAMPLES / "work" / name, inputs / name)
 
@@ -129,6 +139,7 @@ def main() -> int:
                     "14", "work/canonical.json", "0", "p", "2", "", "",
                     "15", "work/canonical.json", "",
                     "16", "work/dy_doublets.json",
+                    "17", "work/mapping_manifest.json",
                     "8", "work/saved.txt",
                     "0",
                 ]
@@ -278,6 +289,16 @@ def main() -> int:
                 and "15.31" in magnetic and "30.25" in magnetic,
                 "menu 16 report: the source's calibration row gets both sides of "
                 "the g_T*theta_3 line, with the domain and the gap",
+            )
+
+            mapping = read("mapping_manifest.json.mapping.fbk.md")
+            check(
+                "A11 cross-structure orbital mapping" in mapping
+                and "non-matchable" in mapping
+                and "r=1.094: [4, 5, 6]" in mapping
+                and "tau: occupied 0.5, virtual 0.5" in mapping,
+                "menu 17 report: the N2 scan maps its cores and puts the hybrids in "
+                "the non-matchable block; the selection implies the bond triad",
             )
 
             check(product("saved.txt").is_file(), "menu 8 wrote the session script")

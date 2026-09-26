@@ -47,6 +47,7 @@ def test_doc_mentions_each_menu_title_topic():
         "AVAS target projection",
         "Orbital portrait",
         "Magnetic-doublet criterion",
+        "Cross-structure orbital mapping",
     ):
         assert keyword in text, keyword
 

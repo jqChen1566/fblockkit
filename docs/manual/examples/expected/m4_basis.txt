@@ -17,6 +17,7 @@ Available functions:
   14  AVAS target projection (an orbital export + a target AO shell -> active-space size)
   15  Orbital portrait (an export -> occupation, bonding label, shell composition, extent)
   16  Magnetic-doublet criterion (a Kramers-doublet table JSON -> g_T * theta_3 and the QTM line)
+  17  Cross-structure orbital mapping (a manifest of exports -> consistent active spaces along a path)
    0  Quit
 Choose a number (Enter = leave empty)> 4
 Element list (comma separated, e.g. La,O,H) (Enter = leave empty)> Pu,Cl
@@ -57,6 +58,7 @@ Available functions:
   14  AVAS target projection (an orbital export + a target AO shell -> active-space size)
   15  Orbital portrait (an export -> occupation, bonding label, shell composition, extent)
   16  Magnetic-doublet criterion (a Kramers-doublet table JSON -> g_T * theta_3 and the QTM line)
+  17  Cross-structure orbital mapping (a manifest of exports -> consistent active spaces along a path)
    0  Quit
 Choose a number (Enter = leave empty)> 0
 Goodbye.

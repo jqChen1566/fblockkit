@@ -620,6 +620,82 @@ SINGLE_ANISO output; the toolkit's `g_T` check is the post-processing step of
 that chain). The line is printed as source evidence, and the report always
 carries the domain and the outlier note.
 
+## 17 Cross-structure orbital mapping (a manifest of exports)
+
+**What it is for**: keeping one active space *consistent* along a path -- a
+reaction coordinate, a bond-dissociation curve, a scan. Active spaces chosen
+per structure drift apart, the total correlation energy is then computed
+inconsistently, and the relative energies become erratic. The protocol maps
+the localized orbitals of the structures onto each other (no interpolation of
+structures needed) and transfers a selection through the map: any orbital that
+changes along the path (a bond being broken or formed) ends up in a
+non-matchable block, and the whole block joins the active space together
+whenever one of its orbitals is selected anywhere.
+
+**What you need**: one `orca_2json` export per structure -- *localized*, since
+localized orbitals are what transfers between structures. The exports must
+carry the `T-Matrix` (the kinetic criterion) and the `S-Matrix`/labels (the
+shell-population criterion): export with a `<basename>.json.conf` file of
+`{"MOCoefficients": true, "1elIntegrals": ["H", "S", "T", "V"]}`. Localize
+with `orca_loc` first (the frozen example localizes the occupied block with
+`LocMet 4`, the IBO scheme; ORCA's IAO-based methods refuse virtual orbitals,
+so the virtual block uses Foster-Boys, `LocMet 2`). All structures must use
+the same basis set, atom order and orientation.
+
+**How**: menu 17 -> a manifest JSON:
+
+```json
+{
+  "structures": [
+    {"name": "r=1.094", "export": "n2_scan_1.094.loc.json"},
+    {"name": "r=2.600", "export": "n2_scan_2.600.loc.json"}
+  ],
+  "tau": 0.5,
+  "selections": {"r=1.094": [4]}
+}
+```
+
+Export paths are relative to the manifest. `tau` (optional) is the threshold
+of both criteria; without it the source's rule is applied per orbital set: the
+threshold minimising the non-matchable count, with the whole curve printed.
+`selections` (optional) names the orbitals to make consistent, per structure
+(0-based indices; e.g. the output of an entropy-based selection for one
+structure).
+
+**What you get**: per structure the descriptor table (occupation, kinetic
+energy, largest shell-wise populations), the tau curve, the classes the map
+built, the non-matchable sets, and -- with `selections` -- each structure's
+consistent active space; plus a report file (`<manifest>.mapping.fbk.md`) with
+the citations.
+
+**How to read it**:
+
+- the criteria are the source's Eq. (1): same kinetic energy
+  (`|t_i - t_j| < tau`, in Eh) and the same shell-wise populations (summed
+  absolute difference `< tau`), with one `tau` for both;
+- a **class** is a set of orbitals that map onto each other across *all*
+  structures, in both directions and as a whole set -- degenerate orbitals
+  (e.g. a symmetric trio) ride together. The listed non-matchable block is the
+  changing set: in the N2 scan example the two 1s cores and the three bond
+  orbitals map, while the two one-centre hybrids (whose s/p ratio follows the
+  bond length) are the non-matchable set at `tau = 0.5`;
+- the **tau curve** is the feature, not one number: its plateaus are where the
+  non-matchable count is stable (the source reads its own example at
+  `tau <= 0.5`, and so does the example here);
+- **populations here are shell-wise Löwdin populations** computed from the
+  export; the source uses IAO ones (its own text licenses any orbital-wise
+  population analysis). The population *scale* therefore differs from the
+  source's, so `tau` is a data-calibrated parameter here, never copied from
+  the source's absolute values -- read the curve, not a recalled threshold.
+
+**Boundaries**: the mapping compares structures in their own frames -- same
+basis, same atom order, same orientation; two structures that differ in the AO
+shell set or the orbital count are refused. The virtual manifold of a tiny
+system can be genuinely unmatchable (diffuse orbitals reorganize with
+geometry): the report shows it rather than hiding it. The selection itself is
+not made here: menu 12's entropy protocol (or any other) provides it, and this
+menu reports the consistent space it implies.
+
 ## Appendix A Command line
 
 ```text

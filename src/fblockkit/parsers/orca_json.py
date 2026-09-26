@@ -31,7 +31,14 @@ What this reader returns
   these coefficients);
 - ``overlap`` is ``None`` when the export has no ``S-Matrix`` block, which is not
   an error: the blocks written into the JSON depend on the ``orca.json.conf``
-  configuration and on the requested options.
+  configuration and on the requested options. The same holds for ``kinetic``
+  (the ``T-Matrix`` block): an export is asked for the one-electron matrices
+  with a configuration such as ``{"MOCoefficients": true, "1elIntegrals":
+  ["H", "S", "T", "V"]}`` written next to the ``.gbw`` as ``<basename>.json.conf``
+  (measured on ORCA 6.1.1: the run picks the file up and writes ``S-Matrix`` /
+  ``H-Matrix`` / ``T-Matrix`` / ``V-Matrix`` into ``Molecule``). The kinetic
+  matrix is what the cross-structure orbital mapping (``analysis/
+  orbital_mapping``) needs: per-orbital kinetic energies are ``c_i^T T c_i``.
 
 The overlap matrix is read from ``Molecule.S-Matrix``, the location measured in
 the fixtures below (ORCA 6.1.1). The manual page for ``orca_2json`` additionally
@@ -148,6 +155,7 @@ class OrcaJson:
     mo_occupations: tuple[float, ...]
     mo_energies: tuple[float, ...]
     overlap: tuple[tuple[float, ...], ...] | None = None
+    kinetic: tuple[tuple[float, ...], ...] | None = None
     ao_labels: tuple[AoLabel, ...] | None = None
 
 
@@ -208,10 +216,14 @@ def parse_orca_json(path: str | Path) -> OrcaJson:
             )
 
     atoms, coordinates = _atom_labels(molecule)
-    # Absent S-Matrix: a documented export variant, not a defect.
+    # Absent S-Matrix / T-Matrix: documented export variants (the requested
+    # blocks depend on the export configuration), not defects.
     overlap = None
     if "S-Matrix" in molecule:
         overlap = _square_matrix(molecule["S-Matrix"], "Molecule.S-Matrix", n_ao)
+    kinetic = None
+    if "T-Matrix" in molecule:
+        kinetic = _square_matrix(molecule["T-Matrix"], "Molecule.T-Matrix", n_ao)
     # Absent OrbitalLabels: likewise a documented export variant; when present
     # the list is positional (AO column k <-> label k) and must fit n_ao.
     ao_labels = None
@@ -236,6 +248,7 @@ def parse_orca_json(path: str | Path) -> OrcaJson:
         mo_occupations=tuple(occupations),
         mo_energies=tuple(energies),
         overlap=overlap,
+        kinetic=kinetic,
         ao_labels=ao_labels,
     )
 

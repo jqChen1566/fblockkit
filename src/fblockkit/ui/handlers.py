@@ -16,7 +16,7 @@ import numpy as np
 
 from ..analysis import atomic_terms, avas, cf_declaration, crystal_field, point_charge
 from ..analysis import entropy_rdm, environment_spin
-from ..analysis import magnetic_doublets, orbital_portrait
+from ..analysis import magnetic_doublets, orbital_mapping, orbital_portrait
 from ..analysis import orbital_space as orbital_space_analysis
 from ..analysis import evidence_for, run_all
 from ..analysis import geometry as geometry_analysis
@@ -1086,6 +1086,52 @@ def magnetic_doublets_report(session: Session) -> None:
     session.say(f"Report written: {md_path}")
 
 
+# --- 17 cross-structure orbital mapping --------------------------------------
+
+
+def orbital_mapping_report(session: Session) -> None:
+    """Menu 17: map the orbitals of a structure series and make a selection consistent."""
+    path_text = session.ask(
+        "Structures manifest JSON path (a list of structures with their exports; see the "
+        "user guide)"
+    )
+    if not path_text:
+        session.say("Cancelled (no path given).")
+        return
+    path = Path(path_text)
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        entries = payload["structures"]
+        structures = []
+        for entry in entries:
+            export_path = Path(str(entry["export"]))
+            if not export_path.is_absolute():
+                export_path = path.parent / export_path
+            structures.append(
+                orbital_mapping.descriptors_from_export(
+                    parse_orca_json(export_path), str(entry.get("name") or export_path.name)
+                )
+            )
+        tau = payload.get("tau")
+        selections = payload.get("selections")
+        section = orbital_mapping.run(
+            structures,
+            tau=float(tau) if tau is not None else None,
+            selections=selections,
+        )
+    except (OSError, KeyError, TypeError, ValueError, ParserError) as exc:
+        session.say(f"Orbital mapping failed: {exc}")
+        return
+    session.say(section.body)
+    report_lines = f"## {section.title}\n\n{section.body}\n"
+    refs = references_section(orbital_mapping.evidence())
+    if refs is not None:
+        report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
+    md_path = path.with_name(path.name + ".mapping.fbk.md")
+    md_path.write_text(report_lines, encoding="utf-8")
+    session.say(f"Report written: {md_path}")
+
+
 HANDLERS = {
     "report_output": report_output,
     "geometry_report": geometry_report,
@@ -1103,5 +1149,6 @@ HANDLERS = {
     "avas_target": avas_target,
     "orbital_portrait": orbital_portrait_report,
     "magnetic_doublets": magnetic_doublets_report,
+    "orbital_mapping": orbital_mapping_report,
     "quit": quit_session,
 }

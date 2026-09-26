@@ -24,6 +24,20 @@ Active-orbital window & 0.02--1.98 & ORCA's auto-ICE convention, borrowed here
 f-electron count & filling rule & Standard filling for the f$^n$ configuration
   of the trivalent (or stated-valence) ion; drives the active-space suggestion
   only & \textsf{[Measured]} module tests \\
+Cross-structure mapping & $\tau$ read from the curve (the source's examples:
+  $\tau \le 0.5$) & Menu~\menu{17}: orbitals of different structures match when
+  their kinetic energies and their shell-wise populations agree within one
+  threshold $\tau$; the tau curve's plateaus are the feature, not one number.
+  The populations here are shell-wise L\"owdin (the source's IAO choice is
+  licensed by its own text as ``any orbital-wise population analysis''), so
+  $\tau$ is data-calibrated here, never copied from the source's absolute
+  values & \textsf{[Literature]} Bensberg \& Reiher 2023, Eqs.~(1)/(8) \\
+Non-matchable block & one class together & Menu~\menu{17}: the orbitals that
+  change along the path cannot be matched in every structure; they join the
+  active space as one block whenever one of them is selected anywhere (the
+  source's union rule).  Measured on the N$_2$ scan: cores map, the
+  one-centre hybrids are the block & \textsf{[Literature]} same;
+  \textsf{[Measured]} the frozen scan fixtures \\
 \bottomrule
 \end{tabularx}
 \end{center}

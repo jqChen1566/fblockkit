@@ -31,6 +31,10 @@ cp "$REPO/fixtures/orca/n2_fcidump_step_a.out" work/
 cp "$REPO/fixtures/orca/n2_fcidump.fcidump" work/FCIDUMP
 cp "$REPO/fixtures/orca/n2_fcidump.canonical.json" work/canonical.json
 cp "$REPO/fixtures/orca/n2_fcidump.localized.json" work/localized.json
+# the cross-structure mapping chain of menu 17 (three localized scan exports)
+cp "$REPO/fixtures/orca/n2_scan_1.094.loc.json" work/
+cp "$REPO/fixtures/orca/n2_scan_1.600.loc.json" work/
+cp "$REPO/fixtures/orca/n2_scan_2.600.loc.json" work/
 
 for script in scripts/*.txt; do
   name=$(basename "$script" .txt)
