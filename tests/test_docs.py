@@ -54,6 +54,7 @@ def test_doc_mentions_each_menu_title_topic():
         "APC orbital ranking",
         "ASS1ST round-1 input",
         "ASS1ST selection round",
+        "QICAS active-space optimization",
     ):
         assert keyword in text, keyword
 

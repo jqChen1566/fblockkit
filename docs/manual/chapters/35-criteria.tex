@@ -98,6 +98,22 @@ ASS1ST quasi-NOON band & $[T, 2-T]$; $T=0.05$ conservative, $0.03$ relaxed
   (exactly diagonal in its natural-orbital basis, couplings $10^{-15}$) &
   \textsf{[Literature]} Khedkar \& Roemelt 2019 \S2.4, 2020 \S2.4;
   \textsf{[Measured]} \code{tests/test\_ass1st.py} \\
+QICAS out-of-CAS correlation & no threshold; minimize
+  $F_{\mathrm{QI}} = \sum_{i \notin A} S(\rho_i)$ & Menu~\menu{24}: the cost
+  function bounds the CASCI error from above (the source's Theorem 1,
+  $\Delta E \le \Delta E_{\max}/\ln 4 \cdot F_{\mathrm{QI}}$), depends only on
+  the RDMs, and is minimized by the source's gradient-free Jacobi sweep
+  (1e-2 grid, 1e-4 refinement, $\epsilon_1 = 10^{-8}$, 200-cycle cap).  The
+  final space is read by occupancy (non-active orbital $>1$ closed).
+  Measured anchors on the N2 CAS(6,6) window: an awkward $(2e, 4o)$ request is
+  repaired to the $(4e, 4o)$ $\pi$ space --- $F_{\mathrm{QI}}$ $0.2481 \to
+  0.0302$, CASCI gap $\Delta E$ $6.70\times10^{-2}$~Eh $\to$
+  $5.33\times10^{-3}$~Eh, equal to the $(4,4)$ target's own fixed point; the
+  Theorem-1 check holds with the run's numbers.  Scope: window-restricted
+  (exact RDMs from the FCIDUMP route), not comparable with the source's
+  full-space DMRG values &
+  \textsf{[Literature]} Ding, Knecht \& Schilling 2023 Eqs.~(2)--(8),
+  Theorem 1, Appendices A--C; \textsf{[Measured]} \code{tests/test\_qicas.py} \\
 \bottomrule
 \end{tabularx}
 \end{center}

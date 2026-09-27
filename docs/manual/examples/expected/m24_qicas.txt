@@ -26,61 +26,39 @@ Available functions:
   23  ASS1ST selection round (a NEVPT2-density export -> quasi-NOON tables + the next round's input)
   24  QICAS active-space optimization (an FCIDUMP -> F_QI-minimized orbitals and the CASCI check)
    0  Quit
-Choose a number (Enter = leave empty)> 23
-orca_2json export path (a CASSCF + FIC-NEVPT2 round; the user guide has the exact request) (Enter = leave empty)> work/n2_ass1st.json
-NOON band: T (band [T, 2-T]) or T_ext,T_int (Enter = 0.05) (Enter = leave empty)> 0.03
-State weights, comma-separated (Enter = equal; used only for state-averaged rounds) (Enter = leave empty)> 
-Previously visited spaces 'ne,no' space-separated (Enter = none; enables the cycle warning) (Enter = leave empty)> 
-Method/basis keywords for the next round (Enter = RHF def2-SVP TightSCF) (Enter = leave empty)> 
-ASS1ST selection round (NEVPT2 quasi-natural occupation numbers):
-  system: n2_ass1st; 6 active orbitals (6e) against 4 internal and 18 external; single state
-  band: external line 0.03, internal line 1.97 (the source's quasi-NOON window; 2 - T for a single threshold T)
+Choose a number (Enter = leave empty)> 24
+FCIDUMP path (a converged CASSCF dump; the window QICAS optimizes within) (Enter = leave empty)> work/FCIDUMP
+CASSCF output path (matches the CI root to the printed energy; Enter = skip) (Enter = leave empty)> work/n2_fcidump_step_a.out
+Target active space nel,norb within the window (e.g. 4,4; the source's (N_CAS, D_CAS)) (Enter = leave empty)> 2,4
+Rotation set: touch (every pair touching a non-active orbital, the source's chemical-accuracy choice) or exclusive (active/non-active only, its economical variant) (Enter = touch) (Enter = leave empty)> touch
+QICAS orbital optimization (out-of-CAS correlation over orbital rotations):
+  window: 6 orbitals, 6 electrons; target (2e, 4o) with 2 closed, 4 active, 0 virtual
+  requested partition (by natural occupation): closed [0, 2], active [1, 3, 4, 5], virtual []
 
-  internal block    occupation  in band
-                       2.00000  
-                       2.00000  
-                       1.98196  
-                       1.97680  
-  external block    occupation  in band
-                       0.01566  
-                       0.00818  
-                       0.00531  
-                       0.00492  
-                       0.00492  
-                       0.00377  
-                       0.00377  
-                       0.00344  
-                       0.00344  
-                       0.00153  
-                       0.00153  
-                       0.00148  
-                       0.00148  
-                       0.00136  
-                       0.00087  
-                       0.00070  
-                       0.00070  
-                       0.00012  
+  orbital  occupation  S initial  S optimized
+        0     1.99345     0.0223       0.0078
+        1     1.93634     0.2258       0.2258
+        2     1.93634     0.2258       0.0223
+        3     0.06599     0.2302       0.2302
+        4     0.06599     0.2302       0.2302
+        5     0.00190     0.0078       0.2258
 
-Active orbitals (CASSCF natural occupations of this round):
-  MO   4  occupation 1.99345
-  MO   5  occupation 1.93634
-  MO   6  occupation 1.93634
-  MO   7  occupation 0.06599
-  MO   8  occupation 0.06599
-  MO   9  occupation 0.00190
+  F_QI (non-active entropies): 0.2481 -> 0.0302  (2 rotations accepted in 2 cycle(s), set 'touch', eps1 = 1e-08)
 
-Suggestion:
-  reassign active to internal (occupation at the top of the band): 4
-  reassign active to external (occupation at the bottom of the band): 9
-  next space: (4e, 4o) -- from (6e, 6o)
+Energy checks (window: exact CI; CASCI in the partition):
+  E(window FCI)          = -108.950671945 Eh
+  E(CASCI, initial)      = -108.883698113 Eh  (+6.697383e-02 vs FCI)
+  E(CASCI, optimized)    = -108.945340635 Eh  (+5.331310e-03 vs FCI)
+  Theorem-1 check: gap 5.331e-03 <= dE_max/ln4 * F_QI = 1.034e-01 (holds)
+  final partition (occupancy reading of the optimized basis): closed [2], active [1, 3, 4, 5], virtual [0]  [the optimizer re-shuffled the non-active slots: the final space reads as (4e, 4o)]
 
 Boundaries and checks:
-  - the density is ORCA's FIC-NEVPT2 unrelaxed density; the source works with the SC-NEVPT2 first-order density -- same object family (the 0+1-order density), different contraction, so counts near the thresholds may shift (carried as an honest substitution; no literature comparison exists)
-  - the source's own caveats: the outcome depends on the initial space (different sensible initials converge together only with conservative thresholds), and growing plus shrinking can cycle between two spaces -- break ties by chemical judgment
-  - every block table is this tool's own block diagonalization of the exported density (the source's construction); ORCA's printed NOON list is the whole-space naturalization and is not used
-  - multiplicity 1; the next round's input is generated next to this report by the menu
-Report written: work\n2_ass1st.json.ass1st.fbk.md
-Next round written: work\n2_ass1st.r2.inp at (4e, 4o), with work\n2_ass1st.r2.json.conf. Run it, export n2_ass1st.r2.json, and feed that back to this menu; give the visited spaces (including this round's) to get the cycle warning right.
+  - the RDMs are the *exact* ground state of the FCIDUMP window (the four-state entropy route); the source drives QICAS with a low-bond-dimension DMRG ground state over the full space -- this is the source's own subset application, so F_QI here sums over the window's non-active orbitals only and is not comparable with the source's full-space values
+  - the partition is this tool's documented ordering choice (the dumped orbitals re-sorted by occupation); the source fixes closed/active/virtual as index ranges of an ordered basis
+  - the optimized rotation is reported as a matrix and used for the CASCI check; writing it back into a .gbw (the mkl route of menu 18) is not implemented
+  - the source's size-selection variant (minimize the total orbital entropy and read the plateau of the threshold diagram; their Appendix C) is not implemented
+  - the run's printed CASSCF energy cross-check: applied (the CI root was matched to it)
+Report written: work\FCIDUMP.qicas.fbk.md
 
 Available functions:
    1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)

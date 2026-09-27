@@ -24,6 +24,7 @@ Available functions:
   21  APC orbital ranking (an export with the Fock exchange block -> ranked active space at a CSF cap)
   22  ASS1ST round-1 input (a structure + an initial active space -> a CASSCF+FIC-NEVPT2 round)
   23  ASS1ST selection round (a NEVPT2-density export -> quasi-NOON tables + the next round's input)
+  24  QICAS active-space optimization (an FCIDUMP -> F_QI-minimized orbitals and the CASCI check)
    0  Quit
 Choose a number (Enter = leave empty)> 13
 First orca_2json export (space A) path (Enter = leave empty)> work/canonical.json
@@ -67,6 +68,7 @@ Available functions:
   21  APC orbital ranking (an export with the Fock exchange block -> ranked active space at a CSF cap)
   22  ASS1ST round-1 input (a structure + an initial active space -> a CASSCF+FIC-NEVPT2 round)
   23  ASS1ST selection round (a NEVPT2-density export -> quasi-NOON tables + the next round's input)
+  24  QICAS active-space optimization (an FCIDUMP -> F_QI-minimized orbitals and the CASCI check)
    0  Quit
 Choose a number (Enter = leave empty)> 0
 Goodbye.

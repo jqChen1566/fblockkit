@@ -1,0 +1,6 @@
+24
+work/FCIDUMP
+work/n2_fcidump_step_a.out
+2,4
+touch
+0

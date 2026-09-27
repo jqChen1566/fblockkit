@@ -75,6 +75,9 @@ items:
   - number: "23"
     title: "ASS1ST selection round (a NEVPT2-density export -> quasi-NOON tables + the next round's input)"
     handler: ass1st_round
+  - number: "24"
+    title: "QICAS active-space optimization (an FCIDUMP -> F_QI-minimized orbitals and the CASCI check)"
+    handler: qicas_optimize
   - number: "0"
     title: Quit
     handler: quit

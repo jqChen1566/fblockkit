@@ -17,7 +17,7 @@ import numpy as np
 from ..analysis import atomic_terms, avas, cf_declaration, crystal_field, point_charge
 from ..analysis import entropy_rdm, environment_spin
 from ..analysis import apc, ass1st, dm_selection, magnetic_doublets, orbital_mapping
-from ..analysis import orbital_portrait
+from ..analysis import orbital_portrait, qicas
 from ..recipe import ass1st as ass1st_recipe
 from ..recipe import dm_batch, guess_transfer
 from ..analysis import orbital_space as orbital_space_analysis
@@ -1564,6 +1564,70 @@ def ass1st_round(session: Session) -> None:
     )
 
 
+def qicas_optimize(session: Session) -> None:
+    """Menu 24: optimize an active space by the QICAS F_QI minimization (an FCIDUMP in)."""
+    fcidump_text = session.ask(
+        "FCIDUMP path (a converged CASSCF dump; the window QICAS optimizes within)"
+    )
+    if not fcidump_text:
+        session.say("Cancelled (no FCIDUMP path given).")
+        return
+    output_text = session.ask(
+        "CASSCF output path (matches the CI root to the printed energy; Enter = skip)"
+    ).strip()
+    space_text = session.ask(
+        "Target active space nel,norb within the window (e.g. 4,4; the source's "
+        "(N_CAS, D_CAS))"
+    ).strip()
+    pairs_text = session.ask(
+        "Rotation set: touch (every pair touching a non-active orbital, the source's "
+        "chemical-accuracy choice) or exclusive (active/non-active only, its economical "
+        "variant) (Enter = touch)"
+    ).strip().lower()
+    if pairs_text not in ("", "touch", "exclusive"):
+        session.say(f"Cancelled (unknown rotation set {pairs_text!r}).")
+        return
+    try:
+        reference = None
+        if output_text:
+            result = parse_auto(Path(output_text))
+            casscf = result.sections.get("casscf", {})
+            if not casscf.get("present") or not casscf.get("converged"):
+                session.say(
+                    "The output carries no converged CASSCF section to match the CI "
+                    "root against. Next step: give the converged run's output, or leave "
+                    "the output prompt empty to use the lowest root of the FCIDUMP's "
+                    "Ms sector."
+                )
+                return
+            reference = casscf.get("energy")
+        tokens = [token for token in space_text.replace(",", " ").split() if token]
+        if len(tokens) != 2:
+            raise qicas.QicasError(
+                f"the target space {space_text!r} is not 'nel,norb'."
+            )
+        n_cas, n_act = (int(token) for token in tokens)
+        dump = parse_fcidump(Path(fcidump_text))
+        section = qicas.run(
+            dump,
+            n_cas=n_cas,
+            n_active_orbitals=n_act,
+            pairs_mode=pairs_text or "touch",
+            reference_energy=reference,
+        )
+    except (ParserError, qicas.QicasError, OSError, ValueError) as exc:
+        session.say(f"QICAS optimization failed: {exc}")
+        return
+    session.say(section.body)
+    report_lines = f"## {section.title}\n\n{section.body}\n"
+    refs = references_section(qicas.evidence())
+    if refs is not None:
+        report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
+    md_path = Path(fcidump_text).with_name(Path(fcidump_text).name + ".qicas.fbk.md")
+    md_path.write_text(report_lines, encoding="utf-8")
+    session.say(f"Report written: {md_path}")
+
+
 HANDLERS = {
     "report_output": report_output,
     "geometry_report": geometry_report,
@@ -1588,5 +1652,6 @@ HANDLERS = {
     "apc_ranking": apc_ranking,
     "ass1st_start": ass1st_start,
     "ass1st_round": ass1st_round,
+    "qicas_optimize": qicas_optimize,
     "quit": quit_session,
 }

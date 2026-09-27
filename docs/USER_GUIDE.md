@@ -1033,6 +1033,58 @@ as a further shrink.  It is the multi-solution behaviour this project records
 elsewhere, and the reason for the boundary note in menu 22: check the round's
 active orbitals each time.
 
+## 24 QICAS active-space optimization (an FCIDUMP -> F_QI-minimized orbitals)
+
+**What it is for**: QICAS (Ding, Knecht & Schilling 2023) optimizes the orbital
+basis of a CAS(n,m) scheme *without touching the Hamiltonian*: the cost function
+is the out-of-CAS correlation `F_QI` -- the sum of the four-state entropies of
+the non-active orbitals -- which depends only on the 1- and 2-RDM, and the
+source's Theorem 1 bounds the CASCI error by it
+(`E_CASCI - E_FCI <= dE_max/ln4 * F_QI`).  Minimizing F_QI over orbital
+rotations therefore realigns the active space so that the CASCI approaches the
+FCI.
+
+**What you need**: the FCIDUMP of a converged CASSCF run (the same file menu 12
+reads), the target active space `nel,norb` within the window, and -- optionally
+-- the run's output so the CI root is matched to the printed CASSCF energy (the
+menu-12 cross-check).
+
+**How**: menu 24 -> FCIDUMP path; output path (Enter = skip the cross-check);
+the target `nel,norb`; the rotation set (`touch` = every pair touching a
+non-active orbital, the source's chemical-accuracy choice; `exclusive` =
+active/non-active pairs only, its economical variant for large spaces).
+
+**What you get**: the per-orbital entropy profile before/after the optimization,
+the F_QI values, the CASCI energies in the initial and the optimized basis
+against the window FCI, the Theorem-1 check with the run's own numbers, and a
+report (`<FCIDUMP>.qicas.fbk.md`) with the citations.
+
+**How to read it**:
+
+- the partition is read two ways: the *requested* one (this tool orders the
+  dumped orbitals by natural occupation and cuts the highest as closed, the
+  lowest as virtual) and the *final* one -- the occupancy reading of the
+  optimized basis (an orbital counts as closed if its occupancy ends above 1).
+  The optimizer may rotate a strongly correlated orbital out of a closed slot
+  and an uncorrelated one in, so the final space can read as a different
+  (n,m) -- that is the mechanism, and the manual example shows it: an awkward
+  (2,4) request on N2 is repaired to the (4,4) pi space, and the CASCI gap
+  drops from 6.7e-2 Eh to 5.3e-3 Eh;
+- the Theorem-1 line is a genuine check, not a decoration: it is evaluated with
+  `dE_max` from the CI spectrum and F_QI; if a target sits so far from the
+  window ground state that the reference overlap deficit exceeds 1/2 (the
+  source's proof assumption), the inequality is reported as not informative
+  rather than silently skipped;
+- **scope**: this is QICAS applied *on the FCIDUMP window* (the source's own
+  subset application) with exact RDMs from the four-state-entropy route.  The
+  source drives it from a full-space DMRG ground state, which this toolbox does
+  not have -- so F_QI here is not comparable with the source's full-space
+  numbers;
+- the optimized rotation is reported as a matrix and used for the CASCI check;
+  writing it back into a `.gbw` (the mkl route of menu 18) is not implemented,
+  and neither is the source's size-selection variant (its Appendix C: minimize
+  the total orbital entropy, read the plateau of the threshold diagram).
+
 ## Appendix A Command line
 
 ```text

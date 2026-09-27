@@ -116,6 +116,7 @@ class FciState:
     root_index: int
     determinants: tuple[tuple[int, int], ...]
     coefficients: tuple[float, ...]
+    spectrum: tuple[float, ...] = ()  # all active-space eigenvalues (ascending)
 
     @property
     def energy_total(self) -> float:
@@ -384,6 +385,7 @@ def solve_fci(
         root_index=int(root),
         determinants=dets,
         coefficients=tuple(float(c) for c in vector),
+        spectrum=tuple(float(value) for value in eigenvalues),
     )
 
 

@@ -163,6 +163,7 @@ def main() -> int:
                     "21", "work/n2_apc.json", "apc", "23", "max(10,10)", "fock",
                     "22", "work/h2o.xyz", "0", "1", "4,4", "1", "", "",
                     "23", "work/n2_ass1st.json", "0.03", "", "", "",
+                    "24", "work/FCIDUMP", "work/n2_fcidump_step_a.out", "2,4", "touch",
                     "8", "work/saved.txt",
                     "0",
                 ]
@@ -406,6 +407,17 @@ def main() -> int:
                 "  nel 4" in next_input and "  norb 4" in next_input
                 and "PTSettings" in next_input,
                 "menu 23 wrote the next round's input at the suggested space",
+            )
+
+            qicas_report = read("FCIDUMP.qicas.fbk.md")
+            check(
+                "QICAS orbital optimization" in qicas_report
+                and "Theorem-1 check" in qicas_report
+                and "(holds)" in qicas_report
+                and "0.2481 -> 0.0302" in qicas_report
+                and "reads as (4e, 4o)" in qicas_report,
+                "menu 24 report: the awkward (2,4) request is repaired to the pi "
+                "space with the Theorem-1 check holding",
             )
 
             check(product("saved.txt").is_file(), "menu 8 wrote the session script")
