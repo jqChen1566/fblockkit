@@ -55,6 +55,11 @@ cp "$REPO/fixtures/orca/n2_apc.json" work/
 # the ASS1ST round export of menu 23 (N2/def2-SVP CAS(6,6) + FIC-NEVPT2 with
 # the unrelaxed NEVPT2 density in the sidecar)
 cp "$REPO/fixtures/orca/n2_ass1st.json" work/
+# the AEGISS benzene platform of menu 25 (the pi-window CASSCF export, its
+# FCIDUMP and the run output for the energy cross-check)
+cp "$REPO/fixtures/orca/benzene.json" work/
+cp "$REPO/fixtures/orca/benzene.fcidump" work/
+cp "$REPO/fixtures/orca/benzene.out" work/
 
 for script in scripts/*.txt; do
   name=$(basename "$script" .txt)

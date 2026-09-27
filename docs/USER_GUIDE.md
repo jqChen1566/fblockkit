@@ -1085,6 +1085,59 @@ report (`<FCIDUMP>.qicas.fbk.md`) with the citations.
   and neither is the source's size-selection variant (its Appendix C: minimize
   the total orbital entropy, read the plateau of the threshold diagram).
 
+## 25 AEGISS selection (entropy screening + an AO projection)
+
+**What it is for**: the AEGISS workflow (Tarocco et al., arXiv 2026) joins
+the two complementary selection ideas: *how correlated* an orbital is (the
+single-orbital entropy of the AutoCAS family) and *whether it belongs to the
+chemistry of interest* (the atomic-orbital projection of the AVAS family).
+The result is a compact, chemically anchored active space.
+
+**What you need**: the `orca_2json` export of the CASSCF gbw (needs S and the
+orbital labels), the same run's FCIDUMP (for the exact entropies -- the
+four-state-entropy route), optionally the run's output for the energy
+cross-check, and the AO label of the chemistry of interest (`C pz`, `Fe d`,
+`N p`).
+
+**How**: menu 25 -> export path; FCIDUMP path; output path (Enter = skip);
+the AO label; the entropy fraction (`tau_E = tau * S_max`; Enter = 0.1, the
+source's AutoCAS-style default -- its benzene example used 0.2); the
+projection threshold (Enter = 0.5, the source's value).
+
+**What you get**: the five-step trace -- every window orbital's occupation,
+exact entropy, screen verdict, projection weight and final verdict -- the
+resulting `(n_electrons, n_orbitals)`, and a report
+(`<export>.aegiss.fbk.md`) with the citations.
+
+**How to read it**:
+
+- the entropy screen keeps every orbital strictly above `tau * S_max` (the
+  relative line, so it transfers between systems); the projection keeps the
+  entropy-screened orbitals whose weight exceeds the threshold;
+- **the projection weight is the projection norm** `sum |O[eta, p]|^2` (the
+  standard AVAS reading).  The source writes it as a signed row sum; measured
+  on the benzene fixture that sum cancels by symmetry for every nodal pi
+  orbital (only the nodeless a2u survives), so this tool uses the norm and
+  says so in every report.  On the same fixture the norm separates cleanly:
+  sigma orbitals measure exactly 0.0000, the pi manifold 0.05-3.09;
+- the AO label's shell index is optional: `C pz` matches every pz shell of
+  every carbon (12 functions here), `C 2pz` only the second shell (6).
+  Measured on benzene: the whole-family label keeps all six pi orbitals at
+  the 0.5 threshold -- the textbook (6e, 6o) -- while the shell-resolved
+  label narrows the space, which is the resolution knob the label offers;
+- **scope, stated in the report**: the entropies are exact over the FCIDUMP
+  window (the source estimates them from a DMRG over a larger window), and
+  the target is the calculation's own AO subset (the non-minimal AVAS route
+  of menu 14 -- the only one open to the f block).  Multi-group unions are run
+  one group per pass; the selection is delivered as the window orbitals to
+  include, and feeding it to a CASSCF needs the orbital-order machinery (see
+  menu 22's boundary note).
+
+**Measured anchor**: on the benzene/cc-pVDZ pi platform the exact window FCI
+energy reproduces the engine's printed CASSCF energy to eleven digits
+(-230.793818898, and the source's own benzene CASSCF -230.793770 agrees to
+5e-5), and the whole-family label recovers the (6e, 6o) pi space.
+
 ## Appendix A Command line
 
 ```text

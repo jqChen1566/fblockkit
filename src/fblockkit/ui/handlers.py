@@ -17,7 +17,7 @@ import numpy as np
 from ..analysis import atomic_terms, avas, cf_declaration, crystal_field, point_charge
 from ..analysis import entropy_rdm, environment_spin
 from ..analysis import apc, ass1st, dm_selection, magnetic_doublets, orbital_mapping
-from ..analysis import orbital_portrait, qicas
+from ..analysis import aegiss, orbital_portrait, qicas
 from ..recipe import ass1st as ass1st_recipe
 from ..recipe import dm_batch, guess_transfer
 from ..analysis import orbital_space as orbital_space_analysis
@@ -1628,6 +1628,72 @@ def qicas_optimize(session: Session) -> None:
     session.say(f"Report written: {md_path}")
 
 
+def aegiss_select(session: Session) -> None:
+    """Menu 25: the AEGISS selection -- entropy screening + an AO projection."""
+    export_text = session.ask(
+        "orca_2json export path (the gbw whose orbitals were dumped; needs S and the "
+        "orbital labels)"
+    )
+    if not export_text:
+        session.say("Cancelled (no export path given).")
+        return
+    fcidump_text = session.ask("FCIDUMP path (the same run's !FCIDUMP dump)")
+    if not fcidump_text:
+        session.say("Cancelled (no FCIDUMP path given).")
+        return
+    output_text = session.ask(
+        "CASSCF output path (matches the CI root to the printed energy; Enter = skip)"
+    ).strip()
+    label_text = session.ask(
+        "AO label: element + angular momentum (+ optional shell/component), e.g. "
+        "'C pz' or 'Fe d'"
+    ).strip()
+    if not label_text:
+        session.say("Cancelled (no AO label given).")
+        return
+    tau_text = session.ask(
+        "Entropy fraction tau (line = tau * S_max; Enter = 0.1, the source's default)"
+    ).strip()
+    epsilon_text = session.ask(
+        "Projection threshold on the weight (Enter = 0.5, the source's value)"
+    ).strip()
+    try:
+        reference = None
+        if output_text:
+            result = parse_auto(Path(output_text))
+            casscf = result.sections.get("casscf", {})
+            if not casscf.get("present") or not casscf.get("converged"):
+                session.say(
+                    "The output carries no converged CASSCF section to match the CI "
+                    "root against. Next step: give the converged run's output, or leave "
+                    "the output prompt empty to use the lowest root of the FCIDUMP's "
+                    "Ms sector."
+                )
+                return
+            reference = casscf.get("energy")
+        export = parse_orca_json(Path(export_text))
+        dump = parse_fcidump(Path(fcidump_text))
+        section = aegiss.run(
+            export,
+            dump,
+            label=label_text,
+            tau=float(tau_text) if tau_text else aegiss.AEGISS_DEFAULT_TAU,
+            epsilon=float(epsilon_text) if epsilon_text else aegiss.AEGISS_DEFAULT_EPSILON,
+            reference_energy=reference,
+        )
+    except (ParserError, aegiss.AegissError, OSError, ValueError) as exc:
+        session.say(f"AEGISS selection failed: {exc}")
+        return
+    session.say(section.body)
+    report_lines = f"## {section.title}\n\n{section.body}\n"
+    refs = references_section(aegiss.evidence())
+    if refs is not None:
+        report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
+    md_path = Path(export_text).with_name(Path(export_text).name + ".aegiss.fbk.md")
+    md_path.write_text(report_lines, encoding="utf-8")
+    session.say(f"Report written: {md_path}")
+
+
 HANDLERS = {
     "report_output": report_output,
     "geometry_report": geometry_report,
@@ -1653,5 +1719,6 @@ HANDLERS = {
     "ass1st_start": ass1st_start,
     "ass1st_round": ass1st_round,
     "qicas_optimize": qicas_optimize,
+    "aegiss_select": aegiss_select,
     "quit": quit_session,
 }

@@ -125,6 +125,9 @@ def main() -> int:
             "h2o_dm_casci_e6o6_sa4.out",
             "n2_apc.json",
             "n2_ass1st.json",
+            "benzene.json",
+            "benzene.fcidump",
+            "benzene.out",
         ):
             # the generator writes into its own examples/work directory
             shutil.copy(EXAMPLES / "work" / name, inputs / name)
@@ -164,6 +167,7 @@ def main() -> int:
                     "22", "work/h2o.xyz", "0", "1", "4,4", "1", "", "",
                     "23", "work/n2_ass1st.json", "0.03", "", "", "",
                     "24", "work/FCIDUMP", "work/n2_fcidump_step_a.out", "2,4", "touch",
+                    "25", "work/benzene.json", "work/benzene.fcidump", "work/benzene.out", "C pz", "", "",
                     "8", "work/saved.txt",
                     "0",
                 ]
@@ -418,6 +422,16 @@ def main() -> int:
                 and "reads as (4e, 4o)" in qicas_report,
                 "menu 24 report: the awkward (2,4) request is repaired to the pi "
                 "space with the Theorem-1 check holding",
+            )
+
+            aegiss_report = read("benzene.json.aegiss.fbk.md")
+            check(
+                "AEGISS active-space selection" in aegiss_report
+                and "final active space: (6e, 6o)" in aegiss_report
+                and "signed row sum" in aegiss_report
+                and "0.8096" in aegiss_report,
+                "menu 25 report: the benzene pi manifold is recovered as (6e, 6o) "
+                "with the weight-deviation note",
             )
 
             check(product("saved.txt").is_file(), "menu 8 wrote the session script")

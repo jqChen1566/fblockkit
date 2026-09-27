@@ -25,6 +25,7 @@ Available functions:
   22  ASS1ST round-1 input (a structure + an initial active space -> a CASSCF+FIC-NEVPT2 round)
   23  ASS1ST selection round (a NEVPT2-density export -> quasi-NOON tables + the next round's input)
   24  QICAS active-space optimization (an FCIDUMP -> F_QI-minimized orbitals and the CASCI check)
+  25  AEGISS selection (entropy screening + an AO projection -> a compact active space)
    0  Quit
 Choose a number (Enter = leave empty)> 5
 Search keywords (several words, space separated) (Enter = leave empty)> mokit
@@ -57,6 +58,7 @@ Available functions:
   22  ASS1ST round-1 input (a structure + an initial active space -> a CASSCF+FIC-NEVPT2 round)
   23  ASS1ST selection round (a NEVPT2-density export -> quasi-NOON tables + the next round's input)
   24  QICAS active-space optimization (an FCIDUMP -> F_QI-minimized orbitals and the CASCI check)
+  25  AEGISS selection (entropy screening + an AO projection -> a compact active space)
    0  Quit
 Choose a number (Enter = leave empty)> 6
 Tool index id (e.g. openmolcas; search with menu 5) (Enter = leave empty)> openmolcas
@@ -94,6 +96,7 @@ Available functions:
   22  ASS1ST round-1 input (a structure + an initial active space -> a CASSCF+FIC-NEVPT2 round)
   23  ASS1ST selection round (a NEVPT2-density export -> quasi-NOON tables + the next round's input)
   24  QICAS active-space optimization (an FCIDUMP -> F_QI-minimized orbitals and the CASCI check)
+  25  AEGISS selection (entropy screening + an AO projection -> a compact active space)
    0  Quit
 Choose a number (Enter = leave empty)> 6
 Tool index id (e.g. openmolcas; search with menu 5) (Enter = leave empty)> liblan
@@ -176,6 +179,7 @@ Available functions:
   22  ASS1ST round-1 input (a structure + an initial active space -> a CASSCF+FIC-NEVPT2 round)
   23  ASS1ST selection round (a NEVPT2-density export -> quasi-NOON tables + the next round's input)
   24  QICAS active-space optimization (an FCIDUMP -> F_QI-minimized orbitals and the CASCI check)
+  25  AEGISS selection (entropy screening + an AO projection -> a compact active space)
    0  Quit
 Choose a number (Enter = leave empty)> 0
 Goodbye.

@@ -78,6 +78,9 @@ items:
   - number: "24"
     title: "QICAS active-space optimization (an FCIDUMP -> F_QI-minimized orbitals and the CASCI check)"
     handler: qicas_optimize
+  - number: "25"
+    title: "AEGISS selection (entropy screening + an AO projection -> a compact active space)"
+    handler: aegiss_select
   - number: "0"
     title: Quit
     handler: quit

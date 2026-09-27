@@ -203,6 +203,26 @@ Measured conventions from this batch (also in the `parsers/orca_json.py` and
   internal/external block diagonalization) is done by the analysis layer;
 - ORCA prints the SA state weights (`ROOT=n WEIGHT=`; equal by default).
 
+## AEGISS benzene platform added 2026-09-27 (server 101, the same ORCA 6.1.1)
+
+| Output | Input | Job | Parsing/analysis points covered | Run outcome |
+|---|---|---|---|---|
+| `benzene.json` (+ `benzene.out`, `benzene.fcidump`) | `inputs/benzene.inp` (+ `inputs/benzene_fcidump.inp`, `inputs/benzene.json.conf`) | benzene/cc-pVDZ RHF + ORCA's built-in `%scf avas` prepping the C pz window, then CASSCF(6,6) (D6h geometry, C-C 1.397 / C-H 1.093 Angstrom), the FCIDUMP dump step, and the export | the AEGISS anchors: exact window FCI -230.793818898 Eh (engine print to 11 digits; the source's benzene CASSCF -230.793770 agrees to 5e-5), pi occupations 1.961/1.901/1.901/0.100/0.100/0.037, exact entropies [0.174-0.342], projection weights on "C pz" [3.087, 1.867, 1.867, 0.992, 0.992, 0.810] -> (6e, 6o) | terminated normally (the FCIDUMP dump step exits 126 by design) |
+
+Points to note (also in the `analysis/aegiss.py` docstring):
+
+- the default CASSCF active window for `norb 6` is orbitals 18-23 of the RHF
+  ordering, which on benzene inserts one sigma orbital (`a1g`, occ 1.999) and
+  misses one pi (`a2u`) -- the AVAS-prepped run (`%scf avas` with the C pz
+  family; the block grammar is the one `analysis/avas.py` emits) places the
+  pure pi sextet in the window, matching the source's own setup;
+- the source's projection weight definition (a signed row sum) cancels by
+  symmetry for nodal pi orbitals on this fixture -- only the nodeless a2u
+  survives (weights -3.54, 0, 0, 0, 0, 0 over the six C 2pz targets); the
+  projection norm used instead measures sigma orbitals at exactly 0.0000;
+- the source's benzene CASSCF value (-230.793770) reproduces here to 5e-5,
+  validating that the fixture is the source's own platform.
+
 ## Known-behaviour notes
 
 - `generated_ce3_sarc2.out`: the active occupations are (1,0,0,0,0,0,0) -- putting the

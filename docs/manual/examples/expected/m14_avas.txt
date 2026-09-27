@@ -25,6 +25,7 @@ Available functions:
   22  ASS1ST round-1 input (a structure + an initial active space -> a CASSCF+FIC-NEVPT2 round)
   23  ASS1ST selection round (a NEVPT2-density export -> quasi-NOON tables + the next round's input)
   24  QICAS active-space optimization (an FCIDUMP -> F_QI-minimized orbitals and the CASCI check)
+  25  AEGISS selection (entropy screening + an AO projection -> a compact active space)
    0  Quit
 Choose a number (Enter = leave empty)> 14
 orca_2json export path (any gbw export) (Enter = leave empty)> work/canonical.json
@@ -91,6 +92,7 @@ Available functions:
   22  ASS1ST round-1 input (a structure + an initial active space -> a CASSCF+FIC-NEVPT2 round)
   23  ASS1ST selection round (a NEVPT2-density export -> quasi-NOON tables + the next round's input)
   24  QICAS active-space optimization (an FCIDUMP -> F_QI-minimized orbitals and the CASCI check)
+  25  AEGISS selection (entropy screening + an AO projection -> a compact active space)
    0  Quit
 Choose a number (Enter = leave empty)> 0
 Goodbye.

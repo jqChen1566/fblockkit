@@ -137,6 +137,10 @@ def _prepare_work() -> None:
     # the APC ranking export of menu 21 and the ASS1ST round export of menu 23
     shutil.copy(FIXTURES / "n2_apc.json", work / "n2_apc.json")
     shutil.copy(FIXTURES / "n2_ass1st.json", work / "n2_ass1st.json")
+    # the AEGISS benzene platform of menu 25
+    shutil.copy(FIXTURES / "benzene.json", work / "benzene.json")
+    shutil.copy(FIXTURES / "benzene.fcidump", work / "benzene.fcidump")
+    shutil.copy(FIXTURES / "benzene.out", work / "benzene.out")
 
 
 @pytest.fixture(scope="module")

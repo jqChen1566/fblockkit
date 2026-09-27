@@ -114,6 +114,20 @@ QICAS out-of-CAS correlation & no threshold; minimize
   full-space DMRG values &
   \textsf{[Literature]} Ding, Knecht \& Schilling 2023 Eqs.~(2)--(8),
   Theorem 1, Appendices A--C; \textsf{[Measured]} \code{tests/test\_qicas.py} \\
+AEGISS screens & entropy line $\tau_E = \tau\, S_{\max}$ ($\tau = 0.1$
+  default, the source's benzene example $0.2$); projection threshold
+  $\epsilon_D = 0.5$ & Menu~\menu{25}: keep every orbital above the relative
+  entropy line, then keep the entropy-screened orbitals whose projection
+  weight onto the chosen AO family exceeds $\epsilon_D$.  \textbf{Measured
+  deviation}: the source's signed row sum cancels for nodal $\pi$ orbitals
+  (on benzene only the nodeless $a_{2u}$ survives), so this tool uses the
+  projection norm $\sum_\eta |[O]_{\eta p}|^2$, on which $\sigma$ orbitals
+  measure $0.0000$ and the benzene $\pi$ manifold $0.05$--$3.09$ (measured
+  anchors: the whole-family label \code{C pz} recovers $(6e, 6o)$; the exact
+  window FCI energy reproduces the engine print to 11 digits and the
+  source's benzene CASSCF to $5\times10^{-5}$) &
+  \textsf{[Literature]} Tarocco et al.\ arXiv:2508.10671 \S3 (Eqs.~(4)--(7)),
+  \S4.1; \textsf{[Measured]} \code{tests/test\_aegiss.py} \\
 \bottomrule
 \end{tabularx}
 \end{center}
