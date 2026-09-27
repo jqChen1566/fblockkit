@@ -60,6 +60,7 @@ def test_doc_mentions_each_menu_title_topic():
         "DeltaSCF / MOM excited-state SCF input",
         "RAS / ORMAS model-space input",
         "Perturbed multistart batch",
+        "Imaginary-mode displacement",
     ):
         assert keyword in text, keyword
 

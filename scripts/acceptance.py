@@ -91,6 +91,9 @@ def main() -> int:
         # the menu-29 reference pair (the UKS CH4 wrong-convergence fixture)
         shutil.copy(FIXTURES / "ch4_diss_prop.mkl", inputs / "ch4_diss_prop.mkl")
         shutil.copy(FIXTURES / "inputs" / "ch4_diss_prop.inp", inputs / "ch4_diss_prop.inp")
+        # the menu-30 base input (the F+H2 healing rerun; the freq output is
+        # copied above from the shared examples/work set)
+        shutil.copy(FIXTURES / "inputs" / "fhh_reopt.inp", inputs / "fhh_reopt.inp")
         # the exact-entropy chain (menu 12): the converged CASSCF output, the
         # FCIDUMP it dumped, and the two orca_2json exports of the gbw
         shutil.copy(FIXTURES / "n2_fcidump_step_a.out", inputs / "n2_fcidump_step_a.out")
@@ -178,6 +181,7 @@ def main() -> int:
                     "28", "work/n2.xyz", "0", "1", "casscf", "ras", "6:2 2/2/2 2", "1", "1", "RHF def2-SVP",
                     "28", "work/n2.xyz", "0", "1", "rasci", "ormas", "6: 2 0 4, 2 0 4, 2 0 4", "1", "1", "accci", "0", "RHF def2-SVP",
                     "29", "work/ch4_diss_prop.mkl", "work/ch4_diss_prop.inp", "3", "20260927", "10", "15",
+                    "30", "work/fhh_optts_freq.out", "work/fhh_reopt.inp", "sum", "0.1",
                     "8", "work/saved.txt",
                     "0",
                 ]
@@ -486,6 +490,16 @@ def main() -> int:
                 and perturb_mkl.is_file()
                 and "$COEFF_BETA" in perturb_mkl.read_text(encoding="utf-8"),
                 "menu 29 wrote the perturbed restart input and its unrestricted mkl",
+            )
+
+            disp_p = read("fhh_reopt.disp_p.inp")
+            disp_m = read("fhh_reopt.disp_m.inp")
+            check(
+                "r2SCAN-3c Opt Freq" in disp_p
+                and "r2SCAN-3c Opt Freq" in disp_m
+                and disp_p.split("* xyz")[1].split("*")[0]
+                != disp_m.split("* xyz")[1].split("*")[0],
+                "menu 30 wrote the two displaced restart inputs (opposite signs)",
             )
 
             check(product("saved.txt").is_file(), "menu 8 wrote the session script")

@@ -1333,6 +1333,51 @@ that MC-SCF solutions can in principle be caught in local minima as well);
 this menu edits any input's guess, so the same procedure applies to a CASSCF
 reference, but no MC-SCF anchor is claimed here.
 
+## 30 Imaginary-mode displacement (a frequency output + its input)
+
+**What it is for**: the displacement stage of the automated
+no-imaginary-frequency workflow (the source's NIFREC, ChemRxiv 2026; the
+software is MIT-licensed and its protocol was read from the source).  A
+converged optimisation that shows an imaginary frequency is not the
+stationary point it claims to be; displacing the geometry along that mode
+and re-running `opt freq` moves the search off the saddle, and the source's
+success criterion is exactly the rerun: every frequency real.
+
+**What you need**: the frequency output that carries the imaginary mode
+(any Opt+Freq output -- the menu reads the last frequency block, the
+normal-mode vectors and the run's own final geometry and masses) and the
+base input of that run (its job keywords are kept; its coordinate block is
+replaced).
+
+**How**: menu 30 -> the frequency output path; the base input path; the
+vector choice (`sum` = all imaginary modes, the source's default, or
+`lowest` = the most negative mode alone); the displacement amplitude
+(Enter = 0.1 Angstrom, the source's `base_disp`).  The menu writes
+`<input>.disp_p.inp` and `<input>.disp_m.inp` -- the two signs of the
+displacement, so both branches of the mode are available in one round --
+plus a report `<output>.imagdisp.fbk.md` with the mode record.
+
+**How to read it**:
+
+- the two signs are an addition to the source (which grows one direction
+  0.1, 0.2, ... 0.5 Angstrom); if the rerun still shows imaginary
+  frequencies, escalate the amplitude along that schedule or switch the
+  vector choice;
+- the job keywords are the base input's own, so a plain `Opt` heals toward
+  the minimum on each side of the mode while `OptTS` follows the mode; the
+  `Freq` token is forced in, because the rerun's frequency check is the
+  criterion;
+- the displaced structure is a starting point, not a stationary point.
+
+**Measured anchor** (the F + H2 fixture): the TS's imaginary mode
+(-90.48 cm**-1) displaced +/-0.1 Angstrom (largest single-atom move
+0.055 Angstrom, masses de-weighted with the run's own values) relaxes, both
+signs, to geometries with no imaginary frequencies at -100.895757 Eh.  This
+mode is the near-linear bend of the shallow saddle, so the two signs land on
+the two mirror images of the same minimum -- the two-sided reaction
+separation needs an asymmetric-stretch mode, which this fixture does not
+carry.
+
 ## Appendix A Command line
 
 ```text

@@ -1,0 +1,12 @@
+# Fixture: F + H2 "minimum" optimisation that ended on the saddle -- the user
+# side of menu 30: the job keywords of the rerun (plain Opt + the forced Freq
+# verification), with the coordinate block the menu replaces.  The imaginary
+# mode and the geometry it belongs to come from fhh_optts_freq.out.
+! r2SCAN-3c Opt Freq
+%pal nprocs 4 end
+%maxcore 2000
+* xyz 0 2
+F     -0.000056   -0.000055   -2.767472
+H      0.000117    0.000115    0.687949
+H     -0.000061   -0.000060    1.429524
+*

@@ -20,6 +20,7 @@ cp "$REPO/fixtures/orca/n2_casscf_nevpt2.out" work/
 cp "$REPO/fixtures/orca/generated_ce3_sarc2.out" work/
 cp "$REPO/fixtures/orca/n2_stretch_local_spin.out" work/
 cp "$REPO/fixtures/orca/fhh_optts_freq.out" work/
+cp "$REPO/fixtures/orca/inputs/fhh_reopt.inp" work/
 cp "$REPO/fixtures/orca/n2_hf_clean.out" work/
 cp "$REPO/fixtures/orca/n2_diffuse.out" work/
 cp "$REPO/fixtures/orca/scf_noconv.out" work/

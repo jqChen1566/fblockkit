@@ -30,6 +30,7 @@ Available functions:
   27  DeltaSCF / MOM excited-state SCF input (a structure + an excitation spec -> an input)
   28  RAS / ORMAS model-space input (a structure + a partition mask -> an ORCA input)
   29  Perturbed multistart batch (a converged reference mkl + its input -> restart inputs)
+  30  Imaginary-mode displacement (a frequency output + its input -> restart inputs)
    0  Quit
 Choose a number (Enter = leave empty)> 29
 Reference mkl path (``orca_2mkl <base> -mkl`` of the converged run) (Enter = leave empty)> work/ch4_diss_prop.mkl
@@ -97,6 +98,7 @@ Available functions:
   27  DeltaSCF / MOM excited-state SCF input (a structure + an excitation spec -> an input)
   28  RAS / ORMAS model-space input (a structure + a partition mask -> an ORCA input)
   29  Perturbed multistart batch (a converged reference mkl + its input -> restart inputs)
+  30  Imaginary-mode displacement (a frequency output + its input -> restart inputs)
    0  Quit
 Choose a number (Enter = leave empty)> 0
 Goodbye.

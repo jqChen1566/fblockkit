@@ -32,58 +32,23 @@ Available functions:
   29  Perturbed multistart batch (a converged reference mkl + its input -> restart inputs)
   30  Imaginary-mode displacement (a frequency output + its input -> restart inputs)
    0  Quit
-Choose a number (Enter = leave empty)> 12
-Converged CASSCF output path (the run whose orbitals were dumped) (Enter = leave empty)> work/n2_fcidump_step_a.out
-FCIDUMP path (written by the !FCIDUMP dump run) (Enter = leave empty)> work/FCIDUMP
-orca_2json export of the canonical gbw (Enter = skip the localized-basis step) (Enter = leave empty)> work/canonical.json
-orca_2json export after orca_loc (the localized step needs both exports) (Enter = leave empty)> work/localized.json
-Active window 'first last' in ORCA's 0-based orbital numbering (Enter = infer) (Enter = leave empty)> 4 9
-Cluster centres for the environment-spin partition (comma-separated atom indices; Enter = the f-block centre, if any) (Enter = leave empty)> 0
-Active space: 6 orbitals / 6 electrons (M_s sector with n_alpha=3, n_beta=3); determinants solved: 400; selected root 0 with <S^2> = 0.0000
-
-Cross-checks against the engine (the reconstruction is trusted only with them):
-  - CI energy + core energy = -108.950671945279 Eh vs the run's -108.950671945000 Eh (deviation 2.79e-10; the solver refuses a match beyond 1e-6)
-  - natural occupations vs the printed N(occ): max |deviation| = 4.56e-06 (the print precision is 1e-5)
-  - localization rotation orthogonality: max |u^T u - I| = 7.41e-14 (two exports of the same gbw, one localized window)
-
-Four-state single-orbital entropy (canonical orbital basis of the dump; informational -- the 0.14 line and the plateau reading are defined in a localized basis):
-  0.0223 0.2258 0.2258 0.2302 0.2302 0.0078
-
-Four-state single-orbital entropy (localized basis: IAO-IBO rotation of the active window [4, 5, 6, 7, 8, 9] from the user's orca_loc):
-  1.3547 1.3547 1.3547 1.3547 0.3732 0.3885
-  max s1 = 1.3547 vs the Stein & Reiher line 0.14: candidate orbitals (original numbering): [4, 5, 6, 7, 8, 9]
-  Plateau/cliff: the largest relative gap (71.3%) sits after item 4 of the descending order.
-
-Four weights per localized orbital (empty, up, down, double):
-  orbital 4: 0.1869 0.3125 0.3125 0.1881
-  orbital 5: 0.1869 0.3125 0.3125 0.1881
-  orbital 6: 0.1869 0.3125 0.3125 0.1881
-  orbital 7: 0.1869 0.3125 0.3125 0.1881
-  orbital 8: 0.9078 0.0459 0.0459 0.0003
-  orbital 9: 0.0026 0.0459 0.0459 0.9055
-
-Preconditions carried with these numbers:
-- The four-state density is diagonal for a fixed-particle-number state (an exact statement, not an approximation), so the three numbers n_up, n_down and p2 are complete -- and they exist only in a reconstruction like this one; a printed N(occ) line cannot supply them.
-- Read the threshold against the localized-basis spectrum only; the canonical spectrum is reported for orientation.
-- The solver is exact within the dumped active space; the usual active-space caveats (size, composition, solution branch) transfer unchanged.
-Partition of the active orbitals (largest Löwdin population per centre; the centres treated as the cluster: 0):
-  orbital 0: centre 0 (population 0.9517) -> cluster
-  orbital 1: centre 0 (population 0.9517) -> cluster
-  orbital 2: centre 1 (population 0.9517) -> environment
-  orbital 3: centre 1 (population 0.9517) -> environment
-  orbital 4: centre 1 (population 0.5000) -> environment
-  orbital 5: centre 1 (population 0.5000) -> environment
-
-Environment: 4 active orbital(s) [2, 3, 4, 5]; electrons in the environment block: 1.998836 alpha + 1.998836 beta
-  eigenvalues of D_E (alpha+beta): 0.001897 1.001164 1.001164 1.993449
-  Delta S_E = -2 Tr[(D/2) ln(D/2)] + Tr[D_a ln D_a] + Tr[D_b ln D_b]
-            = 1.405324 - 0.702662 - 0.702662 = 0.000000
-
-Reading (provisional line; the source's anchors are 0.007 for its correct solution and 2.766 for its wrong one, and the criterion's zero is exact):
-  - the environment carries no appreciable spin polarisation (Delta S_E = 0.000000)
-
-Boundary of this route: the inactive orbitals of the CASSCF wave function are doubly occupied and carry no spin by construction, so this is the *active* environment. A mean-field solution's ligand spin polarisation is diagnosed by the local-spin analysis of the SCF output (menu 1) instead.
-Report written: work\FCIDUMP.fbk.md
+Choose a number (Enter = leave empty)> 30
+Frequency output path (the Opt+Freq run whose imaginary mode should go) (Enter = leave empty)> work/fhh_optts_freq.out
+Base input path (the input of that run; its job keywords are kept and its coordinate block is replaced) (Enter = leave empty)> work/fhh_reopt.inp
+Vector: sum (all imaginary modes, the source's default) or lowest (the most negative mode alone) (Enter = sum) (Enter = leave empty)> sum
+Displacement amplitude in Angstrom (Enter = 0.1, the source's base_disp) (Enter = leave empty)> 0.1
+imaginary mode(s) in the last frequency block: #6 -90.48 cm**-1
+vector: sum of all imaginary modes (de-weighted to Cartesian with the run's own masses, unit norm)
+amplitude: 0.1 Angstrom
+  disp_p: work\fhh_reopt.disp_p.inp (largest single-atom move 0.055 Angstrom)
+  disp_m: work\fhh_reopt.disp_m.inp (largest single-atom move 0.055 Angstrom)
+Written: work\fhh_reopt.disp_p.inp
+Written: work\fhh_reopt.disp_m.inp
+Next steps:
+  - run the two inputs: the job keywords are the base input's own, so an Opt run heals toward the minimum on each side and an OptTS run follows the mode; the Freq token is forced in, because the source's success criterion is the rerun's all-real frequency check
+  - if imaginary frequencies persist, the source's schedule is the same vector with successively larger displacements (0.2, 0.3, ... up to 0.5 Angstrom), or the other vector choice
+  - the displacement is a starting structure, not a stationary point: the rerun does the work
+Report written: work\fhh_optts_freq.out.imagdisp.fbk.md
 
 Available functions:
    1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)

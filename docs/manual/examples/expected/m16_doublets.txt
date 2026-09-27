@@ -30,6 +30,7 @@ Available functions:
   27  DeltaSCF / MOM excited-state SCF input (a structure + an excitation spec -> an input)
   28  RAS / ORMAS model-space input (a structure + a partition mask -> an ORCA input)
   29  Perturbed multistart batch (a converged reference mkl + its input -> restart inputs)
+  30  Imaginary-mode displacement (a frequency output + its input -> restart inputs)
    0  Quit
 Choose a number (Enter = leave empty)> 16
 Kramers-doublet table JSON path (per doublet: the three g values and theta3 or the g3 axis; see the user guide) (Enter = leave empty)> work/dy_doublets.json
@@ -80,6 +81,7 @@ Available functions:
   27  DeltaSCF / MOM excited-state SCF input (a structure + an excitation spec -> an input)
   28  RAS / ORMAS model-space input (a structure + a partition mask -> an ORCA input)
   29  Perturbed multistart batch (a converged reference mkl + its input -> restart inputs)
+  30  Imaginary-mode displacement (a frequency output + its input -> restart inputs)
    0  Quit
 Choose a number (Enter = leave empty)> 0
 Goodbye.

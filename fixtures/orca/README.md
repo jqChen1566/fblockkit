@@ -283,6 +283,34 @@ Points to note (also in `recipe/perturb_guess.py` and `tests/test_perturb_guess.
   committed mkl (the perturbed mkl products are not committed; their engine
   runs are the committed `.p<k>.out`).
 
+## Imaginary-mode displacement fixtures added 2026-09-27 (server 101, the same ORCA 6.1.1)
+
+| Output | Input | Job | Parsing/analysis points covered | Run outcome |
+|---|---|---|---|---|
+| `fhh_optts_freq.out` (existing) | `inputs/fhh_optts_freq.inp` | F + H2 TS, r2SCAN-3c OptTS + Freq | the mode source of menu 30: the last frequency block carries the -90.48 cm**-1 imaginary mode, and the NORMAL MODES block its mass-weighted vector (unit Euclidean norm) | terminated normally |
+| `fhh_reopt.disp_p.out` | `inputs/fhh_reopt.disp_p.inp` (written by menu 30) | the TS geometry displaced +0.1 Angstrom along the mode, rerun as `! r2SCAN-3c Opt Freq` | the cure: the rerun's frequency block carries no imaginary mode; -100.895757053 Eh | terminated normally |
+| `fhh_reopt.disp_m.out` | `inputs/fhh_reopt.disp_m.inp` (menu 30) | the same displacement with the opposite sign | the mirror branch: -100.895756991 Eh, also all-real frequencies | terminated normally |
+
+The base input `inputs/fhh_reopt.inp` is the user side of the menu: the plain
+`Opt Freq` job whose coordinate block the menu replaces (here carrying the
+TS geometry of the fixture above, i.e. the "minimum search that ended on the
+saddle" story).
+
+Points to note (also in `recipe/imag_disp.py` and `tests/test_imag_disp.py`):
+
+- the printed NORMAL MODES vectors are the mass-weighted displacements
+  ("Cartesian displacements weighted by ... 1/sqrt(m[i])", the block's own
+  header) of unit Euclidean norm; the Cartesian pattern is v_i/sqrt(m_i)
+  with the masses from the run's own (A.U.) block (18.998 for F, 1.008 for
+  H) -- the de-weighting ratio H/F is 463 on this fixture;
+- the displaced modes here are the near-linear bend of the shallow saddle:
+  both signs relax to mirror-image all-real-frequency minima of the same
+  energy (recorded as measured; the two-sided reaction separation would
+  need an asymmetric-stretch mode);
+- the generated restart inputs regenerate byte-identically from the
+  committed output + base input (the mode, the masses and the displacement
+  are all deterministic).
+
 ## Known-behaviour notes
 
 - `generated_ce3_sarc2.out`: the active occupations are (1,0,0,0,0,0,0) -- putting the

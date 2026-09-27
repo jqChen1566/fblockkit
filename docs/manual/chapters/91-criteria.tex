@@ -174,6 +174,19 @@ Perturbed multistart & no threshold; the seed fixes every draw & Menu~\menu{29}:
   \textsf{[Literature]} Vaucher \& Reiher 2017, \S IV (Eqs.~(2)--(3));
   \textsf{[Measured]} \code{tests/test\_perturb\_guess.py}, fixtures
   \code{ch4\_*} \\
+Imaginary-mode displacement & \code{base\_disp} $= 0.1$~\AA, scheduled
+  $\times 1..5$; success = the rerun's all-real frequencies & Menu~\menu{30}:
+  the source's displacement stage --- the vector is the sum of the imaginary
+  modes (default) or the most negative alone, normalized and applied as
+  \code{coords + vec * disp}; ORCA prints mass-weighted mode vectors of unit
+  Euclidean norm (the Cartesian pattern is $v_i/\sqrt{m_i}$, masses from the
+  run's own (A.U.) block).  Measured anchor (F + H$_2$): the
+  $-90.48$~cm$^{-1}$ mode displaced $\pm 0.1$~\AA{} relaxes, both signs, to
+  all-real-frequency geometries at $-100.895757$~Eh --- mirror images, since
+  this mode is the near-linear bend &
+  \textsf{[Literature]} Tanaka \& Miyao, NIFREC (ChemRxiv 2026; MIT-licensed
+  software); \textsf{[Measured]} \code{tests/test\_imag\_disp.py}, fixtures
+  \code{fhh\_reopt.*} \\
 \bottomrule
 \end{tabularx}
 \end{center}

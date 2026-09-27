@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from ...diagnosis import CrossLevelError, SEVERITY_LABELS, ScfRescueError, cross_level_check, load_records, propose_fixes, triage as scf_triage
-from ...knowledge.models import SystemProfile
+from ...diagnosis import CrossLevelError, SEVERITY_LABELS, ScfRescueError, cross_level_check, load_records, propose_fixes, references_section, triage as scf_triage
+from ...knowledge.models import ReportSection, SystemProfile
 from ...parsers import ParserError, parse_auto
 from ...analysis import geometry as geometry_analysis
 from ...recipe import deltascf as deltascf_recipe
@@ -202,6 +202,83 @@ def _relativistic_for(profile):
     if not (f_block or needs_soc):
         return None
     return plan_relativistic(needs_soc=needs_soc, f_block=f_block)
+
+
+def imag_disp_generate(session: Session) -> None:
+    """Menu 30: displace a geometry along its imaginary mode into restart inputs."""
+    from ...recipe import imag_disp as imag_disp_recipe
+
+    output_text = session.ask(
+        "Frequency output path (the Opt+Freq run whose imaginary mode should go)"
+    )
+    if not output_text:
+        session.say("Cancelled (no output given).")
+        return
+    base_text_path = session.ask(
+        "Base input path (the input of that run; its job keywords are kept and "
+        "its coordinate block is replaced)"
+    )
+    if not base_text_path:
+        session.say("Cancelled (no base input given).")
+        return
+    selection_text = session.ask(
+        "Vector: sum (all imaginary modes, the source's default) or lowest "
+        "(the most negative mode alone) (Enter = sum)"
+    ).strip().lower()
+    selection = selection_text or "sum"
+    amplitude_text = session.ask(
+        "Displacement amplitude in Angstrom (Enter = 0.1, the source's base_disp)"
+    ).strip()
+    try:
+        amplitude = float(amplitude_text or "0.1")
+        result = parse_auto(output_text)
+        data = imag_disp_recipe.imaginary_modes(result)
+        vector = imag_disp_recipe.displacement_vector(data, selection=selection)
+        base_source = Path(base_text_path)
+        base_text = base_source.read_text(encoding="utf-8", errors="replace")
+        report: dict[str, tuple[Path, float]] = {}
+        for label, sign in (("disp_p", 1.0), ("disp_m", -1.0)):
+            moved, max_move = imag_disp_recipe.displaced_atoms(
+                data["atoms"], tuple(sign * value for value in vector), amplitude
+            )
+            text = imag_disp_recipe.disp_input(base_text, moved)
+            target = base_source.with_name(f"{base_source.stem}.{label}.inp")
+            target.write_text(text, encoding="utf-8")
+            report[label] = (target, max_move)
+    except (imag_disp_recipe.ImagDispError, ParserError, OSError, ValueError) as exc:
+        session.say(f"Imaginary-mode displacement failed: {exc}")
+        return
+    body = imag_disp_recipe.render(data, selection=selection, amplitude=amplitude, report=report)
+    session.say(body)
+    session.say(f"Written: {report['disp_p'][0]}")
+    session.say(f"Written: {report['disp_m'][0]}")
+    session.say("Next steps:")
+    session.say(
+        "  - run the two inputs: the job keywords are the base input's own, so an "
+        "Opt run heals toward the minimum on each side and an OptTS run follows the "
+        "mode; the Freq token is forced in, because the source's success criterion "
+        "is the rerun's all-real frequency check"
+    )
+    session.say(
+        "  - if imaginary frequencies persist, the source's schedule is the same "
+        "vector with successively larger displacements (0.2, 0.3, ... up to 0.5 "
+        "Angstrom), or the other vector choice"
+    )
+    session.say(
+        "  - the displacement is a starting structure, not a stationary point: the "
+        "rerun does the work"
+    )
+    section = ReportSection(
+        title="4.5 imaginary-mode displacement (restart structures for the frequency cure)",
+        body=body,
+    )
+    report_lines = f"## {section.title}\n\n{section.body}\n"
+    refs = references_section(imag_disp_recipe.evidence())
+    if refs is not None:
+        report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
+    md_path = Path(output_text).with_name(Path(output_text).name + ".imagdisp.fbk.md")
+    md_path.write_text(report_lines, encoding="utf-8")
+    session.say(f"Report written: {md_path}")
 
 
 def basis_query(session: Session) -> None:

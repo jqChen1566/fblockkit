@@ -433,6 +433,97 @@ def _parse_frequencies(lines: list[str]) -> dict[str, Any]:
     return {"present": True, "blocks": blocks, "last_block_line": starts[-1]}
 
 
+# --- final geometry and normal modes -----------------------------------------
+# Measured format (fixture: fhh_optts_freq and the whole set): the last
+# "CARTESIAN COORDINATES (ANGSTROEM)" block carries the final structure
+# ("<symbol> <x> <y> <z>"); the "(A.U.)" block repeats it in bohr and prints,
+# per row, "<no> <symbol> <ZA> <frag> <mass> <x> <y> <z>" -- the atomic masses
+# are read from there so any mass de-weighting uses the run's own values.
+# The "NORMAL MODES" block prints the mass-weighted Hessian's eigenvectors in
+# groups of up to six: a header line of mode indices, then one row per
+# Cartesian coordinate ("<i> <v0> <v1> ...").  The block's own header says the
+# vectors are "Cartesian displacements weighted by ... 1/sqrt(m[i])"; their
+# Euclidean norm is 1, so the Cartesian displacement pattern is v_i /
+# sqrt(m_i) (the reading the recipe layer uses).  The last block describes the
+# final structure (the frequencies' convention).
+_FINAL_GEO_HEADER = "CARTESIAN COORDINATES (ANGSTROEM)"
+_FINAL_MASS_HEADER = "CARTESIAN COORDINATES (A.U.)"
+_NM_HEADER = "NORMAL MODES"
+_NM_END = "IR SPECTRUM"
+_GEO_ROW_RE = re.compile(r"^\s*([A-Za-z]{1,2})\s+(-?\d+\.\d+)\s+(-?\d+\.\d+)\s+(-?\d+\.\d+)\s*$")
+_MASS_ROW_RE = re.compile(
+    r"^\s*\d+\s+([A-Za-z]{1,2})\s+-?\d+\.\d+\s+\d+\s+(-?\d+\.\d+)\s+"
+)
+_NM_LABEL_ROW_RE = re.compile(r"^\s*\d+(\s+-?\d+\.\d+|\s+\d+\.\d+e[+-]\d+)*\s*$")
+
+
+def _parse_final_geometry(lines: list[str]) -> dict[str, Any]:
+    starts = [i for i, line in enumerate(lines) if line.strip() == _FINAL_GEO_HEADER]
+    if not starts:
+        return {"present": False, "atoms": (), "masses": ()}
+    start = starts[-1]
+    atoms: list[tuple[str, float, float, float]] = []
+    for line in lines[start + 2:]:
+        if (m := _GEO_ROW_RE.match(line)) is not None:
+            atoms.append((m.group(1), float(m.group(2)), float(m.group(3)), float(m.group(4))))
+            continue
+        if atoms:
+            break  # the block body has ended
+    masses: list[float] = []
+    mass_starts = [i for i, line in enumerate(lines) if line.strip() == _FINAL_MASS_HEADER]
+    if mass_starts:
+        for line in lines[mass_starts[-1] + 2:]:
+            if (m := _MASS_ROW_RE.match(line)) is not None:
+                masses.append(float(m.group(2)))
+                continue
+            if masses:
+                break
+    if len(masses) != len(atoms):
+        masses = []  # the (A.U.) block does not mirror the (ANGSTROEM) one
+    return {"present": True, "atoms": tuple(atoms), "masses": tuple(masses)}
+
+
+def _parse_normal_modes(lines: list[str]) -> dict[str, Any]:
+    starts = [i for i, line in enumerate(lines) if line.strip() == _NM_HEADER]
+    if not starts:
+        return {"present": False, "n_coord": 0, "modes": ()}
+    start = starts[-1]
+    columns: dict[int, dict[int, float]] = {}
+    pending: list[int] = []
+    for line in lines[start + 1:]:
+        stripped = line.strip()
+        if stripped == _NM_END:
+            break
+        tokens = stripped.split()
+        if not tokens:
+            continue
+        if stripped.startswith("-----") and any(columns.values()):
+            break  # the block's trailing rule (the title rule comes before data)
+        if all(token.isdigit() for token in tokens):
+            # a header line: the mode indices of the next column group
+            pending = [int(token) for token in tokens]
+            for index in pending:
+                columns.setdefault(index, {})
+            continue
+        if not tokens[0].isdigit() or not pending:
+            continue
+        coordinate = int(tokens[0])
+        values = [float(token) for token in tokens[1:]]
+        if len(values) != len(pending):
+            continue
+        for index, value in zip(pending, values):
+            columns[index][coordinate] = value
+    modes = []
+    for index in sorted(columns):
+        column = columns[index]
+        if not column:
+            continue
+        vector = tuple(column.get(i, 0.0) for i in range(max(column) + 1))
+        modes.append({"index": index, "vector": vector})
+    n_coord = max((len(mode["vector"]) for mode in modes), default=0)
+    return {"present": True, "n_coord": n_coord, "modes": tuple(modes)}
+
+
 # --- local spin analysis -----------------------------------------------------
 # Measured format (fixtures: n2_stretch_local_spin, n2_stretch_casscf_local_spin;
 # ORCA 6.1 manual §5.1.10): the block appears when the input divides the
@@ -1109,6 +1200,8 @@ class OrcaParser:
             "caspt2": _parse_pt2(lines, "caspt2"),
             "cc": _parse_cc(lines),
             "frequencies": frequencies,
+            "final_geometry": _parse_final_geometry(lines),
+            "normal_modes": _parse_normal_modes(lines),
             "local_spin": _parse_local_spin(lines),
             "optimization": optimization,
             "dipole": _parse_dipole(lines),
