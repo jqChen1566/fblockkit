@@ -352,6 +352,20 @@ Quantity & Value & Meaning / limits & Source \\
 Suspected pseudo-convergence & converged within $\le 3$ cycles & Counter-check
   the cycle count; a real transition-metal case converged in 2 cycles &
   \textsf{[Measured]} SCINE capability report \\
+DIIS rebound & error $\ge 2.0\times$ its value at the AO-DIIS switch (final
+  SCF table) & Reported from the last iteration table only --- a geometry
+  optimisation prints one table per cycle and the cycle count restarts, so the
+  final SCF is the one that matters.  Measured: the Gd-complex crash fixture
+  (3.30e-01 at the switch $\to$ 1.30e+00 at cycle 50, DIIS reset twice, then
+  the crash) & \textsf{[Measured]} \code{fblock\_dft\_gd\_crash.out} \\
+Energy oscillation & $\ge 3$ direction changes in the last 12 steps; largest
+  step $\ge 10^{-6}$~Eh; final step $\ge 0.1\times$ the largest; only when the
+  run has no convergence verdict & An alternating tail that still carries its
+  amplitude is an oscillation; a converging run's alternating endgame collapses
+  toward its tolerance and is excluded.  Measured: the Yb$^{3+}$/SARC2 TRAH
+  record (783 cycles without convergence, tail alternating by $\pm 4.30\times
+  10^{-2}$~Eh, 4 direction changes in the window) & \textsf{[Measured]}
+  \code{generated\_yb3\_sarc2\_trah.out} \\
 Rescue paths & see Chapter~\ref{ch:menu9} & Better starting orbitals first;
   \code{SlowConv} with its caution; \code{MaxIter} alone is refused (the
   manual: ``will not help in many cases'') & \textsf{[Manual]} ORCA 6.1

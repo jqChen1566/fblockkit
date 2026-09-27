@@ -457,6 +457,14 @@ def test_aborted_casscf_fixtures_capture_their_abort_reasons():
     trah = _sections("generated_yb3_sarc2_trah.out")
     assert trah["terminated_normally"] is False
     assert any("OUT OF MEMORY" in e for e in trah["errors"])
+    # the module's own verdict banner ("CASSCF NOT CONVERGED AFTER 783 CYCLES")
+    # belongs to the casscf section -- the SCF verdict patterns must not match
+    # the "SCF" inside "CASSCF" (measured defect, fixed 2026-09-27)
+    assert trah["casscf"]["converged"] is False
+    assert trah["casscf"]["converged_via"] == "not converged after 783 cycles"
+    assert trah["scf"]["converged"] is None and trah["scf"]["cycles"] is None
+    # the healthy verdicts still read normally
+    assert _sections("n2_hf_clean.out")["scf"]["converged"] is True
 
 
 # --- fact-field mapping -----------------------------------------------------
@@ -529,3 +537,30 @@ def test_scf_convergence_block_absent_without_the_table(tmp_path):
     """A CASSCF output carries no SCF CONVERGENCE table: the field is empty."""
     result = parse_auto(FIXTURES / "n2_casscf_nevpt2.out")
     assert result.sections["scf"].get("convergence_block", ()) == ()
+
+
+def test_the_diis_table_is_split_into_blocks():
+    """A geometry optimisation prints one iteration table per SCF cycle and the
+    cycle count restarts at 1: the parser records the blocks, so the triage can
+    analyse the final SCF instead of a mixture (measured: nh3_planar_optts shows
+    50 blocks, n2_stretch_local_spin two)."""
+    scf = parse_auto(FIXTURES / "nh3_planar_optts_freq.out").sections["scf"]
+    blocks = scf["diis_blocks"]
+    assert len(blocks) == 50
+    assert sum(len(block) for block in blocks) == len(scf["diis_rows"])
+    assert len(blocks[0]) == 6
+    assert [row[0] for row in blocks[1]] == [1, 2, 3, 4]  # the count restarts
+    switches = scf["diis_block_switches"]
+    assert len(switches) == len(blocks)
+    assert switches[0] == (2, pytest.approx(0.15))
+    # the flat view and its first-switch fields are unchanged (backward compat)
+    assert scf["diis_switch_cycle"] == 2
+    assert scf["diis_error_at_switch"] == pytest.approx(0.15)
+
+    two = parse_auto(FIXTURES / "n2_stretch_local_spin.out").sections["scf"]
+    assert [len(block) for block in two["diis_blocks"]] == [4, 4]
+    assert len(two["diis_rows"]) == 8
+
+    single = parse_auto(FIXTURES / "n2_hf_clean.out").sections["scf"]
+    assert len(single["diis_blocks"]) == 1
+    assert single["diis_block_switches"] == ((2, pytest.approx(0.0682)),)

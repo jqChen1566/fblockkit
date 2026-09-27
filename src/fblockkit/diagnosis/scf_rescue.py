@@ -6,9 +6,9 @@ Two entry points for a job whose SCF cannot be trusted:
 
 - :func:`triage` reads one parsed ORCA output and reports what is wrong with its SCF:
   no convergence, a crash inside the SCF module, a suspiciously short or long
-  convergence, a DIIS error that rises again after AO-DIIS was switched on, or a run
-  declared converged while the criterion its convergence check enforces is still above
-  the printed tolerance.
+  convergence, a DIIS error that rises again after AO-DIIS was switched on, an energy
+  trajectory that oscillates without collapsing, or a run declared converged while the
+  criterion its convergence check enforces is still above the printed tolerance.
 - :func:`propose_fixes` turns those findings into *new* input files: a ``SlowConv``
   variant, and a two-step route that runs a cheap pre-SCF and reads its orbitals back.
 
@@ -96,6 +96,17 @@ DIIS_REBOUND_FACTOR = 2.0
 #: excursions do not produce noise.
 CRITERIA_MARGIN = 5.0
 
+#: Oscillation triage (ours, calibrated on the fixture set): the energy tail analyzed
+#: for sign alternation (in DIFFERENCES), the minimum number of direction changes,
+#: and the persistence floor -- the last step must still carry at least this fraction
+#: of the window's largest step, so an alternating-but-collapsing tail (the normal
+#: endgame of a converging run) is not an oscillation.
+OSCILLATION_WINDOW = 12
+OSCILLATION_MIN_FLIPS = 3
+OSCILLATION_PERSISTENCE = 0.1
+#: Steps below this are numerical noise, not oscillation (Eh).
+OSCILLATION_FLOOR = 1e-6
+
 # ConvCheckMode values and the printed-label mapping live in the parser layer
 # (parsers/orca.py) and are imported above; the findings here read them.
 
@@ -104,6 +115,7 @@ RULE_ABORTED_NO_VERDICT = "SCF-ABORTED-NO-VERDICT"
 RULE_PSEUDO_CONVERGENCE = "SCF-PSEUDO-CONVERGENCE"
 RULE_LONG_CONVERGENCE = "SCF-LONG-CONVERGENCE"
 RULE_DIIS_REBOUND = "SCF-DIIS-REBOUND"
+RULE_ENERGY_OSCILLATION = "SCF-ENERGY-OSCILLATION"
 RULE_CRITERIA_UNMET = "SCF-CONVERGED-CRITERIA-UNMET"
 
 FIX_SLOWCONV = "slowconv"
@@ -370,6 +382,23 @@ EV_DIIS_REBOUND_MEASURED = Evidence(
     ),
     ref="Fixture fblock_dft_gd_crash.out (fixtures/orca/README.md)",
 )
+EV_ENERGY_OSCILLATION_MEASURED = Evidence(
+    kind=EVIDENCE_MEASURED,
+    text=(
+        "Measured on fixture generated_yb3_sarc2_trah.out (ORCA 6.1.1, Yb3+/SARC2 "
+        "TRAH-CASSCF, the group's own f-block record): the module ended with the "
+        "banner 'CASSCF NOT CONVERGED AFTER 783 CYCLES' (OOM inside the orbital "
+        "optimisation) and its TRAH iteration table -- the energy rows this rule "
+        "reads -- alternates between two values in the tail (steps of +-4.30e-02 Eh, "
+        "several direction changes). An alternating tail with non-vanishing steps is "
+        "the signature this rule reports; a converging run's alternating endgame "
+        "collapses toward its tolerance instead. (Reading that banner exposed a "
+        "parser defect, fixed here: the SCF verdict patterns had no left anchor and "
+        "matched the 'SCF' inside 'CASSCF' -- the verdicts are now one letter-"
+        "boundary apart, and the CASSCF verdict is captured in the casscf section.)"
+    ),
+    ref="Fixture generated_yb3_sarc2_trah.out (fixtures/orca/README.md)",
+)
 
 
 class ScfRescueError(ValueError):
@@ -404,14 +433,18 @@ class _ScfScan:
 
     solver_seen: bool = False
     diis_rows: tuple[tuple[int, float], ...] = ()
+    diis_blocks: tuple[tuple[tuple[int, float], ...], ...] = ()
+    diis_block_switches: tuple[tuple[int | None, float | None], ...] = ()
     diis_error_at_switch: float | None = None
     diis_switch_cycle: int | None = None
     diis_resets: int = 0
     converger_switches: tuple[str, ...] = ()
     max_abs_energy_step: float | None = None
+    energies: tuple[float, ...] = ()
     criteria: tuple[tuple[str, float, float], ...] = ()
     check_mode: int = DEFAULT_CONVCHECK_MODE
     check_mode_source: str = "assumed default (the output does not print the mode)"
+    converged: bool | None = None
 
 
 def _scan_from_result(result: ParseResult) -> _ScfScan:
@@ -420,16 +453,29 @@ def _scan_from_result(result: ParseResult) -> _ScfScan:
     return _ScfScan(
         solver_seen=bool(scf.get("solver_seen", False)),
         diis_rows=tuple((int(row[0]), float(row[1])) for row in scf.get("diis_rows") or ()),
+        diis_blocks=tuple(
+            tuple((int(row[0]), float(row[1])) for row in block)
+            for block in scf.get("diis_blocks") or ()
+        ),
+        diis_block_switches=tuple(
+            (
+                None if row[0] is None else int(row[0]),
+                None if row[1] is None else float(row[1]),
+            )
+            for row in scf.get("diis_block_switches") or ()
+        ),
         diis_error_at_switch=scf.get("diis_error_at_switch"),
         diis_switch_cycle=scf.get("diis_switch_cycle"),
         diis_resets=int(scf.get("diis_resets") or 0),
         converger_switches=tuple(scf.get("converger_switches") or ()),
         max_abs_energy_step=scf.get("max_abs_energy_step"),
+        energies=tuple(float(value) for value in scf.get("energies") or ()),
         criteria=tuple(tuple(row) for row in scf.get("criteria") or ()),
         check_mode=int(scf.get("check_mode", DEFAULT_CONVCHECK_MODE)),
         check_mode_source=str(
             scf.get("check_mode_source", "assumed default (the output does not print the mode)")
         ),
+        converged=scf.get("converged"),
     )
 
 # --- findings ---------------------------------------------------------------
@@ -605,6 +651,58 @@ def _diis_rebound_finding(
     )
 
 
+def _oscillation_finding(scan: _ScfScan) -> Finding | None:
+    """The energy tail alternates without collapsing while the run has no verdict.
+
+    Deterministic surrogate of "the iteration is bouncing": over the last
+    ``OSCILLATION_WINDOW`` reported steps, count the direction changes of the
+    successive differences; report when at least ``OSCILLATION_MIN_FLIPS`` of them
+    appear, the largest step is above the noise floor, and the final step still
+    carries at least ``OSCILLATION_PERSISTENCE`` of that largest step.  A converging
+    run's alternating endgame collapses toward the tolerance and fails the last
+    condition; a converged run is excluded outright (its verdict is trusted).
+    """
+    energies = scan.energies
+    if scan.converged is True or len(energies) < 5:
+        return None
+    window = energies[-OSCILLATION_WINDOW:]
+    diffs = [b - a for a, b in zip(window, window[1:])]
+    flips = sum(1 for a, b in zip(diffs, diffs[1:]) if a * b < 0)
+    peak = max((abs(value) for value in diffs), default=0.0)
+    last = abs(diffs[-1]) if diffs else 0.0
+    if flips < OSCILLATION_MIN_FLIPS or peak < OSCILLATION_FLOOR:
+        return None
+    if last < OSCILLATION_PERSISTENCE * peak:
+        return None
+    return Finding(
+        severity="warn",
+        message=(
+            f"The iteration energy is oscillating: over the last {len(window)} reported steps "
+            f"the energy changed direction {flips} time(s), and the final step still "
+            f"carries {_sci(last)} Eh against a largest step of {_sci(peak)} Eh -- the "
+            "iteration is bouncing instead of converging."
+        ),
+        evidence=(
+            EV_ENERGY_OSCILLATION_MEASURED,
+            EV_BETTER_GUESS,
+            EV_LEVELSHIFT,
+            EV_DIIS_STUCK,
+        ),
+        suggested_fix=(
+            "Do not leave an oscillating SCF running: the manual's first answer for poor "
+            "SCF convergence is better starting orbitals (see the 'prescf' proposal); on "
+            "the converger side the manual offers large level shifts (shift 0.5, erroff "
+            "0) and SOSCF/TRAH in place of plain DIIS; damping with a deliberately small "
+            "DampErr is the third lever."
+        ),
+        refusals=(
+            "An oscillating SCF must not be accepted because a single cycle finally "
+            "printed a small energy change: judge it on the trajectory.",
+        ),
+        rule_id=RULE_ENERGY_OSCILLATION,
+    )
+
+
 def _enforced_criteria(scan: _ScfScan) -> tuple[tuple[str, float, float], ...]:
     """The printed criteria the active ConvCheckMode actually enforces.
 
@@ -689,7 +787,8 @@ def triage(result: ParseResult) -> tuple[Finding, ...]:
 
     Only ORCA outputs are supported. Findings come in a fixed order: no convergence,
     crash without a verdict, pseudo-convergence, long convergence, rising DIIS error,
-    unmet convergence criteria; ``build_report`` re-sorts them by severity for display.
+    energy oscillation, unmet convergence criteria; ``build_report`` re-sorts them by
+    severity for display.
     """
     if result.program != PROGRAM_ORCA:
         raise ScfRescueError(
@@ -719,20 +818,34 @@ def triage(result: ParseResult) -> tuple[Finding, ...]:
             findings.append(_long_convergence_finding(cycles, scan))
 
     if scan.diis_rows:
-        # The reference is the DIIS error when AO-DIIS was switched on (or the first row
-        # if that marker is absent); the peak is taken *after* that point only, so the
-        # large error of the pre-DIIS start-up cycles cannot be mistaken for a rebound.
-        switch_cycle = scan.diis_switch_cycle
+        # The analysis runs on the FINAL SCF's table (measured: a geometry optimisation
+        # prints one iteration table per SCF cycle and the cycle count restarts at 1,
+        # so the last block describes the final SCF).  The reference is the DIIS error
+        # when AO-DIIS was switched on in that block (or its first row if the marker is
+        # absent); the peak is taken *after* that point only, so the large error of the
+        # pre-DIIS start-up cycles cannot be mistaken for a rebound.
+        block = scan.diis_blocks[-1] if scan.diis_blocks else scan.diis_rows
+        if len(block) < 2:
+            block = scan.diis_rows
+        block_switch = (
+            scan.diis_block_switches[-1]
+            if len(scan.diis_block_switches) == len(scan.diis_blocks) and scan.diis_blocks
+            else (scan.diis_switch_cycle, scan.diis_error_at_switch)
+        )
+        switch_cycle, reference = block_switch
         if switch_cycle is None:
-            switch_cycle = scan.diis_rows[0][0]
-            reference = scan.diis_rows[0][1]
-        else:
-            reference = scan.diis_error_at_switch or scan.diis_rows[0][1]
-        later = [row for row in scan.diis_rows if row[0] > switch_cycle]
+            switch_cycle, reference = block[0]
+        elif reference is None:
+            reference = block[0][1]
+        later = [row for row in block if row[0] > switch_cycle]
         if later and reference > 0:
             peak_cycle, peak = max(later, key=lambda row: row[1])
             if peak >= reference * DIIS_REBOUND_FACTOR:
                 findings.append(_diis_rebound_finding(peak_cycle, peak, reference, scan))
+
+    oscillation = _oscillation_finding(scan)
+    if oscillation is not None:
+        findings.append(oscillation)
 
     unmet = _unmet_criteria(scan)
     if unmet:
@@ -763,6 +876,7 @@ _PRESCF_TRIGGERS = frozenset(
         RULE_ABORTED_NO_VERDICT,
         RULE_LONG_CONVERGENCE,
         RULE_DIIS_REBOUND,
+        RULE_ENERGY_OSCILLATION,
         RULE_CRITERIA_UNMET,
     }
 )

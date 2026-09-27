@@ -80,6 +80,7 @@ def main() -> int:
             "scf_noconv.out",
             "n2_hf_clean.out",
             "generated_ce3_sarc2.out",
+            "generated_yb3_sarc2_trah.out",
             "n2_stretch_local_spin.out",
             "n2_diffuse.out",
             "fhh_optts_freq.out",
@@ -159,6 +160,7 @@ def main() -> int:
                     "6", "liblan",
                     "7", "work/pucl3_s18.json",
                     "9", "work/scf_noconv.out", "work/scf_noconv.inp",
+                    "9", "work/generated_yb3_sarc2_trah.out", "",
                     "10", "work/cf_c3.json",
                     "11", "work/ceo6.xyz", "O=-2", "",
                     "12", "work/n2_fcidump_step_a.out", "work/FCIDUMP",
@@ -500,6 +502,12 @@ def main() -> int:
                 and disp_p.split("* xyz")[1].split("*")[0]
                 != disp_m.split("* xyz")[1].split("*")[0],
                 "menu 30 wrote the two displaced restart inputs (opposite signs)",
+            )
+
+            check(
+                "is oscillating" in out and "SCF NOT CONVERGED AFTER 783" not in out,
+                "menu 9 reports the energy oscillation on the Yb TRAH fixture and does "
+                "not misread the CASSCF verdict as an SCF verdict",
             )
 
             check(product("saved.txt").is_file(), "menu 8 wrote the session script")

@@ -52,8 +52,13 @@ TERMINATED_MARK = "****ORCA TERMINATED NORMALLY****"
 
 # --- SCF --------------------------------------------------------------------
 
-_SCF_CONVERGED_RE = re.compile(r"SCF CONVERGED AFTER\s+(\d+)\s+CYCLES")
-_SCF_NOT_CONVERGED_RE = re.compile(r"SCF NOT CONVERGED AFTER\s+(\d+)\s+CYCLES")
+# The verdict banners: measured forms "*           SCF CONVERGED AFTER  21 CYCLES *"
+# and "*       CASSCF NOT CONVERGED AFTER 783 CYCLES *" (the SCF inside CASSCF is
+# preceded by an uppercase letter, which is what the lookbehind blocks -- measured
+# on generated_yb3_sarc2_trah.out, where the CASSCF macro-iteration verdict must not
+# be read as an SCF verdict; it is captured in the casscf section instead).
+_SCF_CONVERGED_RE = re.compile(r"(?<![A-Z])SCF CONVERGED AFTER\s+(\d+)\s+CYCLES")
+_SCF_NOT_CONVERGED_RE = re.compile(r"(?<![A-Z])SCF NOT CONVERGED AFTER\s+(\d+)\s+CYCLES")
 # The DIIS and SOSCF iteration tables share the first two columns (index, energy),
 # while the third (Delta-E/RMSDP) is in scientific notation -- that is the
 # fingerprint, so density-matrix lines or basis-set contraction tables are not
@@ -85,6 +90,10 @@ _CASSCF_ITER_RE = re.compile(r"E\(CAS\)=\s+(-?\d+\.\d+)\s+Eh")
 # They do not mean the same thing (our group's lesson: the convergence criterion
 # is the gradient, not the energy), hence converged_via is recorded separately.
 _CASSCF_CONVERGED_RE = re.compile(r"----\s*THE CAS-SCF (ENERGY|GRADIENT)\s+HAS CONVERGED")
+# The module-level failure banner (measured on generated_yb3_sarc2_trah.out:
+# "*       CASSCF NOT CONVERGED AFTER 783 CYCLES       *") -- the flip side of
+# the SCF lookbehind above: this verdict belongs to the casscf section.
+_CASSCF_NOT_CONVERGED_RE = re.compile(r"CASSCF NOT CONVERGED AFTER\s+(\d+)\s+CYCLES")
 # Active-orbital natural occupations (printed once per macro iteration; take the last)
 _N_OCC_RE = re.compile(r"N\(occ\)=\s+(.*\S)\s*$")
 _FINAL_CASSCF_RE = re.compile(r"^Final CASSCF energy\s+:\s+(-?\d+\.\d+)\s+Eh", re.MULTILINE)
@@ -900,6 +909,10 @@ def _scan_scf_tables(lines: list[str]) -> dict[str, Any]:
     solver_seen = False
     columns: tuple[str, ...] = ()
     diis_rows: list[tuple[int, float]] = []
+    diis_blocks: list[tuple[tuple[int, float], ...]] = []
+    diis_block_switches: list[tuple[int | None, float | None]] = []
+    block: list[tuple[int, float]] = []
+    block_switch: tuple[int, float] | None = None
     energy_steps: list[float] = []
     diis_at_switch: float | None = None
     diis_switch_cycle: int | None = None
@@ -932,6 +945,14 @@ def _scan_scf_tables(lines: list[str]) -> dict[str, Any]:
         if _SCF_SOLVER_BANNER in line:
             solver_seen = True
         if _ITER_TABLE_RE.match(line) is not None:
+            # a new table ends the previous block; measured: a geometry
+            # optimisation prints one table per SCF cycle and the cycle count
+            # restarts at 1, so the blocks are per-geometry-step
+            if block:
+                diis_blocks.append(tuple(block))
+                diis_block_switches.append(block_switch or (None, None))
+                block = []
+                block_switch = None
             columns = _table_columns(line)
             expected_index = 0
             continue
@@ -950,7 +971,9 @@ def _scan_scf_tables(lines: list[str]) -> dict[str, Any]:
             ):
                 expected_index = index
                 if "DIISErr" in columns:
-                    diis_rows.append((index, values[columns.index("DIISErr") - 1]))
+                    row = (index, values[columns.index("DIISErr") - 1])
+                    diis_rows.append(row)
+                    block.append(row)
                     if "Delta-E" in columns:
                         energy_steps.append(abs(values[columns.index("Delta-E") - 1]))
                 continue
@@ -958,6 +981,8 @@ def _scan_scf_tables(lines: list[str]) -> dict[str, Any]:
         if _TURN_ON_DIIS in line and diis_at_switch is None and diis_rows:
             diis_at_switch = diis_rows[-1][1]
             diis_switch_cycle = diis_rows[-1][0]
+        if _TURN_ON_DIIS in line and block_switch is None and block:
+            block_switch = block[-1]
         if _DIIS_RESET in line:
             resets += 1
         if (match := _CONVERGER_SWITCH_RE.search(line)) is not None:
@@ -967,10 +992,15 @@ def _scan_scf_tables(lines: list[str]) -> dict[str, Any]:
         if stripped == _CRITERIA_TITLE:
             in_criteria = True
 
+    if block:
+        diis_blocks.append(tuple(block))
+        diis_block_switches.append(block_switch or (None, None))
     check_mode, mode_source = _resolve_check_mode(" ".join(echo), mode_label)
     return {
         "solver_seen": solver_seen,
         "diis_rows": tuple(diis_rows),
+        "diis_blocks": tuple(diis_blocks),
+        "diis_block_switches": tuple(diis_block_switches),
         "diis_error_at_switch": diis_at_switch,
         "diis_switch_cycle": diis_switch_cycle,
         "diis_resets": resets,
@@ -1053,6 +1083,10 @@ def _parse_casscf(lines: list[str]) -> dict[str, Any]:
         if (m := _CASSCF_CONVERGED_RE.search(line)) is not None:
             converged = True
             converged_via = m.group(1).lower()
+        if (m := _CASSCF_NOT_CONVERGED_RE.search(line)) is not None:
+            converged = False
+            converged_via = f"not converged after {int(m.group(1))} cycles"
+
         if (m := _N_OCC_RE.search(line)) is not None:
             values = tuple(
                 v for v in (float_or_none(t) for t in m.group(1).split()) if v is not None

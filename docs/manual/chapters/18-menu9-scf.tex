@@ -37,7 +37,10 @@ which rows are enforced (on a healthy run a DIIS row far above its tolerance
 is informational, not a finding). The aborted run of the example prints no
 summary block, so it goes straight to the findings. Then findings from the
 triage (each with the measured numbers -- cycle counts, DIIS
-errors, achieved-versus-tolerance comparisons -- and a suggested action), then
+errors, achieved-versus-tolerance comparisons -- and a suggested action; the
+repertoire spans no convergence, a crash without a verdict, pseudo-convergence,
+a long run, a DIIS-error rebound after the AO-DIIS switch, an energy trajectory
+that oscillates without collapsing, and unmet enforced criteria), then
 one corrected input per applicable fix, written next to your input as
 \file{name.fix\_\textit{variant}.inp}. The example wrote two:
 

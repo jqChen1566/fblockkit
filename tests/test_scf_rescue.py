@@ -28,6 +28,7 @@ from fblockkit.diagnosis.scf_rescue import (
     RULE_ABORTED_NO_VERDICT,
     RULE_CRITERIA_UNMET,
     RULE_DIIS_REBOUND,
+    RULE_ENERGY_OSCILLATION,
     RULE_LONG_CONVERGENCE,
     RULE_NOT_CONVERGED,
     RULE_PSEUDO_CONVERGENCE,
@@ -44,6 +45,7 @@ TRIAGE_IDS = (
     RULE_PSEUDO_CONVERGENCE,
     RULE_LONG_CONVERGENCE,
     RULE_DIIS_REBOUND,
+    RULE_ENERGY_OSCILLATION,
     RULE_CRITERIA_UNMET,
 )
 
@@ -236,6 +238,7 @@ def test_every_finding_carries_severity_evidence_and_id():
         "scf_noconv.out",
         "fblock_dft_la_complex.out",
         "fblock_dft_gd_crash.out",
+        "generated_yb3_sarc2_trah.out",
     ):
         for finding in triage(parse_auto(FIXTURES / name)):
             assert finding.rule_id in TRIAGE_IDS
@@ -540,3 +543,96 @@ def _prose(content: str) -> str:
     """Comment text with the ``#`` markers removed and the wrapping collapsed."""
     text = " ".join(line.strip().lstrip("#").strip() for line in content.splitlines())
     return " ".join(text.split())
+
+
+# --- the energy-oscillation rule (4.9) --------------------------------------
+
+
+def _energy_output(energies: list[float], *, converged: bool) -> str:
+    """A synthetic output whose iteration table carries the given energies."""
+    rows = []
+    for index, energy in enumerate(energies, start=1):
+        delta = energy - energies[index - 2] if index > 1 else 0.0
+        rows.append(_row(index, energy, delta, 1e-3 / index, 1e-2 / index, 1e-2 / index))
+        if index == 2:
+            rows.append("                               ***Turning on AO-DIIS***")
+    verdict = (
+        f"*           SCF CONVERGED AFTER  {len(energies)} CYCLES          *"
+        if converged
+        else f"*        SCF NOT CONVERGED AFTER {len(energies)} CYCLES         *"
+    )
+    return (
+        _BANNER
+        + _SCF_TABLE_HEADER
+        + "\n".join(rows)
+        + "\n\n"
+        + verdict
+        + "\n\n"
+        + _criteria_block(_MET)
+        + "\n\n                             ****ORCA TERMINATED NORMALLY****\n"
+    )
+
+
+def test_the_yb_trah_fixture_reports_the_energy_oscillation():
+    """The measured positive: the Yb3+/SARC2 TRAH run ended 783 cycles without
+    convergence and with an alternating energy tail."""
+    by_id = _findings("generated_yb3_sarc2_trah.out")
+    # the CASSCF verdict is not an SCF verdict: no not-converged finding here
+    assert RULE_NOT_CONVERGED not in by_id
+    finding = by_id[RULE_ENERGY_OSCILLATION]
+    assert finding.severity == "warn"
+    assert "changed direction 4 time(s)" in finding.message
+    assert "4.295e-02" in finding.message  # the final step
+    assert "2.393e-01" in finding.message  # the largest step in the window
+    assert finding.evidence and any(item.kind == "measured" for item in finding.evidence)
+    assert any("must not be accepted" in refusal for refusal in finding.refusals)
+
+
+def test_the_oscillation_rule_is_silent_on_the_healthy_fixtures():
+    """Negative controls: every converged fixture must stay free of the finding."""
+    for name in (
+        "n2_hf_clean.out",
+        "n2_ccsd.out",
+        "ch4_eq.out",
+        "ch4_diss_fresh.out",
+        "ch4_diss_prop.out",
+        "h2o_freq_min.out",
+        "h2o_linear_freq.out",
+        "nh3_planar_freq.out",
+        "nh3_planar_optts_freq.out",
+        "fhh_optts_freq.out",
+        "fblock_dft_la_complex.out",
+        "f2_ccsd.out",
+        "n2_stretch_local_spin.out",
+        "h2co_dscf.out",
+    ):
+        findings = triage(parse_auto(FIXTURES / name))
+        assert RULE_ENERGY_OSCILLATION not in {item.rule_id for item in findings}, name
+
+
+def test_oscillation_needs_a_non_collapsing_tail(tmp_path):
+    """An alternating tail that collapses is the normal endgame of a converging
+    run; only a persisting oscillation is reported (synthetic outputs)."""
+    # bouncing at a constant width, not converged -> reported
+    bouncing = [-10.0 - 0.01 * (i % 2) - 0.001 * i for i in range(20)]
+    text = _energy_output(bouncing, converged=False)
+    findings = triage(parse_auto(_write(tmp_path, "bouncing.out", text)))
+    assert RULE_ENERGY_OSCILLATION in {item.rule_id for item in findings}
+
+    # the same alternation collapsing ten-fold over the window -> silent
+    collapsing = []
+    value = -10.0
+    step = 1.0
+    for i in range(20):
+        value += step if i % 2 == 0 else -0.999 * step
+        value -= 0.05  # overall progress
+        step *= 0.55
+        collapsing.append(value)
+    text = _energy_output(collapsing, converged=False)
+    findings = triage(parse_auto(_write(tmp_path, "collapsing.out", text)))
+    assert findings == () or RULE_ENERGY_OSCILLATION not in {item.rule_id for item in findings}
+
+    # a converged run is excluded outright, even with a bouncy table
+    text = _energy_output(bouncing, converged=True)
+    findings = triage(parse_auto(_write(tmp_path, "converged.out", text)))
+    assert RULE_ENERGY_OSCILLATION not in {item.rule_id for item in findings}
