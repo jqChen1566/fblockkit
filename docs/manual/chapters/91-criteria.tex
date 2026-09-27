@@ -159,6 +159,21 @@ RAS/ORMAS partition mask & validity rules, no threshold & Menu~\menu{28}: the
   \textsf{[Manual]} ORCA 6.1 \S3.13.3.6--3.13.3.9; \textsf{[Measured]}
   \code{tests/test\_ras\_ormas.py} and the fixtures \code{n2\_ras.*},
   \code{n2\_ormas.*}, \code{n2\_rasci.*} \\
+Perturbed multistart & no threshold; the seed fixes every draw & Menu~\menu{29}:
+  the randomized occupied--virtual mixing of the source's Eqs.~(2)--(3) (10
+  random pairs out of the 15 highest occupied and 15 lowest unoccupied orbitals,
+  angles uniform in $[0, 90)$ degrees) as an inexpensive non-global-minimum
+  test; a perturbed start converges either to the reference's solution or to
+  another one, and only a lower energy is information (the source: the test
+  cannot guarantee detection).  Measured anchor (CH$_4$ dissociation, UKS
+  PBE0/def2-SVP, one C--H at 2.6~\AA): the propagated guess keeps the
+  restricted solution ($-40.111230225721$~Eh, $\langle S^2\rangle = 0.000000$),
+  the default guess also lands restricted ($-40.183584827774$~Eh), and all
+  three generated starts reach the broken-symmetry solution ($-40.2416$~Eh,
+  $\langle S^2\rangle = 0.971943$) &
+  \textsf{[Literature]} Vaucher \& Reiher 2017, \S IV (Eqs.~(2)--(3));
+  \textsf{[Measured]} \code{tests/test\_perturb\_guess.py}, fixtures
+  \code{ch4\_*} \\
 \bottomrule
 \end{tabularx}
 \end{center}

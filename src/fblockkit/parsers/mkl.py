@@ -21,6 +21,9 @@ coefficient groups, and the occupations.  The coefficient block is stored the
 way the file lays it out -- groups of up to five orbitals, each group one
 label line, one line of orbital energies and then one row per AO -- with the
 :meth:`MklFile.coefficients` view turning it into an ``n_ao x n_mo`` matrix.
+An unrestricted file carries the beta pair (``$COEFF_BETA`` + ``$OCC_BETA``,
+measured on a UKS reference where orca_2mkl writes both); it is optional and
+mirrors the alpha block's group structure.
 
 The writer rebuilds the whole file from those pieces; whitespace is
 normalised (the format is token-based -- ``orca_2mkl`` reads numbers, not
@@ -149,7 +152,13 @@ def _row_order(basis_lines) -> tuple[int, ...]:
 
 @dataclass(frozen=True)
 class MklFile:
-    """A read Molekel MKL file: geometry, basis (verbatim), orbitals, occupations."""
+    """A read Molekel MKL file: geometry, basis (verbatim), orbitals, occupations.
+
+    Unrestricted runs carry a second coefficient/occupation pair; the beta
+    block is optional (measured: ORCA writes ``$COEFF_BETA``/``$OCC_BETA``
+    only for unrestricted references) and is carried through the reader and
+    the writer when present.
+    """
 
     charge_mult: tuple[int, int]
     atoms: tuple[tuple[int, float, float, float], ...]  # Z, x, y, z in Angstrom
@@ -158,6 +167,13 @@ class MklFile:
     groups: tuple[MklGroup, ...]
     occupations: tuple[float, ...]
     header_comments: tuple[str, ...] = ()
+    beta_groups: tuple[MklGroup, ...] = ()
+    beta_occupations: tuple[float, ...] = ()
+
+    @property
+    def unrestricted(self) -> bool:
+        """Whether the file carries a beta orbital block (an unrestricted run)."""
+        return bool(self.beta_groups)
 
     @property
     def n_ao(self) -> int:
@@ -167,17 +183,15 @@ class MklFile:
     def n_mo(self) -> int:
         return sum(len(group.labels) for group in self.groups)
 
-    def _stored_matrix(self) -> list[list[float]]:
+    def _stored_matrix(self, groups: tuple[MklGroup, ...] | None = None) -> list[list[float]]:
         """The coefficient matrix exactly as stored (mkl row order)."""
         matrix = [[] for _ in range(self.n_ao)]
-        for group in self.groups:
+        for group in groups if groups is not None else self.groups:
             for row_index, row in enumerate(group.rows):
                 matrix[row_index].extend(row)
         return matrix
 
-    def coefficients(self) -> tuple[tuple[float, ...], ...]:
-        """The ``n_ao x n_mo`` coefficient matrix in export/``.gbw`` row order."""
-        stored = self._stored_matrix()
+    def _to_export_order(self, stored: list[list[float]]) -> tuple[tuple[float, ...], ...]:
         order = _row_order(self.basis_lines)
         if len(order) != self.n_ao:
             raise _fail(
@@ -186,19 +200,17 @@ class MklFile:
             )
         return tuple(tuple(stored[mkl_row]) for mkl_row in order)
 
-    def with_orbitals(
-        self,
-        coefficients,
-        occupations=None,
-        energies=None,
-    ) -> "MklFile":
-        """A copy carrying new coefficients (``n_ao x n_mo``), grouped the same way.
+    def coefficients(self) -> tuple[tuple[float, ...], ...]:
+        """The alpha ``n_ao x n_mo`` coefficient matrix in export/``.gbw`` row order."""
+        return self._to_export_order(self._stored_matrix())
 
-        ``energies`` (per orbital) and ``occupations`` default to the stored
-        ones; the label lines are kept as they are (the labels are symmetry
-        tags of the template).
-        """
-        matrix = [[float(value) for value in row] for row in coefficients]
+    def beta_coefficients(self) -> tuple[tuple[float, ...], ...]:
+        """The beta coefficient matrix (empty tuple for a restricted file)."""
+        if not self.beta_groups:
+            return ()
+        return self._to_export_order(self._stored_matrix(self.beta_groups))
+
+    def _regroup(self, groups: tuple[MklGroup, ...], matrix, energies, occupations):
         if len(matrix) != self.n_ao or any(len(row) != self.n_mo for row in matrix):
             raise MklError(
                 f"the new coefficient matrix is {len(matrix)} x "
@@ -218,27 +230,26 @@ class MklFile:
             )
         stored_energies = (
             tuple(energies) if energies is not None else
-            tuple(value for group in self.groups for value in group.energies)
+            tuple(value for group in groups for value in group.energies)
         )
-        # map the export-order rows back into the file's own component order
         order = _row_order(self.basis_lines)
         if len(order) != self.n_ao:
             raise MklError(
                 f"the $BASIS shells account for {len(order)} AO rows while the "
                 f"template holds {self.n_ao}. Next step: check the template's basis block."
             )
-        stored: list[list[float] | None] = [None] * self.n_ao
+        generated: list[list[float] | None] = [None] * self.n_ao
         for export_row, mkl_row in enumerate(order):
-            stored[mkl_row] = matrix[export_row]
-        groups: list[MklGroup] = []
+            generated[mkl_row] = list(matrix[export_row])
+        rebuilt: list[MklGroup] = []
         offset = 0
-        for group in self.groups:
+        for group in groups:
             width = len(group.labels)
             block = [
                 tuple(row[offset + column] for column in range(width))
-                for row in stored  # type: ignore[union-attr]
+                for row in generated  # type: ignore[union-attr]
             ]
-            groups.append(
+            rebuilt.append(
                 MklGroup(
                     labels=group.labels,
                     energies=tuple(stored_energies[offset : offset + width]),
@@ -246,10 +257,55 @@ class MklFile:
                 )
             )
             offset += width
+        return tuple(rebuilt), (
+            tuple(occupations) if occupations is not None else None
+        )
+
+    def with_orbitals(
+        self,
+        coefficients,
+        occupations=None,
+        energies=None,
+        *,
+        beta_coefficients=None,
+        beta_occupations=None,
+        beta_energies=None,
+    ) -> "MklFile":
+        """A copy carrying new coefficients (``n_ao x n_mo``), grouped the same way.
+
+        ``energies`` (per orbital) and ``occupations`` default to the stored
+        ones; the label lines are kept as they are (the labels are symmetry
+        tags of the template).  The beta-prefixed arguments must be absent
+        together with a beta block (a restricted template refuses a beta
+        replacement).
+        """
+        groups, new_occupations = self._regroup(
+            self.groups, coefficients, energies, occupations
+        )
+        if beta_coefficients is not None or beta_occupations is not None or beta_energies is not None:
+            if not self.beta_groups:
+                raise MklError(
+                    "a beta orbital replacement was given for a template without a "
+                    "$COEFF_BETA block (a restricted file). Next step: perturb the "
+                    "alpha block alone, or use an unrestricted reference mkl."
+                )
+            beta_groups, new_beta_occupations = self._regroup(
+                self.beta_groups,
+                beta_coefficients if beta_coefficients is not None else self.beta_coefficients(),
+                beta_energies,
+                beta_occupations,
+            )
+        else:
+            beta_groups, new_beta_occupations = self.beta_groups, None
         return replace(
             self,
-            groups=tuple(groups),
-            occupations=tuple(occupations) if occupations is not None else self.occupations,
+            groups=groups,
+            occupations=new_occupations if new_occupations is not None else self.occupations,
+            beta_groups=beta_groups,
+            beta_occupations=(
+                new_beta_occupations if new_beta_occupations is not None
+                else self.beta_occupations
+            ),
         )
 
     def render(self) -> str:
@@ -288,6 +344,23 @@ class MklFile:
         for start in range(0, len(values), 5):
             lines.append("  " + "  ".join(values[start : start + 5]))
         lines.append(" $END")
+        if self.beta_groups:
+            # the measured unrestricted layout: the beta pair mirrors the alpha
+            # pair (COEFF then OCC), exactly as orca_2mkl writes it
+            lines.append("")
+            lines.append("$COEFF_BETA")
+            for group in self.beta_groups:
+                lines.append("  " + "  ".join(f"{label:>3}" for label in group.labels))
+                lines.append("  " + "  ".join(f"{value:13.7f}" for value in group.energies))
+                for row in group.rows:
+                    lines.append("  " + "  ".join(f"{value:13.7f}" for value in row))
+            lines.append(" $END")
+            lines.append("")
+            lines.append("$OCC_BETA")
+            beta_values = [f"{value:13.7f}" for value in self.beta_occupations]
+            for start in range(0, len(beta_values), 5):
+                lines.append("  " + "  ".join(beta_values[start : start + 5]))
+            lines.append(" $END")
         return "\n".join(lines) + "\n"
 
 
@@ -357,6 +430,31 @@ def parse_mkl(path: str | Path) -> MklFile:
                 f"coefficient group {index} has {len(group.energies)} energies for "
                 f"{len(group.labels)} labels."
             )
+    beta_groups: tuple[MklGroup, ...] = ()
+    beta_occupations: tuple[float, ...] = ()
+    if "COEFF_BETA" in sections or "OCC_BETA" in sections:
+        # measured: orca_2mkl writes both beta sections together for unrestricted
+        # references; one without the other is a broken file
+        if "COEFF_BETA" not in sections or "OCC_BETA" not in sections:
+            raise _fail(
+                "the file carries only one of $COEFF_BETA / $OCC_BETA; orca_2mkl "
+                "writes the beta pair together for unrestricted references."
+            )
+        beta_groups = _coefficient_groups(sections["COEFF_BETA"])
+        if len(beta_groups) != len(groups) or any(
+            len(a.rows) != len(b.rows) or len(a.labels) != len(b.labels)
+            for a, b in zip(groups, beta_groups)
+        ):
+            raise _fail(
+                "the $COEFF_BETA block does not mirror the $COEFF_ALPHA block's "
+                "group structure; the file is inconsistent."
+            )
+        beta_occupations = _floats(sections["OCC_BETA"], "the $OCC_BETA block")
+        if len(beta_occupations) != n_mo:
+            raise _fail(
+                f"$OCC_BETA carries {len(beta_occupations)} values while the "
+                f"coefficient block holds {n_mo} orbitals."
+            )
     return MklFile(
         charge_mult=charge_mult,
         atoms=atoms,
@@ -364,6 +462,8 @@ def parse_mkl(path: str | Path) -> MklFile:
         basis_lines=tuple(sections.get("BASIS", [])),
         groups=groups,
         occupations=occupations,
+        beta_groups=beta_groups,
+        beta_occupations=beta_occupations,
     )
 
 

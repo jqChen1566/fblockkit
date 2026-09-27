@@ -90,6 +90,9 @@ items:
   - number: "28"
     title: "RAS / ORMAS model-space input (a structure + a partition mask -> an ORCA input)"
     handler: ras_ormas_generate
+  - number: "29"
+    title: "Perturbed multistart batch (a converged reference mkl + its input -> restart inputs)"
+    handler: perturb_batch
   - number: "0"
     title: Quit
     handler: quit

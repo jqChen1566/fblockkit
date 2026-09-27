@@ -1279,6 +1279,60 @@ energy to -108.985623236851 Eh; the CI-only route gives -108.921051085808 Eh
 the `%rasci` module's QDPT/OPA couplings (`rel`/`douv`) are documented in
 the same manual sections but not generated here.
 
+## 29 Perturbed multistart batch (a converged reference mkl + its input)
+
+**What it is for**: the inexpensive test that an SCF solution is not a
+non-global minimum (the source: Vaucher & Reiher 2017, section IV).  The
+converged reference's orbitals are perturbed by random occupied-virtual pair
+mixings (10 random pairs out of the 15 highest occupied and the 15 lowest
+unoccupied orbitals, random angles in [0, 90) degrees; their Eqs. (2)-(3)),
+and each perturbed set becomes a restart.  A start either returns to the same
+solution or finds another stationary point: a lower energy identifies the
+reference as wrongly converged.  Stability analysis detects unstable
+solutions (saddle points) but cannot distinguish local from global minima, so
+this is complementary.  The menu generates the starts; the engine run stays
+with you.
+
+**What you need**: the reference's Molekel mkl (export it with
+`orca_2mkl <base> -mkl`) and the ORCA input that produced it (the menu
+rewrites that input's guess; its inline geometry is cross-checked against the
+reference's coordinates).
+
+**How**: menu 29 -> the reference mkl path; the base input path; the number
+of starts (Enter = 3); the random seed (Enter = 20260927; it fixes every pair
+and angle, so the batch replays byte-identically); the pairs per start
+(Enter = 10, the source's value); the window per side (Enter = 15, the
+source's value).  For each start you get
+`<reference>.p<k>.fbk.mkl` (the perturbed orbitals) and
+`<input>.p<k>.inp` (the base input with `!MORead` and
+`%moinp "<reference>.p<k>.fbk.gbw"`), plus a report
+`<input>.perturb.fbk.md` with every window, pair and angle.
+
+**How to read it**:
+
+- convert each orbital file next to itself (`orca_2mkl <name>.fbk -gbw`),
+  run the inputs, and compare the converged energies with the reference's: a
+  lower energy heals a wrongly converged reference; the same (or a higher)
+  energy is no information -- the source is explicit that the test cannot
+  guarantee detection;
+- the perturbed columns are mixtures, not eigenfunctions: the occupations and
+  orbital energies in the file are the reference's, and ORCA re-determines
+  everything after reading the guess;
+- an unrestricted reference is perturbed in both spins independently.
+
+**Measured anchor** (CH4 dissociation, UKS PBE0/def2-SVP, one C-H at
+2.6 Angstrom): the guess propagated from the equilibrium orbitals keeps the
+restricted solution (-40.111230225721 Eh, <S**2> 0.000000); ORCA's default
+guess also lands on a restricted solution (-40.183584827774 Eh, <S**2>
+0.000000); all three generated starts reach the broken-symmetry solution
+(-40.2416 Eh, <S**2> 0.971943) -- a healing of 0.130 Eh and a further
+0.058 Eh below the default guess.
+
+**Boundary**: the source validated the mechanism at the SCF level (it notes
+that MC-SCF solutions can in principle be caught in local minima as well);
+this menu edits any input's guess, so the same procedure applies to a CASSCF
+reference, but no MC-SCF anchor is claimed here.
+
 ## Appendix A Command line
 
 ```text

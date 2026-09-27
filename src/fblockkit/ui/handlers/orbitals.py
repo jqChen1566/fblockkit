@@ -539,3 +539,108 @@ def wasp_guess(session: Session) -> None:
     session.say(f"Report written: {md_path}")
 
 
+def perturb_batch(session: Session) -> None:
+    """Menu 29: perturb a converged reference's orbitals into K restart inputs."""
+    from ...recipe import perturb_guess
+
+    mkl_text = session.ask(
+        "Reference mkl path (``orca_2mkl <base> -mkl`` of the converged run)"
+    )
+    if not mkl_text:
+        session.say("Cancelled (no reference mkl given).")
+        return
+    input_text = session.ask("Base ORCA input path (the input that produced the reference run)")
+    if not input_text:
+        session.say("Cancelled (no base input given).")
+        return
+    starts_text = session.ask("Number of perturbed starts (Enter = 3)").strip()
+    seed_text = session.ask(
+        "Random seed; it fixes every pair and angle, so the batch replays "
+        "byte-identically (Enter = 20260927)"
+    ).strip()
+    pairs_text = session.ask("Pairs per start (Enter = 10, the source's value)").strip()
+    window_text = session.ask("Orbital window per side (Enter = 15, the source's value)").strip()
+    mkl_path = Path(mkl_text)
+    base_path = Path(input_text)
+    try:
+        starts = int(starts_text or "3")
+        seed = int(seed_text or "20260927")
+        n_pairs = int(pairs_text or "10")
+        window = int(window_text or "15")
+        if starts < 1:
+            raise perturb_guess.PerturbError("the number of starts must be at least one.")
+        reference = parse_mkl(mkl_path)
+        base_text = base_path.read_text(encoding="utf-8", errors="replace")
+        geometry_note = perturb_guess.check_geometry_match(base_text, reference)
+        written: list[tuple[Path, Path, str]] = []
+        records: list[str] = []
+        for index in range(1, starts + 1):
+            start = perturb_guess.perturb_mkl(
+                reference, seed=seed + index - 1, n_pairs=n_pairs, window=window
+            )
+            stem = f"{mkl_path.stem}.p{index}.fbk"
+            mkl_out = mkl_path.with_name(stem + ".mkl")
+            mkl_out.write_text(start.mkl.render(), encoding="utf-8")
+            variant = perturb_guess.mo_read_variant(base_text, stem + ".gbw")
+            inp_out = base_path.with_name(f"{base_path.stem}.p{index}.inp")
+            inp_out.write_text(variant, encoding="utf-8")
+            records.append(perturb_guess.render(start, seed=seed + index - 1, index=index))
+            written.append((mkl_out, inp_out, stem))
+    except (perturb_guess.PerturbError, ParserError, OSError, ValueError) as exc:
+        session.say(f"Perturbation batch failed: {exc}")
+        return
+    session.say(
+        f"Reference: {mkl_path.name} ({reference.n_mo} orbitals, "
+        f"{'unrestricted' if reference.unrestricted else 'restricted'}); "
+        f"{starts} perturbed start(s), seed {seed}."
+    )
+    if geometry_note:
+        session.say(f"Note: {geometry_note}")
+    for record in records:
+        session.say(record)
+    for mkl_out, inp_out, stem in written:
+        session.say(f"Written: {mkl_out}")
+        session.say(f"Written: {inp_out}")
+    session.say("Next steps:")
+    session.say(
+        "  - convert each orbital file next to itself: "
+        f"``orca_2mkl {written[0][2]} -gbw`` (the inputs already point at "
+        f"{written[0][2]}.gbw);"
+    )
+    session.say(
+        "  - run the inputs and compare the converged energies with the reference's: "
+        "a start finding a LOWER energy heals a wrongly converged reference; the "
+        "same (or a higher) energy is no information -- the source is explicit that "
+        "the test cannot guarantee detection"
+    )
+    session.say(
+        "  - the perturbed columns are mixtures, not eigenfunctions: the occupations "
+        "and orbital energies in the file are the reference's, and ORCA "
+        "re-determines everything after reading the guess"
+    )
+    session.say(
+        "  - complementary check: a stability analysis detects unstable solutions "
+        "(saddle points) but cannot distinguish local from global minima (the "
+        "source's own boundary)"
+    )
+    body = "\n".join(records) + "\n\nNext steps:\n" + "\n".join(
+        "  - " + line
+        for line in (
+            f"convert with ``orca_2mkl <name> -gbw`` and run: {', '.join(w[2] for w in written)}",
+            "a lower converged energy than the reference's identifies wrong convergence",
+            "the perturbation cannot guarantee detection (the source's boundary)",
+        )
+    )
+    section = ReportSection(
+        title="4.1 perturbed multistart batch (randomized occupied-virtual mixing)",
+        body=body,
+    )
+    report_lines = f"## {section.title}\n\n{section.body}\n"
+    refs = references_section(perturb_guess.evidence())
+    if refs is not None:
+        report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
+    md_path = base_path.with_name(base_path.name + ".perturb.fbk.md")
+    md_path.write_text(report_lines, encoding="utf-8")
+    session.say(f"Report written: {md_path}")
+
+

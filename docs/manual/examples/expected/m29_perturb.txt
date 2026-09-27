@@ -31,12 +31,41 @@ Available functions:
   28  RAS / ORMAS model-space input (a structure + a partition mask -> an ORCA input)
   29  Perturbed multistart batch (a converged reference mkl + its input -> restart inputs)
    0  Quit
-Choose a number (Enter = leave empty)> 1
-ORCA output file path (Enter = leave empty)> work/n2_stretch_local_spin.out
-Report written: work\n2_stretch_local_spin.out.fbk.md
-Data written: work\n2_stretch_local_spin.out.fbk.json
-Analysis sections: 1.
-Diagnosis: no diagnostic rule matched.
+Choose a number (Enter = leave empty)> 29
+Reference mkl path (``orca_2mkl <base> -mkl`` of the converged run) (Enter = leave empty)> work/ch4_diss_prop.mkl
+Base ORCA input path (the input that produced the reference run) (Enter = leave empty)> work/ch4_diss_prop.inp
+Number of perturbed starts (Enter = 3) (Enter = leave empty)> 3
+Random seed; it fixes every pair and angle, so the batch replays byte-identically (Enter = 20260927) (Enter = leave empty)> 20260927
+Pairs per start (Enter = 10, the source's value) (Enter = leave empty)> 10
+Orbital window per side (Enter = 15, the source's value) (Enter = leave empty)> 15
+Reference: ch4_diss_prop.mkl (34 orbitals, unrestricted); 3 perturbed start(s), seed 20260927.
+perturbed start 1 (seed 20260927):
+  occupied window (mkl columns): 0, 1, 2, 3, 4
+  virtual window  (mkl columns): 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19
+  alpha mixing (10 pair(s)): 1<-12 28.19 deg; 0<-6 6.98 deg; 3<-10 61.35 deg; 2<-6 16.65 deg; 3<-9 22.86 deg; 1<-10 74.46 deg; 4<-8 57.31 deg; 4<-7 46.87 deg; 0<-9 18.41 deg; 3<-6 38.15 deg
+  beta  mixing (10 pair(s)): 0<-19 55.09 deg; 3<-5 11.50 deg; 2<-14 28.49 deg; 1<-12 12.42 deg; 1<-7 9.50 deg; 0<-5 14.36 deg; 4<-6 4.22 deg; 3<-6 40.13 deg; 0<-15 27.69 deg; 1<-18 41.64 deg
+perturbed start 2 (seed 20260928):
+  occupied window (mkl columns): 0, 1, 2, 3, 4
+  virtual window  (mkl columns): 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19
+  alpha mixing (10 pair(s)): 4<-19 25.22 deg; 0<-8 85.25 deg; 3<-10 82.27 deg; 1<-16 30.19 deg; 0<-12 2.62 deg; 3<-15 51.84 deg; 4<-18 80.06 deg; 0<-5 82.34 deg; 2<-13 2.25 deg; 3<-15 52.94 deg
+  beta  mixing (10 pair(s)): 2<-10 15.56 deg; 1<-18 86.00 deg; 1<-8 87.72 deg; 0<-8 15.05 deg; 2<-9 38.27 deg; 0<-19 70.75 deg; 2<-13 53.19 deg; 0<-8 50.94 deg; 1<-19 0.06 deg; 3<-19 65.43 deg
+perturbed start 3 (seed 20260929):
+  occupied window (mkl columns): 0, 1, 2, 3, 4
+  virtual window  (mkl columns): 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19
+  alpha mixing (10 pair(s)): 3<-13 66.22 deg; 3<-7 39.25 deg; 4<-10 43.41 deg; 0<-13 0.82 deg; 4<-14 53.31 deg; 3<-12 89.42 deg; 4<-12 60.53 deg; 0<-19 16.73 deg; 3<-7 16.87 deg; 2<-12 81.54 deg
+  beta  mixing (10 pair(s)): 0<-7 45.24 deg; 4<-12 75.22 deg; 2<-16 26.53 deg; 3<-12 17.02 deg; 0<-14 33.72 deg; 3<-9 68.28 deg; 4<-8 30.01 deg; 3<-16 87.32 deg; 1<-5 87.25 deg; 1<-7 63.97 deg
+Written: work\ch4_diss_prop.p1.fbk.mkl
+Written: work\ch4_diss_prop.p1.inp
+Written: work\ch4_diss_prop.p2.fbk.mkl
+Written: work\ch4_diss_prop.p2.inp
+Written: work\ch4_diss_prop.p3.fbk.mkl
+Written: work\ch4_diss_prop.p3.inp
+Next steps:
+  - convert each orbital file next to itself: ``orca_2mkl ch4_diss_prop.p1.fbk -gbw`` (the inputs already point at ch4_diss_prop.p1.fbk.gbw);
+  - run the inputs and compare the converged energies with the reference's: a start finding a LOWER energy heals a wrongly converged reference; the same (or a higher) energy is no information -- the source is explicit that the test cannot guarantee detection
+  - the perturbed columns are mixtures, not eigenfunctions: the occupations and orbital energies in the file are the reference's, and ORCA re-determines everything after reading the guess
+  - complementary check: a stability analysis detects unstable solutions (saddle points) but cannot distinguish local from global minima (the source's own boundary)
+Report written: work\ch4_diss_prop.inp.perturb.fbk.md
 
 Available functions:
    1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)

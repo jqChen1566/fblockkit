@@ -29,6 +29,7 @@ Available functions:
   26  TNASS subset selection (an FCIDUMP -> the S2-maximizing orbital subset)
   27  DeltaSCF / MOM excited-state SCF input (a structure + an excitation spec -> an input)
   28  RAS / ORMAS model-space input (a structure + a partition mask -> an ORCA input)
+  29  Perturbed multistart batch (a converged reference mkl + its input -> restart inputs)
    0  Quit
 Choose a number (Enter = leave empty)> 5
 Search keywords (several words, space separated) (Enter = leave empty)> mokit
@@ -65,6 +66,7 @@ Available functions:
   26  TNASS subset selection (an FCIDUMP -> the S2-maximizing orbital subset)
   27  DeltaSCF / MOM excited-state SCF input (a structure + an excitation spec -> an input)
   28  RAS / ORMAS model-space input (a structure + a partition mask -> an ORCA input)
+  29  Perturbed multistart batch (a converged reference mkl + its input -> restart inputs)
    0  Quit
 Choose a number (Enter = leave empty)> 6
 Tool index id (e.g. openmolcas; search with menu 5) (Enter = leave empty)> openmolcas
@@ -106,6 +108,7 @@ Available functions:
   26  TNASS subset selection (an FCIDUMP -> the S2-maximizing orbital subset)
   27  DeltaSCF / MOM excited-state SCF input (a structure + an excitation spec -> an input)
   28  RAS / ORMAS model-space input (a structure + a partition mask -> an ORCA input)
+  29  Perturbed multistart batch (a converged reference mkl + its input -> restart inputs)
    0  Quit
 Choose a number (Enter = leave empty)> 6
 Tool index id (e.g. openmolcas; search with menu 5) (Enter = leave empty)> liblan
@@ -192,6 +195,7 @@ Available functions:
   26  TNASS subset selection (an FCIDUMP -> the S2-maximizing orbital subset)
   27  DeltaSCF / MOM excited-state SCF input (a structure + an excitation spec -> an input)
   28  RAS / ORMAS model-space input (a structure + a partition mask -> an ORCA input)
+  29  Perturbed multistart batch (a converged reference mkl + its input -> restart inputs)
    0  Quit
 Choose a number (Enter = leave empty)> 0
 Goodbye.

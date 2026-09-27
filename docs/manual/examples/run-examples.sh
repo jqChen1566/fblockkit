@@ -60,6 +60,10 @@ cp "$REPO/fixtures/orca/n2_ass1st.json" work/
 cp "$REPO/fixtures/orca/benzene.json" work/
 cp "$REPO/fixtures/orca/benzene.fcidump" work/
 cp "$REPO/fixtures/orca/benzene.out" work/
+# the menu-29 reference pair: the UKS CH4 wrong-convergence fixture (the mkl
+# exported from the propagated solution and the input that produced it)
+cp "$REPO/fixtures/orca/ch4_diss_prop.mkl" work/
+cp "$REPO/fixtures/orca/inputs/ch4_diss_prop.inp" work/
 
 for script in scripts/*.txt; do
   name=$(basename "$script" .txt)

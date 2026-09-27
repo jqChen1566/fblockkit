@@ -141,6 +141,9 @@ def _prepare_work() -> None:
     shutil.copy(FIXTURES / "benzene.json", work / "benzene.json")
     shutil.copy(FIXTURES / "benzene.fcidump", work / "benzene.fcidump")
     shutil.copy(FIXTURES / "benzene.out", work / "benzene.out")
+    # the menu-29 reference pair (the UKS CH4 wrong-convergence fixture)
+    shutil.copy(FIXTURES / "ch4_diss_prop.mkl", work / "ch4_diss_prop.mkl")
+    shutil.copy(FIXTURES / "inputs" / "ch4_diss_prop.inp", work / "ch4_diss_prop.inp")
 
 
 @pytest.fixture(scope="module")

@@ -262,6 +262,27 @@ Points to note (also in `recipe/ras_ormas.py` and `tests/test_ras_ormas.py`):
 - the `%rasci` route's mask defines a contiguous window after the frozen
   core (echo "First active orbital ... 4" for N2 with a 6-orbital window).
 
+## CH4 multistart fixtures added 2026-09-27 (server 101, the same ORCA 6.1.1)
+
+| Output | Input | Job | Parsing/analysis points covered | Run outcome |
+|---|---|---|---|---|
+| `ch4_eq.out` | `inputs/ch4_eq.inp` | CH4 equilibrium (PBE0/def2-SVP UKS, C-H 1.087 Angstrom) | the start of the dissociation chain (its gbw feeds the propagated run) | terminated normally |
+| `ch4_diss_fresh.out` | `inputs/ch4_diss_fresh.inp` | one C-H stretched to 2.6 Angstrom, ORCA's default guess | the default guess also lands on a restricted solution: -40.183584827774 Eh, `<S**2>` 0.000000 | terminated normally |
+| `ch4_diss_prop.out` | `inputs/ch4_diss_prop.inp` (+ `ch4_diss_prop.mkl`, the exported reference) | the same geometry started with `!MORead` from the equilibrium orbitals | the wrong-convergence trap (the source's methane story): the propagated guess keeps the restricted character at -40.111230225721 Eh (0.072 Eh above the default guess) | terminated normally |
+| `ch4_diss_prop.p1..p3.out` | `inputs/ch4_diss_prop.p1..p3.inp` (written by menu 29's generator) | the three perturbed starts (seed 20260927, 10 pairs, window 15) | the healing: all three reach the broken-symmetry solution -40.2416 Eh with `<S**2>` 0.971943 -- 0.130 Eh below the trap and 0.058 Eh below the default guess | terminated normally |
+
+Points to note (also in `recipe/perturb_guess.py` and `tests/test_perturb_guess.py`):
+
+- the reference mkl is an unrestricted file: `$COEFF_ALPHA` + `$OCC_ALPHA`
+  and `$COEFF_BETA` + `$OCC_BETA` (measured; the parser carries both through);
+- the menu rewrites the base input's guess (`!MORead`, `%moinp`) and
+  cross-checks the inline `* xyz` block against the reference mkl's
+  coordinates (1e-4 Angstrom);
+- the generated mkl files are deterministic in the seed and the tests
+  regenerate the committed `.p<k>.inp` inputs byte-identically from the
+  committed mkl (the perturbed mkl products are not committed; their engine
+  runs are the committed `.p<k>.out`).
+
 ## Known-behaviour notes
 
 - `generated_ce3_sarc2.out`: the active occupations are (1,0,0,0,0,0,0) -- putting the

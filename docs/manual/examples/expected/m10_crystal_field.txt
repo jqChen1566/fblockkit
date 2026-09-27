@@ -29,6 +29,7 @@ Available functions:
   26  TNASS subset selection (an FCIDUMP -> the S2-maximizing orbital subset)
   27  DeltaSCF / MOM excited-state SCF input (a structure + an excitation spec -> an input)
   28  RAS / ORMAS model-space input (a structure + a partition mask -> an ORCA input)
+  29  Perturbed multistart batch (a converged reference mkl + its input -> restart inputs)
    0  Quit
 Choose a number (Enter = leave empty)> 10
 CF input JSON path (levels + coefficients; see the user guide) (Enter = leave empty)> work/cf_c3.json
@@ -82,6 +83,7 @@ Available functions:
   26  TNASS subset selection (an FCIDUMP -> the S2-maximizing orbital subset)
   27  DeltaSCF / MOM excited-state SCF input (a structure + an excitation spec -> an input)
   28  RAS / ORMAS model-space input (a structure + a partition mask -> an ORCA input)
+  29  Perturbed multistart batch (a converged reference mkl + its input -> restart inputs)
    0  Quit
 Choose a number (Enter = leave empty)> 0
 Goodbye.
