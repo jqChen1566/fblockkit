@@ -239,6 +239,29 @@ Points to note (also in `recipe/deltascf.py` and `tests/test_deltascf.py`):
   `KeepInitialRef`, `FreezeAndRelease`, `GMF`) is quoted from the manual's
   DeltaSCF chapter (5.34) and carried verbatim by the generator.
 
+## RAS/ORMAS fixtures added 2026-09-27 (server 101, the same ORCA 6.1.1)
+
+| Output | Input | Job | Parsing/analysis points covered | Run outcome |
+|---|---|---|---|---|
+| `n2_cas666_ref.out` | `inputs/n2_cas666_ref.inp` | N2/def2-SVP at 1.10 Angstrom, plain CASSCF(6,6) | the reference for the ORMAS identity anchor: -108.989034756374 Eh | terminated normally |
+| `n2_ormas.out` | `inputs/n2_ormas.inp` (written by menu 28's generator) | the same system, `%casscf` + `refs ORMAS(6: 2 0 4, 2 0 4, 2 0 4)` | the identity anchor: an unconstrained ORMAS mask reproduces the plain CASSCF energy to all 12 printed digits; the output carries the ORMAS sub-space table ("Subspace i: ... => k configurations") | terminated normally |
+| `n2_ras.out` | `inputs/n2_ras.inp` (menu 28) | the same system, `%casscf` + `refs RAS(6:2 2/2/2 2)` | the restriction anchor: RAS raises the MCSCF energy to -108.985623236851 Eh; the output echoes "Building the RAS space ... done (80 configurations for Mult=1)" | terminated normally |
+| `n2_rasci.out` | `inputs/n2_rasci.inp` (menu 28) | the same system, `%rasci` + `refs RAS(6:2 2/2/2 2)`, `cistep accci`, `ExcLevel 0` | the CI-only anchor: -108.921051085808 Eh (no orbital relaxation); the output echoes "Number of active orbitals ... 6", "First active orbital ... 4" | terminated normally |
+| `n2_rasci_ormas.out` | `inputs/n2_rasci_ormas.inp` (menu 28) | the same system, `%rasci` + `refs ORMAS(6: 2 0 4, 2 0 4, 2 0 4)` | the superset check: -108.921178474942 Eh sits below the restricted RAS-CI, as the ORMAS space contains it | terminated normally |
+
+Points to note (also in `recipe/ras_ormas.py` and `tests/test_ras_ormas.py`):
+
+- the `refs` sub-block needs its own `end` (measured both on `%casscf` and
+  `%rasci`: without it the parser reports the following token as an
+  unrecognized symbol of the enclosing block);
+- a probe with `nel 8` against a mask carrying 6 electrons ran the mask's
+  space (the mask overrides the line for RAS too, not only ORMAS as the
+  manual says) -- the generator refuses the mismatch instead;
+- `ExcLevel 0` reproduces the default run's energy exactly (measured), so
+  the excitation-level default is 0;
+- the `%rasci` route's mask defines a contiguous window after the frozen
+  core (echo "First active orbital ... 4" for N2 with a 6-orbital window).
+
 ## Known-behaviour notes
 
 - `generated_ce3_sarc2.out`: the active occupations are (1,0,0,0,0,0,0) -- putting the

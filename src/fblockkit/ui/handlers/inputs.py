@@ -420,3 +420,83 @@ def deltascf_generate(session: Session) -> None:
     session.say(f"Written: {inp_path}. Run it with ORCA, then check the result:")
     for line in deltascf_recipe.run_guidance_lines():
         session.say(f"  - {line}")
+
+
+def ras_ormas_generate(session: Session) -> None:
+    """Menu 28: write a RAS / ORMAS (generalized active space) input."""
+    from ...recipe import ras_ormas as ras_ormas_recipe
+
+    xyz_text = session.ask("Structure file (XYZ) path")
+    if not xyz_text:
+        session.say("Cancelled (no structure given).")
+        return
+    charge_text = session.ask("Charge of the system (Enter = 0)").strip()
+    mult_text_input = session.ask("Multiplicity (Enter = 1)").strip()
+    route_text = session.ask(
+        "Route: casscf (orbital-optimized RASSCF/ORMAS-SCF) or rasci (CI-only) "
+        "(Enter = casscf)"
+    ).strip().lower()
+    route = route_text or "casscf"
+    space_text = session.ask(
+        "Partition mask type: ras (three RAS blocks) or ormas (any number of "
+        "sub-spaces) (Enter = ormas)"
+    ).strip().lower()
+    space = space_text or "ormas"
+    if space == "ras":
+        mask_text = session.ask(
+            "RAS mask: '<nel>:<n1> <h1>/<n2>/<n3> <p3>' "
+            "(e.g. '6:2 2/2/2 2', the manual's own form)"
+        ).strip()
+    else:
+        mask_text = session.ask(
+            "ORMAS mask: '<nel>: <m1> <min1> <max1>, <m2> <min2> <max2>, ...' "
+            "(e.g. '6: 2 0 4, 2 0 4, 2 0 4')"
+        ).strip()
+    state_mult_text = session.ask(
+        "Multiplicities (comma list; Enter = the structure's multiplicity)"
+    ).strip()
+    nroots_text = session.ask("Roots per multiplicity (Enter = 1)").strip() or "1"
+    cistep_text = exc_text = ""
+    if route == "rasci":
+        cistep_text = session.ask(
+            "CIStep: accci, csfci, detci, treecsf (Enter = the module's default)"
+        ).strip().lower()
+        exc_text = session.ask("ExcLevel on top of the references (Enter = the module's default)").strip()
+    keywords_text = session.ask(
+        "Method/basis keywords (Enter = RHF def2-SVP; the manual's examples use a "
+        "plain SCF line)"
+    ).strip()
+    path = Path(xyz_text)
+    try:
+        charge = int(charge_text or "0")
+        multiplicity = int(mult_text_input or "1")
+        atoms = geometry_analysis.parse_xyz(path)
+        coordinates = tuple((atom.element, atom.x, atom.y, atom.z) for atom in atoms)
+        text = ras_ormas_recipe.ras_ormas_input(
+            coordinates,
+            charge=charge,
+            multiplicity=multiplicity,
+            space=space,
+            mask=mask_text,
+            route=route,
+            mult=state_mult_text or None,
+            nroots=nroots_text,
+            cistep=cistep_text or None,
+            exc_level=int(exc_text) if exc_text else None,
+            keywords=keywords_text or "RHF def2-SVP",
+        )
+    except (
+        ras_ormas_recipe.RasOrmasError,
+        geometry_analysis.StructureError,
+        OSError,
+        ValueError,
+    ) as exc:
+        session.say(f"RAS/ORMAS input failed: {exc}")
+        return
+    suffix = ".rasormas.inp" if route == "casscf" else ".rasci.inp"
+    inp_path = path.with_name(f"{path.stem}{suffix}")
+    inp_path.write_text(text, encoding="utf-8")
+    session.say(text)
+    session.say(f"Written: {inp_path}. Run it with ORCA, then check the result:")
+    for line in ras_ormas_recipe.run_guidance_lines(route):
+        session.say(f"  - {line}")

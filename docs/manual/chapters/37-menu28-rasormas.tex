@@ -1,0 +1,74 @@
+\chapter{RAS / ORMAS model-space input (menu 28)}
+\label{ch:menu28}
+\menulabel{28}
+
+\section{Purpose}
+
+The generalized active space (GAS) concept --- several orbital sub-spaces
+with occupation constraints --- enters ORCA as an \emph{incomplete model
+space}: the \code{refs} sub-block of \code{\%casscf} takes a partition mask
+instead of the complete active space.  ORCA spells the two documented masks
+\code{RAS(Nel: NRAS1 MaxHoles / NRAS2 / NRAS3 MaxParticles)} and
+\code{ORMAS(nel: m1 min1 max1, m2 min2 max2, ...)} (up to 25 sub-spaces).
+The menu generates the input for either mask on either route --- the
+orbital-optimized \code{\%casscf} route (RASSCF / ORMAS-SCF) or the
+CI-only \code{\%rasci} module; the engine run stays with the user.
+
+\section{What you need}
+
+A structure (XYZ) and the partition mask.  The mask is the single source of
+the active-space numbers: the RAS mask's orbital counts must sum to
+\code{norb} exactly (the engine refuses otherwise), and the masks override
+the \code{nel}/\code{norb} lines --- the menu derives those lines from the
+mask, so a mask always describes the space that will actually run.
+
+\section{Walkthrough}
+
+\lstinputlisting[style=fbkcode, firstline=33, lastline=63,
+  title={The menu-28 example session (N$_2$, the unconstrained ORMAS mask
+  \code{6: 2 0 4, 2 0 4, 2 0 4} on the \%casscf route: the generated input,
+  then the measured facts printed with every mask)}]
+  {examples/expected/m28_rasormas.txt}
+
+\section{What you get}
+
+\file{<stem>.rasormas.inp} (the \code{\%casscf} route) or
+\file{<stem>.rasci.inp} (the CI-only route), plus the run guidance on
+screen: check the partition in the output (the \code{\%casscf} route prints
+its configuration counts, the \code{\%rasci} route echoes
+\code{Number of active orbitals} and \code{First active orbital}); the
+orbital optimization omits the active-active rotation for incomplete model
+spaces (the manual's own warning, with the \code{actorbs} /
+\code{actconstraints} pointers); the \code{\%rasci} module is a standalone
+CI that runs no orbital optimization.
+
+\section{Options worth knowing}
+
+\begin{readbox}
+\begin{itemize}
+  \item \textbf{the route is the physics}: \code{casscf} optimizes the
+    orbitals inside the partition (RASSCF / ORMAS-SCF\@: an MCSCF energy);
+    \code{rasci} diagonalizes in a fixed orbital window after the frozen
+    core (the manual's MRCISD-style usage; \code{ExcLevel} adds excitations
+    on top of the references, and \code{mult}/\code{nroots} take the CASSCF
+    list syntax);
+  \item \textbf{measured anchors} (N$_2$/def2-SVP at 1.10~\AA, fixtures
+    \file{n2\_ras.*}, \file{n2\_ormas.*}, \file{n2\_rasci.*}): the
+    unconstrained ORMAS mask reproduces the plain CASSCF(6,6) energy to all
+    12 printed digits ($-108.989034756374$~Eh) --- so a deviation from the
+    CAS energy is exactly the restriction you asked for; the restricted
+    \code{RAS(6:2 2/2/2 2)} raises the MCSCF energy to
+    $-108.985623236851$~Eh; the CI-only route gives $-108.921051085808$~Eh
+    (RAS) and $-108.921178474942$~Eh for the superset ORMAS space;
+  \item \textbf{the override guard}: ORCA silently overwrites
+    \code{nel}/\code{norb} from either mask (measured for both masks; the
+    manual says so for ORMAS); the generator refuses inconsistent numbers
+    with that explanation instead, so the input you get always carries the
+    mask's own parameters;
+  \item \textbf{not wired}: arbitrary-CFG references
+    (\code{\{2 2 2 0 0 0\}}), \code{irrep} lists, and the \code{\%rasci}
+    module's QDPT/OPA couplings (\code{rel}/\code{douv}) --- all documented
+    in the same manual sections and reachable by editing the generated
+    file.
+\end{itemize}
+\end{readbox}

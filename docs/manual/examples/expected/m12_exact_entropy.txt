@@ -28,6 +28,7 @@ Available functions:
   25  AEGISS selection (entropy screening + an AO projection -> a compact active space)
   26  TNASS subset selection (an FCIDUMP -> the S2-maximizing orbital subset)
   27  DeltaSCF / MOM excited-state SCF input (a structure + an excitation spec -> an input)
+  28  RAS / ORMAS model-space input (a structure + a partition mask -> an ORCA input)
    0  Quit
 Choose a number (Enter = leave empty)> 12
 Converged CASSCF output path (the run whose orbitals were dumped) (Enter = leave empty)> work/n2_fcidump_step_a.out
@@ -110,6 +111,7 @@ Available functions:
   25  AEGISS selection (entropy screening + an AO projection -> a compact active space)
   26  TNASS subset selection (an FCIDUMP -> the S2-maximizing orbital subset)
   27  DeltaSCF / MOM excited-state SCF input (a structure + an excitation spec -> an input)
+  28  RAS / ORMAS model-space input (a structure + a partition mask -> an ORCA input)
    0  Quit
 Choose a number (Enter = leave empty)> 0
 Goodbye.

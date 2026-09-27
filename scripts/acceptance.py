@@ -114,6 +114,7 @@ def main() -> int:
             "n2_scan_1.600.mkl",
             "h2o.xyz",
             "h2co.xyz",
+            "n2.xyz",
             "dm_manifest.json",
             "h2o_dm_ref_pbe0.out",
             "h2o_dm_prep_mp2.out",
@@ -171,6 +172,8 @@ def main() -> int:
                     "25", "work/benzene.json", "work/benzene.fcidump", "work/benzene.out", "C pz", "", "",
                     "26", "work/benzene.fcidump", "work/benzene.out", "4", "greedy",
                     "27", "work/h2co.xyz", "0", "1", "0,1", "", "", "", "", "",
+                    "28", "work/n2.xyz", "0", "1", "casscf", "ras", "6:2 2/2/2 2", "1", "1", "RHF def2-SVP",
+                    "28", "work/n2.xyz", "0", "1", "rasci", "ormas", "6: 2 0 4, 2 0 4, 2 0 4", "1", "1", "accci", "0", "RHF def2-SVP",
                     "8", "work/saved.txt",
                     "0",
                 ]
@@ -453,6 +456,22 @@ def main() -> int:
                 and "  ALPHACONF 0,1" in dscf_input
                 and "* xyz 0 1" in dscf_input,
                 "menu 27 wrote the DeltaSCF input with the occupation spec",
+            )
+
+            ras_input = read("n2.rasormas.inp")
+            check(
+                "%casscf" in ras_input
+                and "    RAS(6:2 2/2/2 2)" in ras_input
+                and "  nel 6" in ras_input,
+                "menu 28 wrote the RAS partition input on the MCSCF route",
+            )
+            rasci_input = read("n2.rasci.inp")
+            check(
+                "%rasci" in rasci_input
+                and "    ORMAS(6: 2 0 4, 2 0 4, 2 0 4)" in rasci_input
+                and "  cistep accci" in rasci_input
+                and "  ExcLevel 0" in rasci_input,
+                "menu 28 wrote the ORMAS CI-only input with its options",
             )
 
             check(product("saved.txt").is_file(), "menu 8 wrote the session script")

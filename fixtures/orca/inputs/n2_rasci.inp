@@ -1,0 +1,15 @@
+! RHF def2-SVP
+%maxcore 2000
+%rasci
+  refs
+    RAS(6:2 2/2/2 2)
+  end
+  mult 1
+  nroots 1
+  cistep accci
+  ExcLevel 0
+end
+* xyz 0 1
+N      0.0000000000     0.0000000000     0.0000000000
+N      0.0000000000     0.0000000000     1.1000000000
+*

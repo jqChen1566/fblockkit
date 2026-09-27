@@ -1224,6 +1224,61 @@ UHF) converged to the n->pi* saddle at -114.294975 Eh against the clean
 ground state's -114.418617 Eh -- an excitation of 3.364 eV, the textbook
 vertical n->pi* value.
 
+## 28 RAS / ORMAS model-space input (a structure + a partition mask)
+
+**What it is for**: the generalized active space (GAS) concept in ORCA's
+spelling -- an incomplete model space defined by a partition mask in the
+`refs` sub-block.  Two masks: `RAS(Nel: NRAS1 MaxHoles / NRAS2 / NRAS3
+MaxParticles)` and `ORMAS(nel: m1 min1 max1, m2 min2 max2, ...)` (up to 25
+sub-spaces, commas or slashes).  Two routes: `%casscf` (orbital-optimized
+RASSCF / ORMAS-SCF) and `%rasci` (a standalone CI after the frozen core;
+the manual's MRCISD-style usage).  The menu generates the input; the engine
+run stays with you.
+
+**What you need**: a structure (XYZ) and the mask.  The mask is the single
+source of the active-space numbers -- the RAS orbital counts must sum to
+`norb` exactly (the engine refuses otherwise), and both masks override the
+`nel`/`norb` lines -- so the generated input always describes the mask's
+own space, with the numbers written out consistently.
+
+**How**: menu 28 -> structure path; charge and multiplicity; the route
+(`casscf` or `rasci`); the mask type (`ras` or `ormas`); the mask (e.g.
+`6:2 2/2/2 2`, or `6: 2 0 4, 2 0 4, 2 0 4`); multiplicities and nroots
+(Enter = the structure's multiplicity, 1 root); on the CI-only route a
+CIStep (`accci`/`csfci`/`detci`/`treecsf`) and an ExcLevel (Enter = the
+module's defaults); the method/basis keywords (Enter = `RHF def2-SVP`).
+The input is written as `<stem>.rasormas.inp` (MCSCF route) or
+`<stem>.rasci.inp` (CI-only route).
+
+**How to read it** (the report prints these with every input):
+
+- check the partition in the output before trusting the number: the `%casscf`
+  route prints its configuration counts ("Building the RAS space ... done (N
+  configurations)", the ORMAS sub-space table), the `%rasci` route echoes
+  "Number of active orbitals" and "First active orbital";
+- the orbital optimization omits the active-active rotation for incomplete
+  model spaces (the manual's own warning), so the energy is sensitive to the
+  orbital canonicalization (`actorbs` / `actconstraints`); compare spaces,
+  not only energies;
+- for unconstrained sub-spaces ORMAS reproduces the full CAS to all printed
+  digits (measured 12-digit identity on N2) -- a deviation from the CAS
+  energy is exactly the restriction you asked for;
+- ORCA silently overwrites `nel`/`norb` from either mask (measured); the
+  generator refuses inconsistent numbers instead, so the input you get
+  always carries the mask's own parameters;
+- the `%rasci` module runs no orbital optimization: its energy sits above
+  the corresponding RASSCF unless you supply converged orbitals.
+
+**Measured anchors** (N2/def2-SVP at 1.10 Angstrom): the plain CASSCF(6,6)
+reference gives -108.989034756374 Eh; `ORMAS(6: 2 0 4, 2 0 4, 2 0 4)`
+reproduces it to all 12 printed digits; `RAS(6:2 2/2/2 2)` raises the MCSCF
+energy to -108.985623236851 Eh; the CI-only route gives -108.921051085808 Eh
+(RAS) and -108.921178474942 Eh (the superset ORMAS space).
+
+**Boundary**: arbitrary-CFG references (`{2 2 2 0 0 0}`), `irrep` lists and
+the `%rasci` module's QDPT/OPA couplings (`rel`/`douv`) are documented in
+the same manual sections but not generated here.
+
 ## Appendix A Command line
 
 ```text

@@ -30,36 +30,37 @@ Available functions:
   27  DeltaSCF / MOM excited-state SCF input (a structure + an excitation spec -> an input)
   28  RAS / ORMAS model-space input (a structure + a partition mask -> an ORCA input)
    0  Quit
-Choose a number (Enter = leave empty)> 22
-Structure file (XYZ) path (Enter = leave empty)> work/h2o.xyz
-Charge (Enter = 0) (Enter = leave empty)> 0
+Choose a number (Enter = leave empty)> 28
+Structure file (XYZ) path (Enter = leave empty)> work/n2.xyz
+Charge of the system (Enter = 0) (Enter = leave empty)> 0
 Multiplicity (Enter = 1) (Enter = leave empty)> 1
-Initial active space nel,norb (small but chemically reasonable; the user guide has the source's advice) (Enter = leave empty)> 4,4
-States to average, nroots (Enter = 1) (Enter = leave empty)> 1
-Method/basis keywords (Enter = RHF def2-SVP TightSCF) (Enter = leave empty)> 
-MaxCore in MB (Enter = 2000) (Enter = leave empty)> 
-! RHF def2-SVP TightSCF FIC-NEVPT2 KeepDens
+Route: casscf (orbital-optimized RASSCF/ORMAS-SCF) or rasci (CI-only) (Enter = casscf) (Enter = leave empty)> casscf
+Partition mask type: ras (three RAS blocks) or ormas (any number of sub-spaces) (Enter = ormas) (Enter = leave empty)> ormas
+ORMAS mask: '<nel>: <m1> <min1> <max1>, <m2> <min2> <max2>, ...' (e.g. '6: 2 0 4, 2 0 4, 2 0 4') (Enter = leave empty)> 6: 2 0 4, 2 0 4, 2 0 4
+Multiplicities (comma list; Enter = the structure's multiplicity) (Enter = leave empty)> 1
+Roots per multiplicity (Enter = 1) (Enter = leave empty)> 1
+Method/basis keywords (Enter = RHF def2-SVP; the manual's examples use a plain SCF line) (Enter = leave empty)> RHF def2-SVP
+! RHF def2-SVP
 %maxcore 2000
 %casscf
-  nel 4
-  norb 4
+  nel 6
+  norb 6
   mult 1
   nroots 1
-  PTSettings
-    Density Unrelaxed
-    NatOrbs true
+  refs
+    ORMAS(6: 2 0 4, 2 0 4, 2 0 4)
   end
 end
 * xyz 0 1
-O      0.0000000000     0.0000000000     0.1177900000
-H      0.0000000000     0.7570000000    -0.4711600000
-H      0.0000000000    -0.7570000000    -0.4711600000
+N      0.0000000000     0.0000000000     0.0000000000
+N      0.0000000000     0.0000000000     1.1000000000
 *
 
-Written: work\h2o.r1.inp (the round-1 input) and work\h2o.r1.json.conf (the export request). Next steps:
-  1. run it:        orca work\h2o.r1.inp
-  2. export it:     orca_2json h2o.r1.gbw   (the .json.conf is already beside the .gbw)
-  3. select:        menu 23 with h2o.r1.json -> the quasi-NOON tables and the next round's input
+Written: work\n2.rasormas.inp. Run it with ORCA, then check the result:
+  - check the partition in the output before trusting the number: the %casscf route prints 'Building the RAS space ... done (N configurations)' or the ORMAS sub-space configuration counts; a wrong mask shows there
+  - the RASSCF/ORMAS-SCF orbital optimization omits the active-active rotation for incomplete model spaces (the manual's own warning), so the energy is sensitive to the orbital canonicalization (actorbs / actconstraints); compare spaces, not only energies
+  - for unconstrained sub-spaces ORMAS reproduces the full CAS to all printed digits (measured 12-digit identity on N2); any deviation from the CAS energy is the restriction you asked for
+  - ORCA silently overwrites nel/norb from an ORMAS mask -- this generator refuses inconsistent numbers instead, so the input you get always carries the mask's own parameters
 
 Available functions:
    1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)

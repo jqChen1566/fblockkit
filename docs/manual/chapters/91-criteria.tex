@@ -142,6 +142,23 @@ TNASS subset objective & maximize $S_2(A) = -\log \mathrm{Tr}(\rho_A^2)$ of
   \textsf{[Literature]} Mingare, Heuz\'e \& Coveney, arXiv:2608.03645
   \S2.3, \S3.3 (Eqs.~(1)--(2), (11)); \textsf{[Measured]}
   \code{tests/test\_tnass.py} \\
+RAS/ORMAS partition mask & validity rules, no threshold & Menu~\menu{28}: the
+  RAS mask \code{RAS(Nel: NRAS1 MaxHoles / NRAS2 / NRAS3 MaxParticles)} needs
+  its orbital counts to sum to \code{norb} exactly, and the ORMAS mask
+  \code{ORMAS(nel: m1 min1 max1, ...)} (up to 25 sub-spaces, commas or slashes)
+  needs $0 \le \mathrm{min} \le \mathrm{max} \le 2m$ per sub-space and enough
+  room for \code{nel} across the sub-spaces --- the refusals reuse the
+  engine's own wording.  Both masks override the \code{nel}/\code{norb}
+  lines (measured for both); the generator refuses the mismatch instead.
+  Measured anchors on N$_2$/def2-SVP (1.10~\AA): the unconstrained ORMAS mask
+  reproduces the plain CASSCF(6,6) energy to all 12 printed digits
+  ($-108.989034756374$~Eh), the restricted \code{RAS(6:2 2/2/2 2)} gives
+  $-108.985623236851$~Eh, and the CI-only route
+  $-108.921051085808$~Eh (RAS) against $-108.921178474942$~Eh (the superset
+  ORMAS space) &
+  \textsf{[Manual]} ORCA 6.1 \S3.13.3.6--3.13.3.9; \textsf{[Measured]}
+  \code{tests/test\_ras\_ormas.py} and the fixtures \code{n2\_ras.*},
+  \code{n2\_ormas.*}, \code{n2\_rasci.*} \\
 \bottomrule
 \end{tabularx}
 \end{center}

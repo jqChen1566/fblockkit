@@ -58,6 +58,7 @@ def test_doc_mentions_each_menu_title_topic():
         "AEGISS selection",
         "TNASS subset selection",
         "DeltaSCF / MOM excited-state SCF input",
+        "RAS / ORMAS model-space input",
     ):
         assert keyword in text, keyword
 
