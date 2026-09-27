@@ -56,6 +56,7 @@ def test_doc_mentions_each_menu_title_topic():
         "ASS1ST selection round",
         "QICAS active-space optimization",
         "AEGISS selection",
+        "TNASS subset selection",
     ):
         assert keyword in text, keyword
 

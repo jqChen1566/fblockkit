@@ -17,7 +17,7 @@ import numpy as np
 from ..analysis import atomic_terms, avas, cf_declaration, crystal_field, point_charge
 from ..analysis import entropy_rdm, environment_spin
 from ..analysis import apc, ass1st, dm_selection, magnetic_doublets, orbital_mapping
-from ..analysis import aegiss, orbital_portrait, qicas
+from ..analysis import aegiss, orbital_portrait, qicas, tnass
 from ..recipe import ass1st as ass1st_recipe
 from ..recipe import dm_batch, guess_transfer
 from ..analysis import orbital_space as orbital_space_analysis
@@ -1694,6 +1694,67 @@ def aegiss_select(session: Session) -> None:
     session.say(f"Report written: {md_path}")
 
 
+def tnass_select(session: Session) -> None:
+    """Menu 26: the TNASS subset selection (Renyi-2 bipartition entropy)."""
+    fcidump_text = session.ask(
+        "FCIDUMP path (a converged CASSCF dump; the subset is selected within it)"
+    )
+    if not fcidump_text:
+        session.say("Cancelled (no FCIDUMP path given).")
+        return
+    output_text = session.ask(
+        "CASSCF output path (matches the CI root to the printed energy; Enter = skip)"
+    ).strip()
+    size_text = session.ask("Target size: the number of active spatial orbitals").strip()
+    method_text = session.ask(
+        "Method: greedy, 'block K' (e.g. 'block 2'), or brute (Enter = greedy)"
+    ).strip().lower()
+    try:
+        reference = None
+        if output_text:
+            result = parse_auto(Path(output_text))
+            casscf = result.sections.get("casscf", {})
+            if not casscf.get("present") or not casscf.get("converged"):
+                session.say(
+                    "The output carries no converged CASSCF section to match the CI "
+                    "root against. Next step: give the converged run's output, or leave "
+                    "the output prompt empty to use the lowest root of the FCIDUMP's "
+                    "Ms sector."
+                )
+                return
+            reference = casscf.get("energy")
+        n_target = int(size_text)
+        tokens = method_text.split()
+        method, block_size = "greedy", None
+        if tokens == ["brute"]:
+            method = "brute"
+        elif len(tokens) == 2 and tokens[0] == "block":
+            method, block_size = "block", int(tokens[1])
+        elif tokens not in ([], ["greedy"]):
+            raise tnass.TnassError(
+                f"unknown method {method_text!r}; use 'greedy', 'block K', or 'brute'."
+            )
+        dump = parse_fcidump(Path(fcidump_text))
+        section = tnass.run(
+            dump,
+            n_target=n_target,
+            method=method,
+            block_size=block_size,
+            reference_energy=reference,
+        )
+    except (ParserError, tnass.TnassError, OSError, ValueError) as exc:
+        session.say(f"TNASS selection failed: {exc}")
+        return
+    session.say(section.body)
+    report_lines = f"## {section.title}\n\n{section.body}\n"
+    refs = references_section(tnass.evidence())
+    if refs is not None:
+        report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
+    md_path = Path(fcidump_text).with_name(Path(fcidump_text).name + ".tnass.fbk.md")
+    md_path.write_text(report_lines, encoding="utf-8")
+    session.say(f"Report written: {md_path}")
+
+
 HANDLERS = {
     "report_output": report_output,
     "geometry_report": geometry_report,
@@ -1720,5 +1781,6 @@ HANDLERS = {
     "ass1st_round": ass1st_round,
     "qicas_optimize": qicas_optimize,
     "aegiss_select": aegiss_select,
+    "tnass_select": tnass_select,
     "quit": quit_session,
 }

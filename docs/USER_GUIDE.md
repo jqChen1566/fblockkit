@@ -1138,6 +1138,49 @@ energy reproduces the engine's printed CASSCF energy to eleven digits
 (-230.793818898, and the source's own benzene CASSCF -230.793770 agrees to
 5e-5), and the whole-family label recovers the (6e, 6o) pi space.
 
+## 26 TNASS subset selection (an FCIDUMP -> the S2-maximizing subset)
+
+**What it is for**: TNASS (Mingare, Heuzé & Coveney, arXiv 2026) picks the
+active space as the spatial-orbital subset whose bipartition with its
+complement has the **largest Rényi-2 entropy** `S2(A) = -log Tr(rho_A^2)` --
+a multi-orbital entanglement measure beyond the single-orbital entropy of the
+AutoCAS family.
+
+**What you need**: the FCIDUMP of a converged CASSCF run (the same dump the
+entropy and QICAS menus read), optionally the run's output for the energy
+cross-check, the target size (number of active spatial orbitals) and the
+method.
+
+**How**: menu 26 -> FCIDUMP path; output path (Enter = skip); target size;
+method (`greedy` default, `block K` for the block-greedy variant, `brute` for
+the exact search, capped at C(N,n) <= 20000).
+
+**What you get**: the one-orbital S2 seed ranking, the step-by-step trace
+(each addition and the subset's S2), the resulting space with its electron
+count, and a report (`<FCIDUMP>.tnass.fbk.md`) with the citations.
+
+**How to read it**:
+
+- **the S2 oracle is exact over the FCIDUMP window** (the four-state-entropy
+  route's CI, grouped by the subset's occupation pattern; the one-orbital S2
+  reproduces `-log(sum w^2)` from the four-state weights to 1e-12).  The
+  source builds its entanglement feature as a tensor network from a
+  low-bond-dimension DMRG state over the full space; there is no
+  bond-dimension truncation here, but the window boundary is the restriction;
+- the bipartition symmetry `S2(A) = S2(complement)` holds for every subset --
+  useful as a self-consistency check of the trace;
+- greedy cannot backtrack: on both example windows the trace shows an S2
+  *drop* on the final addition, and the brute-force optimum beats it
+  (benzene 0.23280 vs 0.23000; N2 0.13134 vs 0.12663).  Use `brute` when the
+  window is small enough, and treat a greedy result as the source's practical
+  approximation;
+- the subset is a spatial-orbital set (both spins together), matching the
+  source's selection domain; the source's best-k variant (choose k by the
+  CASCI energy) is not implemented -- run the menu at several target sizes
+  and compare;
+- delivering the space to a CASSCF needs the orbital-order machinery (see
+  menu 22's boundary note).
+
 ## Appendix A Command line
 
 ```text

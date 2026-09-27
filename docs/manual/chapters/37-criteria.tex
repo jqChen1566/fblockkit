@@ -128,6 +128,20 @@ AEGISS screens & entropy line $\tau_E = \tau\, S_{\max}$ ($\tau = 0.1$
   source's benzene CASSCF to $5\times10^{-5}$) &
   \textsf{[Literature]} Tarocco et al.\ arXiv:2508.10671 \S3 (Eqs.~(4)--(7)),
   \S4.1; \textsf{[Measured]} \code{tests/test\_aegiss.py} \\
+TNASS subset objective & maximize $S_2(A) = -\log \mathrm{Tr}(\rho_A^2)$ of
+  the $A$-versus-complement cut & Menu~\menu{26}: the active space is the
+  spatial-orbital subset maximizing the Rényi-2 bipartition entropy; methods =
+  exact search (capped), greedy (their Eq.~(11)), block greedy ($k=1$: the
+  single-orbital ranking).  Measured anchors on the two FCIDUMP fixtures: the
+  one-orbital $S_2$ reproduces $-\log\sum w^2$ from the four-state weights to
+  $10^{-12}$; the bipartition symmetry holds for every subset; greedy is
+  measurably suboptimal (benzene $0.23000$ vs the optimum $0.23280$; N2
+  $0.12663$ vs $0.13134$).  Scope: the exact oracle replaces the source's
+  DMRG-built entanglement feature and confines the selection to the FCIDUMP
+  window &
+  \textsf{[Literature]} Mingare, Heuz\'e \& Coveney, arXiv:2608.03645
+  \S2.3, \S3.3 (Eqs.~(1)--(2), (11)); \textsf{[Measured]}
+  \code{tests/test\_tnass.py} \\
 \bottomrule
 \end{tabularx}
 \end{center}

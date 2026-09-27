@@ -168,6 +168,7 @@ def main() -> int:
                     "23", "work/n2_ass1st.json", "0.03", "", "", "",
                     "24", "work/FCIDUMP", "work/n2_fcidump_step_a.out", "2,4", "touch",
                     "25", "work/benzene.json", "work/benzene.fcidump", "work/benzene.out", "C pz", "", "",
+                    "26", "work/benzene.fcidump", "work/benzene.out", "4", "greedy",
                     "8", "work/saved.txt",
                     "0",
                 ]
@@ -432,6 +433,16 @@ def main() -> int:
                 and "0.8096" in aegiss_report,
                 "menu 25 report: the benzene pi manifold is recovered as (6e, 6o) "
                 "with the weight-deviation note",
+            )
+
+            tnass_report = read("benzene.fcidump.tnass.fbk.md")
+            check(
+                "TNASS active-space selection" in tnass_report
+                and "selected: orbitals [0, 3, 4, 5] (2e, 4o)" in tnass_report
+                and "0.24044" in tnass_report
+                and "seed ranking" in tnass_report,
+                "menu 26 report: the benzene greedy trace and the S2-maximizing "
+                "quartet are printed",
             )
 
             check(product("saved.txt").is_file(), "menu 8 wrote the session script")

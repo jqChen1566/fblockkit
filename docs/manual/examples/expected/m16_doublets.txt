@@ -26,6 +26,7 @@ Available functions:
   23  ASS1ST selection round (a NEVPT2-density export -> quasi-NOON tables + the next round's input)
   24  QICAS active-space optimization (an FCIDUMP -> F_QI-minimized orbitals and the CASCI check)
   25  AEGISS selection (entropy screening + an AO projection -> a compact active space)
+  26  TNASS subset selection (an FCIDUMP -> the S2-maximizing orbital subset)
    0  Quit
 Choose a number (Enter = leave empty)> 16
 Kramers-doublet table JSON path (per doublet: the three g values and theta3 or the g3 axis; see the user guide) (Enter = leave empty)> work/dy_doublets.json
@@ -72,6 +73,7 @@ Available functions:
   23  ASS1ST selection round (a NEVPT2-density export -> quasi-NOON tables + the next round's input)
   24  QICAS active-space optimization (an FCIDUMP -> F_QI-minimized orbitals and the CASCI check)
   25  AEGISS selection (entropy screening + an AO projection -> a compact active space)
+  26  TNASS subset selection (an FCIDUMP -> the S2-maximizing orbital subset)
    0  Quit
 Choose a number (Enter = leave empty)> 0
 Goodbye.
