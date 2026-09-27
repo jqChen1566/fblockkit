@@ -84,6 +84,9 @@ items:
   - number: "26"
     title: "TNASS subset selection (an FCIDUMP -> the S2-maximizing orbital subset)"
     handler: tnass_select
+  - number: "27"
+    title: "DeltaSCF / MOM excited-state SCF input (a structure + an excitation spec -> an input)"
+    handler: deltascf_generate
   - number: "0"
     title: Quit
     handler: quit

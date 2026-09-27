@@ -113,6 +113,7 @@ def main() -> int:
             "n2_scan_1.600.json",
             "n2_scan_1.600.mkl",
             "h2o.xyz",
+            "h2co.xyz",
             "dm_manifest.json",
             "h2o_dm_ref_pbe0.out",
             "h2o_dm_prep_mp2.out",
@@ -169,6 +170,7 @@ def main() -> int:
                     "24", "work/FCIDUMP", "work/n2_fcidump_step_a.out", "2,4", "touch",
                     "25", "work/benzene.json", "work/benzene.fcidump", "work/benzene.out", "C pz", "", "",
                     "26", "work/benzene.fcidump", "work/benzene.out", "4", "greedy",
+                    "27", "work/h2co.xyz", "0", "1", "0,1", "", "", "", "", "",
                     "8", "work/saved.txt",
                     "0",
                 ]
@@ -443,6 +445,14 @@ def main() -> int:
                 and "seed ranking" in tnass_report,
                 "menu 26 report: the benzene greedy trace and the S2-maximizing "
                 "quartet are printed",
+            )
+
+            dscf_input = read("h2co.dscf.inp")
+            check(
+                "! PBE0 def2-TZVP UHF DeltaSCF" in dscf_input
+                and "  ALPHACONF 0,1" in dscf_input
+                and "* xyz 0 1" in dscf_input,
+                "menu 27 wrote the DeltaSCF input with the occupation spec",
             )
 
             check(product("saved.txt").is_file(), "menu 8 wrote the session script")

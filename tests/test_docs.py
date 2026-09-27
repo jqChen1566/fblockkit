@@ -57,6 +57,7 @@ def test_doc_mentions_each_menu_title_topic():
         "QICAS active-space optimization",
         "AEGISS selection",
         "TNASS subset selection",
+        "DeltaSCF / MOM excited-state SCF input",
     ):
         assert keyword in text, keyword
 

@@ -1,0 +1,541 @@
+"""The orbitals handler group."""
+
+from __future__ import annotations
+
+import json
+import numpy as np
+from pathlib import Path
+from typing import Any
+
+from ...analysis import atomic_terms, avas, entropy_rdm, environment_spin, magnetic_doublets, orbital_mapping, orbital_portrait, orbital_space as orbital_space_analysis
+from ...diagnosis import references_section
+from ...knowledge.models import ReportSection
+from ...parsers import ParserError, parse_auto
+from ...parsers.fcidump import parse_fcidump
+from ...parsers.mkl import parse_mkl
+from ...parsers.orca_json import parse_orca_json
+from ...recipe import guess_transfer
+from ..session import Session
+def exact_entropy(session: Session) -> None:
+    """Menu 12: the exact four-state entropy from a CASSCF output + its FCIDUMP.
+
+    The route and its cross-checks live in ``analysis.entropy_rdm``; this handler
+    only collects the four paths, infers (or accepts) the active-orbital window,
+    and writes the report next to the FCIDUMP.
+    """
+    output_text = session.ask(
+        "Converged CASSCF output path (the run whose orbitals were dumped)"
+    )
+    if not output_text:
+        session.say("Cancelled (no output path given).")
+        return
+    fcidump_text = session.ask("FCIDUMP path (written by the !FCIDUMP dump run)")
+    if not fcidump_text:
+        session.say("Cancelled (no FCIDUMP path given).")
+        return
+    canonical_text = session.ask(
+        "orca_2json export of the canonical gbw (Enter = skip the localized-basis step)"
+    )
+    localized_text = ""
+    if canonical_text:
+        localized_text = session.ask(
+            "orca_2json export after orca_loc (the localized step needs both exports)"
+        )
+    window_text = session.ask(
+        "Active window 'first last' in ORCA's 0-based orbital numbering (Enter = infer)"
+    )
+    cluster_text = (
+        session.ask(
+            "Cluster centres for the environment-spin partition (comma-separated atom "
+            "indices; Enter = the f-block centre, if any)"
+        )
+        if localized_text
+        else ""
+    )
+    try:
+        result = parse_auto(Path(output_text))
+        casscf = result.sections.get("casscf", {})
+        if not casscf.get("present"):
+            session.say(
+                "This output has no CASSCF section. Next step: use the converged "
+                "CASSCF run whose orbitals the FCIDUMP was dumped from."
+            )
+            return
+        if not casscf.get("converged"):
+            session.say(
+                "The CASSCF did not report convergence, so the dumped Hamiltonian "
+                "describes intermediate orbitals and no engine number can validate "
+                "the reconstruction. Next step: converge the CASSCF (see the "
+                "convergence guidance) and dump again."
+            )
+            return
+        energy = casscf.get("energy")
+        if energy is None:
+            session.say(
+                "The CASSCF section carries no final energy to check against. "
+                "Next step: use the converged run's output file."
+            )
+            return
+        states = casscf.get("states") or ()
+        multiplicity = states[0].get("mult") if states else None
+        printed_occ = tuple(casscf.get("active_occupations") or ())
+        table_occ = tuple(result.sections.get("orbitals", {}).get("occupations") or ())
+        dump = parse_fcidump(Path(fcidump_text))
+        if window_text:
+            try:
+                first, last = (
+                    int(token) for token in window_text.replace(",", " ").split()
+                )
+            except ValueError:
+                session.say(
+                    "The window must be two integers, e.g. '4 9'. Cancelled."
+                )
+                return
+            window: tuple[int, ...] | None = tuple(range(first, last + 1))
+        else:
+            window, note = entropy_rdm.infer_active_window(
+                table_occ, dump.norb, reference_occupations=printed_occ or None
+            )
+            session.say(f"Active window inferred: {list(window)} ({note}).")
+        canonical = (
+            parse_orca_json(Path(canonical_text)) if canonical_text else None
+        )
+        localized = (
+            parse_orca_json(Path(localized_text)) if localized_text else None
+        )
+        analysis = entropy_rdm.analyze(
+            dump,
+            reference_energy=float(energy),
+            multiplicity=multiplicity,
+            reference_occupations=printed_occ or None,
+            canonical=canonical,
+            localized=localized,
+            active_window=window,
+        )
+        section = entropy_rdm.run(analysis)
+        extras: list[tuple[Any, tuple[Any, ...]]] = []
+        if canonical is not None and analysis.active_window is not None:
+            term_sections = atomic_terms.analyze_export(
+                analysis.densities,
+                analysis.state.s2,
+                canonical,
+                analysis.active_window,
+            )
+            if term_sections:
+                extras.append((term_sections, atomic_terms.evidence()))
+        if localized is not None and analysis.active_window is not None:
+            cluster_centres = _cluster_centres(cluster_text, canonical)
+            if cluster_centres is None:
+                session.say(
+                    "Environment-spin partition skipped: no cluster centre was given and "
+                    "the molecule has no f-block element. Next step: give the cluster "
+                    "centre index when the environment-spin entropy is wanted."
+                )
+            else:
+                rotation = entropy_rdm.rotation_from_coefficients(
+                    np.array(canonical.mo_coefficients).T,
+                    np.array(localized.mo_coefficients).T,
+                    np.array(canonical.overlap),
+                    active=analysis.active_window,
+                )
+                rotated = entropy_rdm.rotate_densities(analysis.densities, rotation)
+                local_coefficients = np.array(localized.mo_coefficients).T[
+                    :, list(analysis.active_window)
+                ]
+                extras.append(
+                    (
+                        (
+                            environment_spin.analyze(
+                                rotated,
+                                local_coefficients,
+                                np.array(localized.overlap),
+                                localized.ao_labels,
+                                len(localized.atoms),
+                                cluster_centres=cluster_centres,
+                            ),
+                        ),
+                        environment_spin.evidence(),
+                    )
+                )
+    except (ParserError, entropy_rdm.EntropyRdmError, OSError, ValueError) as exc:
+        session.say(f"Exact entropy analysis failed: {exc}")
+        return
+
+    session.say(section.body)
+    report_lines = f"## {section.title}\n\n{section.body}\n"
+    evidence_entries = list(entropy_rdm.evidence())
+    for sections, entries in extras:
+        for extra in sections:
+            session.say(extra.body)
+            report_lines += f"\n## {extra.title}\n\n{extra.body}\n"
+        evidence_entries.extend(entries)
+    refs = references_section(tuple(evidence_entries))
+    if refs is not None:
+        report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
+    md_path = Path(fcidump_text).with_name(Path(fcidump_text).name + ".fbk.md")
+    md_path.write_text(report_lines, encoding="utf-8")
+    session.say(f"Report written: {md_path}")
+
+
+def _cluster_centres(text: str, canonical) -> tuple[int, ...] | None:
+    """Parse the cluster-centre prompt; None when there is nothing to partition on."""
+    from ...knowledge.elements import is_f_element
+
+    if text:
+        try:
+            return tuple(int(token) for token in text.replace(",", " ").split())
+        except ValueError:
+            return None
+    if canonical is not None:
+        detected = tuple(
+            index for index, symbol in enumerate(canonical.atoms) if is_f_element(symbol)
+        )
+        if detected:
+            return detected
+    return None
+
+
+# --- 13 orbital-space comparison ---------------------------------------------
+
+
+def orbital_space(session: Session) -> None:
+    """Menu 13: sigma_F and the space-change SVD from two orca_2json exports.
+
+    Both readings come from the singular values of C_A^T S C_B; the handler only
+    collects the two exports and their orbital windows (ORCA's 0-based numbering,
+    the same convention as menu 12) and writes the report next to the first
+    export.
+    """
+    first_text = session.ask("First orca_2json export (space A) path")
+    if not first_text:
+        session.say("Cancelled (no export path given).")
+        return
+    first_window_text = session.ask(
+        "Window 'first last' of space A in ORCA's 0-based orbital numbering "
+        "(Enter = all orbitals)"
+    )
+    second_text = session.ask("Second orca_2json export (space B) path")
+    if not second_text:
+        session.say("Cancelled (no second export path given).")
+        return
+    second_window_text = session.ask(
+        "Window 'first last' of space B (Enter = all orbitals)"
+    )
+    try:
+        first = parse_orca_json(Path(first_text))
+        second = parse_orca_json(Path(second_text))
+        overlap = np.array(first.overlap)
+        if first.overlap is None or second.overlap is None:
+            session.say(
+                "One of the exports carries no S-Matrix, so the overlap of the two "
+                "spaces cannot be formed. Next step: re-export both gbw files with "
+                "orca_2json (the S-Matrix is part of the default export)."
+            )
+            return
+        coefficients_a = np.array(first.mo_coefficients).T[
+            :, _window(first_window_text, first.n_mo)
+        ]
+        coefficients_b = np.array(second.mo_coefficients).T[
+            :, _window(second_window_text, second.n_mo)
+        ]
+        if first.n_ao != second.n_ao or not np.allclose(
+            overlap, np.array(second.overlap), atol=1e-8
+        ):
+            session.say(
+                "The two exports do not share one basis: their AO dimensions or overlap "
+                "matrices differ. Next step: compare spaces of the same system in the "
+                "same basis set (e.g. before and after orca_loc)."
+            )
+            return
+        comparison = orbital_space_analysis.compare_spaces(coefficients_a, coefficients_b, overlap)
+        window_a = _window(first_window_text, first.n_mo)
+        window_b = _window(second_window_text, second.n_mo)
+        section = orbital_space_analysis.run(
+            comparison,
+            label_a=_space_label(first, first_window_text),
+            label_b=_space_label(second, second_window_text),
+            jaccard_index=orbital_space_analysis.jaccard(window_a, window_b),
+        )
+    except (ParserError, orbital_space_analysis.OrbitalSpaceError, OSError, ValueError) as exc:
+        session.say(f"Orbital-space comparison failed: {exc}")
+        return
+
+    session.say(section.body)
+    report_lines = f"## {section.title}\n\n{section.body}\n"
+    refs = references_section(orbital_space_analysis.evidence())
+    if refs is not None:
+        report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
+    md_path = Path(first_text).with_name(Path(first_text).name + ".fbk.md")
+    md_path.write_text(report_lines, encoding="utf-8")
+    session.say(f"Report written: {md_path}")
+
+
+def _window(text: str, n_mo: int) -> list[int]:
+    """A 'first last' window in ORCA's 0-based numbering; empty text means everything."""
+    if not text:
+        return list(range(n_mo))
+    first, last = (int(token) for token in text.replace(",", " ").split())
+    return list(range(first, last + 1))
+
+
+def _space_label(export, window_text: str) -> str:
+    span = window_text.strip() or f"0..{export.n_mo - 1}"
+    return f"{Path(export.base_name).name} [{span}]"
+
+
+
+# --- 14 AVAS target projection -----------------------------------------------
+
+
+def avas_target(session: Session) -> None:
+    """Menu 14: the AVAS projection of a target AO shell onto an orbital export."""
+    export_text = session.ask("orca_2json export path (any gbw export)")
+    if not export_text:
+        session.say("Cancelled (no export path given).")
+        return
+    centre_text = session.ask(
+        "Target centre (atom index, 0-based; Enter = the f-block element, when there is one)"
+    )
+    angular_text = session.ask(
+        "Target angular momentum as a letter (s/p/d/f/g; Enter = f)", default="f"
+    )
+    shells_text = session.ask(
+        "Target shell number(s), comma separated as ORCA labels them (Enter = every shell "
+        "of that angular momentum)"
+    )
+    threshold_text = session.ask(
+        f"Truncation threshold (Enter = {avas.DEFAULT_THRESHOLD:g}; the source's range is 0.05-0.1)"
+    )
+    option_text = session.ask(
+        "Open-shell option (2 = alpha orbitals only; Enter = 3, keep every singly "
+        "occupied orbital)"
+    )
+    letters = {letter: value for value, letter in _ANGULAR_LETTERS().items()}
+    try:
+        export = parse_orca_json(Path(export_text))
+        centre = int(centre_text) if centre_text else None
+        key = (angular_text or "f").strip().lower()
+        if key.isdigit():
+            angular = int(key)
+        elif key in letters:
+            angular = letters[key]
+        else:
+            session.say(f"{angular_text!r} is not an angular-momentum letter (s/p/d/f/g).")
+            return
+        shells = (
+            {int(token) for token in shells_text.replace(",", " ").split()}
+            if shells_text
+            else None
+        )
+        threshold = float(threshold_text) if threshold_text else avas.DEFAULT_THRESHOLD
+        option = int(option_text) if option_text else avas.DEFAULT_OPTION
+        analysis = avas.analyze(
+            export,
+            centre=centre,
+            angular=angular,
+            shells=shells,
+            threshold=threshold,
+            option=option,
+        )
+        section = avas.run(analysis)
+    except (ParserError, avas.AvasError, OSError, ValueError) as exc:
+        session.say(f"AVAS projection failed: {exc}")
+        return
+
+    session.say(section.body)
+    report_lines = f"## {section.title}\n\n{section.body}\n"
+    refs = references_section(avas.evidence())
+    if refs is not None:
+        report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
+    md_path = Path(export_text).with_name(Path(export_text).name + ".avas.fbk.md")
+    md_path.write_text(report_lines, encoding="utf-8")
+    session.say(f"Report written: {md_path}")
+
+
+def _ANGULAR_LETTERS() -> dict:
+    from ...parsers.orca_json import ANGULAR_LETTERS
+
+    return dict(ANGULAR_LETTERS)
+
+
+
+# --- 15 orbital portrait -----------------------------------------------------
+
+
+def orbital_portrait_report(session: Session) -> None:
+    """Menu 15: the deterministic descriptor panel of an orbital set (an export in)."""
+    export_text = session.ask("orca_2json export path")
+    if not export_text:
+        session.say("Cancelled (no export path given).")
+        return
+    window_text = session.ask(
+        "Window 'first last' in ORCA's 0-based numbering (Enter = the orbitals with "
+        "fractional occupations)"
+    )
+    try:
+        export = parse_orca_json(Path(export_text))
+        window = None
+        if window_text:
+            first, last = (int(token) for token in window_text.replace(",", " ").split())
+            window = list(range(first, last + 1))
+        section = orbital_portrait.run(export, window=window)
+    except (ParserError, orbital_portrait.PortraitError, OSError, ValueError) as exc:
+        session.say(f"Orbital portrait failed: {exc}")
+        return
+    session.say(section.body)
+    report_lines = f"## {section.title}\n\n{section.body}\n"
+    refs = references_section(orbital_portrait.evidence())
+    if refs is not None:
+        report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
+    md_path = Path(export_text).with_name(Path(export_text).name + ".portrait.fbk.md")
+    md_path.write_text(report_lines, encoding="utf-8")
+    session.say(f"Report written: {md_path}")
+
+
+# --- 16 magnetic doublets ----------------------------------------------------
+
+
+def magnetic_doublets_report(session: Session) -> None:
+    """Menu 16: the g_T * theta_3 criterion over a Kramers-doublet table (JSON in)."""
+    path_text = session.ask(
+        "Kramers-doublet table JSON path (per doublet: the three g values and theta3 "
+        "or the g3 axis; see the user guide)"
+    )
+    if not path_text:
+        session.say("Cancelled (no path given).")
+        return
+    path = Path(path_text)
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        table = magnetic_doublets.parse_doublets(payload)
+        section = magnetic_doublets.run(table)
+    except (OSError, ValueError) as exc:
+        session.say(
+            f"Magnetic-doublet reading failed: {exc}"
+        )
+        return
+    session.say(section.body)
+    report_lines = f"## {section.title}\n\n{section.body}\n"
+    refs = references_section(magnetic_doublets.evidence())
+    if refs is not None:
+        report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
+    md_path = path.with_name(path.name + ".magnetic.fbk.md")
+    md_path.write_text(report_lines, encoding="utf-8")
+    session.say(f"Report written: {md_path}")
+
+
+# --- 17 cross-structure orbital mapping --------------------------------------
+
+
+def orbital_mapping_report(session: Session) -> None:
+    """Menu 17: map the orbitals of a structure series and make a selection consistent."""
+    path_text = session.ask(
+        "Structures manifest JSON path (a list of structures with their exports; see the "
+        "user guide)"
+    )
+    if not path_text:
+        session.say("Cancelled (no path given).")
+        return
+    path = Path(path_text)
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        entries = payload["structures"]
+        exports = []
+        names = []
+        structures = []
+        for entry in entries:
+            export_path = Path(str(entry["export"]))
+            if not export_path.is_absolute():
+                export_path = path.parent / export_path
+            export = parse_orca_json(export_path)
+            name = str(entry.get("name") or export_path.name)
+            exports.append(export)
+            names.append(name)
+            structures.append(orbital_mapping.descriptors_from_export(export, name))
+        tau = payload.get("tau")
+        selections = payload.get("selections")
+        # the optional active-space overlap check runs over adjacent pairs
+        active_overlap = None
+        actives = payload.get("active")
+        if actives:
+            active_overlap = orbital_mapping.active_overlap_series(exports, actives, names)
+        section = orbital_mapping.run(
+            structures,
+            tau=float(tau) if tau is not None else None,
+            selections=selections,
+            active_overlap=active_overlap,
+        )
+    except (OSError, KeyError, TypeError, ValueError, ParserError) as exc:
+        session.say(f"Orbital mapping failed: {exc}")
+        return
+    session.say(section.body)
+    report_lines = f"## {section.title}\n\n{section.body}\n"
+    refs = references_section(orbital_mapping.evidence())
+    if refs is not None:
+        report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
+    md_path = path.with_name(path.name + ".mapping.fbk.md")
+    md_path.write_text(report_lines, encoding="utf-8")
+    session.say(f"Report written: {md_path}")
+
+
+# --- 18 WASP guess transfer --------------------------------------------------
+
+
+def wasp_guess(session: Session) -> None:
+    """Menu 18: interpolate neighbour orbitals into a gbw-ready mkl (WASP)."""
+    path_text = session.ask(
+        "Series manifest JSON path (neighbours and the template mkl; see the user guide)"
+    )
+    if not path_text:
+        session.say("Cancelled (no path given).")
+        return
+    path = Path(path_text)
+
+    def _resolve(entry) -> Path:
+        candidate = Path(str(entry))
+        return candidate if candidate.is_absolute() else path.parent / candidate
+
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        neighbours = [
+            parse_orca_json(_resolve(entry["export"])) for entry in payload["structures"]
+        ]
+        template_entry = payload["template"]
+        template_export = parse_orca_json(_resolve(template_entry["export"]))
+        template_mkl_path = _resolve(template_entry["mkl"])
+        template_mkl = parse_mkl(template_mkl_path)
+        delta = payload.get("delta")
+        result = guess_transfer.interpolate_guess(
+            neighbours,
+            template_export,
+            delta=float(delta) if delta is not None else None,
+        )
+    except (OSError, KeyError, TypeError, ValueError, ParserError) as exc:
+        session.say(f"Guess interpolation failed: {exc}")
+        return
+    body = guess_transfer.render(result)
+    session.say(body)
+    guess_path = template_mkl_path.with_name(template_mkl_path.stem + ".fbk.mkl")
+    try:
+        guess_transfer.write_guess_mkl(template_mkl, result, guess_path)
+    except (OSError, guess_transfer.GuessError) as exc:
+        session.say(f"Writing the guess mkl failed: {exc}")
+        return
+    session.say(f"Guess written: {guess_path}")
+    session.say(
+        f"Next step: run ``orca_2mkl {guess_path.stem} -gbw`` next to that file, then "
+        f"start the target calculation with ``!moread`` and %moinp \"{guess_path.stem}.gbw\"."
+    )
+    section = ReportSection(
+        title="G5 WASP initial guess (interpolated orbitals for a geometry series)",
+        body=body,
+    )
+    report_lines = f"## {section.title}\n\n{section.body}\n"
+    refs = references_section(guess_transfer.evidence())
+    if refs is not None:
+        report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
+    md_path = path.with_name(path.name + ".guess.fbk.md")
+    md_path.write_text(report_lines, encoding="utf-8")
+    session.say(f"Report written: {md_path}")
+
+

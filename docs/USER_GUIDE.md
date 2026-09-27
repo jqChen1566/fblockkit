@@ -1181,6 +1181,49 @@ count, and a report (`<FCIDUMP>.tnass.fbk.md`) with the citations.
 - delivering the space to a CASSCF needs the orbital-order machinery (see
   menu 22's boundary note).
 
+## 27 DeltaSCF / MOM excited-state SCF input (a structure + an excitation spec)
+
+**What it is for**: ORCA's DeltaSCF route converges the SCF to a chosen
+excited-state solution (a higher stationary point of the SCF energy surface)
+by constraining the frontier occupations and following them with a
+maximum-overlap metric.  The menu generates the input; the engine run stays
+with you.
+
+**What you need**: a structure (XYZ) and the excitation spec -- an `ALPHACONF`
+occupation list (`0,1` = HOMO->LUMO, `0,0,1` = HOMO->LUMO+1, `0,1,1` =
+HOMO-1->LUMO; `0,2` = double excitation for RHF), optionally a `BETACONF`
+list, or `ionize N` for a core ionization (`IONIZEALPHA N`; charge and
+multiplicity stay those of the reference system).  A converged ground-state
+`.gbw` to start from is recommended (the source's own advice).
+
+**How**: menu 27 -> structure path; charge and multiplicity of the reference
+system; the occupation spec; optional BETACONF; the method/basis keywords
+(Enter = `PBE0 def2-TZVP UHF`; every source example uses UHF); the MOM metric
+(`mom` regular, `pmom` the Hratchian projection-operator variant, `imom` =
+`KeepInitialRef`); hard-case tactics (`none`, `freeze` = `FreezeAndRelease`,
+`gmf`); the ground-state gbw path (Enter = skip the MORead lines).  The input
+is written as `<stem>.dscf.inp`.
+
+**How to read it** (the report prints these with every input):
+
+- run the input and **check the converged state** (occupations and character):
+  a DeltaSCF run that silently fell back to the ground state carries no
+  warning in the output;
+- single-determinant states only: open-shell singly excited states inherently
+  break spin symmetry and need spin purification; multi-determinant cases are
+  out of scope (the manual's boundary);
+- not apt for most pi->pi* states -- the manual names benzene's HOMO->LUMO
+  explicitly -- but reasonable for particle-hole states, spatially separated
+  occupied/virtual pairs, and closed-shell doubly excited states;
+- for a core ionization, localize the core orbital first if it is not atomic;
+- do not feed the wavefunction to single-reference correlation methods as if
+  it were a ground state.
+
+**Measured anchor**: the generated input (formaldehyde, `ALPHACONF 0,1`,
+UHF) converged to the n->pi* saddle at -114.294975 Eh against the clean
+ground state's -114.418617 Eh -- an excitation of 3.364 eV, the textbook
+vertical n->pi* value.
+
 ## Appendix A Command line
 
 ```text

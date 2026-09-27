@@ -223,6 +223,22 @@ Points to note (also in the `analysis/aegiss.py` docstring):
 - the source's benzene CASSCF value (-230.793770) reproduces here to 5e-5,
   validating that the fixture is the source's own platform.
 
+## DeltaSCF fixtures added 2026-09-27 (server 101, the same ORCA 6.1.1)
+
+| Output | Input | Job | Parsing/analysis points covered | Run outcome |
+|---|---|---|---|---|
+| `h2co_dscf.out` | `inputs/h2co_dscf.inp` (written by menu 27's generator) | formaldehyde, PBE0/def2-TZVP UHF `DeltaSCF` with `%scf ALPHACONF 0,1` | the generated-input engine validation: the DeltaSCF input converges (13 cycles) to the n->pi* saddle at -114.294975 Eh | terminated normally |
+| `h2co_gs.out` | `inputs/h2co_gs.inp` | the same molecule, clean PBE0/def2-TZVP ground state | the excitation anchor: -114.418617 Eh against the saddle above = 3.364 eV (the textbook vertical n->pi* value) | terminated normally |
+
+Points to note (also in `recipe/deltascf.py` and `tests/test_deltascf.py`):
+
+- `ALPHACONF`+`BETACONF` together move BOTH spins (the doubly excited
+  configuration: measured 10.2 eV above the ground state here) -- the
+  manual's open-shell-singlet example uses `ALPHACONF` alone;
+- the grammar (`ALPHACONF 0,1`, `IONIZEALPHA`, `%SCF PMOM TRUE`,
+  `KeepInitialRef`, `FreezeAndRelease`, `GMF`) is quoted from the manual's
+  DeltaSCF chapter (5.34) and carried verbatim by the generator.
+
 ## Known-behaviour notes
 
 - `generated_ce3_sarc2.out`: the active occupations are (1,0,0,0,0,0,0) -- putting the

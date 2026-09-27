@@ -27,6 +27,7 @@ Available functions:
   24  QICAS active-space optimization (an FCIDUMP -> F_QI-minimized orbitals and the CASCI check)
   25  AEGISS selection (entropy screening + an AO projection -> a compact active space)
   26  TNASS subset selection (an FCIDUMP -> the S2-maximizing orbital subset)
+  27  DeltaSCF / MOM excited-state SCF input (a structure + an excitation spec -> an input)
    0  Quit
 Choose a number (Enter = leave empty)> 13
 First orca_2json export (space A) path (Enter = leave empty)> work/canonical.json
@@ -73,6 +74,7 @@ Available functions:
   24  QICAS active-space optimization (an FCIDUMP -> F_QI-minimized orbitals and the CASCI check)
   25  AEGISS selection (entropy screening + an AO projection -> a compact active space)
   26  TNASS subset selection (an FCIDUMP -> the S2-maximizing orbital subset)
+  27  DeltaSCF / MOM excited-state SCF input (a structure + an excitation spec -> an input)
    0  Quit
 Choose a number (Enter = leave empty)> 0
 Goodbye.

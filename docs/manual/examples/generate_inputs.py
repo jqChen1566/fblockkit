@@ -100,6 +100,17 @@ payload = {
     },
 }
 (WORK / "cf_c3.json").write_text(json.dumps(payload, indent=1) + "\n", encoding="utf-8")
+write(
+    "h2co.xyz",
+    """4
+formaldehyde (the DeltaSCF example of menu 27)
+C  0.000000  0.000000  0.000000
+O  0.000000  0.000000  1.205000
+H  0.942700  0.000000 -0.587600
+H -0.942700  0.000000 -0.587600
+""",
+)
+
 print("wrote work/cf_c3.json")
 
 # --- the magnetic-doublet table (menu 16): a slice of the source's calibration

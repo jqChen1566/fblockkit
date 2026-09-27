@@ -29,48 +29,34 @@ Available functions:
   26  TNASS subset selection (an FCIDUMP -> the S2-maximizing orbital subset)
   27  DeltaSCF / MOM excited-state SCF input (a structure + an excitation spec -> an input)
    0  Quit
-Choose a number (Enter = leave empty)> 3
-Element list (comma separated, e.g. La,O,H) (Enter = leave empty)> Ce
-System charge (Enter = 0)> 3
-Spin multiplicity (2S+1) (Enter = 1)> 2
-f-block metal valence (Enter = leave empty)> 3
-Targets (comma separated: energy/geometry/excited/magnetic/spectra) (Enter = energy)> energy
-Structure file (XYZ) path (Enter = leave empty)> work/ce_atom.xyz
-Method chain: CASSCF + SC-NEVPT2
-Basis-set / ECP recommendation (3 tier(s)):
-  1. SARC2-DKH-QZVP (DKH2; aux SARC2-DKH-QZVP/JK)
-     First choice for lanthanide wavefunction methods (CASSCF/NEVPT2 and the like): valence quadruple-zeta, with NEVPT2-optimized (3g2h) polarization functions. Comes with its own dedicated /JK fitting basis.
-  2. ANO-RCC-TZP (DKH2)
-     ANO-RCC (Full/DZP/TZP/QZP, DKH2). The general choice for magnetic-property chains (the OpenMolcas route); also built into ORCA. One of the standard basis sets of the lanthanide single-molecule-magnet literature workflow.
-  3. def2-TZVP (def2-ECP (28-core, matched automatically))
-     The def2 family (def2-SVP/TZVP/QZVPP): covers Ce-Lu (the 28-core def2-ECP is matched automatically); suits screening, geometry optimisation and initial-guess stages; for correlation-energy targets, upgrade to SARC2 / ANO-RCC.
-- Matched at metal valence 3 (entries that do not list a valence are treated as the general tier).
-Choose a basis tier (1-3) (Enter = 1)> 1
-Starting active-space suggestions (G2, suggestions only; Ce):
-  4f-only (minimal): CAS(1e,7o) [confirmed]
-    The seven 4f orbitals with the 1 f electrons: the minimal space that captures the f manifold; confirmed by the Dy(III) CAS(9,7) precedent. Choosing the orbitals still requires user insight.
-  4f + d double shell: CAS(1e,12o) [provisional]
-    4f (7 orbitals) plus the d shell (5 orbitals) at the same electron count: use when the d shell participates (bonding, An(IV) valence requirements, or when occupation analysis shows d weight in the correlated orbitals).
-Active space nel,norb,mult,nroots (Enter = leave empty)> 1,7,2,1
-Convergence tier (default = defaults first; difficult = use TRAH) (Enter = default)> default
-MaxCore per process in MB (Enter = 2000; a measured f-block TRAH-CASSCF needed 9345 MB) (Enter = 2000)> 
-Input file written: work\ce_atom.fbk.inp
-Run guidance:
-- Method chain: CASSCF + SC-NEVPT2
-- Basis set / ECP: SARC2-DKH-QZVP (DKH2; aux SARC2-DKH-QZVP/JK)
-- Once it has finished, hand the output to the diagnosis layer (diagnosis): SCF/CASSCF convergence, active-space occupations (outside 0.02-1.98 points to a space that is too large), CASPT2 reference weights and smallest denominator, and the sign of the NEVPT2 class contributions; with SOC, verify the state order and identity.
-- Run the default convergence settings first (the manual states plainly that the defaults come before hand-tuning).
-- Initial guess: the default !PModel often does not give the right starting orbitals; in the f block prefer a fragment guess (compute the fragments first, then combine), or AVAS to select the atomic valence space; when all of that fails, read existing orbitals with !moread + %moinp.
-- If the default settings struggle to converge, switch to !TRAH then (do not add MaxIter as the first step).
-- This route includes a perturbation layer: afterwards use the diagnosis layer to check orbital convergence and the reference weights/denominators.
-- Memory: the generated input sets %maxcore 2000 MB. A large-basis f-block CASSCF can need several GB per process (measured: a Yb3+ CASSCF(13,7) with SARC2-DKH-QZVP under TRAH asked for 9345 MB per process and aborted); raise %maxcore if ORCA reports out of memory.
-- !SlowConv is available but needs caution: the manual warns that it can converge to a solution closer to the initial guess -- a correct initial guess comes first.
-- Relativistic tier: SFX2C-1e / X2C-1e (for the stated need: only scalar relativity (geometry, energies))
-  - the standard scalar treatment
-  - the two-electron term is not needed for geometries and scalar energetics
-  - never use amfX2C: its scalar part rests on a single-centre approximation that is numerically unstable
-- Reminders:
-  - Matched at metal valence 3 (entries that do not list a valence are treated as the general tier).
+Choose a number (Enter = leave empty)> 27
+Structure file (XYZ) path (Enter = leave empty)> work/h2co.xyz
+Charge of the reference system (Enter = 0) (Enter = leave empty)> 0
+Multiplicity (Enter = 1) (Enter = leave empty)> 1
+Occupation spec: an ALPHACONF list (e.g. '0,1' = HOMO->LUMO, '0,0,1' = HOMO->LUMO+1), or 'ionize N' for IONIZEALPHA (Enter = leave empty)> 0,1
+BETACONF list (Enter = none; give one only with an ALPHACONF spec) (Enter = leave empty)> 
+Method/basis keywords (Enter = PBE0 def2-TZVP UHF; every source example uses UHF) (Enter = leave empty)> 
+MOM metric: mom (regular), pmom (the projection-operator variant), or imom (KeepInitialRef) (Enter = mom) (Enter = leave empty)> 
+Hard-case tactics: none, freeze (FreezeAndRelease) or gmf (Enter = none) (Enter = leave empty)> 
+Ground-state gbw path for the MORead start (Enter = skip) (Enter = leave empty)> 
+! PBE0 def2-TZVP UHF DeltaSCF
+%maxcore 2000
+%scf
+  ALPHACONF 0,1
+end
+* xyz 0 1
+C      0.0000000000     0.0000000000     0.0000000000
+O      0.0000000000     0.0000000000     1.2050000000
+H      0.9427000000     0.0000000000    -0.5876000000
+H     -0.9427000000     0.0000000000    -0.5876000000
+*
+
+Written: work\h2co.dscf.inp. Run it with ORCA, then check the result:
+  - run it with ORCA and check the converged state (occupations and character): DeltaSCF targets a higher SCF stationary point, and a run that fell back to the ground state shows no warning
+  - single-determinant states only: open-shell singly excited states inherently break spin symmetry and need spin purification, and multi-determinant cases are out of scope (the manual's own boundary)
+  - not apt for most pi->pi* states -- the manual names benzene's HOMO->LUMO explicitly -- but reasonable for particle-hole states, spatially separated occupied/virtual pairs, and closed-shell doubly excited states
+  - start from a converged ground-state calculation's orbitals (the MORead + %moinp lines) whenever one exists; for a core ionization, localize the core orbital first if it is not atomic
+  - the wavefunction is an SCF solution: do not feed it to single-reference correlation methods as if it were a ground state
 
 Available functions:
    1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)

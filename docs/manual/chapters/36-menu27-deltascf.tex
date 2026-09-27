@@ -1,0 +1,65 @@
+\chapter{DeltaSCF excited-state SCF input (menu 27)}
+\label{ch:menu27}
+\menulabel{27}
+
+\section{Purpose}
+
+ORCA's DeltaSCF route converges the SCF to a chosen excited-state solution
+--- a higher stationary point of the SCF energy surface --- by constraining
+the frontier occupations and following them with a maximum-overlap metric.
+The menu generates the input (the engine run stays with the user); the
+keywords and their grammar follow the manual's DeltaSCF chapter verbatim.
+
+\section{What you need}
+
+A structure (XYZ), the excitation spec, and preferably a converged
+ground-state \code{.gbw} to start from (the source's own recommendation,
+via the \code{!MORead}+\code{\%moinp} lines).
+
+The occupation specs (the manual's own forms): \code{ALPHACONF 0,1} =
+HOMO$\to$LUMO, \code{0,0,1} = HOMO$\to$LUMO+1, \code{0,1,1} =
+HOMO$-$1$\to$LUMO, \code{0,2} = a double excitation (RHF with
+\code{ALPHACONF} only); \code{BETACONF} mirrors the list for the beta
+channel; \code{IONIZEALPHA N} (the menu's \code{ionize N}) removes an
+electron from MO $N$ for core-ionized states --- charge and multiplicity
+stay those of the reference system there.
+
+\section{Walkthrough}
+
+\lstinputlisting[style=fbkcode, firstline=32, lastline=54,
+  title={The menu-27 example session (formaldehyde, \code{ALPHACONF 0,1}:
+  the generated input carries the simple line, the \code{\%scf} block and
+  the geometry, followed by the source's caveats as run guidance)}]
+  {examples/expected/m27_deltascf.txt}
+
+\section{What you get}
+
+\file{<stem>.dscf.inp} (the generated DeltaSCF input) and, on screen, the
+input plus the run guidance with the source's caveats: check the converged
+state (a silent fall-back to the ground state carries no warning);
+single-determinant states only (open-shell singles need spin purification);
+not apt for most $\pi\to\pi^{*}$ states (the manual names benzene's
+HOMO$\to$LUMO explicitly); localize a core orbital before ionizing it if it
+is not atomic; never treat the wavefunction as a ground state downstream.
+
+\section{Options worth knowing}
+
+\begin{readbox}
+\begin{itemize}
+  \item \textbf{the MOM metric}: \code{mom} (the default regular metric),
+    \code{pmom} (the Hratchian group's projection-operator variant,
+    \code{\%SCF PMOM TRUE}), or \code{imom} (the literature's IMOM, spelled
+    \code{KeepInitialRef} in ORCA).  The manual notes that MOM ``tends to
+    become counterproductive for cases with heavy charge transfer'';
+  \item \textbf{hard-case tactics}: \code{freeze} adds
+    \code{FreezeAndRelease} (it implies SOSCF/NoDIIS/NoTRAH and pins the
+    excited orbitals for a constrained step first), \code{gmf} adds
+    \code{GMF} (generalized mode following; the target saddle order needs an
+    estimate at the start);
+  \item \textbf{measured engine validation}: the generated formaldehyde input
+    converged to the $n\to\pi^{*}$ saddle at $-114.294975$~Eh against the
+    clean ground state's $-114.418617$~Eh --- an excitation of
+    $3.364$~eV, the textbook vertical $n\to\pi^{*}$ value (fixtures
+    \file{h2co\_dscf.*} and \file{h2co\_gs.*}).
+\end{itemize}
+\end{readbox}
