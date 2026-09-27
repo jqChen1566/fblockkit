@@ -95,6 +95,8 @@ def main() -> int:
         # the menu-30 base input (the F+H2 healing rerun; the freq output is
         # copied above from the shared examples/work set)
         shutil.copy(FIXTURES / "inputs" / "fhh_reopt.inp", inputs / "fhh_reopt.inp")
+        # the menu-31 property-file fixture (N2 SA-CASSCF, three roots)
+        shutil.copy(FIXTURES / "n2_sa.property.txt", inputs / "n2_sa.property.txt")
         # the exact-entropy chain (menu 12): the converged CASSCF output, the
         # FCIDUMP it dumped, and the two orca_2json exports of the gbw
         shutil.copy(FIXTURES / "n2_fcidump_step_a.out", inputs / "n2_fcidump_step_a.out")
@@ -184,6 +186,7 @@ def main() -> int:
                     "28", "work/n2.xyz", "0", "1", "rasci", "ormas", "6: 2 0 4, 2 0 4, 2 0 4", "1", "1", "accci", "0", "RHF def2-SVP",
                     "29", "work/ch4_diss_prop.mkl", "work/ch4_diss_prop.inp", "3", "20260927", "10", "15",
                     "30", "work/fhh_optts_freq.out", "work/fhh_reopt.inp", "sum", "0.1",
+                    "31", "work/n2_sa.property.txt",
                     "8", "work/saved.txt",
                     "0",
                 ]
@@ -504,6 +507,14 @@ def main() -> int:
                 "menu 30 wrote the two displaced restart inputs (opposite signs)",
             )
 
+            states_report = read("n2_sa.property.txt.states.fbk.md")
+            check(
+                "CASSCF state data" in states_report
+                and "-108.975666704" in states_report
+                and "10.5689" in states_report
+                and "not persistable" in states_report,
+                "menu 31 reports the per-state table and the tracking boundary",
+            )
             check(
                 "is oscillating" in out and "SCF NOT CONVERGED AFTER 783" not in out,
                 "menu 9 reports the energy oscillation on the Yb TRAH fixture and does "

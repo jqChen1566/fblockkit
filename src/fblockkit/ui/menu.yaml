@@ -96,6 +96,9 @@ items:
   - number: "30"
     title: "Imaginary-mode displacement (a frequency output + its input -> restart inputs)"
     handler: imag_disp_generate
+  - number: "31"
+    title: "CASSCF state data (a property file -> per-state energies and transitions)"
+    handler: state_data_report
   - number: "0"
     title: Quit
     handler: quit

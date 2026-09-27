@@ -51,6 +51,7 @@ from .orbitals import (
     orbital_portrait_report,
     orbital_space,
     perturb_batch,
+    state_data_report,
     wasp_guess,
 )
 from .selection import (
@@ -89,6 +90,7 @@ HANDLERS = {
     "orbital_mapping": orbital_mapping_report,
     "wasp_guess": wasp_guess,
     "perturb_batch": perturb_batch,
+    "state_data_report": state_data_report,
     "dm_batch": dm_batch_generate,
     "dm_select": dm_select,
     "apc_ranking": apc_ranking,

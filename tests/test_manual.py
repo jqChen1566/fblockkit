@@ -145,6 +145,8 @@ def _prepare_work() -> None:
     # the menu-29 reference pair (the UKS CH4 wrong-convergence fixture)
     shutil.copy(FIXTURES / "ch4_diss_prop.mkl", work / "ch4_diss_prop.mkl")
     shutil.copy(FIXTURES / "inputs" / "ch4_diss_prop.inp", work / "ch4_diss_prop.inp")
+    # the menu-31 property-file fixture (N2 SA-CASSCF)
+    shutil.copy(FIXTURES / "n2_sa.property.txt", work / "n2_sa.property.txt")
 
 
 @pytest.fixture(scope="module")

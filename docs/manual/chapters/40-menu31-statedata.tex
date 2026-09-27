@@ -1,0 +1,67 @@
+\chapter{CASSCF state data from the property file (menu 31)}
+\label{ch:menu31}
+\menulabel{31}
+
+\section{Purpose}
+
+Every ORCA job writes a \file{<base>.property.txt} with its computed
+properties in a typed, sectioned format (the manual's property-file appendix
+lists the schema; \code{orca\_2json <base> -property} converts the same file
+to JSON).  For a CASSCF job the file carries the \emph{per-state} table
+(\code{\$CAS\_SCF\_Energies}: total energy, multiplicity and irrep of every
+state) and the \emph{absorption spectrum} section (state pairs, multiplicities
+and excitation energies).  The menu reads those two sections and reports them;
+this is also the landing point of the Wave-4.2 state-tracking survey (the
+chapter's last section records what is -- and is not -- available for state
+identity along a series).
+
+\section{What you need}
+
+The property file of a CASSCF run (written automatically; nothing to switch
+on).  The state table needs \code{\$CAS\_SCF\_Energies}; the transition list
+needs \code{CASSCF\_Absorption\_Spectrum}, which a run without the spectrum
+request does not carry -- the menu then reports the state table alone.
+
+\section{Walkthrough}
+
+\lstinputlisting[style=fbkcode, firstline=36, lastline=56,
+  title={The menu-31 example session (the N$_2$ SA-CASSCF property file: the
+  per-state table, the transitions, the unnamed-column boundary and the
+  availability survey)}]
+  {examples/expected/m31_statedata.txt}
+
+\section{What you get}
+
+The per-state table (block, root, multiplicity, irrep, energy and the energy
+relative to the lowest state in eV) and the absorption transitions (state
+pair with irreps, multiplicities, $\Delta E$ in eV and cm$^{-1}$), plus a
+report \file{<property>.states.fbk.md}.  The measured cross-checks: the
+per-state energies reproduce the output's final \code{ROOT n: E=} lines to
+their printed precision, and the transitions' first two columns satisfy the
+eV/cm$^{-1}$ conversion (8065.544) as well as the state table's own energy
+differences.  Columns the manual's schema leaves unnamed are printed in the
+report under an explicit note, never interpreted.
+
+\section{State tracking: what one output can and cannot say (Wave 4.2 survey)}
+
+\begin{readbox}
+\begin{itemize}
+  \item \textbf{CI vectors are not persistable}: the CASSCF module keeps them
+    in run-time temporaries, and the \file{.cis} file the JSON exporter looks
+    for belongs to the CIS/STEOM modules (\code{orca\_2json} warns ``STEOM
+    CIS file could not be found'' on a CASSCF job).  State \emph{identity}
+    along a geometry series therefore cannot be read from one output;
+  \item \textbf{what is printed}: the output's initial ``INITIAL CI STATE
+    CHECK'' and the final ``CAS-SCF STATES FOR BLOCK'' blocks carry each
+    root's dominant CSF occupations (two snapshots, before and after the
+    orbital optimisation); this menu's property sections add the structured
+    per-state energies and the transition list;
+  \item \textbf{per-state observables for identity tracking}: single-root runs
+    carry the per-state dipole (the menu-19 route), and the FIC-NEVPT2 sidecar
+    carries per-root densities (the menu-23 chain) -- a tracker across a
+    series built on those fingerprints is registered as a candidate
+    increment, not claimed here.  The state-averaged dipole in the property
+    file is one x/y/z vector (\code{State -1}), not a per-root table: the
+    menus-19/20 boundary stands, with that addition.
+\end{itemize}
+\end{readbox}

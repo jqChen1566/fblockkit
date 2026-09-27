@@ -31,6 +31,7 @@ Available functions:
   28  RAS / ORMAS model-space input (a structure + a partition mask -> an ORCA input)
   29  Perturbed multistart batch (a converged reference mkl + its input -> restart inputs)
   30  Imaginary-mode displacement (a frequency output + its input -> restart inputs)
+  31  CASSCF state data (a property file -> per-state energies and transitions)
    0  Quit
 Choose a number (Enter = leave empty)> 11
 XYZ structure file path (Enter = leave empty)> work/ceo6.xyz
@@ -102,6 +103,7 @@ Available functions:
   28  RAS / ORMAS model-space input (a structure + a partition mask -> an ORCA input)
   29  Perturbed multistart batch (a converged reference mkl + its input -> restart inputs)
   30  Imaginary-mode displacement (a frequency output + its input -> restart inputs)
+  31  CASSCF state data (a property file -> per-state energies and transitions)
    0  Quit
 Choose a number (Enter = leave empty)> 0
 Goodbye.

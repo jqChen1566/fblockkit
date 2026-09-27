@@ -61,6 +61,7 @@ def test_doc_mentions_each_menu_title_topic():
         "RAS / ORMAS model-space input",
         "Perturbed multistart batch",
         "Imaginary-mode displacement",
+        "CASSCF state data",
     ):
         assert keyword in text, keyword
 

@@ -65,6 +65,8 @@ cp "$REPO/fixtures/orca/benzene.out" work/
 # exported from the propagated solution and the input that produced it)
 cp "$REPO/fixtures/orca/ch4_diss_prop.mkl" work/
 cp "$REPO/fixtures/orca/inputs/ch4_diss_prop.inp" work/
+# the menu-31 property-file fixture (N2 SA-CASSCF, 3 roots)
+cp "$REPO/fixtures/orca/n2_sa.property.txt" work/
 
 for script in scripts/*.txt; do
   name=$(basename "$script" .txt)

@@ -1,0 +1,14 @@
+! RHF def2-SVP
+%maxcore 2000
+%output JSONGBWFile true end
+%casscf
+  nel 6
+  norb 6
+  mult 1
+  nroots 3
+  printlevel 3
+end
+* xyz 0 1
+N 0 0 0
+N 0 0 1.10
+*

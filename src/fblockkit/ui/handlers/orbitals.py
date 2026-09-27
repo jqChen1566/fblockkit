@@ -644,3 +644,32 @@ def perturb_batch(session: Session) -> None:
     session.say(f"Report written: {md_path}")
 
 
+
+
+def state_data_report(session: Session) -> None:
+    """Menu 31: per-state CASSCF data from the property file."""
+    from ...analysis import state_data as state_data_analysis
+    from ...parsers.orca_property import parse_property
+
+    path_text = session.ask("ORCA property file path (``<base>.property.txt``)")
+    if not path_text:
+        session.say("Cancelled (no path given).")
+        return
+    path = Path(path_text)
+    try:
+        sections = parse_property(path)
+        table = state_data_analysis.state_table(sections)
+        lines = state_data_analysis.transitions(sections)
+    except (ParserError, state_data_analysis.StateDataError, OSError) as exc:
+        session.say(f"State data failed: {exc}")
+        return
+    body = state_data_analysis.render(table, lines, source=path.name)
+    session.say(body)
+    section = ReportSection(title="CASSCF state data (property file)", body=body)
+    report_lines = f"## {section.title}\n\n{section.body}\n"
+    refs = references_section(state_data_analysis.evidence())
+    if refs is not None:
+        report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
+    md_path = path.with_name(path.name + ".states.fbk.md")
+    md_path.write_text(report_lines, encoding="utf-8")
+    session.say(f"Report written: {md_path}")

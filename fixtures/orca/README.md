@@ -311,6 +311,25 @@ Points to note (also in `recipe/imag_disp.py` and `tests/test_imag_disp.py`):
   committed output + base input (the mode, the masses and the displacement
   are all deterministic).
 
+## Property-file fixtures added 2026-09-27 (server 101, the same ORCA 6.1.1)
+
+| Output | Input | Job | Parsing/analysis points covered | Run outcome |
+|---|---|---|---|---|
+| `n2_sa.out` (+ `n2_sa.property.txt`) | `inputs/n2_sa_prop.inp` | N2/def2-SVP RHF then SA-CASSCF(6,6), 3 singlet roots, default print | the menu-31 channel: the property file's `$CAS_SCF_Energies` per-state values reproduce the output's final `ROOT n:` lines to the printed precision (-108.9756667043 / -108.5872679717 / -108.5582885454 Eh), and the `CASSCF_Absorption_Spectrum` transitions carry the eV/cm-1 pair (10.5689 eV / 85243.7 cm-1) | terminated normally |
+| `h2o_sa.out` (+ `h2o_sa.property.txt`) | `inputs/h2o_sa_prop.inp` | H2O/def2-SVP SA-CASSCF(6,6), 3 singlet roots | the second platform of the same channel (nonzero dipole context; the state-averaged dipole is one x/y/z vector, `State -1`) | terminated normally |
+
+Points to note (also in `parsers/orca_property.py` and `tests/test_state_data.py`):
+
+- the property file's arrays are printed as column groups (up to eight
+  columns, like the normal-modes block); the reader stitches the groups back
+  together (measured on the 11-column `ExcitationEnergies`);
+- a bare integer field carries no `&Type` annotation (`&GeometryIndex 1`);
+- the absorption spectrum's columns beyond the eV/cm-1 pair are not named by
+  the manual's schema and are carried, not interpreted;
+- the CI vectors are run-time temporaries only (the `.cis` file belongs to
+  the CIS/STEOM modules) -- the Wave-4.2 availability survey lives in
+  `analysis/state_data.py`.
+
 ## Known-behaviour notes
 
 - `generated_ce3_sarc2.out`: the active occupations are (1,0,0,0,0,0,0) -- putting the

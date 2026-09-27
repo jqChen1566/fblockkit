@@ -1381,6 +1381,40 @@ the two mirror images of the same minimum -- the two-sided reaction
 separation needs an asymmetric-stretch mode, which this fixture does not
 carry.
 
+## 31 CASSCF state data (a property file -> per-state energies and transitions)
+
+**What it is for**: read the per-state table and the absorption spectrum out
+of an ORCA property file (`<base>.property.txt`, written automatically by any
+CASSCF job; the manual's property-file appendix lists the schema, and
+`orca_2json <base> -property` gives the same data as JSON).
+
+**How**: menu 31 -> the property file path.  You get the per-state table
+(block, root, multiplicity, irrep, energy and the relative energy in eV) and
+the absorption transitions (state pairs with irreps and multiplicities,
+dE in eV and cm-1), plus a report `<property>.states.fbk.md`.
+
+**How to read it**:
+
+- the per-state energies reproduce the output's final `ROOT n: E=` lines to
+  the printed precision (measured cross-check), and the transitions' first
+  two columns satisfy the eV/cm-1 conversion (8065.544) and the state table's
+  own energy differences;
+- columns the manual's schema leaves unnamed are printed under an explicit
+  note, never interpreted;
+- a run without a spectrum request carries no `CASSCF_Absorption_Spectrum`
+  section; the menu then reports the state table alone.
+
+**State tracking boundary (the Wave-4.2 survey)**: CI vectors are not
+persistable (run-time temporaries only; the `.cis` file belongs to the
+CIS/STEOM modules), so state identity along a geometry series cannot be read
+from one output.  What exists: the output's initial/final dominant-CSF
+snapshots, this menu's structured per-state energies and transitions, and --
+for identity fingerprints -- per-state dipoles from single-root runs (the
+menu-19 route) or per-root densities from the FIC-NEVPT2 sidecar (the menu-23
+chain); a tracker across a series built on those is a registered candidate
+increment.  The state-averaged dipole in the property file is one x/y/z
+vector (`State -1`), not a per-root table.
+
 ## Appendix A Command line
 
 ```text
