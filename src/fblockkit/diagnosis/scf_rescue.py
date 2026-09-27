@@ -10,7 +10,11 @@ Two entry points for a job whose SCF cannot be trusted:
   trajectory that oscillates without collapsing, or a run declared converged while the
   criterion its convergence check enforces is still above the printed tolerance.
 - :func:`propose_fixes` turns those findings into *new* input files: a ``SlowConv``
-  variant, and a two-step route that runs a cheap pre-SCF and reads its orbitals back.
+  variant, a two-step route that runs a cheap pre-SCF and reads its orbitals back,
+  and (for a rising or oscillating trajectory) a ``TRAH`` variant -- the manual's
+  robust second-order SCF (Wave 4.7's capability map: ORCA has no keyword spelled
+  ARH; TRAH is its trust-region augmented-Hessian route, AutoTRAH default on, and
+  SOSCF the approximate second-order one).
 
 Discipline
 ----------
@@ -120,6 +124,7 @@ RULE_CRITERIA_UNMET = "SCF-CONVERGED-CRITERIA-UNMET"
 
 FIX_SLOWCONV = "slowconv"
 FIX_PRESCF = "prescf"
+FIX_TRAH = "trah"
 
 # --- manual quotes (verbatim; section numbers refer to the ORCA 6.1 manual) --
 # One quote per Evidence entry: quotes from different sentences are never glued
@@ -251,6 +256,34 @@ EV_NOTRAH = Evidence(
     kind=EVIDENCE_MANUAL,
     text=_Q_NOTRAH,
     ref="ORCA 6.1 manual §2.6.7 (Trust-Region Augmented Hessian (TRAH) SCF)",
+    url=_MANUAL_URL_ROOT,
+)
+_Q_TRAH_WHEN = (
+    "for troublesome or lacking SCF convergence the TRAH algorithm should be used ... "
+    "If not turned off explicitly, TRAH is switched on automatically whenever convergence "
+    "problems are present by means of the AutoTRAH feature"
+)
+_Q_TRAH_SOSCF = (
+    "On the other hand, SOSCF is useful when DIIS gets stuck at some error around ~0.001 "
+    "or 0.0001. Such cases were the primary motive for the implementation of SOSCF into "
+    "ORCA."
+)
+EV_TRAH_WHEN = Evidence(
+    kind=EVIDENCE_MANUAL,
+    text=_Q_TRAH_WHEN,
+    ref="ORCA 6.1 manual §2.6.4 (Direct Inversion in Iterative Subspace)",
+    url=_MANUAL_URL_ROOT,
+)
+EV_TRAH_WHEN_SOSCF = Evidence(
+    kind=EVIDENCE_MANUAL,
+    text=(
+        _Q_TRAH_SOSCF
+        + " TRAH (the trust-region augmented-Hessian second-order SCF, the section after "
+        "SOSCF) is the manual's robust answer for difficult cases; the Wave-4.7 capability "
+        "map: ORCA has no keyword spelled ARH -- TRAH is its second-order augmented-Hessian "
+        "route (AutoTRAH default on), and SOSCF the approximate one."
+    ),
+    ref="ORCA 6.1 manual §2.6.6 (Approximate Second Order SCF)",
     url=_MANUAL_URL_ROOT,
 )
 EV_LEVELSHIFT = Evidence(
@@ -870,6 +903,7 @@ _PRESCF_MOINP = '%moinp "prescf.gbw"'
 #: Findings that motivate each proposal. A proposal is skipped when the input already
 #: contains what it would add (an existing damping keyword, or an orbital read-in).
 _SLOWCONV_TRIGGERS = frozenset({RULE_NOT_CONVERGED, RULE_PSEUDO_CONVERGENCE})
+_TRAH_TRIGGERS = frozenset({RULE_DIIS_REBOUND, RULE_ENERGY_OSCILLATION})
 _PRESCF_TRIGGERS = frozenset(
     {
         RULE_NOT_CONVERGED,
@@ -994,6 +1028,52 @@ def _slowconv_proposal(lines: Sequence[str], findings: Sequence[Finding]) -> Fix
     )
 
 
+def _trah_proposal(lines: Sequence[str], findings: Sequence[Finding]) -> FixProposal:
+    index = _simple_input_index(lines)
+    if index is None:
+        raise ScfRescueError(
+            "no simple-input line (a line starting with '!') was found before any "
+            "%compound block. Next step: add a simple-input line carrying your method "
+            "and basis keywords plus 'TRAH' by hand."
+        )
+    original = lines[index].strip()
+    has_casscf = any(
+        line.lstrip().lower().startswith("%casscf") for line in lines
+    )
+    header = _comment(
+        [
+            "fBlockKit SCF rescue: TRAH variant. This is a new file; the original input "
+            "is unchanged.",
+            "'TRAH' was appended to the simple-input line below. Every other keyword and "
+            "block is exactly as you wrote it, and MaxIter is untouched.",
+            f"Source (ORCA 6.1 manual, section 2.6.4): {_quote(_Q_TRAH_WHEN)}",
+            "Note: in an SCF job TRAH needs nothing else; AutoTRAH is on by default, so "
+            "this keyword mainly matters when NOTRAH was set. A CASSCF job's TRAH route "
+            "additionally needs a matching /C auxiliary basis (the recipe layer's rule).",
+        ]
+    )
+    content = header + [lines[index].rstrip() + " TRAH"] + list(lines[index + 1:])
+    return FixProposal(
+        name=FIX_TRAH,
+        content="\n".join(content) + "\n",
+        rationale=(
+            "The manual's robust second-order SCF: TRAH uses the electronic-Hessian "
+            "information and is described for exactly the situation this run shows "
+            "(troublesome convergence, a rising or oscillating DIIS trajectory). Appended "
+            "to the simple line so the result can be compared with the original run."
+            + (" This input carries a %casscf block: the CASSCF TRAH route additionally "
+               "needs a matching /C auxiliary basis set." if has_casscf else "")
+        ),
+        evidence=_evidence_from(findings, (EV_TRAH_WHEN, EV_TRAH_WHEN_SOSCF, EV_TRAH)),
+        changes=(
+            f"appended 'TRAH' to the simple-input line: {original!r} -> "
+            f"{original + ' TRAH'!r}",
+            "prepended comment lines (purpose + the manual's TRAH/AutoTRAH statement)"
+            + (" and the CASSCF /C auxiliary-basis note" if has_casscf else ""),
+        ),
+    )
+
+
 def _prescf_proposal(lines: Sequence[str], findings: Sequence[Finding]) -> FixProposal:
     index = _simple_input_index(lines)
     if index is None:
@@ -1106,4 +1186,9 @@ def propose_fixes(
         proposals.append(_slowconv_proposal(lines, findings))
     if selected & _PRESCF_TRIGGERS and not orbital_read_present:
         proposals.append(_prescf_proposal(lines, findings))
+    trah_present = any(
+        "trah" in line.lower() for line in lines if line.strip().startswith("!")
+    )
+    if selected & _TRAH_TRIGGERS and not trah_present:
+        proposals.append(_trah_proposal(lines, findings))
     return tuple(proposals)

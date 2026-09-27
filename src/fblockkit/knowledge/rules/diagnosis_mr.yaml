@@ -43,8 +43,15 @@
     Check the state the low weight belongs to: it may be contaminated by an intruder
     state. How to proceed: switch to CASPT2-K, which is more robust against intruder
     states (manual: less prone to intruder states and ... more accurate), or to NEVPT2;
-    if necessary enlarge the active space, change the orbitals, or add an (im) level
-    shift and recompute.
+    if necessary enlarge the active space, change the orbitals, or add a shift and
+    recompute. The exact shift spellings (manual's own block): "PTSettings
+    CASPT2_ishift 0.1" for the imaginary shift, "CASPT2_rshift" for the real one
+    (avoid it: Battaglia et al. 2022, whose sigma-p comparison calls the real shift
+    the worst performer, to be avoided -- the imaginary shift is the robust choice,
+    and its sigma-2 regularized cousin behaves like it). Earlier findings'
+    "sigma-p regularization" itself is not available from ORCA: it needs the
+    per-excitation denominators and amplitudes, which the output does not print
+    (the project's termination card records the survey).
   evidence:
     - kind: manual
       text: >-
@@ -52,6 +59,16 @@
         weights should be checked. Small reference weights indicate intruder states."
       ref: ORCA 6.1 manual §3.17
       url: https://www.faccts.de/docs/orca/6.1/manual/contents/modelchemistries/caspt2.html
+    - kind: literature
+      text: >-
+        "the real level shift is the worst performer and should be avoided, due to its
+        uniform action on all amplitudes" -- the sigma-p regularization comparison;
+        sigma2-CASPT2 "is very similar to the imaginary level shift", and the imaginary
+        shift "appears to be slightly more robust in solving the ISP".  The sigma-p
+        method itself needs the per-excitation denominators and amplitudes (their
+        Eqs. (18)-(22)), which the ORCA output does not print.
+      ref: Battaglia, Fransen, Fdez. Galvan, Lindh, J. Chem. Theory Comput. 2022, 18, 4814-4825, DOI 10.1021/acs.jctc.2c00368
+      bibkey: battaglia2022regularized
     - kind: manual
       text: >-
         "In general, RefWeight should be >0.9, such that the states are dominated by reference
@@ -72,7 +89,10 @@
     Check the excitation class the small denominator belongs to (the lowest of the 8
     smallest energy denominators). The manual states plainly that "Small denominator may
     lead to intruder states"; the results of a state with a small denominator cannot be
-    used directly. Proceed as in the rule above (CASPT2-K / NEVPT2 / level shift).
+    used directly. Proceed as in the rule above (CASPT2-K / NEVPT2), and if a shift is
+    unavoidable use the imaginary one -- "PTSettings CASPT2_ishift 0.1" in the %casscf
+    block (Battaglia et al. 2022 endorses the imaginary shift as the robust of the
+    three; its real-shift counterpart is the worst performer and should be avoided).
   evidence:
     - kind: manual
       text: >-
@@ -87,6 +107,13 @@
         the criterion threshold)
       ref: ORCA 6.1 manual §3.16 (PTSettings keyword table)
       url: https://www.faccts.de/docs/orca/6.1/manual/contents/modelchemistries/nevpt2.html
+    - kind: literature
+      text: >-
+        "the real level shift is the worst performer and should be avoided ... the
+        imaginary shift ... appears to be slightly more robust in solving the ISP" --
+        the shift choice for a small-denominator state follows this ordering.
+      ref: Battaglia, Fransen, Fdez. Galvan, Lindh, J. Chem. Theory Comput. 2022, 18, 4814-4825, DOI 10.1021/acs.jctc.2c00368
+      bibkey: battaglia2022regularized
   confidence: provisional
 
 # --- D1: CASSCF / NEVPT2 check-up -------------------------------------------

@@ -250,9 +250,14 @@ one corrected input per applicable fix, written next to your input as
 
 **What it will and will not propose**: damping (`SlowConv`) with the manual's
 warning that it can converge closer to the initial guess; a two-step pre-SCF
-route that reads the orbitals into your original input. It will *not* propose
-merely raising `MaxIter` - the manual states that will not help in many cases -
-that refusal is reported instead. The criteria used and every self-set threshold
+route that reads the orbitals into your original input; and, when the DIIS
+trajectory rebounds or oscillates, a `TRAH` variant (the manual's robust
+second-order SCF - ORCA has no keyword spelled ARH, TRAH is its
+trust-region augmented-Hessian route with AutoTRAH on by default; an input
+that already carries TRAH gets no such proposal, and a CASSCF input carries
+the /C auxiliary-basis caveat in the proposal). It will *not* propose merely
+raising `MaxIter` - the manual states that will not help in many cases - that
+refusal is reported instead. The criteria used and every self-set threshold
 are listed in the module and its tests.
 
 ## 10 Crystal-field fit (levels + coefficients JSON)

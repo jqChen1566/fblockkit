@@ -367,9 +367,12 @@ Energy oscillation & $\ge 3$ direction changes in the last 12 steps; largest
   10^{-2}$~Eh, 4 direction changes in the window) & \textsf{[Measured]}
   \code{generated\_yb3\_sarc2\_trah.out} \\
 Rescue paths & see Chapter~\ref{ch:menu9} & Better starting orbitals first;
-  \code{SlowConv} with its caution; \code{MaxIter} alone is refused (the
-  manual: ``will not help in many cases'') & \textsf{[Manual]} ORCA 6.1
-  \S2.6.x; \textsf{[Measured]} fixtures \\
+  \code{SlowConv} with its caution; a \code{TRAH} variant for a rising or
+  oscillating trajectory (ORCA's second-order augmented-Hessian SCF; AutoTRAH
+  default on; a CASSCF input carries the /C auxiliary-basis caveat);
+  \code{MaxIter} alone is refused (the manual: ``will not help in many
+  cases'') & \textsf{[Manual]} ORCA 6.1 \S2.6.4, \S2.6.6, \S2.6.7,
+  \S2.6.9; \textsf{[Measured]} fixtures \\
 \bottomrule
 \end{tabularx}
 \end{center}

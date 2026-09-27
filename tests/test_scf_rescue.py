@@ -25,6 +25,7 @@ from fblockkit.diagnosis import (
 from fblockkit.diagnosis.scf_rescue import (
     FIX_PRESCF,
     FIX_SLOWCONV,
+    FIX_TRAH,
     RULE_ABORTED_NO_VERDICT,
     RULE_CRITERIA_UNMET,
     RULE_DIIS_REBOUND,
@@ -636,3 +637,42 @@ def test_oscillation_needs_a_non_collapsing_tail(tmp_path):
     text = _energy_output(bouncing, converged=True)
     findings = triage(parse_auto(_write(tmp_path, "converged.out", text)))
     assert RULE_ENERGY_OSCILLATION not in {item.rule_id for item in findings}
+
+
+# --- the TRAH proposal (Wave 4.7) --------------------------------------------
+
+
+def test_the_oscillation_finding_yields_the_trah_proposal():
+    """The manual's robust second-order SCF as a corrected input: the Yb
+    oscillation findings against an input without TRAH must produce the trah
+    proposal with the keyword appended to its simple-input line."""
+    findings = triage(parse_auto(FIXTURES / "generated_yb3_sarc2_trah.out"))
+    proposals = {
+        proposal.name: proposal
+        for proposal in propose_fixes(SCF_NOCONV_INP.read_text(encoding="utf-8"), findings)
+    }
+    assert FIX_TRAH in proposals
+    trah = proposals[FIX_TRAH]
+    simple = [line for line in trah.content.splitlines() if line.startswith("!")]
+    assert simple and simple[0].endswith(" TRAH")
+    assert "AutoTRAH" in trah.content
+    assert any(item.kind == "manual" for item in trah.evidence)
+
+
+def test_the_trah_proposal_is_skipped_when_the_input_has_it():
+    inp = FIXTURES / "inputs" / "generated_yb3_sarc2_trah.inp"
+    text = inp.read_text(encoding="utf-8")
+    lines = text.splitlines()
+    index = next(i for i, line in enumerate(lines) if line.startswith("!"))
+    lines[index] = lines[index].rstrip() + " TRAH"
+    findings = triage(parse_auto(FIXTURES / "generated_yb3_sarc2_trah.out"))
+    names = {proposal.name for proposal in propose_fixes("\n".join(lines) + "\n", findings)}
+    assert FIX_TRAH not in names
+
+
+def test_the_trah_proposal_notes_the_casscf_auxiliary_caveat():
+    """A CASSCF input gains the /C auxiliary-basis caveat in the proposal."""
+    text = SCF_NOCONV_INP.read_text(encoding="utf-8") + "\n%casscf\n  nel 6\nend\n"
+    findings = triage(parse_auto(FIXTURES / "generated_yb3_sarc2_trah.out"))
+    proposals = {proposal.name: proposal for proposal in propose_fixes(text, findings)}
+    assert "/C auxiliary" in proposals[FIX_TRAH].content
