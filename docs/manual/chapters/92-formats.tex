@@ -214,6 +214,43 @@ Round names chain: menu~\menu{22} writes \file{<stem>.r1.*}, and
 menu~\menu{23}, fed \file{<stem>.rN.json}, writes \file{<stem>.r\{N+1\}.inp}
 and its \code{.json.conf} beside the report.
 
+\section{Input YAML: Judd-Ofelt dataset (menu 34)}
+
+\begin{codeblock}
+# one file per fit; comments and provenance lines are welcome
+reference: "Babu et al., Physica B 279, 262 (2000) SET B"   # optional
+host:
+  refractive_index: 1.57          # a constant index, OR the Sellmeier form:
+  # sellmeier:
+  #   n0: 1.0
+  #   terms:
+  #     - [1.242781, 0.023833]    # A_i, B_i; B in um^2
+transitions:
+  - label: "7F6 <- 7F0"           # free text (printed as given)
+    wavelength_nm: 2087           # OR energy_cm1; the wavelength also drives
+                                  # the Sellmeier lookup when given
+    f: 1.232e-6                   # measured absorption oscillator strength
+    f_md: 0.0                     # optional: magnetic-dipole part (subtracted)
+    j_low: 0                      # J of the lower level (2J+1 enters the fit)
+    u2: 0.0                       # [U^(2)]^2, host-independent table value
+    u4: 0.0
+    u6: 0.1449
+emission:                         # optional: radiative rates from the fit
+  - label: "5D0 -> 7F2"
+    energy_cm1: 16200
+    f: 0.0                        # not used on this side
+    j_low: 2                      # final level
+    j_up: 0                       # emitting level (2J_up+1 enters A_ED)
+    u2: 0.0032
+    u4: 0.0
+    u6: 0.0
+\end{codeblock}
+
+The fit itself uses the ``transitions`` entries only; at least four are
+required (the standard deviation divides by $N-3$), and a $U^{(\lambda)}$
+column that is zero everywhere means that $\Omega_\lambda$ is reported as
+not determined.  The report is written as \file{<dataset>.jo.fbk.md}.
+
 \section{Structure and charge input (menus 2 and 11)}
 
 Standard XYZ (atom count, comment, \code{element x y z}). For \menu{11}, the

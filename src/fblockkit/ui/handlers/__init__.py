@@ -52,6 +52,7 @@ from .inputs import (
 from .orbitals import (
     avas_target,
     exact_entropy,
+    judd_ofelt_fit,
     magnetic_doublets_report,
     orbital_mapping_report,
     orbital_portrait_report,
@@ -97,6 +98,7 @@ HANDLERS = {
     "wasp_guess": wasp_guess,
     "perturb_batch": perturb_batch,
     "state_data_report": state_data_report,
+    "judd_ofelt_fit": judd_ofelt_fit,
     "pysisyphus_generate": pysisyphus_generate,
     "pysisyphus_report": pysisyphus_report,
     "dm_batch": dm_batch_generate,

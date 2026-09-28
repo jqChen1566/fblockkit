@@ -673,3 +673,37 @@ def state_data_report(session: Session) -> None:
     md_path = path.with_name(path.name + ".states.fbk.md")
     md_path.write_text(report_lines, encoding="utf-8")
     session.say(f"Report written: {md_path}")
+
+
+def judd_ofelt_fit(session: Session) -> None:
+    """Menu 34: the standard Judd-Ofelt fit from a transition dataset."""
+    from ...analysis import judd_ofelt as judd_ofelt_analysis
+
+    path_text = session.ask("Judd-Ofelt dataset path (YAML; see the formats chapter)")
+    if not path_text:
+        session.say("Cancelled (no path given).")
+        return
+    weighting = session.ask(
+        "Least squares: unweighted (Enter) or the normalized 1/S variant (type 1/S)"
+    ).strip()
+    weights = "1/S" if weighting == "1/S" else "none"
+    path = Path(path_text)
+    try:
+        dataset = judd_ofelt_analysis.read_dataset(path)
+        result = judd_ofelt_analysis.fit(dataset, weights=weights)
+        emission = judd_ofelt_analysis.emission_rates(result)
+    except (judd_ofelt_analysis.JudOError, OSError) as exc:
+        session.say(f"Judd-Ofelt fit failed: {exc}")
+        return
+    body = judd_ofelt_analysis.render(result, source=path.name)
+    if emission:
+        body += "\n" + judd_ofelt_analysis.render_emission(emission)
+    session.say(body)
+    section = ReportSection(title="Judd-Ofelt intensity parameters", body=body)
+    report_lines = f"## {section.title}\n\n{section.body}\n"
+    refs = references_section(judd_ofelt_analysis.evidence())
+    if refs is not None:
+        report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
+    md_path = path.with_name(path.name + ".jo.fbk.md")
+    md_path.write_text(report_lines, encoding="utf-8")
+    session.say(f"Report written: {md_path}")

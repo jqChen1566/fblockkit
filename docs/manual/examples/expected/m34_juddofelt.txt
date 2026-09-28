@@ -36,22 +36,32 @@ Available functions:
   33  pysisyphus run report (a run directory or console capture -> cross-checked record)
   34  Judd-Ofelt intensity parameters (a transition dataset -> Omega_2/4/6 and radiative quantities)
    0  Quit
-Choose a number (Enter = leave empty)> 9
-ORCA output file path (Enter = leave empty)> work/scf_noconv.out
-[Error] SCF reported no convergence: ORCA printed 'SCF NOT CONVERGED AFTER 2 CYCLES' and the run aborted inside the SCF module. Measured from the DIIS table: 3 cycle(s), last DIIS error 4.710e-02.
-  action: Fix path, in the manual's order: (1) give the SCF better starting orbitals -- the manual says the answer is almost always better starting orbitals, see the 'prescf' proposal; (2) if you want the damping keyword, take its caution with it, see the 'slowconv' proposal; (3) for a stuck DIIS the manual points to SOSCF or TRAH and to large level shifts.
-  do not: Raising MaxIter is not the remedy: the manual states "Increasing MaxIter will not help in many cases." Choose a better starting guess instead.
-  do not: No energy, density or property may be taken from this output as an SCF result; the wavefunction is not converged.
-Matching input file path (Enter = skip corrected inputs) (Enter = leave empty)> work/scf_noconv.inp
-Corrected input written: work\scf_noconv.fix_slowconv.inp
-  rationale: Appends the manual's damping keyword without touching anything else, so the result can be compared with the original run. The caution is part of the proposal: SlowConv is documented to be able to converge to a local minimum solution that is closer to the initial guess, so if the starting orbitals are the real problem this proposal is the weaker of the two.
-  change: appended 'SlowConv' to the simple-input line: '! HF def2-SVP' -> '! HF def2-SVP SlowConv'
-  change: prepended comment lines (purpose + the manual's SlowConv caution)
-Corrected input written: work\scf_noconv.fix_prescf.inp
-  rationale: Implements the manual's two-step route: the cheap pre-SCF exists only to supply better starting orbitals, which the manual calls the answer almost always when SCF convergence is poor. The target job is preserved verbatim (including your %scf settings) and only gains 'moread' plus the %moinp line; the damping keyword used in step 1 is the manual's own pre-SCF ingredient, with its caution in view. Nothing here promises convergence: compare the result with the original run before using it.
-  change: replaced the simple-input line with the manual's pre-SCF method: '! BP86 def2-SVP def2/J RI LooseSCF SlowConv'
-  change: replaced the %scf block with the manual's pre-SCF setting (MaxIter 200); your %scf lines are kept as comments and are carried unchanged into step 2
-  change: appended step 2 as a commented block: your input with 'moread' on the simple-input line and '%moinp "prescf.gbw"' after it
+Choose a number (Enter = leave empty)> 34
+Judd-Ofelt dataset path (YAML; see the formats chapter) (Enter = leave empty)> work/babu2000_eu3.yaml
+Least squares: unweighted (Enter) or the normalized 1/S variant (type 1/S) (Enter = leave empty)> 
+Judd-Ofelt intensity parameters (standard JO fit, S-space, unweighted)
+  dataset: babu2000_eu3.yaml
+  host: Sellmeier n0 = 1 (A=1.24278 B=0.023833 um^2); chi_ED = (n^2+2)^2/9 (virtual cavity)
+  Omega_2 = 18.430e-20 cm^2; Omega_4 = 11.017e-20 cm^2; Omega_6 = 2.253e-20 cm^2
+  fit: 9 transitions, sigma = 2.7459e-05 a.u., sigma/S_max = 8.52 %
+
+  transition            energy (cm-1)      f_exp      S_exp (a.u.)    S_ED/S_exp
+  7F6 <- 7F1                   4541.3       1.9830e-06     3.2241e-04         0.941
+  7F6 <- 7F0                   4791.6       1.2320e-06     6.3271e-05         1.842
+  5D1 <- 7F1                  18726.6       4.5000e-07     1.7278e-05         0.990
+  5D2 <- 7F0                  21459.2       3.3300e-07     3.6828e-06         1.430
+  5D3 <- 7F1                  24154.6       3.0200e-07     8.7984e-06         0.881
+  5L6 <- 7F1                  25000.0       1.3830e-06     3.8769e-05         0.199
+  5L6 <- 7F0                  25380.7       3.3380e-06     3.0664e-05         0.386
+  5G2 <- 7F0                  26178.0       5.2300e-07     4.6385e-06         0.851
+  5D4 <- 7F0                  27700.8       4.8900e-07     4.0631e-06         1.259
+
+boundaries (measured and documented in the close-reading record):
+  - the local field is the squared virtual-cavity form (n^2+2)^2/9; the source papers print it without the square -- the square is what their reference code and their published numbers use (regression-tested here);
+  - the U^(lambda) values are host-independent table values for the ion and must come from the same source as the fit (transcribe them together with the dataset and check them against the published fit);
+  - magnetic-dipole contributions are not computed: give f_md per transition where it is significant (the fit subtracts it);
+  - the extended (perturbative X_k) JO models of the 2022/2024 papers need free-ion atomic-structure wave functions and are outside this toolkit's post-processing scope; this menu implements the standard JO fit.
+Report written: work\babu2000_eu3.yaml.jo.fbk.md
 
 Available functions:
    1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)
@@ -89,20 +99,32 @@ Available functions:
   33  pysisyphus run report (a run directory or console capture -> cross-checked record)
   34  Judd-Ofelt intensity parameters (a transition dataset -> Omega_2/4/6 and radiative quantities)
    0  Quit
-Choose a number (Enter = leave empty)> 9
-ORCA output file path (Enter = leave empty)> work/n2_hf_clean.out
-SCF CONVERGENCE block, verbatim from the output (printed for reference; the check mode decides which rows are actually enforced):
-SCF CONVERGENCE
----------------
+Choose a number (Enter = leave empty)> 34
+Judd-Ofelt dataset path (YAML; see the formats chapter) (Enter = leave empty)> work/babu2000_eu3.yaml
+Least squares: unweighted (Enter) or the normalized 1/S variant (type 1/S) (Enter = leave empty)> 1/S
+Judd-Ofelt intensity parameters (standard JO fit, S-space, weighted (1/S))
+  dataset: babu2000_eu3.yaml
+  host: Sellmeier n0 = 1 (A=1.24278 B=0.023833 um^2); chi_ED = (n^2+2)^2/9 (virtual cavity)
+  Omega_2 = 16.409e-20 cm^2; Omega_4 = 9.658e-20 cm^2; Omega_6 = 1.698e-20 cm^2
+  fit: 9 transitions, sigma = 4.2717e-05 a.u., sigma/S_max = 13.25 %
 
-  Last Energy change         ...    2.0488e-07  Tolerance :   1.0000e-06
-  Last MAX-Density change    ...    5.8573e-05  Tolerance :   1.0000e-05
-  Last RMS-Density change    ...    8.9188e-06  Tolerance :   1.0000e-06
-  Last DIIS Error            ...    1.8058e-03  Tolerance :   1.0000e-06
-  Last Orbital Gradient      ...    1.4302e-05  Tolerance :   5.0000e-05
-  Last Orbital Rotation      ...    8.1326e-06  Tolerance :   5.0000e-05
+  transition            energy (cm-1)      f_exp      S_exp (a.u.)    S_ED/S_exp
+  7F6 <- 7F1                   4541.3       1.9830e-06     3.2241e-04         0.709
+  7F6 <- 7F0                   4791.6       1.2320e-06     6.3271e-05         1.389
+  5D1 <- 7F1                  18726.6       4.5000e-07     1.7278e-05         0.882
+  5D2 <- 7F0                  21459.2       3.3300e-07     3.6828e-06         1.273
+  5D3 <- 7F1                  24154.6       3.0200e-07     8.7984e-06         0.776
+  5L6 <- 7F1                  25000.0       1.3830e-06     3.8769e-05         0.150
+  5L6 <- 7F0                  25380.7       3.3380e-06     3.0664e-05         0.291
+  5G2 <- 7F0                  26178.0       5.2300e-07     4.6385e-06         0.758
+  5D4 <- 7F0                  27700.8       4.8900e-07     4.0631e-06         1.103
 
-SCF looks healthy: no triage finding.
+boundaries (measured and documented in the close-reading record):
+  - the local field is the squared virtual-cavity form (n^2+2)^2/9; the source papers print it without the square -- the square is what their reference code and their published numbers use (regression-tested here);
+  - the U^(lambda) values are host-independent table values for the ion and must come from the same source as the fit (transcribe them together with the dataset and check them against the published fit);
+  - magnetic-dipole contributions are not computed: give f_md per transition where it is significant (the fit subtracts it);
+  - the extended (perturbative X_k) JO models of the 2022/2024 papers need free-ion atomic-structure wave functions and are outside this toolkit's post-processing scope; this menu implements the standard JO fit.
+Report written: work\babu2000_eu3.yaml.jo.fbk.md
 
 Available functions:
    1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)

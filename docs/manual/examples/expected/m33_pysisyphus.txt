@@ -34,6 +34,7 @@ Available functions:
   31  CASSCF state data (a property file -> per-state energies and transitions)
   32  pysisyphus input (a structure + a method -> a PES-exploration YAML)
   33  pysisyphus run report (a run directory or console capture -> cross-checked record)
+  34  Judd-Ofelt intensity parameters (a transition dataset -> Omega_2/4/6 and radiative quantities)
    0  Quit
 Choose a number (Enter = leave empty)> 33
 pysisyphus run directory, or its console capture file (e.g. run.out) (Enter = leave empty)> work
@@ -102,6 +103,7 @@ Available functions:
   31  CASSCF state data (a property file -> per-state energies and transitions)
   32  pysisyphus input (a structure + a method -> a PES-exploration YAML)
   33  pysisyphus run report (a run directory or console capture -> cross-checked record)
+  34  Judd-Ofelt intensity parameters (a transition dataset -> Omega_2/4/6 and radiative quantities)
    0  Quit
 Choose a number (Enter = leave empty)> 
 (end of input, exiting.)

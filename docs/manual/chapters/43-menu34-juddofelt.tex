@@ -1,0 +1,109 @@
+\chapter{Judd-Ofelt intensity parameters (menu 34)}
+\label{ch:menu34}
+\menulabel{34}
+
+\section{Purpose}
+
+The standard Judd-Ofelt (JO) theory describes the intensities of f-f
+transitions as
+
+\begin{equation}
+  \mathcal{S}_{\mathrm{ED}} \; = \; \sum_{\lambda = 2, 4, 6}
+    \Omega_\lambda \, \left| \langle \Psi_1 \| U^{(\lambda)} \| \Psi_2
+    \rangle \right|^2 ,
+\end{equation}
+
+with the doubly-reduced unit-tensor matrix elements $U^{(\lambda)}$ being
+host-independent table values of the ion, and the three parameters
+$\Omega_\lambda$ obtained by least squares from measured line strengths.
+This menu performs that fit and, from the fitted parameters, the emission
+side (radiative rates, branching ratios, lifetime).  It is the landing
+point of the Wave-5.1 survey of transition-intensity data: the ORCA-side
+intensity data (per-transition oscillator strengths and dipole moments of
+CASSCF runs, with or without spin-orbit coupling) are read by menu 31 from
+the property file's absorption section; the JO fit itself consumes the
+literature conventions and tables, which this menu pins explicitly.
+
+\section{What you need}
+
+A dataset file (YAML; the schema is in the formats chapter): the host
+refractive index (a constant, or Sellmeier terms), and per transition the
+label, energy (or measured wavelength), oscillator strength, the lower
+level's $J$, and the three $U^{(\lambda)}$ values.  Optional: an
+$f_{\mathrm{md}}$ column (subtracted before the fit) and an emission block
+(each entry additionally gives \code{j\_up}).
+
+\section{Walkthrough}
+
+The example fits the classic Eu$^{3+}$ benchmark (Babu et al., SET B --
+the dataset of the fixture, with the $U^{(\lambda)}$ table of the 2024
+literature) twice: unweighted, and with the normalized $1/S$ variant that
+some authors use.  The two give different parameters from the same data --
+which is exactly why the weighting is an explicit question.
+
+\lstinputlisting[style=fbkcode, firstline=39, lastline=64,
+  title={The menu-34 example (unweighted fit of the Eu$^{3+}$ benchmark:
+  the parameters, the fit quality and the per-transition ratios)}]
+  {examples/expected/m34_juddofelt.txt}
+
+\section{What you get}
+
+The fitted $\Omega_2/\Omega_4/\Omega_6$ (atomic units and the conventional
+$10^{-20}$~cm$^2$), $\sigma$ and the relative $\sigma/\mathcal{S}_{\max}$,
+the per-transition table ($S_{\exp}$, and $r = S_{\mathrm{ED}}/S_{\exp}$
+for every fitted line), and -- when an emission block is present -- the
+$A_{\mathrm{ED}}$ rates, branching ratios and the radiative lifetime.  The
+report file \file{<dataset>.jo.fbk.md} carries the same content with the
+full citations.
+
+\section{Conventions and boundaries (all measured or source-verified)}
+
+\begin{readbox}
+\begin{itemize}
+  \item \textbf{The local field is the squared virtual-cavity form}
+    $\chi_{\mathrm{ED}} = (n_r^2+2)^2/9$.  The 2022/2024 source papers
+    \emph{print} $(n_r^2+2)/9$ -- a missing square; the square is what
+    their reference implementation uses
+    (\code{calc\_chi\_ed(n,1) = (n**2+2)**2/9}) and what reproduces their
+    published numbers.  This menu's regression test pins it: the Eu$^{3+}$
+    benchmark reproduces the published relative $\sigma$ (8.52~\%) and
+    $\Omega_6$ (2.253$\times10^{-20}$~cm$^2$) digit for digit.
+  \item \textbf{Host dispersion}: a constant index, or Sellmeier
+    $n_r^2(\lambda) = n_0^2 + \sum_i A_i\lambda^2/(\lambda^2 - B_i)$ with
+    $B_i$ in $\mu$m$^2$ (wavelengths cut at 6000~nm, as the reference
+    implementation); the measured wavelength drives both the Sellmeier
+    lookup and the energy when no energy column is given.
+  \item \textbf{A zero $U^{(\lambda)}$ column means that parameter is
+    not determined} by the dataset; it is reported as such, never as a
+    silent zero.
+  \item \textbf{Magnetic-dipole parts are not computed} (they need
+    free-ion wave functions): an optional \code{f\_md} column is
+    subtracted before the fit, as the reference implementations do.
+  \item \textbf{The extended $X_k$ / perturbative JO models} of the
+    2022/2024 papers require an atomic-structure kernel (Cowan-style
+    free-ion eigenvectors) and stay outside this toolkit's scope; the
+    standard JO fit implemented here is what the sources themselves call
+    ``the most recent experimental studies still use''.
+\end{itemize}
+\end{readbox}
+
+\section{The ORCA side of transition intensities (Wave 5.1 survey)}
+
+For \emph{ab initio} intensities, an ORCA state-averaged CASSCF job (with or
+without \code{rel DoSOC}) prints the one-photon absorption spectrum --
+per transition: energy, wavelength, oscillator strength \code{fosc(D2)},
+dipole strength $D^2$, and the dipole components; the property file's
+\code{\$CASSCF\_Absorption\_Spectrum} carries the same numbers in eleven
+typed columns, measured as
+$[\,\mathrm{eV}, \mathrm{cm}^{-1}, \mathrm{nm}, f_{\mathrm{osc}}, D^2,
+D_X^{(\mathrm{re,im})}, D_Y^{(\mathrm{re,im})}, D_Z^{(\mathrm{re,im})}\,]$,
+with two internal gates (the oscillator strength against
+$\tfrac23\,\Delta E_{\mathrm{a.u.}} D^2$, and $D^2$ against the squared
+components) that reproduce the printed numbers to their precision.  A job
+with spin-orbit coupling prints the section twice; the copy with the
+higher \code{\&RelCorrection} (the SOC-corrected one) is the one read.  The
+magnetic-dipole data live in the separate \code{\$CASSCF\_ECD\_Spectrum}
+section.  Mapping these per-level intensities onto the $J$-multiplet JO
+parameters needs the $U^{(\lambda)}$ table (or crystal-field-level JO
+theory, a registered candidate increment) -- which is why this menu's input
+is a dataset file, not an ORCA output.

@@ -439,6 +439,46 @@ Cross-check set & four artifact ties & Frames vs cycle rows; closing frame vs
 \end{tabularx}
 \end{center}
 
+\section{Judd-Ofelt intensities}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{2.0cm} X >{\raggedright\arraybackslash}p{3.2cm}@{}}
+\toprule
+Quantity & Value & Meaning / limits & Source \\
+\midrule
+Local-field convention & $\chi_{\mathrm{ED}} = (n_r^2+2)^2/9$ & The
+  \emph{squared} virtual-cavity form.  The 2022/2024 source papers print the
+  un-squared expression; the square is what their reference implementation
+  uses and what reproduces their published parameters (menu 34's regression:
+  relative $\sigma$ and $\Omega_6$ digit for digit).  Numbers quoted under a
+  different convention differ by that factor -- state the convention before
+  comparing & \textsf{[Measured]} the reference code and the benchmark \\
+Fit quality & $\sigma/\mathcal{S}_{\max}$ as printed by the fit & Typical
+  accuracy of the theory is 5--15~\% on individual transitions, with errors
+  up to $\sim$35~\% on specific lines even for ``well-behaved'' ions --
+  read a fit's $\sigma$ against that band, not against zero &
+  \textsf{[Literature]} Goldner 2003, \emph{Mol.\ Phys.}\ 101, 903--908 \\
+$U^{(\lambda)}$ table & host-independent, ion-specific & The reduced
+  matrix elements must be transcribed together with the intensities, from
+  the same source, and the fit checked against that source's published
+  parameters; the reference table used by the regression was itself
+  cross-checked value by value against Carnall et al.\ (1968) &
+  \textsf{[Literature]} Hovhannesyan et al.\ 2024, Table 1 \\
+Undetermined parameter & reported, never zeroed & A $U^{(\lambda)}$ column
+  that is zero over every fitted transition leaves that $\Omega_\lambda$
+  undetermined by the dataset; the menu says so instead of printing a
+  silent zero & \textsf{[Measured]} menu 34's refusal path \\
+Emission side & $\propto \nu^3 n_r \chi_{\mathrm{ED}}$ & The papers'
+  Eq.~(a-em): $A_{\mathrm{ED}} = e^2a_0^2\Delta E^3 n_r\chi_{\mathrm{ED}}
+  \mathcal{S}_{\mathrm{ED}}\allowbreak/(3\pi\epsilon_0\hbar^4c^3(2J_2+1))$.
+  Magnetic-dipole channels are not computed (free-ion wave functions
+  needed); where an emission transition is MD-dominated the sources
+  exclude it from the sum -- give \code{f\_md} where it matters and keep
+  MD-only lines out of the lifetime & \textsf{[Literature]} same, Eq.~(a-em) \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
 \section{Crystal fields}
 
 \begin{center}

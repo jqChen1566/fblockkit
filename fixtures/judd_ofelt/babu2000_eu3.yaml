@@ -1,0 +1,39 @@
+# Judd-Ofelt dataset: Eu3+ in lithium fluoroborate glass, Babu et al. SET B.
+#
+# Experimental absorption oscillator strengths and wavelengths: Babu et al.,
+# Physica B 279, 262 (2000), Table 3, SET B (with thermal corrections) -- the
+# very file distributed with the authors' reference implementation of the
+# extended Judd-Ofelt theory (jo_so, GPL-3.0, gitlab.com/labicb/joso,
+# Eu3+/Eu3+_spec_babu2000.txt; read 2026-09-28, data only, no code).
+#
+# U^(lambda) = squared reduced matrix elements of the unit-tensor operator
+# (host-independent), from Hovhannesyan, Boudon, Lepers, J. Lumin. 266 (2024)
+# 120234, Table 1, where they are cross-checked against Carnall et al. (1968)
+# value by value.
+#
+# Host refractive index: Sellmeier n^2 = n0^2 + A lambda^2/(lambda^2 - B),
+# n0 = 1, A = 1.242781, B = 0.023833 um^2 (Adamiv et al. 2011, via the same
+# paper); the source code cuts the wavelength at 6000 nm.
+#
+# Published fit values this file is the regression for (same paper):
+#   standard JO, 9 transitions: relative sigma = 8.52 %;
+#   Omega = (18.73, 12.58, 2.253) x 1e-20 cm^2 (with dispersion);
+#   Babu's own reported set B: (17.96, 11.92, 2.13) x 1e-20 cm^2.
+#   Paper I (J. Lumin. 241 (2022) 118456, Table 1) prints the standard-JO
+#   ratios S_theory/S_exp used as the per-transition anchor.
+reference: "Babu et al., Physica B 279, 262 (2000) SET B; U table: Hovhannesyan/Boudon/Lepers, J. Lumin. 266 (2024) 120234"
+host:
+  sellmeier:
+    n0: 1.0
+    terms:
+      - [1.242781, 0.023833]
+transitions:
+  - {label: "7F6 <- 7F1", wavelength_nm: 2202, f: 1.983e-6, j_low: 1, u2: 0,      u4: 0,      u6: 0.3772}
+  - {label: "7F6 <- 7F0", wavelength_nm: 2087, f: 1.232e-6, j_low: 0, u2: 0,      u4: 0,      u6: 0.1449}
+  - {label: "5D1 <- 7F1", wavelength_nm: 534,  f: 0.450e-6, j_low: 1, u2: 0.0026, u4: 0,      u6: 0}
+  - {label: "5D2 <- 7F0", wavelength_nm: 466,  f: 0.333e-6, j_low: 0, u2: 0.0008, u4: 0,      u6: 0}
+  - {label: "5D3 <- 7F1", wavelength_nm: 414,  f: 0.302e-6, j_low: 1, u2: 0.0004, u4: 0.0013, u6: 0}
+  - {label: "5L6 <- 7F1", wavelength_nm: 400,  f: 1.383e-6, j_low: 1, u2: 0,      u4: 0,      u6: 0.0096}
+  - {label: "5L6 <- 7F0", wavelength_nm: 394,  f: 3.338e-6, j_low: 0, u2: 0,      u4: 0,      u6: 0.0147}
+  - {label: "5G2 <- 7F0", wavelength_nm: 382,  f: 0.523e-6, j_low: 0, u2: 0.0006, u4: 0,      u6: 0}
+  - {label: "5D4 <- 7F0", wavelength_nm: 361,  f: 0.489e-6, j_low: 0, u2: 0,      u4: 0.0013, u6: 0}

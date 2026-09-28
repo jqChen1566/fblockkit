@@ -1485,6 +1485,48 @@ found, and a report `<capture>.pysisyphus.fbk.md` next to the run.
   `qm_calcs/cur_out` dangles after the run (a symlink into the cleaned
   scratch directory).
 
+## 34 Judd-Ofelt intensity parameters (a transition dataset)
+
+**What it is for**: the standard Judd-Ofelt (JO) fit of f-f intensities:
+from a table of transitions (oscillator strengths + the host-independent
+U^(lambda) matrix elements) obtain Omega_2/Omega_4/Omega_6 and the fit
+quality; optionally, from the fitted parameters, the emission-side radiative
+rates, branching ratios and radiative lifetime.
+
+**How**: menu 34 -> a dataset file (YAML; schema in the formats chapter) ->
+weighting (unweighted or the normalized 1/S variant).  You get the fitted
+parameters (a.u. and the conventional 10^-20 cm^2), sigma and sigma/S_max,
+the per-transition S_exp and r = S_theory/S_exp table, and a report
+`<dataset>.jo.fbk.md`.
+
+**How to read it**:
+
+- the local field is the **squared** virtual-cavity form
+  `chi_ED = (n_r^2+2)^2/9`; the source papers print it without the square —
+  the square is what their reference code and their published numbers use
+  (this menu's regression test).  Where a paper quotes parameters under a
+  different local-field convention, expect differences of the order of that
+  factor — state the convention before comparing numbers;
+- the U^(lambda) values are table values for the ion (they do not depend on
+  the host); transcribe them together with the intensities, from the same
+  source, and check the fit against that source's published parameters;
+- a host may be a constant refractive index or Sellmeier terms (B in um^2,
+  wavelength cut at 6000 nm as the reference implementation); the measured
+  wavelength drives both the Sellmeier lookup and the energy when no energy
+  column is given;
+- a parameter whose U^(lambda) column is zero over all transitions is
+  reported as *not determined* (never as a silent zero);
+- magnetic-dipole parts are not computed (they need free-ion wave
+  functions): give `f_md` per transition where they are significant — the
+  fit subtracts them, as the source implementations do.
+
+**Boundaries**: the extended (perturbative X_k / configuration-interaction)
+JO models of the 2022/2024 literature need free-ion atomic-structure wave
+functions and are outside this toolkit's post-processing scope; the ORCA-side
+data for *ab initio* intensities are the per-transition fosc/D2/dipole
+columns of the property file's absorption section (read by menu 31; layout
+measured).
+
 ## Appendix A Command line
 
 ```text

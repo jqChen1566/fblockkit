@@ -1,0 +1,17 @@
+! RHF def2-SVP
+%maxcore 2000
+%casscf
+  nel 8
+  norb 6
+  mult 1
+  nroots 4
+  printlevel 3
+  rel
+    DoSOC true
+  end
+end
+* xyz 0 1
+O  0.000000  0.000000  0.000000
+H  0.960000  0.000000  0.000000
+H -0.240000  0.900000  0.000000
+*

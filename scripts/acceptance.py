@@ -105,6 +105,16 @@ def main() -> int:
         shutil.copy(pysisyphus / "h2o_opt" / "h2o.xyz", inputs / "h2o_ts.xyz")
         for run in ("h2o_opt", "butadiene_ts", "h2o_stop3", "hess_crash"):
             shutil.copytree(pysisyphus / run, inputs / f"pysis_{run}")
+        # the Wave-5.1 transition-intensity fixtures: the Judd-Ofelt dataset
+        # and the nonzero absorption probe of the state-data menu
+        shutil.copy(
+            REPO / "fixtures" / "judd_ofelt" / "babu2000_eu3.yaml",
+            inputs / "babu2000_eu3.yaml",
+        )
+        shutil.copy(
+            REPO / "fixtures" / "orca" / "h2o_absp.property.txt",
+            inputs / "h2o_absp.property.txt",
+        )
         # the exact-entropy chain (menu 12): the converged CASSCF output, the
         # FCIDUMP it dumped, and the two orca_2json exports of the gbw
         shutil.copy(FIXTURES / "n2_fcidump_step_a.out", inputs / "n2_fcidump_step_a.out")
@@ -202,6 +212,8 @@ def main() -> int:
                     "", "", "calc", "", "",
                     "33", "work/pysis_h2o_opt",
                     "33", "work/pysis_hess_crash",
+                    "34", "work/babu2000_eu3.yaml", "",
+                    "31", "work/h2o_absp.property.txt",
                     "8", "work/saved.txt",
                     "0",
                 ]
@@ -570,6 +582,20 @@ def main() -> int:
                 and "signature is confirmed" in crash_report
                 and "hessian_init: fischer" in crash_report,
                 "menu 33 classified the ORCA-6 Hessian crash and named the way forward",
+            )
+
+            jo_report = read("babu2000_eu3.yaml.jo.fbk.md")
+            check(
+                "Omega_6 = 2.253e-20 cm^2" in jo_report
+                and "sigma/S_max = 8.52 %" in jo_report
+                and "7F6 <- 7F0" in jo_report
+                and "1.842" in jo_report,
+                "menu 34 reproduces the published Judd-Ofelt benchmark",
+            )
+            absp_report = read("h2o_absp.property.txt.states.fbk.md")
+            check(
+                "7.7639e-02" in absp_report and "1.1212e-02" in absp_report,
+                "menu 31 reports the measured per-transition oscillator strengths",
             )
             check(
                 "is oscillating" in out and "SCF NOT CONVERGED AFTER 783" not in out,

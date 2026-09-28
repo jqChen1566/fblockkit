@@ -9,12 +9,12 @@ CASSCF state data from n2_sa.property.txt
       2      0     2     1      -    -108.558288545         11.3574
 
   absorption transitions (electric-dipole route, density: see the section):
-  initial -> final (irrep)   mult (i->f)      dE (eV)      dE (cm**-1)
-  0 -> 1 (0->0)   1.0->1.0           10.5689        85243.7
-  0 -> 2 (0->0)   1.0->1.0           11.3574        91603.9
-  note: this transition carries further columns the manual's schema leaves unnamed (117.311, 0, 0, 0, 0, -1.33643e-12, 0, 0, 0); they are printed in the report file, not interpreted.
+  initial -> final (irrep)   mult (i->f)      dE (eV)      dE (cm**-1)   fosc
+  0 -> 1 (0->0)   1.0->1.0           10.5689        85243.7   0.0000e+00
+  0 -> 2 (0->0)   1.0->1.0           11.3574        91603.9   0.0000e+00
 
 Boundaries (the Wave-4.2 availability survey):
   - the CI vectors are not persistable (run-time temporaries only; the .cis file belongs to the CIS/STEOM modules), so state identity along a series cannot be read from one output;
   - the .out side prints the per-root dominant CSF occupations twice (initial state check and final states block), and this property file adds the structured per-state energies and transitions;
-  - per-state observables for identity tracking: single-root runs carry the per-state dipole (the menu-19 route), the FIC-NEVPT2 sidecar carries per-root densities (the menu-23 chain) -- a tracker across a series is registered as a candidate increment.
+  - per-state observables for identity tracking: single-root runs carry the per-state dipole (the menu-19 route), the FIC-NEVPT2 sidecar carries per-root densities (the menu-23 chain) -- a tracker across a series is registered as a candidate increment;
+  - the absorption columns are the measured layout [eV, cm-1, nm, fosc, D2, DX(re,im), DY(re,im), DZ(re,im)] (nonzero probes, Wave 5.1); a SOC run's duplicate section is read at its highest &RelCorrection, and the magnetic-dipole data live in the separate ECD section (not shown here).

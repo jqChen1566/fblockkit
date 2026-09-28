@@ -105,6 +105,9 @@ items:
   - number: "33"
     title: "pysisyphus run report (a run directory or console capture -> cross-checked record)"
     handler: pysisyphus_report
+  - number: "34"
+    title: "Judd-Ofelt intensity parameters (a transition dataset -> Omega_2/4/6 and radiative quantities)"
+    handler: judd_ofelt_fit
   - number: "0"
     title: Quit
     handler: quit

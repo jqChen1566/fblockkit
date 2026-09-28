@@ -77,6 +77,8 @@ for name in run_stdout.log optimization.trj final_geometry.xyz RUN.yaml \
   cp "$REPO/fixtures/pysisyphus/h2o_opt/$name" work/$name
 done
 cp -r "$REPO/fixtures/pysisyphus/h2o_opt/qm_calcs" work/qm_calcs
+# the menu-34 Judd-Ofelt dataset (the Eu3+ Babu-2000 regression fixture)
+cp "$REPO/fixtures/judd_ofelt/babu2000_eu3.yaml" work/
 
 for script in scripts/*.txt; do
   name=$(basename "$script" .txt)

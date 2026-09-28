@@ -164,6 +164,11 @@ def _prepare_work() -> None:
     if (work / "qm_calcs").exists():
         shutil.rmtree(work / "qm_calcs")
     shutil.copytree(pysisyphus / "qm_calcs", work / "qm_calcs")
+    # the menu-34 Judd-Ofelt dataset
+    shutil.copy(
+        REPO / "fixtures" / "judd_ofelt" / "babu2000_eu3.yaml",
+        work / "babu2000_eu3.yaml",
+    )
 
 
 @pytest.fixture(scope="module")

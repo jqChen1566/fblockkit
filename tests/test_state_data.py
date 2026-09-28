@@ -101,10 +101,13 @@ def test_the_transitions_and_their_cross_checks():
     # relative energies of the state table agree with the transitions
     relative = table["states"][1].energy_eh - table["states"][0].energy_eh
     assert relative * 27.211386 == pytest.approx(first.de_ev, rel=1e-6)
-    # the columns the manual leaves unnamed are carried, not interpreted
-    assert len(first.extra) == 9
+    # the measured column layout: wavelength, fosc, D2 and the dipole pairs
+    assert first.wavelength_nm == pytest.approx(117.31076522661095)
+    assert first.fosc == 0.0 and first.d2_au == 0.0  # g -> g, symmetry-forbidden
+    assert first.dipoles is not None and len(first.dipoles) == 3
+    assert first.extra == ()
     text = state_data.render(table, lines, source="n2_sa.property.txt")
-    assert "leaves unnamed" in text
+    assert "fosc" in text
     assert "not persistable" in text
 
 
@@ -124,3 +127,46 @@ def test_missing_sections_refuse_with_a_next_step(tmp_path):
     partial.write_text("$Geometry\n   &GeometryIndex 1\n$End\n", encoding="utf-8")
     with pytest.raises(state_data.StateDataError, match="CAS_SCF_Energies"):
         state_data.state_table(parse_property(partial))
+
+
+# --- the measured absorption columns (Wave 5.1 probes, nonzero values) ---------
+
+
+def test_the_nonzero_probe_pins_the_column_layout():
+    sections = parse_property(FIXTURES / "h2o_absp.property.txt")
+    lines = state_data.transitions(sections)
+    assert len(lines) == 3
+    first, strong = lines[0], lines[2]
+    # wavelength column
+    assert first.wavelength_nm == pytest.approx(165.41808013500193)
+    # fosc and D2 columns (the strong line carries real intensity)
+    assert first.fosc == pytest.approx(0.0112119101246488)
+    assert first.d2_au == pytest.approx(0.0610573809153212)
+    assert strong.fosc == pytest.approx(0.0776394781480265)
+    assert strong.d2_au == pytest.approx(0.3094891937900124)
+    # the complex dipole pairs: (re, im) x (DX, DY, DZ); aligned with the
+    # output's ABSORPTION SPECTRUM block (DX of the strong line at column 5,
+    # DY at 7, DZ at 9)
+    assert first.dipoles[2].real == pytest.approx(-0.24709791766690625)
+    assert strong.dipoles[0].real == pytest.approx(0.37712944632790035)
+    assert strong.dipoles[1].real == pytest.approx(0.4089774743215373)
+    # the module's internal gates re-derive f from D2 and D2 from the components
+    expected_f = (2.0 / 3.0) * (strong.de_ev / state_data.EV_PER_HARTREE) * strong.d2_au
+    assert expected_f == pytest.approx(strong.fosc, rel=1e-6)
+    squared = sum(abs(component) ** 2 for component in strong.dipoles)
+    assert squared == pytest.approx(strong.d2_au, rel=1e-6)
+
+
+def test_the_soc_run_reads_its_highest_rel_correction():
+    sections = parse_property(FIXTURES / "h2o_absp_soc.property.txt")
+    names = [section.name for section in sections]
+    # measured: a SOC run prints the absorption section twice
+    assert names.count("CASSCF_Absorption_Spectrum") == 2
+    lines = state_data.transitions(sections)
+    # the chosen section is the SOC-corrected one: its &States irreps are -1
+    # (the measured marker of the post-SOC copy) and its density sidecar name
+    # is the QDSOC one
+    assert all(line.initial_irrep == -1 for line in lines)
+    chosen = state_data._section(sections, "CASSCF_Absorption_Spectrum")
+    assert chosen.field("RelCorrection").value == 2
+    assert chosen.field("Density_name").value == "Tdens-CASQDSOC"
