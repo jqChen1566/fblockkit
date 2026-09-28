@@ -32,6 +32,8 @@ Available functions:
   29  Perturbed multistart batch (a converged reference mkl + its input -> restart inputs)
   30  Imaginary-mode displacement (a frequency output + its input -> restart inputs)
   31  CASSCF state data (a property file -> per-state energies and transitions)
+  32  pysisyphus input (a structure + a method -> a PES-exploration YAML)
+  33  pysisyphus run report (a run directory or console capture -> cross-checked record)
    0  Quit
 Choose a number (Enter = leave empty)> 1
 ORCA output file path (Enter = leave empty)> work/n2_casscf_nevpt2.out
@@ -72,6 +74,8 @@ Available functions:
   29  Perturbed multistart batch (a converged reference mkl + its input -> restart inputs)
   30  Imaginary-mode displacement (a frequency output + its input -> restart inputs)
   31  CASSCF state data (a property file -> per-state energies and transitions)
+  32  pysisyphus input (a structure + a method -> a PES-exploration YAML)
+  33  pysisyphus run report (a run directory or console capture -> cross-checked record)
    0  Quit
 Choose a number (Enter = leave empty)> 1
 ORCA output file path (Enter = leave empty)> work/n2_diffuse.out
@@ -112,6 +116,8 @@ Available functions:
   29  Perturbed multistart batch (a converged reference mkl + its input -> restart inputs)
   30  Imaginary-mode displacement (a frequency output + its input -> restart inputs)
   31  CASSCF state data (a property file -> per-state energies and transitions)
+  32  pysisyphus input (a structure + a method -> a PES-exploration YAML)
+  33  pysisyphus run report (a run directory or console capture -> cross-checked record)
    0  Quit
 Choose a number (Enter = leave empty)> 0
 Goodbye.

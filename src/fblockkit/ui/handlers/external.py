@@ -1,0 +1,182 @@
+"""The external-program handler group (the pysisyphus B-layer pair, menus 32/33).
+
+What belongs here: the menus whose counterpart is another program rather than
+the engine -- writing the input that program consumes and reading the output
+it leaves behind.  The pair is complete in itself: menu 32 writes a run input,
+menu 33 reads the run back.
+"""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+from ...analysis import geometry as geometry_analysis
+from ...analysis import pysisyphus_run as pysisyphus_analysis
+from ...diagnosis import references_section
+from ...knowledge.models import ReportSection
+from ...parsers import ParserError, parse_auto
+from ...parsers.pysisyphus import PysisyphusError
+from ...recipe import pysisyphus as pysisyphus_recipe
+from ..session import Session
+
+
+def _atoms_from_structure_source(path: Path) -> tuple[tuple[str, float, float, float], ...]:
+    """Atoms from an XYZ file, an ORCA input (inline block) or an ORCA output."""
+    suffix = path.suffix.lower()
+    if suffix == ".xyz":
+        return tuple(
+            (atom.element, atom.x, atom.y, atom.z)
+            for atom in geometry_analysis.parse_xyz(path)
+        )
+    if suffix == ".out":
+        result = parse_auto(path)
+        section = result.sections.get("final_geometry", {})
+        if not section.get("present"):
+            raise PysisyphusError(
+                "the ORCA output carries no final CARTESIAN COORDINATES block. Next "
+                "step: give the output of a job that reached a geometry (or an XYZ "
+                "file)."
+            )
+        return tuple(section["atoms"])
+    if suffix == ".inp":
+        text = path.read_text(encoding="utf-8", errors="replace")
+        return pysisyphus_recipe.atoms_from_orca_input(text)
+    raise PysisyphusError(
+        f"unsupported structure source {path.name!r}: give an XYZ file (.xyz), an "
+        "ORCA input with inline coordinates (.inp) or an ORCA output (.out)."
+    )
+
+
+def pysisyphus_generate(session: Session) -> None:
+    """Menu 32: write a pysisyphus run input (YAML + structure) for a chosen method."""
+    source_text = session.ask(
+        "Structure source path (XYZ / ORCA input / ORCA output)"
+    )
+    if not source_text:
+        session.say("Cancelled (no structure given).")
+        return
+    source = Path(source_text)
+    keywords = session.ask(
+        "ORCA keywords for every call (any simple line; Enter = HF def2-SVP)"
+    ) or "HF def2-SVP"
+    charge_text = session.ask("Charge", default="0")
+    mult_text = session.ask("Multiplicity (2S+1)", default="1")
+    job = (
+        session.ask(
+            "Job: min (minimum optimisation) or ts (transition-state search) "
+            "(Enter = min)",
+            default="min",
+        )
+        .strip()
+        .lower()
+    )
+    default_thresh = "baker" if job == "ts" else "gau"
+    thresh = session.ask(
+        "Convergence threshold (gau_loose/gau/gau_tight/gau_vtight/baker)",
+        default=default_thresh,
+    ).strip()
+    pal_text = session.ask("Cores per ORCA call (pal)", default="1")
+    mem_text = session.ask("Memory per core in MB (mem)", default="1500")
+    blocks = session.ask(
+        "ORCA block string, optional (e.g. '%scf maxiter 300 end'; Enter = none)",
+        default="",
+    ).strip()
+    hessian_init = ""
+    rx_modes = ""
+    if job == "ts":
+        hessian_init = session.ask(
+            "Model Hessian (fischer/lindh/simple/swart/unit; Enter = fischer; 'calc' "
+            "is refused: the ORCA-6 Hessian parse stop makes it unusable)",
+            default="fischer",
+        ).strip()
+        rx_modes = session.ask(
+            "Optional rx_modes (YAML flow, e.g. [[[[DIHEDRAL, 2, 0, 1, 3], 1]]]; "
+            "Enter = none)",
+            default="",
+        ).strip()
+    max_cycles_text = session.ask(
+        "Cycle limit (Enter = the program's own default 150)", default=""
+    ).strip()
+    try:
+        atoms = _atoms_from_structure_source(source)
+        yaml_text = pysisyphus_recipe.input_yaml(
+            xyz_fn=f"{source.stem}.pysisyphus.xyz",
+            keywords=keywords,
+            charge=int(charge_text),
+            mult=int(mult_text),
+            job=job,
+            pal=int(pal_text),
+            mem=int(mem_text),
+            thresh=thresh,
+            blocks=blocks or None,
+            hessian_init=hessian_init or None,
+            rx_modes=rx_modes or None,
+            max_cycles=int(max_cycles_text) if max_cycles_text else None,
+        )
+    except (PysisyphusError, ParserError, OSError, ValueError) as exc:
+        session.say(f"pysisyphus input generation failed: {exc}")
+        return
+    xyz_path = source.with_name(f"{source.stem}.pysisyphus.xyz")
+    yaml_path = source.with_name(f"{source.stem}.pysisyphus.yaml")
+    xyz_path.write_text(
+        pysisyphus_recipe.structure_xyz(
+            atoms, comment=f"generated by fBlockKit (menu 32) from {source.name}"
+        ),
+        encoding="utf-8",
+    )
+    yaml_path.write_text(yaml_text, encoding="utf-8")
+    body = pysisyphus_recipe.render(
+        xyz_name=xyz_path.name,
+        yaml_name=yaml_path.name,
+        n_atoms=len(atoms),
+        job=job,
+        keywords=keywords,
+        charge=int(charge_text),
+        mult=int(mult_text),
+        pal=int(pal_text),
+        mem=int(mem_text),
+        thresh=thresh,
+        hessian_init=hessian_init or None,
+    )
+    session.say(body)
+    session.say(f"Written: {xyz_path}")
+    session.say(f"Written: {yaml_path}")
+    session.say("Next steps:")
+    for line in pysisyphus_recipe.run_guidance_lines():
+        session.say(f"  - {line}")
+    section = ReportSection(
+        title="pysisyphus input (B-layer generation)",
+        body=body + "\n\n" + "\n".join(f"- {line}" for line in pysisyphus_recipe.run_guidance_lines()),
+    )
+    report_lines = f"## {section.title}\n\n{section.body}\n"
+    refs = references_section(pysisyphus_recipe.evidence())
+    if refs is not None:
+        report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
+    md_path = source.with_name(f"{source.stem}.pysisyphus.fbk.md")
+    md_path.write_text(report_lines, encoding="utf-8")
+    session.say(f"Report written: {md_path}")
+
+
+def pysisyphus_report(session: Session) -> None:
+    """Menu 33: read a pysisyphus run back (cross-checks + boundary survey)."""
+    path_text = session.ask(
+        "pysisyphus run directory, or its console capture file (e.g. run.out)"
+    )
+    if not path_text:
+        session.say("Cancelled (no path given).")
+        return
+    try:
+        data = pysisyphus_analysis.read_run(path_text)
+    except (PysisyphusError, pysisyphus_analysis.PysisyphusRunError, OSError) as exc:
+        session.say(f"pysisyphus run read failed: {exc}")
+        return
+    body = pysisyphus_analysis.render(data)
+    session.say(body)
+    section = ReportSection(title="pysisyphus run report (B-layer reading)", body=body)
+    report_lines = f"## {section.title}\n\n{section.body}\n"
+    refs = references_section(pysisyphus_analysis.evidence())
+    if refs is not None:
+        report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
+    md_path = data.directory / f"{data.log_path.stem}.pysisyphus.fbk.md"
+    md_path.write_text(report_lines, encoding="utf-8")
+    session.say(f"Report written: {md_path}")

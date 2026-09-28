@@ -1,0 +1,16 @@
+!hf def2-svp engrad
+        !moread
+            %moinp "/data1/cjq12/pysis46/test04/qm_calcs/calculator_000.001.orca.gbw" 
+
+        %pal nprocs 2 end
+        %maxcore 1500
+
+        
+        
+
+        *xyz 0 1
+        o -0.00124947 -0.00881000 0.00000000
+h 0.94207994 0.01582925 -0.00000000
+h -0.28083047 0.89298075 -0.00000000
+        *
+        

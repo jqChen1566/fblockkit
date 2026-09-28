@@ -1420,6 +1420,71 @@ chain); a tracker across a series built on those is a registered candidate
 increment.  The state-averaged dipole in the property file is one x/y/z
 vector (`State -1`), not a per-root table.
 
+## 32 pysisyphus input (a structure + a method -> a PES-exploration YAML)
+
+**What it is for**: write the input of a pysisyphus job -- minimum
+optimisation or transition-state search -- that drives ORCA as its
+calculator.  pysisyphus (GPL-3.0) is an external PES-exploration program
+(RFO/GDIIS optimisers, growing-string / NEB / dimer routes); this menu covers
+the two jobs the rescue chains of this toolkit use, and nothing is linked in:
+the program stays external.
+
+**How**: menu 32 -> a structure source (an XYZ file, an ORCA input with
+inline coordinates, or an ORCA output whose final geometry is taken) ->
+keywords, charge, multiplicity, job (min or ts), threshold, pal/mem, an
+optional ORCA block string.  You get `<stem>.pysisyphus.xyz` (the structure),
+`<stem>.pysisyphus.yaml` (the input) and a report `<stem>.pysisyphus.fbk.md`;
+guidance covers the environment (`~/.pysisyphusrc` with `[orca5] cmd=...`),
+the scratch disk (`$TMPDIR`) and the command line (`pysis <file>`, keep the
+console).
+
+**How to read it**:
+
+- the keywords string is the `!` line of every ORCA call; the engine adds
+  `engrad` itself for gradients, so any method ORCA supports can be driven;
+- the TS job is written with a **model Hessian** (`hessian_init: fischer`);
+  `hessian_init: calc` and `do_hess` are **refused/not offered**, because
+  the quantum-Hessian route crashes with ORCA 6 (measured: ORCA 6 writes a
+  `$multiplicity` block into its `.hess` file and the interface's grammar
+  stops at it -- identical in pysisyphus 1.0.0 and on master).  Verify
+  frequencies outside pysisyphus: a plain ORCA `Freq` job on the closing
+  geometry (menu 30 is the toolkit's own route back from an imaginary mode);
+- the thresholds are pysisyphus's own (`gau_loose` ... `baker`); the dummy
+  `never` is not offered (it sets a billion cycles and disables the dump
+  files).
+
+## 33 pysisyphus run report (a run directory or console capture -> cross-checked record)
+
+**What it is for**: read a finished pysisyphus run (**pysis** writes no
+single result file; the record is the console plus a small set of artifacts).
+
+**How**: menu 33 -> the run directory (or the console capture itself, e.g.
+`pysis x.yaml > run.out`).  You get the run's own facts (program version,
+job kind, system, calculator, charge/multiplicity, thresholds, the cycle
+table), the outcome from the program's own marker (`Converged!` /
+`Number of cycles exceeded!`), the closing energy and forces, the artifacts
+found, and a report `<capture>.pysisyphus.fbk.md` next to the run.
+
+**How to read it**:
+
+- the outcome is the program's marker, never the force values: a run stopped
+  by its cycle limit can close with forces already below the thresholds and
+  is still "not converged" (measured on the stopping fixture);
+- the cross-checks tie the artifacts together: the trajectory has one frame
+  per cycle, the closing frame's energy equals its calculator call (ORCA's
+  own outputs under `qm_calcs/`, parsed by the ORCA parser of this toolkit),
+  the `Final summary` equals the run's last call -- which in a stopped run is
+  the **extra closing evaluation** after the last cycle -- and the closing
+  geometry file reproduces the closing state;
+- a crashed run is classified: the measured ORCA-6 Hessian parse stop is
+  recognised by its `$multiplicity` signature (with the `crashed_*` backup
+  searched for the offending `.hess`), together with the way forward; other
+  crashes point at the backup directory;
+- boundaries: `optimization.h5` holds the full history but is HDF5 and is not
+  read here (the text artifacts carry the same numbers), and
+  `qm_calcs/cur_out` dangles after the run (a symlink into the cleaned
+  scratch directory).
+
 ## Appendix A Command line
 
 ```text

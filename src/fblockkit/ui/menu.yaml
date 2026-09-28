@@ -99,6 +99,12 @@ items:
   - number: "31"
     title: "CASSCF state data (a property file -> per-state energies and transitions)"
     handler: state_data_report
+  - number: "32"
+    title: "pysisyphus input (a structure + a method -> a PES-exploration YAML)"
+    handler: pysisyphus_generate
+  - number: "33"
+    title: "pysisyphus run report (a run directory or console capture -> cross-checked record)"
+    handler: pysisyphus_report
   - number: "0"
     title: Quit
     handler: quit

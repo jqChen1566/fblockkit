@@ -1,0 +1,13 @@
+geom:
+ type: redund
+ fn: h2o.xyz
+calc:
+ type: orca5
+ keywords: hf def2-svp
+ charge: 0
+ mult: 1
+ pal: 2
+ mem: 1500
+opt:
+ thresh: gau
+ max_cycles: 3

@@ -147,6 +147,23 @@ def _prepare_work() -> None:
     shutil.copy(FIXTURES / "inputs" / "ch4_diss_prop.inp", work / "ch4_diss_prop.inp")
     # the menu-31 property-file fixture (N2 SA-CASSCF)
     shutil.copy(FIXTURES / "n2_sa.property.txt", work / "n2_sa.property.txt")
+    # the pysisyphus pair of menus 32/33 (a structure for the generator, and a
+    # real run laid out flat so menu 33 can read the directory directly)
+    pysisyphus = REPO / "fixtures" / "pysisyphus" / "h2o_opt"
+    shutil.copy(pysisyphus / "h2o.xyz", work / "h2o_start.xyz")
+    shutil.copy(pysisyphus / "h2o.xyz", work / "h2o_ts.xyz")
+    for name in (
+        "run_stdout.log",
+        "optimization.trj",
+        "final_geometry.xyz",
+        "RUN.yaml",
+        "optimization.h5",
+        "h2o_opt.yaml",
+    ):
+        shutil.copy(pysisyphus / name, work / name)
+    if (work / "qm_calcs").exists():
+        shutil.rmtree(work / "qm_calcs")
+    shutil.copytree(pysisyphus / "qm_calcs", work / "qm_calcs")
 
 
 @pytest.fixture(scope="module")

@@ -16,6 +16,8 @@ bottom of this file is the only thing the CLI imports:
   portrait, magnetic doublets, cross-structure mapping, WASP);
 - ``selection``: the active-space selection family (DM-AS batch/select, APC,
   ASS1ST, QICAS, AEGISS, TNASS);
+- ``external``: the other-program pair (write a pysisyphus run input, read the
+  run back);
 - ``common``: the report-file plumbing and the shared CASSCF-reference reader.
 """
 
@@ -31,6 +33,10 @@ from .core import (
 from .crystal import (
     crystal_field_fit,
     point_charge_estimate,
+)
+from .external import (
+    pysisyphus_generate,
+    pysisyphus_report,
 )
 from .inputs import (
     basis_query,
@@ -91,6 +97,8 @@ HANDLERS = {
     "wasp_guess": wasp_guess,
     "perturb_batch": perturb_batch,
     "state_data_report": state_data_report,
+    "pysisyphus_generate": pysisyphus_generate,
+    "pysisyphus_report": pysisyphus_report,
     "dm_batch": dm_batch_generate,
     "dm_select": dm_select,
     "apc_ranking": apc_ranking,

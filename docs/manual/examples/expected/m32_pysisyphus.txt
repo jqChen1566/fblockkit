@@ -1,0 +1,214 @@
+fBlockKit -- the f-block calculation toolkit (input generation + characterisation analysis; it runs no calculations)
+
+Available functions:
+   1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)
+   2  Coordination geometry and symmetry hints (read an XYZ structure)
+   3  Generate an ORCA input (system profile -> input file + run guidance)
+   4  Basis-set / ECP recommendation (element/valence/targets)
+   5  Search the tool index (keywords)
+   6  Tool onboarding notes (by index id)
+   7  Cross-level solution consistency (records JSON input)
+   8  Save this session as a script
+   9  SCF rescue (triage + corrected input files)
+  10  Crystal-field fit (levels + coefficients JSON)
+  11  Point-charge crystal-field estimate (read an XYZ structure + charges)
+  12  Exact active-space analysis (CASSCF output + FCIDUMP: four-state entropy, environment spin entropy, atomic-term check; optional orca_2json exports)
+  13  Orbital-space comparison (two orca_2json exports: subspace fraction and space-change SVD)
+  14  AVAS target projection (an orbital export + a target AO shell -> active-space size)
+  15  Orbital portrait (an export -> occupation, bonding label, shell composition, extent)
+  16  Magnetic-doublet criterion (a Kramers-doublet table JSON -> g_T * theta_3 and the QTM line)
+  17  Cross-structure orbital mapping (a manifest of exports -> consistent active spaces along a path)
+  18  WASP guess transfer (neighbour orbitals -> an interpolated, gbw-ready mkl for a geometry series)
+  19  Dipole-moment candidate batch (a structure -> prep + CASCI inputs + manifest for the DM-AS scan)
+  20  Dipole-moment selection (the batch outputs + a reference -> the active space by DM-AS)
+  21  APC orbital ranking (an export with the Fock exchange block -> ranked active space at a CSF cap)
+  22  ASS1ST round-1 input (a structure + an initial active space -> a CASSCF+FIC-NEVPT2 round)
+  23  ASS1ST selection round (a NEVPT2-density export -> quasi-NOON tables + the next round's input)
+  24  QICAS active-space optimization (an FCIDUMP -> F_QI-minimized orbitals and the CASCI check)
+  25  AEGISS selection (entropy screening + an AO projection -> a compact active space)
+  26  TNASS subset selection (an FCIDUMP -> the S2-maximizing orbital subset)
+  27  DeltaSCF / MOM excited-state SCF input (a structure + an excitation spec -> an input)
+  28  RAS / ORMAS model-space input (a structure + a partition mask -> an ORCA input)
+  29  Perturbed multistart batch (a converged reference mkl + its input -> restart inputs)
+  30  Imaginary-mode displacement (a frequency output + its input -> restart inputs)
+  31  CASSCF state data (a property file -> per-state energies and transitions)
+  32  pysisyphus input (a structure + a method -> a PES-exploration YAML)
+  33  pysisyphus run report (a run directory or console capture -> cross-checked record)
+   0  Quit
+Choose a number (Enter = leave empty)> 32
+Structure source path (XYZ / ORCA input / ORCA output) (Enter = leave empty)> work/h2o_start.xyz
+ORCA keywords for every call (any simple line; Enter = HF def2-SVP) (Enter = leave empty)> 
+Charge (Enter = 0)> 
+Multiplicity (2S+1) (Enter = 1)> 
+Job: min (minimum optimisation) or ts (transition-state search) (Enter = min) (Enter = min)> 
+Convergence threshold (gau_loose/gau/gau_tight/gau_vtight/baker) (Enter = gau)> 
+Cores per ORCA call (pal) (Enter = 1)> 
+Memory per core in MB (mem) (Enter = 1500)> 
+ORCA block string, optional (e.g. '%scf maxiter 300 end'; Enter = none) (Enter = leave empty)> 
+Cycle limit (Enter = the program's own default 150) (Enter = leave empty)> 
+pysisyphus input for 3 atom(s)
+  job: minimum optimisation (opt/rfo)
+  calculator: orca5, keywords 'HF def2-SVP', charge 0, multiplicity 1, pal 1, mem 1500 MB per core
+  threshold: gau
+  written: h2o_start.pysisyphus.xyz (structure, XYZ) and h2o_start.pysisyphus.yaml (the input)
+Written: work\h2o_start.pysisyphus.xyz
+Written: work\h2o_start.pysisyphus.yaml
+Next steps:
+  - run it on a machine with pysisyphus installed and the engine configured: the program reads the engine command from ~/.pysisyphusrc (an INI file: [orca5] cmd=/path/to/orca), or from $PATH when the section is absent
+  - give pysisyphus a real scratch disk before starting (it stages every calculator call in a temporary directory under $TMPDIR and copies the results back into qm_calcs/ at the end of each call)
+  - keep the console:  pysis <file> > run.out  -- that capture is the run's record (the cycle table, the outcome marker, the closing summary), and it is what menu 33 reads back
+  - frequency verification stays outside pysisyphus in this pairing: the quantum-Hessian route (hessian_init: calc / do_hess) crashes on ORCA 6's .hess format (measured), so run a plain ORCA Freq job on the closing geometry -- menu 30 is the toolkit's own route back from an imaginary mode
+  - bring the whole run directory back to menu 33: it cross-checks the console, the trajectory, the closing geometry and the per-cycle ORCA outputs against each other
+Report written: work\h2o_start.pysisyphus.fbk.md
+
+Available functions:
+   1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)
+   2  Coordination geometry and symmetry hints (read an XYZ structure)
+   3  Generate an ORCA input (system profile -> input file + run guidance)
+   4  Basis-set / ECP recommendation (element/valence/targets)
+   5  Search the tool index (keywords)
+   6  Tool onboarding notes (by index id)
+   7  Cross-level solution consistency (records JSON input)
+   8  Save this session as a script
+   9  SCF rescue (triage + corrected input files)
+  10  Crystal-field fit (levels + coefficients JSON)
+  11  Point-charge crystal-field estimate (read an XYZ structure + charges)
+  12  Exact active-space analysis (CASSCF output + FCIDUMP: four-state entropy, environment spin entropy, atomic-term check; optional orca_2json exports)
+  13  Orbital-space comparison (two orca_2json exports: subspace fraction and space-change SVD)
+  14  AVAS target projection (an orbital export + a target AO shell -> active-space size)
+  15  Orbital portrait (an export -> occupation, bonding label, shell composition, extent)
+  16  Magnetic-doublet criterion (a Kramers-doublet table JSON -> g_T * theta_3 and the QTM line)
+  17  Cross-structure orbital mapping (a manifest of exports -> consistent active spaces along a path)
+  18  WASP guess transfer (neighbour orbitals -> an interpolated, gbw-ready mkl for a geometry series)
+  19  Dipole-moment candidate batch (a structure -> prep + CASCI inputs + manifest for the DM-AS scan)
+  20  Dipole-moment selection (the batch outputs + a reference -> the active space by DM-AS)
+  21  APC orbital ranking (an export with the Fock exchange block -> ranked active space at a CSF cap)
+  22  ASS1ST round-1 input (a structure + an initial active space -> a CASSCF+FIC-NEVPT2 round)
+  23  ASS1ST selection round (a NEVPT2-density export -> quasi-NOON tables + the next round's input)
+  24  QICAS active-space optimization (an FCIDUMP -> F_QI-minimized orbitals and the CASCI check)
+  25  AEGISS selection (entropy screening + an AO projection -> a compact active space)
+  26  TNASS subset selection (an FCIDUMP -> the S2-maximizing orbital subset)
+  27  DeltaSCF / MOM excited-state SCF input (a structure + an excitation spec -> an input)
+  28  RAS / ORMAS model-space input (a structure + a partition mask -> an ORCA input)
+  29  Perturbed multistart batch (a converged reference mkl + its input -> restart inputs)
+  30  Imaginary-mode displacement (a frequency output + its input -> restart inputs)
+  31  CASSCF state data (a property file -> per-state energies and transitions)
+  32  pysisyphus input (a structure + a method -> a PES-exploration YAML)
+  33  pysisyphus run report (a run directory or console capture -> cross-checked record)
+   0  Quit
+Choose a number (Enter = leave empty)> 32
+Structure source path (XYZ / ORCA input / ORCA output) (Enter = leave empty)> work/h2o_ts.xyz
+ORCA keywords for every call (any simple line; Enter = HF def2-SVP) (Enter = leave empty)> HF 3-21G
+Charge (Enter = 0)> 
+Multiplicity (2S+1) (Enter = 1)> 
+Job: min (minimum optimisation) or ts (transition-state search) (Enter = min) (Enter = min)> ts
+Convergence threshold (gau_loose/gau/gau_tight/gau_vtight/baker) (Enter = baker)> baker
+Cores per ORCA call (pal) (Enter = 1)> 
+Memory per core in MB (mem) (Enter = 1500)> 
+ORCA block string, optional (e.g. '%scf maxiter 300 end'; Enter = none) (Enter = leave empty)> 
+Model Hessian (fischer/lindh/simple/swart/unit; Enter = fischer; 'calc' is refused: the ORCA-6 Hessian parse stop makes it unusable) (Enter = fischer)> fischer
+Optional rx_modes (YAML flow, e.g. [[[[DIHEDRAL, 2, 0, 1, 3], 1]]]; Enter = none) (Enter = leave empty)> 
+Cycle limit (Enter = the program's own default 150) (Enter = leave empty)> 
+pysisyphus input for 3 atom(s)
+  job: transition-state search (tsopt/rsprfo, model Hessian)
+  calculator: orca5, keywords 'HF 3-21G', charge 0, multiplicity 1, pal 1, mem 1500 MB per core
+  threshold: baker
+  hessian: model (fischer)
+  written: h2o_ts.pysisyphus.xyz (structure, XYZ) and h2o_ts.pysisyphus.yaml (the input)
+Written: work\h2o_ts.pysisyphus.xyz
+Written: work\h2o_ts.pysisyphus.yaml
+Next steps:
+  - run it on a machine with pysisyphus installed and the engine configured: the program reads the engine command from ~/.pysisyphusrc (an INI file: [orca5] cmd=/path/to/orca), or from $PATH when the section is absent
+  - give pysisyphus a real scratch disk before starting (it stages every calculator call in a temporary directory under $TMPDIR and copies the results back into qm_calcs/ at the end of each call)
+  - keep the console:  pysis <file> > run.out  -- that capture is the run's record (the cycle table, the outcome marker, the closing summary), and it is what menu 33 reads back
+  - frequency verification stays outside pysisyphus in this pairing: the quantum-Hessian route (hessian_init: calc / do_hess) crashes on ORCA 6's .hess format (measured), so run a plain ORCA Freq job on the closing geometry -- menu 30 is the toolkit's own route back from an imaginary mode
+  - bring the whole run directory back to menu 33: it cross-checks the console, the trajectory, the closing geometry and the per-cycle ORCA outputs against each other
+Report written: work\h2o_ts.pysisyphus.fbk.md
+
+Available functions:
+   1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)
+   2  Coordination geometry and symmetry hints (read an XYZ structure)
+   3  Generate an ORCA input (system profile -> input file + run guidance)
+   4  Basis-set / ECP recommendation (element/valence/targets)
+   5  Search the tool index (keywords)
+   6  Tool onboarding notes (by index id)
+   7  Cross-level solution consistency (records JSON input)
+   8  Save this session as a script
+   9  SCF rescue (triage + corrected input files)
+  10  Crystal-field fit (levels + coefficients JSON)
+  11  Point-charge crystal-field estimate (read an XYZ structure + charges)
+  12  Exact active-space analysis (CASSCF output + FCIDUMP: four-state entropy, environment spin entropy, atomic-term check; optional orca_2json exports)
+  13  Orbital-space comparison (two orca_2json exports: subspace fraction and space-change SVD)
+  14  AVAS target projection (an orbital export + a target AO shell -> active-space size)
+  15  Orbital portrait (an export -> occupation, bonding label, shell composition, extent)
+  16  Magnetic-doublet criterion (a Kramers-doublet table JSON -> g_T * theta_3 and the QTM line)
+  17  Cross-structure orbital mapping (a manifest of exports -> consistent active spaces along a path)
+  18  WASP guess transfer (neighbour orbitals -> an interpolated, gbw-ready mkl for a geometry series)
+  19  Dipole-moment candidate batch (a structure -> prep + CASCI inputs + manifest for the DM-AS scan)
+  20  Dipole-moment selection (the batch outputs + a reference -> the active space by DM-AS)
+  21  APC orbital ranking (an export with the Fock exchange block -> ranked active space at a CSF cap)
+  22  ASS1ST round-1 input (a structure + an initial active space -> a CASSCF+FIC-NEVPT2 round)
+  23  ASS1ST selection round (a NEVPT2-density export -> quasi-NOON tables + the next round's input)
+  24  QICAS active-space optimization (an FCIDUMP -> F_QI-minimized orbitals and the CASCI check)
+  25  AEGISS selection (entropy screening + an AO projection -> a compact active space)
+  26  TNASS subset selection (an FCIDUMP -> the S2-maximizing orbital subset)
+  27  DeltaSCF / MOM excited-state SCF input (a structure + an excitation spec -> an input)
+  28  RAS / ORMAS model-space input (a structure + a partition mask -> an ORCA input)
+  29  Perturbed multistart batch (a converged reference mkl + its input -> restart inputs)
+  30  Imaginary-mode displacement (a frequency output + its input -> restart inputs)
+  31  CASSCF state data (a property file -> per-state energies and transitions)
+  32  pysisyphus input (a structure + a method -> a PES-exploration YAML)
+  33  pysisyphus run report (a run directory or console capture -> cross-checked record)
+   0  Quit
+Choose a number (Enter = leave empty)> 32
+Structure source path (XYZ / ORCA input / ORCA output) (Enter = leave empty)> work/h2o_ts.xyz
+ORCA keywords for every call (any simple line; Enter = HF def2-SVP) (Enter = leave empty)> HF 3-21G
+Charge (Enter = 0)> 
+Multiplicity (2S+1) (Enter = 1)> 
+Job: min (minimum optimisation) or ts (transition-state search) (Enter = min) (Enter = min)> ts
+Convergence threshold (gau_loose/gau/gau_tight/gau_vtight/baker) (Enter = baker)> baker
+Cores per ORCA call (pal) (Enter = 1)> 
+Memory per core in MB (mem) (Enter = 1500)> 
+ORCA block string, optional (e.g. '%scf maxiter 300 end'; Enter = none) (Enter = leave empty)> 
+Model Hessian (fischer/lindh/simple/swart/unit; Enter = fischer; 'calc' is refused: the ORCA-6 Hessian parse stop makes it unusable) (Enter = fischer)> calc
+Optional rx_modes (YAML flow, e.g. [[[[DIHEDRAL, 2, 0, 1, 3], 1]]]; Enter = none) (Enter = leave empty)> 
+Cycle limit (Enter = the program's own default 150) (Enter = leave empty)> 
+pysisyphus input generation failed: hessian_init 'calc' is refused: the quantum Hessian route crashes with ORCA 6 (its .hess '$multiplicity' block is not in this interface's grammar -- measured on release 1.0.0 and master), and 'calc' is the tsopt default, so it must be named explicitly. Next step: keep a model Hessian (fischer/lindh/simple/swart/unit) and verify the frequencies with a plain ORCA Freq run.
+
+Available functions:
+   1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)
+   2  Coordination geometry and symmetry hints (read an XYZ structure)
+   3  Generate an ORCA input (system profile -> input file + run guidance)
+   4  Basis-set / ECP recommendation (element/valence/targets)
+   5  Search the tool index (keywords)
+   6  Tool onboarding notes (by index id)
+   7  Cross-level solution consistency (records JSON input)
+   8  Save this session as a script
+   9  SCF rescue (triage + corrected input files)
+  10  Crystal-field fit (levels + coefficients JSON)
+  11  Point-charge crystal-field estimate (read an XYZ structure + charges)
+  12  Exact active-space analysis (CASSCF output + FCIDUMP: four-state entropy, environment spin entropy, atomic-term check; optional orca_2json exports)
+  13  Orbital-space comparison (two orca_2json exports: subspace fraction and space-change SVD)
+  14  AVAS target projection (an orbital export + a target AO shell -> active-space size)
+  15  Orbital portrait (an export -> occupation, bonding label, shell composition, extent)
+  16  Magnetic-doublet criterion (a Kramers-doublet table JSON -> g_T * theta_3 and the QTM line)
+  17  Cross-structure orbital mapping (a manifest of exports -> consistent active spaces along a path)
+  18  WASP guess transfer (neighbour orbitals -> an interpolated, gbw-ready mkl for a geometry series)
+  19  Dipole-moment candidate batch (a structure -> prep + CASCI inputs + manifest for the DM-AS scan)
+  20  Dipole-moment selection (the batch outputs + a reference -> the active space by DM-AS)
+  21  APC orbital ranking (an export with the Fock exchange block -> ranked active space at a CSF cap)
+  22  ASS1ST round-1 input (a structure + an initial active space -> a CASSCF+FIC-NEVPT2 round)
+  23  ASS1ST selection round (a NEVPT2-density export -> quasi-NOON tables + the next round's input)
+  24  QICAS active-space optimization (an FCIDUMP -> F_QI-minimized orbitals and the CASCI check)
+  25  AEGISS selection (entropy screening + an AO projection -> a compact active space)
+  26  TNASS subset selection (an FCIDUMP -> the S2-maximizing orbital subset)
+  27  DeltaSCF / MOM excited-state SCF input (a structure + an excitation spec -> an input)
+  28  RAS / ORMAS model-space input (a structure + a partition mask -> an ORCA input)
+  29  Perturbed multistart batch (a converged reference mkl + its input -> restart inputs)
+  30  Imaginary-mode displacement (a frequency output + its input -> restart inputs)
+  31  CASSCF state data (a property file -> per-state energies and transitions)
+  32  pysisyphus input (a structure + a method -> a PES-exploration YAML)
+  33  pysisyphus run report (a run directory or console capture -> cross-checked record)
+   0  Quit
+Choose a number (Enter = leave empty)> 
+(end of input, exiting.)

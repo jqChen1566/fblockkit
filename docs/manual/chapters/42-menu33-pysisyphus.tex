@@ -1,0 +1,72 @@
+\chapter{pysisyphus run report (menu 33)}
+\label{ch:menu33}
+\menulabel{33}
+
+\section{Purpose}
+
+pysisyphus writes no single result file: the record of a run is its console
+(the cycle table, the outcome marker, the closing summary) plus a small set of
+artifacts next to it -- the trajectory, the closing geometry, the normalised
+run record \file{RUN.yaml} and the per-call engine outputs under
+\file{qm\_calcs/}.  This menu reads those back and cross-checks them against
+each other, so that a run can be brought into the toolkit's chains (the
+closing geometry goes on to any structure-reading menu; the per-call ORCA
+outputs are ordinary ORCA outputs for the menu-1 check-up).
+
+\section{What you need}
+
+The run directory, or the console capture alone (e.g.\ \code{pysis x.yaml >
+run.out}).  Given a directory, the menu finds the capture itself (the file
+carrying the \code{\# RUNNING ... \#} banner), then picks up the trajectory,
+\file{RUN.yaml}, the closing geometry and the calculator outputs when they are
+present.
+
+\section{Walkthrough}
+
+\lstinputlisting[style=fbkcode, firstline=39, lastline=69,
+  title={The menu-33 example (the H$_2$O optimisation: the run's own facts,
+  the cycle table, the outcome, the closing state and the five cross-checks)}]
+  {examples/expected/m33_pysisyphus.txt}
+
+\section{How to read it}
+
+\begin{itemize}
+  \item the outcome is the program's own marker -- \code{Converged!} or
+    \code{Number of cycles exceeded!}.  It is deliberately not derived from
+    the force values: a run stopped by its cycle limit can close with forces
+    already below the thresholds and is still not converged (measured on the
+    stopping fixture);
+  \item a stopped run evaluates \emph{one extra geometry} (the closing state)
+    after its last cycle: the console has one cycle fewer than there are
+    calculator calls, and the closing geometry file belongs to that extra
+    evaluation, not to any trajectory frame (the menu says so instead of
+    pretending a match);
+  \item the cross-checks tie the artifacts together: the trajectory has one
+    frame per cycle row; the closing frame's energy equals the calculator call
+    that produced it; the \code{Final summary} equals the run's last call; and
+    the closing geometry file reproduces the closing state.  The calculator
+    calls are the ORCA outputs under \file{qm\_calcs/}, read by this toolkit's
+    ORCA parser -- the run's energies are re-derived from ORCA's files rather
+    than trusted to the console text.
+\end{itemize}
+
+\section{Crashed runs and the boundary survey (Wave 4.6)}
+
+\begin{readbox}
+\begin{itemize}
+  \item a crashed run is classified: the measured ORCA-6 Hessian parse stop is
+    recognised by its \code{\$multiplicity} signature (the \file{crashed\_*}
+    backup directory is searched for the offending \file{.hess}), reported
+    together with the way forward (a model Hessian; frequency checks outside
+    pysisyphus); other crashes point at the backup directory copied next to
+    the capture;
+  \item when the crash followed a converged optimisation, the report says so:
+    the geometry part finished, the post-processing did not;
+  \item \file{optimization.h5} carries the full per-cycle history but is
+    HDF5, which is not a dependency of this toolkit; the reader takes the same
+    numbers from the text artifacts and names the file as unread;
+  \item \file{qm\_calcs/cur\_out} is a symlink into the scratch directory,
+    which pysisyphus cleans after every call -- it dangles after the run; the
+    per-call copies (\file{calculator\_*.orca.*}) are the durable ones.
+\end{itemize}
+\end{readbox}

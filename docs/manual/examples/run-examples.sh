@@ -67,6 +67,16 @@ cp "$REPO/fixtures/orca/ch4_diss_prop.mkl" work/
 cp "$REPO/fixtures/orca/inputs/ch4_diss_prop.inp" work/
 # the menu-31 property-file fixture (N2 SA-CASSCF, 3 roots)
 cp "$REPO/fixtures/orca/n2_sa.property.txt" work/
+# the pysisyphus pair of menus 32/33: a structure for the input generator, and a
+# real run laid out flat (capture, trajectory, closing geometry, record, h5 and
+# the per-call ORCA outputs) so that menu 33 can read the directory directly
+cp "$REPO/fixtures/pysisyphus/h2o_opt/h2o.xyz" work/h2o_start.xyz
+cp "$REPO/fixtures/pysisyphus/h2o_opt/h2o.xyz" work/h2o_ts.xyz
+for name in run_stdout.log optimization.trj final_geometry.xyz RUN.yaml \
+            optimization.h5 h2o_opt.yaml; do
+  cp "$REPO/fixtures/pysisyphus/h2o_opt/$name" work/$name
+done
+cp -r "$REPO/fixtures/pysisyphus/h2o_opt/qm_calcs" work/qm_calcs
 
 for script in scripts/*.txt; do
   name=$(basename "$script" .txt)
@@ -88,6 +98,7 @@ cp work/*.fbk.json expected/products/
 cp work/*.fbk.inp expected/products/
 cp work/*.fbk.mkl expected/products/
 cp work/*.fix_*.inp expected/products/
+cp work/*.pysisyphus.xyz work/*.pysisyphus.yaml expected/products/
 cp -r work/*.fbk.dm expected/products/
 
 echo "done; products in expected/products/"

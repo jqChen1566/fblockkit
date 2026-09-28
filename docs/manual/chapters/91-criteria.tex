@@ -406,6 +406,39 @@ Barrier reference point & always state it & The same barrier data read
 \end{tabularx}
 \end{center}
 
+\section{The pysisyphus pairing (B layer)}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{2.0cm} X >{\raggedright\arraybackslash}p{3.2cm}@{}}
+\toprule
+Quantity & Value & Meaning / limits & Source \\
+\midrule
+Run outcome & the program's own marker & \code{Converged!} or
+  \code{Number of cycles exceeded!} is the outcome --- never the force values:
+  a run stopped by its cycle limit can close with forces already below the
+  thresholds and is still not converged & \textsf{[Measured]}
+  \nolinkurl{fixtures/pysisyphus/h2o_stop3} \\
+Closing evaluation & one extra geometry in a stopped run & A stopped run
+  evaluates the closing state after its last cycle: cycle rows $=$ calculator
+  calls $- 1$, and the closing geometry belongs to that extra evaluation (no
+  trajectory frame).  The reader says so instead of matching a frame &
+  \textsf{[Measured]} same fixture (3 rows against 4 calls) \\
+Quantum-Hessian route & unavailable with ORCA 6.1.1 & ORCA 6 writes a
+  \code{\$multiplicity} block into its \file{.hess}; the interface's grammar
+  (identical in pysisyphus 1.0.0 and on master) stops there
+  (\code{ParseException}) and the post-processing raises.  Use a model Hessian
+  (\code{hessian\_init: fischer}); verify frequencies outside pysisyphus &
+  \textsf{[Measured]} \nolinkurl{fixtures/pysisyphus/hess_crash} \\
+Cross-check set & four artifact ties & Frames vs cycle rows; closing frame vs
+  its calculator call (the second-to-last call in a stopped run); closing
+  state vs the last call; closing geometry vs the closing state; coordinates
+  vs the closing frame (converged runs only).  The calculator calls are ORCA
+  outputs read by this toolkit's ORCA parser & \textsf{[Measured]}
+  \nolinkurl{fixtures/pysisyphus/} (all four runs) \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
 \section{Crystal fields}
 
 \begin{center}

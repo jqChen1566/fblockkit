@@ -97,6 +97,14 @@ def main() -> int:
         shutil.copy(FIXTURES / "inputs" / "fhh_reopt.inp", inputs / "fhh_reopt.inp")
         # the menu-31 property-file fixture (N2 SA-CASSCF, three roots)
         shutil.copy(FIXTURES / "n2_sa.property.txt", inputs / "n2_sa.property.txt")
+        # the pysisyphus pair of menus 32/33: structures for the generator, and
+        # four real runs -- each in its own subdirectory, so each directory the
+        # reader is pointed at holds exactly one console capture
+        pysisyphus = REPO / "fixtures" / "pysisyphus"
+        shutil.copy(pysisyphus / "h2o_opt" / "h2o.xyz", inputs / "h2o_start.xyz")
+        shutil.copy(pysisyphus / "h2o_opt" / "h2o.xyz", inputs / "h2o_ts.xyz")
+        for run in ("h2o_opt", "butadiene_ts", "h2o_stop3", "hess_crash"):
+            shutil.copytree(pysisyphus / run, inputs / f"pysis_{run}")
         # the exact-entropy chain (menu 12): the converged CASSCF output, the
         # FCIDUMP it dumped, and the two orca_2json exports of the gbw
         shutil.copy(FIXTURES / "n2_fcidump_step_a.out", inputs / "n2_fcidump_step_a.out")
@@ -187,6 +195,13 @@ def main() -> int:
                     "29", "work/ch4_diss_prop.mkl", "work/ch4_diss_prop.inp", "3", "20260927", "10", "15",
                     "30", "work/fhh_optts_freq.out", "work/fhh_reopt.inp", "sum", "0.1",
                     "31", "work/n2_sa.property.txt",
+                    "32", "work/h2o_start.xyz", "", "", "", "", "", "", "", "", "",
+                    "32", "work/h2o_ts.xyz", "HF 3-21G", "", "", "ts", "baker", "",
+                    "", "", "fischer", "", "",
+                    "32", "work/h2o_ts.xyz", "HF 3-21G", "", "", "ts", "baker", "",
+                    "", "", "calc", "", "",
+                    "33", "work/pysis_h2o_opt",
+                    "33", "work/pysis_hess_crash",
                     "8", "work/saved.txt",
                     "0",
                 ]
@@ -514,6 +529,47 @@ def main() -> int:
                 and "10.5689" in states_report
                 and "not persistable" in states_report,
                 "menu 31 reports the per-state table and the tracking boundary",
+            )
+
+            pysis_yaml = read("h2o_start.pysisyphus.yaml")
+            pysis_xyz = read("h2o_start.pysisyphus.xyz")
+            check(
+                "type: orca5" in pysis_yaml
+                and "keywords: HF def2-SVP" in pysis_yaml
+                and "opt:" in pysis_yaml
+                and "fn: h2o_start.pysisyphus.xyz" in pysis_yaml
+                and pysis_xyz.splitlines()[0] == "3"
+                and "menu 32" in pysis_xyz,
+                "menu 32 wrote the minimum-optimisation YAML and its structure",
+            )
+            pysis_ts_yaml = read("h2o_ts.pysisyphus.yaml")
+            check(
+                "tsopt:" in pysis_ts_yaml
+                and "type: rsprfo" in pysis_ts_yaml
+                and "hessian_init: fischer" in pysis_ts_yaml
+                and "do_hess: false" in pysis_ts_yaml,
+                "menu 32 wrote the TS YAML with a model Hessian",
+            )
+            check(
+                "hessian_init 'calc' is refused" in out,
+                "menu 32 refuses the quantum-Hessian route with the measured reason",
+            )
+            pysis_report = read("pysis_h2o_opt/run_stdout.pysisyphus.fbk.md")
+            check(
+                "converged (the program's own marker)" in pysis_report
+                and "trajectory (4 frames)" in pysis_report
+                and "trajectory length vs cycle count: ok" in pysis_report
+                and "closing state (final summary) vs the last calculator call: ok"
+                in pysis_report
+                and "-75.96133849" in pysis_report,
+                "menu 33 read the converged run with its cross-checks",
+            )
+            crash_report = read("pysis_hess_crash/crash_stdout.pysisyphus.fbk.md")
+            check(
+                "$multiplicity" in crash_report
+                and "signature is confirmed" in crash_report
+                and "hessian_init: fischer" in crash_report,
+                "menu 33 classified the ORCA-6 Hessian crash and named the way forward",
             )
             check(
                 "is oscillating" in out and "SCF NOT CONVERGED AFTER 783" not in out,

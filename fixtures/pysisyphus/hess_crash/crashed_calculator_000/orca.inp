@@ -1,0 +1,16 @@
+!hf def2-svp freq
+        !moread
+            %moinp "/data1/cjq12/pysis46/test02/qm_calcs/calculator_000.003.orca.gbw" 
+
+        %pal nprocs 2 end
+        %maxcore 1500
+
+        
+        
+
+        *xyz 0 1
+        o -0.00316071 -0.01122882 0.00000000
+h 0.94128921 0.01835878 -0.00000000
+h -0.27812850 0.89287004 -0.00000000
+        *
+        

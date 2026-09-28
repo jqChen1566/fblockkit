@@ -1,0 +1,39 @@
+afir: null
+assert: null
+barrier: null
+calc:
+  charge: 0
+  keywords: hf def2-svp
+  mem: 1500
+  mult: 1
+  pal: 2
+  type: orca5
+cos: null
+endopt: null
+geom:
+  coord_kwargs: {}
+  fn: h2o.xyz
+  type: redund
+glob: null
+hindered_rotor: null
+interpol: null
+irc: null
+md: null
+mdp: null
+opt:
+  T: 298.15
+  do_hess: false
+  dump: true
+  max_cycles: 150
+  overachieve_factor: 5
+  p: 101325
+  thresh: gau
+  type: rfo
+perf: null
+precontr: null
+preopt: null
+scan: null
+shake: null
+stocastic: null
+tsopt: null
+version: 1.0.0

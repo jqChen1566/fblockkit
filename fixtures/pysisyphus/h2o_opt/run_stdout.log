@@ -1,0 +1,83 @@
+Read pysisyphus configuration from '/data1/cjq12/pysis46/test01/pysisyphusrc'
+                           d8b                            888
+                           Y8P                            888
+                                                          888
+88888b.  888  888 .d8888b  888 .d8888b  888  888 88888b.  88888b.  888  888 .d8888b
+888 "88b 888  888 88K      888 88K      888  888 888 "88b 888 "88b 888  888 88K
+888  888 888  888 "Y8888b. 888 "Y8888b. 888  888 888  888 888  888 888  888 "Y8888b.
+888 d88P Y88b 888      X88 888      X88 Y88b 888 888 d88P 888  888 Y88b 888      X88
+88888P"   "Y88888  88888P' 888  88888P'  "Y88888 88888P"  888  888  "Y88888  88888P'
+888           888                            888 888
+888      Y8b d88P                       Y8b d88P 888
+888       "Y88P"                         "Y88P"  888                            
+
+Version 1.0.0 (Python 3.13.9, NumPy 2.3.5, SciPy 1.16.3)
+Executed at Mon Sep 28 11:41:22 2026 on 'localhost.localdomain'
+Platform: Linux-5.14.0-687.17.1.el9_8.x86_64-x86_64-with-glibc2.34
+Interpreter: /data1/cjq12/pysis_venv/bin/python
+Current working directory: /data1/cjq12/pysis46/test01
+
+If pysisyphus benefitted your research please cite:
+
+	https://doi.org/10.1002/qua.26390
+
+Good luck!
+
+{'calc': {'charge': 0,
+          'keywords': 'hf def2-svp',
+          'mem': 1500,
+          'mult': 1,
+          'pal': 2,
+          'type': 'orca5'},
+ 'geom': {'coord_kwargs': {}, 'fn': 'h2o.xyz', 'type': 'redund'},
+ 'opt': {'T': 298.15,
+         'do_hess': False,
+         'dump': True,
+         'max_cycles': 150,
+         'overachieve_factor': 5,
+         'p': 101325,
+         'thresh': 'gau',
+         'type': 'rfo'}}
+
+Read 1 geometry.
+Failed to load 'cmd' from [jmol] in ~/.pysisyphusrc and default cmd='jmol' was not found in $PATH.
+                            ########################
+                            # RUNNING OPTIMIZATION #
+                            ########################
+
+     Input geometry: Geometry(H₂O, 3 atoms)
+  Coordinate system: redund
+  Coordinate number: 3
+         Calculator: ORCA(calculator_000)
+             Charge: 0
+       Multiplicity: 1
+          Optimizer: rfo
+
+
+If not specified otherwise, all quantities are given in au.
+
+Convergence thresholds, (overachieved when):
+	max(|force|) <= 0.000450, (0.000090) E_h a_0⁻¹ (rad⁻¹)
+	  rms(force) <= 0.000300, (0.000060) E_h a_0⁻¹ (rad⁻¹)
+	 max(|step|) <= 0.001800 a_0 (rad)
+	   rms(step) <= 0.001200 a_0 (rad)
+	'Superscript *' indicates convergence
+
+Spent 0.0 s preparing the first cycle.
+               cycle     Δ(energy)  max(|force|)    rms(force)   max(|step|)     rms(step)  s/cycle
+        --------------------------------------------------------------------------------------------
+                   0           nan*     0.018610      0.012830      0.035705      0.028671    5.250 
+                   1     -0.000535*     0.003988      0.003372      0.014404      0.008848    4.663 
+                   2     -0.000056*     0.001703      0.001289      0.010590      0.006336    5.864 
+                   3     -0.000011*     0.000060*     0.000042*     0.000167*     0.000117*   5.105 
+        Converged!
+
+Final summary:
+            	max(forces, internal): 0.000060 hartree/(bohr,rad)
+            	rms(forces, internal): 0.000042 hartree/(bohr,rad)
+        	max(forces,cartesian): 0.000060 hartree/bohr
+        	rms(forces,cartesian): 0.000034 hartree/bohr
+        	energy: -75.96133849 hartree
+        Wrote final, hopefully optimized, geometry to 'final_geometry.xyz'
+
+pysisyphus run took 0:00:21 h.
