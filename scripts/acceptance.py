@@ -119,6 +119,16 @@ def main() -> int:
         pnmr = REPO / "fixtures" / "pnmr" / "co_plus"
         for name in ("co_plus.xyz", "co_plus_qdpt.out", "co_plus_qdpt_g.yaml"):
             shutil.copy(pnmr / name, inputs / name)
+        # the menu-36 relaxation pair (the CO+ KD SINGLE_ANISO output and the
+        # single-mode Orca_Magrelax run of the same system)
+        shutil.copy(
+            REPO / "fixtures" / "single_aniso" / "co_aniso2.out",
+            inputs / "co_aniso2.out",
+        )
+        shutil.copy(
+            REPO / "fixtures" / "magrelax" / "co_magrelax.out",
+            inputs / "co_magrelax.out",
+        )
         # the exact-entropy chain (menu 12): the converged CASSCF output, the
         # FCIDUMP it dumped, and the two orca_2json exports of the gbw
         shutil.copy(FIXTURES / "n2_fcidump_step_a.out", inputs / "n2_fcidump_step_a.out")
@@ -218,6 +228,8 @@ def main() -> int:
                     "33", "work/pysis_hess_crash",
                     "34", "work/babu2000_eu3.yaml", "",
                     "35", "work/co_plus_qdpt_g.yaml",
+                    "36", "work/co_aniso2.out",
+                    "36", "work/co_magrelax.out",
                     "31", "work/h2o_absp.property.txt",
                     "8", "work/saved.txt",
                     "0",
@@ -603,6 +615,20 @@ def main() -> int:
                 and "Delta chi_ax = 0.0004e-32" in pnmr_report_text
                 and "0.085" in pnmr_report_text,
                 "menu 35 built chi from the ORCA g and printed the PCS",
+            )
+            relax_sa = read("co_aniso2.out.relax.fbk.md")
+            check(
+                "no computed group is flagged" in relax_sa
+                and "do not apply" in relax_sa
+                and "7.2538e-02" in relax_sa,
+                "menu 36 guards the near-isotropic KD table and reports the UBAR maximum",
+            )
+            relax_mr = read("co_magrelax.out.relax.fbk.md")
+            check(
+                "Orbach fit: not applicable" in relax_mr
+                and "14680.6" in relax_mr
+                and "no one-phonon channel" in relax_mr,
+                "menu 36 reads the magrelax rate table and states the missing channel",
             )
             absp_report = read("h2o_absp.property.txt.states.fbk.md")
             check(

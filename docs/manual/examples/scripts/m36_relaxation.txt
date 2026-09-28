@@ -1,0 +1,5 @@
+36
+work/co_aniso2.out
+36
+work/co_magrelax.out
+0

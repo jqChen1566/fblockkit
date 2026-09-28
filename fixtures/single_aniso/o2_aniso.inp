@@ -1,0 +1,29 @@
+! def2-SVP TightSCF
+%pal nprocs 8 end
+%maxcore 6000
+%casscf
+  nel 12
+  norb 8
+  mult 3,1
+  nroots 3,3
+  rel
+    DoSOC true
+    DoSSC true
+    PrintLevel 1
+    DoGTensor true
+    DoDTensor true
+  end
+  ANISO
+    doaniso true
+    MLTP 3,3,3,3
+    TINT 0, 300, 301
+    HINT 0, 7, 71
+    TMAG 2.0
+    UBAR true
+    DoPLOT false
+  end
+end
+* xyz 0 3
+O 0 0 0
+O 0 0 1.21
+*

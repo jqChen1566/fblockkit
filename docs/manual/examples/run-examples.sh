@@ -83,6 +83,10 @@ cp "$REPO/fixtures/judd_ofelt/babu2000_eu3.yaml" work/
 cp "$REPO/fixtures/pnmr/co_plus/co_plus.xyz" work/
 cp "$REPO/fixtures/pnmr/co_plus/co_plus_qdpt.out" work/
 cp "$REPO/fixtures/pnmr/co_plus/co_plus_qdpt_g.yaml" work/
+# the menu-36 relaxation pair (the CO+ Kramers-doublet SINGLE_ANISO output and
+# its single-mode Orca_Magrelax run)
+cp "$REPO/fixtures/single_aniso/co_aniso2.out" work/
+cp "$REPO/fixtures/magrelax/co_magrelax.out" work/
 
 for script in scripts/*.txt; do
   name=$(basename "$script" .txt)

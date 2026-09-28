@@ -1,0 +1,14 @@
+! def2-SVP TightSCF moread NumFreq
+%moinp "co_ref.gbw"
+%pal nprocs 8 end
+%maxcore 6000
+%casscf
+  nel 9
+  norb 8
+  mult 2
+  nroots 2
+end
+* xyz 1 2
+C 0 0 0
+O 0 0 1.13
+*

@@ -40,6 +40,7 @@ from typing import Any
 
 from ..knowledge.elements import ElementError, is_f_element
 from ..knowledge.models import ParseResult
+from . import single_aniso as _single_aniso
 from .base import ParserError, float_or_none, read_text, register
 
 PROGRAM = "orca"
@@ -1418,6 +1419,7 @@ class OrcaParser:
             "epr": _parse_epr(lines),
             "zfs": _parse_zfs(lines),
             "susceptibility": _parse_susceptibility(lines),
+            "single_aniso": _single_aniso.parse_segments(lines),
             "optimization": optimization,
             "dipole": _parse_dipole(lines),
             "soc_present": bool(_SOC_MARKERS_RE.search(text)),

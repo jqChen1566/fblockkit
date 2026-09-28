@@ -111,6 +111,9 @@ items:
   - number: "35"
     title: "pNMR pseudocontact shifts (a susceptibility run file + a structure -> per-nucleus PCS)"
     handler: pnmr_report
+  - number: "36"
+    title: "Magnetic relaxation and QTM (an ORCA output with SINGLE_ANISO or MAGRELAX -> the barrier estimate and tau(T))"
+    handler: relaxation_report
   - number: "0"
     title: Quit
     handler: quit

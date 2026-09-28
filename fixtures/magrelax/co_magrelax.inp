@@ -1,0 +1,34 @@
+! def2-SVP TightSCF moread
+%moinp "co_aniso.gbw"
+%pal nprocs 8 end
+%maxcore 6000
+%casscf
+  nel 9
+  norb 8
+  mult 2
+  nroots 2
+  projectHSOC true
+  projectedstates 4
+  rel
+    DoSOC true
+    DoMagrelax true
+  end
+end
+%qgprop
+  MODE DERIV
+  COORDSTYPE ENWNORMAL
+  STEPSIZE 0.00005
+  HESSIAN "co_hess.hess"
+  DERHSOC true
+end
+%magrelax
+  magfld 0.0, 0.0, 0.01
+  HESSIAN "co_hess.hess"
+  temperature 2, 30, 1
+  doRaman false
+  degenThresh 0.1
+end
+* xyz 1 2
+C 0 0 0
+O 0 0 1.13
+*

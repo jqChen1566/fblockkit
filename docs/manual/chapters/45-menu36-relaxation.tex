@@ -1,0 +1,120 @@
+\chapter{Magnetic relaxation and QTM (menu 36)}
+\label{ch:menu36}
+\menulabel{36}
+
+\section{Purpose}
+
+A lanthanide single-molecule magnet is characterised by the barriers and
+tunnelling processes its ab initio levels imply.  This menu reads what an
+ORCA calculation already contains and organises it against the practical
+guide's criteria: the per-doublet g-tensors and their mutual orientation
+(the empirical effective-barrier estimate), the UBAR magnetic-moment matrix
+elements (the qualitative relaxation path the engine itself prints), the
+spin-orbit level structure, and -- when the Orca\_Magrelax section is
+present -- the relaxation-rate table $\tau(T)$ with an Arrhenius/Orbach fit.
+Nothing here is a dynamics simulation; every threshold carries its source.
+
+\section{What you need}
+
+One ORCA 6.1 output file carrying either
+
+\begin{itemize}
+  \item the \textbf{SINGLE\_ANISO} embedded section -- the \code{ANISO}
+    sub-block inside \code{\%casscf} with \code{doaniso true} (manual
+    section 5.32); give \code{MLTP} explicitly, otherwise the engine prints
+    no g/D analysis at all (measured);
+  \item the \textbf{Orca\_Magrelax} section -- \code{projectHSOC true} plus
+    \code{projectedstates} in the CASSCF block, \code{DoSOC}/\code{DoMagrelax}
+    in its \code{rel} sub-block, \code{\%qgprop} (numerical derivatives of
+    the QDPT matrix along the normal modes) and \code{\%magrelax} (manual
+    section 5.30).
+\end{itemize}
+
+A file with both gets both parts of the report.
+
+\section{Walkthrough}
+
+The example runs both parts on the CO$^+$ fixtures: first the
+SINGLE\_ANISO output with \code{MLTP 2,2} (two Kramers doublets), then the
+Orca\_Magrelax run of the same system -- a single vibrational mode at
+2299.9~cm$^{-1}$ against a 14680.6~cm$^{-1}$ Zeeman gap, whose rate
+table comes out all zeros (the measured boundary case).
+
+\lstinputlisting[style=fbkcode, firstline=41, lastline=61,
+  title={The menu-36 example (the SINGLE\_ANISO part: the per-KD table with
+  the guard marks, the barrier estimate and the UBAR summary)}]
+  {examples/expected/m36_relaxation.txt}
+
+\section{What you get}
+
+The report file \code{<output>.relax.fbk.md} carries:
+
+\begin{itemize}
+  \item per pseudospin group: energy, g principal values, the angle
+    $\theta$ between the group's largest-g axis and the ground group's, and
+    the guide's empirical average transverse g
+    $g_T = (g_1 + g_2 + g_3 \sin\theta_3)/3$ with the product $g_T\theta$;
+  \item the barrier estimate: the first excited group flagged by
+    $\theta > 15^\circ$ (non-collinear) or $g_T\theta > 20$ (the guide's
+    rule from 20 Dy(III) SMMs) -- or the explicit statement that no
+    computed group qualifies, with the bound given by the highest computed
+    level;
+  \item the UBAR block: Zeeman eigenstates and the magnetic-moment matrix
+    elements, averaged as the engine prints them,
+    $(\lvert\mu_X\rvert + \lvert\mu_Y\rvert + \lvert\mu_Z\rvert)/3$;
+  \item the magrelax part: the $\tau(T)$ table and the Orbach fit
+    $\tau = \tau_0 \exp(U_{\mathrm{eff}}/k_BT)$ (U$_{\mathrm{eff}}$ in K
+    and cm$^{-1}$, $\tau_0$ in seconds, $R^2$).
+\end{itemize}
+
+\section{Conventions, cross-checks and boundaries (measured)}
+
+\begin{readbox}
+\begin{itemize}
+  \item \textbf{The axis-angle criteria need a defined axis.}  Below a
+    relative g spread of 1\,\% the main-axis direction is decided by the
+    print's digits: such groups are marked and excluded from the flags
+    (measured on CO$^+$, $\Delta g/g \sim 2\times10^{-4}$).  The 15$^\circ$
+    and $g_T\theta > 20$ thresholds are empirical (the guide's own
+    working values); the flags bound a plausible barrier, not a measured
+    one.
+  \item \textbf{Two segments when DoSSC is on}: the output then contains
+    two complete SINGLE\_ANISO runs (SOC-only and SOC+SSC; O$_2$: D =
+    2.175287 vs 3.185964 -- the same numbers the QDPT ZFS blocks print).
+    Compare spectra before reading across segments.
+  \item \textbf{The UBAR table is qualitative by the engine's own
+    statement} ("only a qualitative relaxation path"); its "even number
+    of electrons" sentence is a fixed template warning, printed for
+    odd-electron systems too (the CO$^+$ fixture is odd-electron).
+  \item \textbf{An all-zero rate table is a structure fact.}  The
+    one-phonon (Orbach) channel needs a phonon energy matching a Zeeman
+    gap; a single-mode toy has none (CO$^+$: 2299.9 vs
+    1.4--1.5$\times10^4$~cm$^{-1}$).  The report says so instead of
+    fitting.
+  \item \textbf{Definitions differ across exits.}  The SINGLE\_ANISO
+    pseudospin g-values and the QDPT effective-Hamiltonian g-matrix
+    (menu 35's reader) are different objects -- close numbers, not
+    identical ones; state which exit a number comes from.
+  \item \textbf{Boundaries}: the magnetic-dilution $\tau_{QT}$ model
+    (dipolar-field statistics; the dilution design rules) is a
+    registered candidate increment pending its closed-access sources;
+    polynuclear exchange and POLY\_ANISO belong to item 5.6; the full
+    spin-phonon treatment is what Orca\_Magrelax itself approximates
+    (its Raman-I term is averaged to zero by the implementation's own
+    statement, manual section 5.30).
+\end{itemize}
+\end{readbox}
+
+\section{The ORCA side (Wave 5.3 survey)}
+
+The SINGLE\_ANISO interface generates \code{<inp>.CASSCF.anisofile} and
+\code{<inp>.anisoinp} and calls \code{otool\_single\_aniso} automatically; a
+Kramers doublet prints no ZFS/D block, an integer pseudospin adds the $m=0$
+column to the Zeeman-eigenstate table, and the UBAR matrix elements come in
+intra-group ("opposite magnetization") and inter-group
+("neighbouring multiplets") tables.  The Orca\_Magrelax module prints its
+own editable input (\code{<inp>.magrelaxinp}), reads the QGPROP derivatives
+(\code{socder.magrelax}) and the \code{.hess} file, and tabulates
+$1/\tau$ and $\tau$ per temperature.  Both sections were measured on ORCA
+6.1.1 (fixtures \code{single\_aniso/} and \code{magrelax/}; both sections'
+format notes are recorded with those fixtures).

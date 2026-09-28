@@ -518,6 +518,45 @@ ORCA susceptibility units & cm$^3$\,K/mol is the cgs-emu molar value &
 \end{tabularx}
 \end{center}
 
+\section{Magnetic relaxation and QTM}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{2.6cm} X >{\raggedright\arraybackslash}p{3.0cm}@{}}
+\toprule
+Quantity & Value & Meaning / limits & Source \\
+\midrule
+Barrier-estimate flags & $\theta > 15^\circ$ or
+  $g_T\theta > 20$ & The practical guide's working values (the second from
+  a survey of 20 Dy(III) SMMs, with
+  $g_T = (g_1+g_2+g_3\sin\theta_3)/3$); they \emph{bound a plausible}
+  barrier, not a measured one -- the report says so with every estimate &
+  \textsf{[Literature]} Chilton 2025 \S7.1--7.2 \\
+Axis-definition guard & relative g spread $\ge$ 1\,\% & Below it a group's
+  main-axis direction is decided by the print's digits (measured on
+  CO$^+$: $\Delta g/g \sim 2.4\times10^{-4}$), so the axis-angle criteria
+  are excluded for that group; instrumental threshold, not a literature
+  value & \textsf{[Measured]} menu 36's fixtures \\
+UBAR matrix elements & $(\lvert\mu_X\rvert + \lvert\mu_Y\rvert +
+  \lvert\mu_Z\rvert)/3$ & The engine's own average, printed per pair; the
+  engine itself calls the barrier ``only a qualitative relaxation path'',
+  and its ``even number of electrons'' sentence is a fixed template
+  warning (the odd-electron CO$^+$ sample prints it too) &
+  \textsf{[Manual]} ORCA 6.1 \S5.32 (measured) \\
+Two segments when \code{DoSSC} is on & compare, do not mix & SOC-only and
+  SOC+SSC segments (O$_2$: $D$ = 2.175287 vs 3.185964 --- the same values
+  the QDPT ZFS blocks print); \code{MLTP} must be given explicitly or no
+  g/D analysis is printed at all & \textsf{[Measured]} fixtures
+  \file{single\_aniso/} \\
+Orbach fit & $\ln\tau$ vs $1/T$, $\ge$ 3 finite positive points &
+  $\tau = \tau_0\exp(U_{\mathrm{eff}}/k_BT)$ with
+  $U_{\mathrm{eff}}$(cm$^{-1}$) $=$ slope$/1.438776877$; an all-\code{-inf}
+  table is a structure fact (a single-mode toy has no phonon matching a
+  Zeeman gap), not a fit target & \textsf{[Manual]} ORCA 6.1 \S5.30;
+  \textsf{[Measured]} \file{co\_magrelax.out} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
 \section{Crystal fields}
 
 \begin{center}

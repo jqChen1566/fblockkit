@@ -36,6 +36,7 @@ Available functions:
   33  pysisyphus run report (a run directory or console capture -> cross-checked record)
   34  Judd-Ofelt intensity parameters (a transition dataset -> Omega_2/4/6 and radiative quantities)
   35  pNMR pseudocontact shifts (a susceptibility run file + a structure -> per-nucleus PCS)
+  36  Magnetic relaxation and QTM (an ORCA output with SINGLE_ANISO or MAGRELAX -> the barrier estimate and tau(T))
    0  Quit
 Choose a number (Enter = leave empty)> 32
 Structure source path (XYZ / ORCA input / ORCA output) (Enter = leave empty)> work/h2o_start.xyz
@@ -99,6 +100,7 @@ Available functions:
   33  pysisyphus run report (a run directory or console capture -> cross-checked record)
   34  Judd-Ofelt intensity parameters (a transition dataset -> Omega_2/4/6 and radiative quantities)
   35  pNMR pseudocontact shifts (a susceptibility run file + a structure -> per-nucleus PCS)
+  36  Magnetic relaxation and QTM (an ORCA output with SINGLE_ANISO or MAGRELAX -> the barrier estimate and tau(T))
    0  Quit
 Choose a number (Enter = leave empty)> 32
 Structure source path (XYZ / ORCA input / ORCA output) (Enter = leave empty)> work/h2o_ts.xyz
@@ -165,6 +167,7 @@ Available functions:
   33  pysisyphus run report (a run directory or console capture -> cross-checked record)
   34  Judd-Ofelt intensity parameters (a transition dataset -> Omega_2/4/6 and radiative quantities)
   35  pNMR pseudocontact shifts (a susceptibility run file + a structure -> per-nucleus PCS)
+  36  Magnetic relaxation and QTM (an ORCA output with SINGLE_ANISO or MAGRELAX -> the barrier estimate and tau(T))
    0  Quit
 Choose a number (Enter = leave empty)> 32
 Structure source path (XYZ / ORCA input / ORCA output) (Enter = leave empty)> work/h2o_ts.xyz
@@ -217,6 +220,7 @@ Available functions:
   33  pysisyphus run report (a run directory or console capture -> cross-checked record)
   34  Judd-Ofelt intensity parameters (a transition dataset -> Omega_2/4/6 and radiative quantities)
   35  pNMR pseudocontact shifts (a susceptibility run file + a structure -> per-nucleus PCS)
+  36  Magnetic relaxation and QTM (an ORCA output with SINGLE_ANISO or MAGRELAX -> the barrier estimate and tau(T))
    0  Quit
 Choose a number (Enter = leave empty)> 
 (end of input, exiting.)

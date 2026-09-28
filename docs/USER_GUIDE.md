@@ -1574,6 +1574,60 @@ construction (the ligand-field review's limits of it frame the menu's
 documentation; a Bleaney comparator is a registered candidate increment);
 the OpenMolcas-side g/chi data belong to the OpenMolcas chain (menus 1.4/
 0.5) when that deployment lands.
+
+## 36 Magnetic relaxation and QTM (an ORCA output with SINGLE_ANISO or MAGRELAX)
+
+**What it is for**: the static QTM metrics and the relaxation-rate table
+that an ORCA calculation already contains, summarised against the practical
+guide's criteria -- per-Kramers-doublet g-tensors and their mutual
+orientation (the empirical barrier estimate), the UBAR magnetic-moment
+matrix elements, the spin-orbit level structure, and, when the
+Orca_Magrelax section is present, the tau(T) table with an Arrhenius fit.
+
+**How**: menu 36 -> one file name: an ORCA output carrying either the
+SINGLE_ANISO embedded section (the `ANISO` sub-block of `%casscf`; manual
+section 5.32) or the `* ORCA MAGRELAX *` section (manual section 5.30).  A
+file with both gets both parts of the report, written as
+`<output>.relax.fbk.md`.
+
+**How to read it**:
+
+- the per-KD table lists each pseudospin group's energy, g principal
+  values, the angle theta between its largest-g axis and the ground
+  group's, and the guide's empirical `g_T = (g1 + g2 + g3 sin(theta_3))/3`
+  with its product `g_T * theta`.  The barrier estimate is the first
+  excited group with theta > 15 deg (non-collinear) or `g_T theta` > 20
+  (the guide's rule from a survey of 20 Dy(III) SMMs); both thresholds
+  are **empirical** and are restated with every report;
+- groups whose relative g spread is below 1 % are marked `*`: their
+  main-axis direction is decided by the print's digits, so the axis-angle
+  criteria do not apply to them (measured on the CO+ fixture, where
+  Delta g/g is about 2e-4);
+- the UBAR block gives the engine's Zeeman eigenstates and magnetic-moment
+  matrix elements `(|mu_X| + |mu_Y| + |mu_Z|)/3`; the engine itself calls
+  the printed barrier "only a qualitative relaxation path", and its
+  "even number of electrons" sentence is a fixed template warning (it is
+  printed for odd-electron systems too);
+- the magrelax part tabulates tau(T) in seconds and fits
+  `tau = tau_0 exp(U_eff/k_B T)` over the finite positive points (at least
+  three are required).  The CO+ fixture has an all-zero rate table: with a
+  single vibrational mode (2299.9 cm-1) no phonon matches its Zeeman gaps,
+  so there is no one-phonon channel -- an all-infinity column is a
+  structure fact, not a fit target;
+- with `DoSSC true` the output contains two complete SINGLE_ANISO segments
+  (SOC-only and SOC+SSC; the O2 fixture prints D = 2.175287 vs 3.185964) --
+  compare the spectra before mixing numbers across segments.  `MLTP` must
+  be given explicitly: without it the engine prints no g/D analysis at all
+  (both the g-tensor and the barrier estimation read NOT INCLUDED).
+
+**Boundaries**: nothing here is a dynamical simulation -- the guide's own
+section 7.3 calls the UBAR-permutation picture "not realistic", and the
+empirical thresholds bound a plausible barrier rather than a measured one;
+the magnetic-dilution tau_QT model of the Aravena group (dipolar-field
+statistics; the source of the dilution design rules) is a registered
+candidate increment pending its closed-access papers; polynuclear exchange
+and the POLY_ANISO route belong to the multinuclear item (5.6).
+
 ## Appendix A Command line
 
 ```text

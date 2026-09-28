@@ -709,6 +709,58 @@ def judd_ofelt_fit(session: Session) -> None:
     session.say(f"Report written: {md_path}")
 
 
+def relaxation_report(session: Session) -> None:
+    """Menu 36: magnetic relaxation / QTM metrics from an ORCA output.
+
+    Reads either the SINGLE_ANISO embedded section (the ANISO sub-block of
+    %casscf) or the Orca_Magrelax section; a file with both gets both parts.
+    """
+    from ...analysis import relaxation as relaxation_analysis
+
+    path_text = session.ask(
+        "ORCA output path (with a SINGLE_ANISO (ANISO sub-block) or MAGRELAX section)"
+    )
+    if not path_text:
+        session.say("Cancelled (no path given).")
+        return
+    path = Path(path_text)
+    try:
+        parsed = parse_auto(path)
+    except (ParserError, OSError) as exc:
+        session.say(f"Magnetic relaxation report failed: {exc}")
+        return
+    blocks: list[str] = []
+    single_aniso = parsed.sections.get("single_aniso") or {}
+    segments = single_aniso.get("segments") or []
+    for index, segment in enumerate(segments):
+        blocks.append(
+            relaxation_analysis.render_single_aniso(
+                segment, segment_index=index, n_segments=len(segments), source=path.name
+            )
+        )
+    magrelax_missing = ""
+    try:
+        magrelax_data = relaxation_analysis.read_magrelax(path)
+    except relaxation_analysis.RelaxationError as exc:
+        magrelax_data = None
+        magrelax_missing = str(exc)
+    if magrelax_data is not None:
+        blocks.append(relaxation_analysis.render_magrelax(magrelax_data, path.name))
+    if not blocks:
+        session.say(f"No magnetic relaxation data found. {magrelax_missing}")
+        return
+    body = "\n\n".join(blocks)
+    session.say(body)
+    section = ReportSection(title="Magnetic relaxation and QTM", body=body)
+    report_lines = f"## {section.title}\n\n{section.body}\n"
+    refs = references_section(relaxation_analysis.evidence())
+    if refs is not None:
+        report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
+    md_path = path.with_name(path.name + ".relax.fbk.md")
+    md_path.write_text(report_lines, encoding="utf-8")
+    session.say(f"Report written: {md_path}")
+
+
 def pnmr_report(session: Session) -> None:
     """Menu 35: pseudocontact shifts from a susceptibility tensor + a structure."""
     from ...analysis import pnmr as pnmr_analysis

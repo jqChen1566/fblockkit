@@ -173,6 +173,13 @@ def _prepare_work() -> None:
     pnmr = REPO / "fixtures" / "pnmr" / "co_plus"
     for name in ("co_plus.xyz", "co_plus_qdpt.out", "co_plus_qdpt_g.yaml"):
         shutil.copy(pnmr / name, work / name)
+    # the menu-36 relaxation pair (the CO+ KD SINGLE_ANISO output and its magrelax run)
+    shutil.copy(
+        REPO / "fixtures" / "single_aniso" / "co_aniso2.out", work / "co_aniso2.out"
+    )
+    shutil.copy(
+        REPO / "fixtures" / "magrelax" / "co_magrelax.out", work / "co_magrelax.out"
+    )
 
 
 @pytest.fixture(scope="module")
