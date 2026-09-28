@@ -35,6 +35,7 @@ Available functions:
   32  pysisyphus input (a structure + a method -> a PES-exploration YAML)
   33  pysisyphus run report (a run directory or console capture -> cross-checked record)
   34  Judd-Ofelt intensity parameters (a transition dataset -> Omega_2/4/6 and radiative quantities)
+  35  pNMR pseudocontact shifts (a susceptibility run file + a structure -> per-nucleus PCS)
    0  Quit
 Choose a number (Enter = leave empty)> 30
 Frequency output path (the Opt+Freq run whose imaginary mode should go) (Enter = leave empty)> work/fhh_optts_freq.out
@@ -89,6 +90,7 @@ Available functions:
   32  pysisyphus input (a structure + a method -> a PES-exploration YAML)
   33  pysisyphus run report (a run directory or console capture -> cross-checked record)
   34  Judd-Ofelt intensity parameters (a transition dataset -> Omega_2/4/6 and radiative quantities)
+  35  pNMR pseudocontact shifts (a susceptibility run file + a structure -> per-nucleus PCS)
    0  Quit
 Choose a number (Enter = leave empty)> 0
 Goodbye.

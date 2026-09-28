@@ -1527,6 +1527,53 @@ data for *ab initio* intensities are the per-transition fosc/D2/dipole
 columns of the property file's absorption section (read by menu 31; layout
 measured).
 
+## 35 pNMR pseudocontact shifts (a susceptibility run file + a structure)
+
+**What it is for**: the pseudocontact shift (PCS) of every nucleus around a
+paramagnetic centre, in the point-dipole approximation: from a magnetic
+susceptibility tensor (given directly, built from a g-tensor, or built from
+g + zero-field splitting at the run temperature) and a structure, the menu
+prints the tensor, its axiality and rhombicity, and the per-nucleus PCS
+(ppm) with the nucleus's r, theta, phi in the tensor's eigenframe.
+
+**How**: menu 35 -> a run file (YAML; schema in the formats chapter) that
+names the structure, the 1-based centre atom, the temperature and the
+susceptibility source.  The source may be a 3x3 tensor (m^3, or the
+literature's 1e-32 m^3 unit), a g-matrix, or g + D/E/D -- each of these may
+also be read straight from an ORCA QDPT output (`orca_output:`); the menu's
+ORCA reader takes the effective-Hamiltonian g-matrix and the preferred ZFS
+variant (effective Hamiltonian with the spin-spin contribution when
+present).  The report is `<runfile>.pnmr.fbk.md`.
+
+**How to read it**:
+
+- the two susceptibility constructions are both available by name: the
+  non-symmetric `chi' = mu_B^2 mu_0 g_e/(k_B T) g.<SS>` (the default; the
+  one consistent with the modern pNMR shielding theory) and the symmetric
+  `g.<SS>.g^T` alternative -- for the source's Co(II) benchmark they give
+  Delta chi_ax = 14.8 vs 27.3 (1e-32 m^3).  State which one produced a
+  number before comparing with literature;
+- only the traceless symmetric part of chi enters the PCS (adding an
+  isotropic part, or the antisymmetric part of a non-symmetric tensor,
+  changes nothing -- tested exactly); the axial limit is exactly the
+  classical `(1/12 pi r^3) Delta chi_ax (3 cos^2 theta - 1)` form;
+- the point-dipole form is the long-range limit: the source's benchmark
+  shows below-10 % deviation of the dipolar part beyond ~7 A, while within
+  ~4-5 A the contact (through-bond) term dominates -- a PCS for a nucleus
+  close to the metal is not a prediction of the total shift;
+- the ZFS route uses the effective-spin dyadic <SS> at the given
+  temperature; near-axial systems can hit the node condition
+  `<SS>|| g|| = <SS>perp gperp` where the axiality (and the PCS) vanish;
+- ORCA cross-check: for an ORCA QDPT output with `DoSusceptibility`, the
+  menu's chi (converted: cgs-emu molar chi*T = NA chi_SI/(4 pi) x T x 1e6)
+  reproduces ORCA's own printed susceptibility to the printed precision.
+
+**Boundaries**: the contact shift is not computed (it needs hyperfine
+coupling); Bleaney's analytic anisotropy theory is not implemented as a
+construction (the ligand-field review's limits of it frame the menu's
+documentation; a Bleaney comparator is a registered candidate increment);
+the OpenMolcas-side g/chi data belong to the OpenMolcas chain (menus 1.4/
+0.5) when that deployment lands.
 ## Appendix A Command line
 
 ```text

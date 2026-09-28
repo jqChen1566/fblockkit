@@ -169,6 +169,10 @@ def _prepare_work() -> None:
         REPO / "fixtures" / "judd_ofelt" / "babu2000_eu3.yaml",
         work / "babu2000_eu3.yaml",
     )
+    # the menu-35 pNMR trio (structure, QDPT output, run file)
+    pnmr = REPO / "fixtures" / "pnmr" / "co_plus"
+    for name in ("co_plus.xyz", "co_plus_qdpt.out", "co_plus_qdpt_g.yaml"):
+        shutil.copy(pnmr / name, work / name)
 
 
 @pytest.fixture(scope="module")

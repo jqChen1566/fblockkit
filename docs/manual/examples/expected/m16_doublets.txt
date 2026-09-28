@@ -35,6 +35,7 @@ Available functions:
   32  pysisyphus input (a structure + a method -> a PES-exploration YAML)
   33  pysisyphus run report (a run directory or console capture -> cross-checked record)
   34  Judd-Ofelt intensity parameters (a transition dataset -> Omega_2/4/6 and radiative quantities)
+  35  pNMR pseudocontact shifts (a susceptibility run file + a structure -> per-nucleus PCS)
    0  Quit
 Choose a number (Enter = leave empty)> 16
 Kramers-doublet table JSON path (per doublet: the three g values and theta3 or the g3 axis; see the user guide) (Enter = leave empty)> work/dy_doublets.json
@@ -90,6 +91,7 @@ Available functions:
   32  pysisyphus input (a structure + a method -> a PES-exploration YAML)
   33  pysisyphus run report (a run directory or console capture -> cross-checked record)
   34  Judd-Ofelt intensity parameters (a transition dataset -> Omega_2/4/6 and radiative quantities)
+  35  pNMR pseudocontact shifts (a susceptibility run file + a structure -> per-nucleus PCS)
    0  Quit
 Choose a number (Enter = leave empty)> 0
 Goodbye.

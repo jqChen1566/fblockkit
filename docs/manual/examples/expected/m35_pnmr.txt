@@ -1,0 +1,100 @@
+fBlockKit -- the f-block calculation toolkit (input generation + characterisation analysis; it runs no calculations)
+
+Available functions:
+   1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)
+   2  Coordination geometry and symmetry hints (read an XYZ structure)
+   3  Generate an ORCA input (system profile -> input file + run guidance)
+   4  Basis-set / ECP recommendation (element/valence/targets)
+   5  Search the tool index (keywords)
+   6  Tool onboarding notes (by index id)
+   7  Cross-level solution consistency (records JSON input)
+   8  Save this session as a script
+   9  SCF rescue (triage + corrected input files)
+  10  Crystal-field fit (levels + coefficients JSON)
+  11  Point-charge crystal-field estimate (read an XYZ structure + charges)
+  12  Exact active-space analysis (CASSCF output + FCIDUMP: four-state entropy, environment spin entropy, atomic-term check; optional orca_2json exports)
+  13  Orbital-space comparison (two orca_2json exports: subspace fraction and space-change SVD)
+  14  AVAS target projection (an orbital export + a target AO shell -> active-space size)
+  15  Orbital portrait (an export -> occupation, bonding label, shell composition, extent)
+  16  Magnetic-doublet criterion (a Kramers-doublet table JSON -> g_T * theta_3 and the QTM line)
+  17  Cross-structure orbital mapping (a manifest of exports -> consistent active spaces along a path)
+  18  WASP guess transfer (neighbour orbitals -> an interpolated, gbw-ready mkl for a geometry series)
+  19  Dipole-moment candidate batch (a structure -> prep + CASCI inputs + manifest for the DM-AS scan)
+  20  Dipole-moment selection (the batch outputs + a reference -> the active space by DM-AS)
+  21  APC orbital ranking (an export with the Fock exchange block -> ranked active space at a CSF cap)
+  22  ASS1ST round-1 input (a structure + an initial active space -> a CASSCF+FIC-NEVPT2 round)
+  23  ASS1ST selection round (a NEVPT2-density export -> quasi-NOON tables + the next round's input)
+  24  QICAS active-space optimization (an FCIDUMP -> F_QI-minimized orbitals and the CASCI check)
+  25  AEGISS selection (entropy screening + an AO projection -> a compact active space)
+  26  TNASS subset selection (an FCIDUMP -> the S2-maximizing orbital subset)
+  27  DeltaSCF / MOM excited-state SCF input (a structure + an excitation spec -> an input)
+  28  RAS / ORMAS model-space input (a structure + a partition mask -> an ORCA input)
+  29  Perturbed multistart batch (a converged reference mkl + its input -> restart inputs)
+  30  Imaginary-mode displacement (a frequency output + its input -> restart inputs)
+  31  CASSCF state data (a property file -> per-state energies and transitions)
+  32  pysisyphus input (a structure + a method -> a PES-exploration YAML)
+  33  pysisyphus run report (a run directory or console capture -> cross-checked record)
+  34  Judd-Ofelt intensity parameters (a transition dataset -> Omega_2/4/6 and radiative quantities)
+  35  pNMR pseudocontact shifts (a susceptibility run file + a structure -> per-nucleus PCS)
+   0  Quit
+Choose a number (Enter = leave empty)> 35
+pNMR run file path (YAML; see the formats chapter) (Enter = leave empty)> work/co_plus_qdpt_g.yaml
+pNMR pseudocontact shifts (point-dipole approximation)
+  structure: co_plus.xyz (2 atoms); centre: atom 1 (C)
+  susceptibility from g-tensor (spin 0.5); route: nonsymmetric; T = 300 K
+  chi tensor (1e-32 m^3):
+        2.6150     -0.0003      0.0000
+       -0.0003      2.6152      0.0000
+        0.0000      0.0000      2.6153
+  Delta chi_ax = 0.0004e-32 m^3; Delta chi_rh = -0.0005e-32 m^3; |antisymmetric|_max = 0.000e+00e-32 m^3
+  note: the g-matrix was read from 'co_plus_qdpt.out' (effective-Hamiltonian block)
+
+  nucleus        r (A)     theta (deg)   phi (deg)    delta_PCS (ppm)
+  O2             1.130          90.0        90.0            0.085
+
+boundaries (measured and from the sources):
+  - the PDA is the long-range limit: the source's benchmark shows <10 % deviation of the dipolar part beyond ~7 A from the centre, while the contact (through-bond) contribution dominates below ~4-5 A -- a PCS value predicted for a nucleus close to the metal is a lower bound on the total shift error, not a full prediction;
+  - only the traceless symmetric part of chi enters the PCS (the antisymmetric part contributes nothing; tested exactly) -- the route's difference (nonsymmetric vs symmetric construction) changes the symmetric part itself and hence the values;
+  - the ZFS route uses the effective spin dyadic <SS> at the given temperature; near-axial systems can cross the node condition <SS>|| g|| = <SS>perp gperp where the axiality (and the PCS) vanish;
+  - magnetic-dipole-free, isotropic-shift contexts only: the contact shift is not computed here (it needs hyperfine coupling).
+Report written: work\co_plus_qdpt_g.yaml.pnmr.fbk.md
+
+Available functions:
+   1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)
+   2  Coordination geometry and symmetry hints (read an XYZ structure)
+   3  Generate an ORCA input (system profile -> input file + run guidance)
+   4  Basis-set / ECP recommendation (element/valence/targets)
+   5  Search the tool index (keywords)
+   6  Tool onboarding notes (by index id)
+   7  Cross-level solution consistency (records JSON input)
+   8  Save this session as a script
+   9  SCF rescue (triage + corrected input files)
+  10  Crystal-field fit (levels + coefficients JSON)
+  11  Point-charge crystal-field estimate (read an XYZ structure + charges)
+  12  Exact active-space analysis (CASSCF output + FCIDUMP: four-state entropy, environment spin entropy, atomic-term check; optional orca_2json exports)
+  13  Orbital-space comparison (two orca_2json exports: subspace fraction and space-change SVD)
+  14  AVAS target projection (an orbital export + a target AO shell -> active-space size)
+  15  Orbital portrait (an export -> occupation, bonding label, shell composition, extent)
+  16  Magnetic-doublet criterion (a Kramers-doublet table JSON -> g_T * theta_3 and the QTM line)
+  17  Cross-structure orbital mapping (a manifest of exports -> consistent active spaces along a path)
+  18  WASP guess transfer (neighbour orbitals -> an interpolated, gbw-ready mkl for a geometry series)
+  19  Dipole-moment candidate batch (a structure -> prep + CASCI inputs + manifest for the DM-AS scan)
+  20  Dipole-moment selection (the batch outputs + a reference -> the active space by DM-AS)
+  21  APC orbital ranking (an export with the Fock exchange block -> ranked active space at a CSF cap)
+  22  ASS1ST round-1 input (a structure + an initial active space -> a CASSCF+FIC-NEVPT2 round)
+  23  ASS1ST selection round (a NEVPT2-density export -> quasi-NOON tables + the next round's input)
+  24  QICAS active-space optimization (an FCIDUMP -> F_QI-minimized orbitals and the CASCI check)
+  25  AEGISS selection (entropy screening + an AO projection -> a compact active space)
+  26  TNASS subset selection (an FCIDUMP -> the S2-maximizing orbital subset)
+  27  DeltaSCF / MOM excited-state SCF input (a structure + an excitation spec -> an input)
+  28  RAS / ORMAS model-space input (a structure + a partition mask -> an ORCA input)
+  29  Perturbed multistart batch (a converged reference mkl + its input -> restart inputs)
+  30  Imaginary-mode displacement (a frequency output + its input -> restart inputs)
+  31  CASSCF state data (a property file -> per-state energies and transitions)
+  32  pysisyphus input (a structure + a method -> a PES-exploration YAML)
+  33  pysisyphus run report (a run directory or console capture -> cross-checked record)
+  34  Judd-Ofelt intensity parameters (a transition dataset -> Omega_2/4/6 and radiative quantities)
+  35  pNMR pseudocontact shifts (a susceptibility run file + a structure -> per-nucleus PCS)
+   0  Quit
+Choose a number (Enter = leave empty)> 0
+Goodbye.

@@ -251,6 +251,32 @@ required (the standard deviation divides by $N-3$), and a $U^{(\lambda)}$
 column that is zero everywhere means that $\Omega_\lambda$ is reported as
 not determined.  The report is written as \file{<dataset>.jo.fbk.md}.
 
+\section{Input YAML: pNMR run file (menu 35)}
+
+\begin{codeblock}
+structure: molecule.xyz        # resolved relative to the run file
+center_atom: 1                 # 1-based index of the paramagnetic centre
+temperature: 300               # K (drives the susceptibility and the <SS>)
+susceptibility:
+  from: tensor | g | zfs
+  route: nonsymmetric          # or symmetric (the two constructions)
+  # from: tensor
+  tensor: [[cx_xx, cx_xy, cx_xz], [..], [..]]   # 3x3
+  tensor_unit: "m3"            # or "1e-32 m3" (the literature unit)
+  # from: g  (Kramers doublet unless spin is given)
+  g_matrix: [[..], [..], [..]]
+  spin: 0.5
+  # from: zfs  (g + zero-field splitting)
+  D_cm1: -85.5
+  E_over_D: 0.00281
+  # any of g_matrix / D_cm1 / E_over_D may instead be read from an output:
+  orca_output: qdpt.out        # the effective-Hamiltonian g, the preferred ZFS
+nuclei: all                    # or a list of 1-based indices (the centre excluded)
+\end{codeblock}
+
+The report is written as \file{<runfile>.pnmr.fbk.md}; every atom except the
+centre is reported, or the listed subset.
+
 \section{Structure and charge input (menus 2 and 11)}
 
 Standard XYZ (atom count, comment, \code{element x y z}). For \menu{11}, the

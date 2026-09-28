@@ -1065,6 +1065,184 @@ def _parse_orbitals(lines: list[str]) -> dict[str, Any]:
     return {"energies": tuple(energies), "occupations": tuple(occupations)}
 
 
+# --- 5.2: the QDPT magnetic-property blocks (EPR g/D tensors and chi) ---------
+# Measured on ORCA 6.1.1 (fixtures co_plus_qdpt.*, o2_qdpt2.*; see the fixtures
+# README for the run conditions):
+#
+# - the effective-Hamiltonian g-matrix prints as
+#   "ELECTRONIC G-MATRIX FROM EFFECTIVE HAMILTONIAN" -> "Spin multiplicity = n"
+#   -> "total g-matrix:" + a 3x3 table, then "g-factors: g1 g2 g3 iso = ...";
+#   other g-like tables exist in the same output (the Kramers-pair Zeeman
+#   matrices, "ELECTRONIC G-MATRIX: S contribution") and are NOT this tensor;
+# - the zero-field splitting prints as several "ZERO-FIELD SPLITTING" blocks,
+#   each with a variant line ("2ND ORDER SOC CONTRIBUTION", "EFFECTIVE
+#   HAMILTONIAN SOC CONTRIBUTION", "... SOC and SSC CONTRIBUTION") and a set
+#   of "Raw matrix (cm-1)" + "Eigenvalues (traceless)" + "Eigenvectors" +
+#   Euler angles + "D = ..." + "E/D = ..." tables;
+# - with DoSusceptibility, "SOC CORRECTED MAGNETIZATION AND/OR SUSCEPTIBILITY"
+#   carries, per temperature, "TEMPERATURE/K: x" + "Tensor in molecular frame
+#   (cm3*K/mol)" + a 3x3 table.
+_FLOAT3_RE = re.compile(r"^\s*([-+0-9.eEdD]+)\s+([-+0-9.eEdD]+)\s+([-+0-9.eEdD]+)\s*$")
+_G_ROW_RE = re.compile(
+    r"^\s*([0-2])\s+([-+0-9.eEdD]+)\s+([-+0-9.eEdD]+)\s+([-+0-9.eEdD]+)\s*$"
+)
+_G_FACTORS_RE = re.compile(
+    r"g-factors:\s*\n\s*([-+0-9.eEdD]+)\s+([-+0-9.eEdD]+)\s+([-+0-9.eEdD]+)"
+    r"\s+iso\s*=\s*([-+0-9.eEdD]+)"
+)
+_SPIN_MULT_RE = re.compile(r"Spin multiplicity\s*=\s*(\d+)")
+_D_LINE_RE = re.compile(r"^D\s*=\s*([-+0-9.eEdD]+)\s+cm-1")
+_ED_LINE_RE = re.compile(r"^E/D\s*=\s*([-+0-9.eEdD]+)")
+_TEMPERATURE_RE = re.compile(r"TEMPERATURE/K:\s*([-+0-9.eEdD]+)")
+_COLUMN_HEADER_RE = re.compile(r"^\s*[0-2]\s+[0-2]\s+[0-2]\s*$")
+
+
+def _read_matrix(lines: list[str], start: int, *, indexed: bool = False):
+    """Three consecutive 3-number lines (optionally with a leading row index)."""
+    rows: list[tuple[float, ...]] = []
+    index = start
+    while index < len(lines) and len(rows) < 3:
+        line = lines[index]
+        if not line.strip():
+            index += 1
+            continue
+        if not rows and _COLUMN_HEADER_RE.match(line) is not None:
+            index += 1  # the "0 1 2" column-id line above an indexed table
+            continue
+        match = _G_ROW_RE.match(line) if indexed else _FLOAT3_RE.match(line)
+        if match is None:
+            return None
+        values = tuple(float_or_none(value) for value in match.groups()[-3:])
+        if any(value is None for value in values):
+            return None
+        rows.append(values)  # type: ignore[arg-type]
+        index += 1
+    return tuple(rows) if len(rows) == 3 else None
+
+
+def _parse_epr(lines: list[str]) -> dict[str, Any]:
+    """The effective-Hamiltonian g-matrix (the QDPT EPR block)."""
+    result: dict[str, Any] = {
+        "present": False,
+        "g_matrix": None,
+        "g_factors": None,
+        "iso": None,
+        "multiplicity": None,
+        "n_blocks": 0,
+    }
+    text = "\n".join(lines)
+    if "ELECTRONIC G-MATRIX FROM EFFECTIVE HAMILTONIAN" not in text:
+        return result
+    result["present"] = True
+    for index, line in enumerate(lines):
+        if "ELECTRONIC G-MATRIX FROM EFFECTIVE HAMILTONIAN" in line:
+            result["n_blocks"] += 1
+            if result["g_matrix"] is not None:
+                continue  # keep the first block (the ground multiplet), count the rest
+            for probe in range(index + 1, min(index + 20, len(lines))):
+                if (match := _SPIN_MULT_RE.search(lines[probe])) is not None:
+                    result["multiplicity"] = int(match.group(1))
+                if "total g-matrix:" in lines[probe]:
+                    matrix = _read_matrix(lines, probe + 1, indexed=True)
+                    if matrix is not None:
+                        result["g_matrix"] = matrix
+                    break
+    if (match := _G_FACTORS_RE.search(text)) is not None:
+        result["g_factors"] = tuple(float(match.group(i)) for i in (1, 2, 3))
+        result["iso"] = float(match.group(4))
+    return result
+
+
+#: preference order when several ZFS variants are present (the measured variants)
+ZFS_PREFERENCE = (
+    "effective hamiltonian soc and ssc",
+    "2nd order soc and ssc",
+    "effective hamiltonian soc",
+    "2nd order soc",
+)
+
+
+def _parse_zfs(lines: list[str]) -> dict[str, Any]:
+    """All zero-field-splitting blocks (variant, matrices, D and E/D)."""
+    blocks: list[dict[str, Any]] = []
+    header_indices = [
+        index for index, line in enumerate(lines) if line.strip() == "ZERO-FIELD SPLITTING"
+    ]
+    for header in header_indices:
+        variant = None
+        for probe in range(header + 1, min(header + 4, len(lines))):
+            if lines[probe].strip():
+                variant = lines[probe].strip()
+                break
+        d_line = d_value = ed_value = None
+        matrix = eigenvalues = eigenvectors = euler = None
+        for probe in range(header + 1, min(header + 120, len(lines))):
+            line = lines[probe]
+            if line.strip() == "ZERO-FIELD SPLITTING" and probe != header:
+                break
+            if (match := _D_LINE_RE.match(line.strip())) is not None:
+                d_line = probe
+                d_value = float_or_none(match.group(1))
+                break
+        if d_line is None:
+            continue  # a header without its D line (an aborted block): skip
+        for probe in range(header + 1, min(d_line + 3, len(lines))):
+            stripped = lines[probe].strip()
+            if stripped.startswith("Raw matrix (cm-1)"):
+                matrix = _read_matrix(lines, probe + 1)
+            elif stripped.startswith("Eigenvalues (traceless)"):
+                if (match := _FLOAT3_RE.match(lines[probe + 1])) is not None:
+                    eigenvalues = tuple(float_or_none(v) for v in match.groups())
+            elif stripped.startswith("Eigenvectors:"):
+                eigenvectors = _read_matrix(lines, probe + 1)
+            elif stripped.startswith("Euler angles"):
+                if (match := _FLOAT3_RE.match(lines[probe + 1])) is not None:
+                    euler = tuple(float_or_none(v) for v in match.groups())
+            elif (match := _ED_LINE_RE.match(stripped)) is not None:
+                ed_value = float_or_none(match.group(1))
+        blocks.append(
+            {
+                "variant": variant,
+                "raw_matrix": matrix,
+                "eigenvalues_traceless": eigenvalues,
+                "eigenvectors": eigenvectors,
+                "euler_deg": euler,
+                "D_cm1": d_value,
+                "E_over_D": ed_value,
+            }
+        )
+    preferred = None
+    for wanted in ZFS_PREFERENCE:
+        for block in blocks:
+            if wanted in (block["variant"] or "").strip().lower():
+                preferred = block
+                break
+        if preferred is not None:
+            break
+    return {"present": bool(blocks), "blocks": tuple(blocks), "preferred": preferred}
+
+
+def _parse_susceptibility(lines: list[str]) -> dict[str, Any]:
+    """The temperature-dependent molar susceptibility tensors (cm3*K/mol)."""
+    temperatures: list[float] = []
+    tensors: list[tuple] = []
+    for index, line in enumerate(lines):
+        if (match := _TEMPERATURE_RE.search(line)) is None:
+            continue
+        for probe in range(index + 1, min(index + 6, len(lines))):
+            if "Tensor in molecular frame" in lines[probe]:
+                matrix = _read_matrix(lines, probe + 1)
+                if matrix is not None:
+                    temperatures.append(float(match.group(1)))
+                    tensors.append(matrix)
+                break
+    return {
+        "present": bool(tensors),
+        "temperatures_k": tuple(temperatures),
+        "tensors_cm3k_mol": tuple(tensors),
+    }
+
+
 def _parse_casscf(lines: list[str]) -> dict[str, Any]:
     present = any(_CASSCF_BANNER in line for line in lines)
     if not present:
@@ -1237,6 +1415,9 @@ class OrcaParser:
             "final_geometry": _parse_final_geometry(lines),
             "normal_modes": _parse_normal_modes(lines),
             "local_spin": _parse_local_spin(lines),
+            "epr": _parse_epr(lines),
+            "zfs": _parse_zfs(lines),
+            "susceptibility": _parse_susceptibility(lines),
             "optimization": optimization,
             "dipole": _parse_dipole(lines),
             "soc_present": bool(_SOC_MARKERS_RE.search(text)),

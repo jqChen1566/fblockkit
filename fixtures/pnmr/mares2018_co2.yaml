@@ -1,0 +1,37 @@
+# Transcribed regression data from Mares & Vaara, Phys. Chem. Chem. Phys.
+# 2018, 20, 22547-22556, DOI 10.1039/c8cp04123g (CC-BY; read 2026-09-28).
+# All tensors in 1e-32 m^3 EXCEPT the printed chi matrices, which are given in
+# m^3 as printed (eq. (4) and the symmetric variant of eq. (5)).
+#
+# The Co(II) clathrochelate benchmark of that paper: NEVPT2/TZVP-DKH g- and
+# ZFS tensors on the PBE0/def2-TZVP-optimised cage; T = 300 K throughout.
+#
+# "printed_chi_nonsymmetric" and "printed_chi_symmetric" are the paper's two
+# explicit 3x3 tensors; "chain_*" are the magnetic parameters behind them.
+# The expected values are those the paper prints for each route.
+printed_chi_nonsymmetric_m3:
+  - [1.06e-31, -2.85e-34, 1.64e-33]
+  - [-2.74e-34, 1.06e-31, 1.95e-33]
+  - [1.65e-33, 1.95e-33, 2.55e-31]
+printed_chi_nonsymmetric_dchi_ax_1e32_m3: 14.8
+printed_chi_symmetric_m3:
+  - [1.06e-31, -4.25e-34, 3.01e-33]
+  - [-4.25e-34, 1.06e-31, 3.58e-33]
+  - [3.01e-33, 3.58e-33, 3.79e-31]
+printed_chi_symmetric_dchi_ax_1e32_m3: 27.3
+chain_nevpt2:
+  D_cm1: -85.5
+  E_over_D: 0.00281
+  g_iso: 2.325
+  Delta_g_ax: 0.979
+  spin: 1.5
+  temperature_k: 300.0
+  printed_dchi_ax_nonsymmetric_1e32_m3: 14.8
+  printed_dchi_ax_symmetric_1e32_m3: 27.3
+chain_experimental:
+  D_cm1: -64.0
+  Delta_g_ax: 0.2
+  g_iso_range: [2.3, 2.4]
+  spin: 1.5
+  temperature_k: 300.0
+  printed_dchi_ax_nonsymmetric_1e32_m3: 7.1

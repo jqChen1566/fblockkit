@@ -707,3 +707,29 @@ def judd_ofelt_fit(session: Session) -> None:
     md_path = path.with_name(path.name + ".jo.fbk.md")
     md_path.write_text(report_lines, encoding="utf-8")
     session.say(f"Report written: {md_path}")
+
+
+def pnmr_report(session: Session) -> None:
+    """Menu 35: pseudocontact shifts from a susceptibility tensor + a structure."""
+    from ...analysis import pnmr as pnmr_analysis
+
+    path_text = session.ask("pNMR run file path (YAML; see the formats chapter)")
+    if not path_text:
+        session.say("Cancelled (no path given).")
+        return
+    path = Path(path_text)
+    try:
+        data = pnmr_analysis.read_run(path)
+    except (pnmr_analysis.PnmrError, OSError) as exc:
+        session.say(f"pNMR run failed: {exc}")
+        return
+    body = pnmr_analysis.render(data)
+    session.say(body)
+    section = ReportSection(title="pNMR pseudocontact shifts", body=body)
+    report_lines = f"## {section.title}\n\n{section.body}\n"
+    refs = references_section(pnmr_analysis.evidence())
+    if refs is not None:
+        report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
+    md_path = path.with_name(path.name + ".pnmr.fbk.md")
+    md_path.write_text(report_lines, encoding="utf-8")
+    session.say(f"Report written: {md_path}")

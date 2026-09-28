@@ -1,0 +1,117 @@
+\chapter{pNMR pseudocontact shifts (menu 35)}
+\label{ch:menu35}
+\menulabel{35}
+
+\section{Purpose}
+
+The pseudocontact shift (PCS) of a nucleus near a paramagnetic centre is the
+dipole field of the centre's magnetic moment.  In the point-dipole
+approximation (PDA) the modern, quantum-chemistry-consistent form is
+
+\begin{equation}
+  \boldsymbol{\sigma}_{\mathrm{dip}} = -\,\frac{\boldsymbol{\chi}' \cdot
+    \mathbf{d}}{4\pi r_{\mathrm{IS}}^3},
+  \qquad \mathbf{d} = 3\,\mathbf{n}_{\mathrm{IS}}\mathbf{n}_{\mathrm{IS}}
+    - \mathbf{1},
+\end{equation}
+
+with $\delta_{\mathrm{PCS}} = -\mathrm{Tr}(\boldsymbol{\sigma}_{\mathrm{dip}})/3
+= \mathrm{Tr}(\boldsymbol{\chi}'\!\cdot\mathbf{d})/(12\pi r^3)$ and
+$\boldsymbol{\chi}'$ the (in general \emph{non-symmetric}) magnetic
+susceptibility tensor in SI volume units.  This menu computes that shift for
+every nucleus of a structure, from a susceptibility tensor given directly or
+built from magnetic parameters -- the landing point of the Wave-5.2 survey of
+pNMR data availability.
+
+\section{What you need}
+
+A run file (YAML; the schema is in the formats chapter): the structure (XYZ),
+the 1-based index of the paramagnetic centre atom, the temperature, and the
+susceptibility source -- a $3\times3$ tensor, a g-matrix (Kramers doublet),
+or g together with the zero-field-splitting $D$ and $E/D$.  The g and ZFS
+values may also be read straight from an ORCA QDPT output
+(\code{orca\_output:}), which makes the ab initio chain
+ORCA\,$\to$\,g/ZFS\,$\to$\,$\chi'$\,$\to$\,PCS a single menu call.
+
+\section{Walkthrough}
+
+The example runs the ORCA-side chain on the CO$^+$ QDPT fixture: the
+effective-Hamiltonian g-matrix is read from the output, the susceptibility is
+built at 300\,K (the source's non-symmetric construction), and the PCS of the
+oxygen is printed -- tiny, as expected for a nearly isotropic doublet
+($\Delta g \sim 5\times10^{-4}$).
+
+\lstinputlisting[style=fbkcode, firstline=40, lastline=60,
+  title={The menu-35 example (the CO$^+$ chain: g from the ORCA output, the
+  susceptibility, the axiality and the per-nucleus shift)}]
+  {examples/expected/m35_pnmr.txt}
+
+\section{What you get}
+
+The susceptibility tensor ($10^{-32}$~m$^3$), its axiality
+$\Delta\chi_{\mathrm{ax}} = \chi_3 - (\chi_1 + \chi_2)/2$ and rhombicity from
+the symmetrised tensor's eigenvalues, the antisymmetric-part magnitude, and a
+per-nucleus table: label, $r$ (\AA), $\theta$ and $\phi$ in the tensor's
+eigenframe, and $\delta_{\mathrm{PCS}}$ in ppm -- plus the report file.
+
+\section{Conventions, cross-checks and boundaries (measured)}
+
+\begin{readbox}
+\begin{itemize}
+  \item \textbf{The two susceptibility constructions.}  The non-symmetric
+    $\boldsymbol{\chi}' = (\mu_B^2\mu_0 g_e/k_BT)\,\mathbf{g}\langle
+    \mathbf{SS}\rangle$ (the default; consistent with the modern pNMR
+    shielding theory) and the symmetric
+    $\mathbf{g}\langle\mathbf{SS}\rangle\mathbf{g}^{\mathsf T}$ alternative
+    give different anisotropies for the same parameters -- for the source's
+    Co(II) benchmark \textbf{14.8 vs 27.3$\times10^{-32}$~m$^3$}.  The
+    regression reproduces both from the printed tensors and from the printed
+    parameter sets ($D=-85.5$~cm$^{-1}$, $E/D=0.00281$, $g_{\mathrm{iso}}=
+    2.325$, $\Delta g_{\mathrm{ax}}=0.979$: 14.47 and 26.9, the 2\,\% offset
+    being the axial approximation).  State the construction before comparing
+    numbers across sources.
+  \item \textbf{Only the traceless symmetric part enters the PCS}: adding an
+    isotropic part, or the antisymmetric part of a non-symmetric tensor,
+    changes nothing (tested exactly); the axial limit is exactly the
+    classical $(1/12\pi r^3)\Delta\chi_{\mathrm{ax}}(3\cos^2\theta-1)$ form.
+  \item \textbf{The PDA is the long-range limit}: the source's benchmark
+    shows below-10\,\% deviation of the dipolar part beyond about 7~\AA,
+    while within 4--5~\AA{} the contact (through-bond) term dominates.
+    A PCS printed for a nucleus close to the metal is not a prediction of
+    the total shift.
+  \item \textbf{The ZFS route} builds $\langle\mathbf{SS}\rangle$ from the
+    thermal average over the ZFS eigenstates at the run temperature
+    ($\mathrm{Tr}\langle\mathbf{SS}\rangle = S(S+1)$ at every temperature,
+    tested).  Near-axial systems can hit the node condition
+    $\langle SS\rangle_\parallel g_\parallel =
+    \langle SS\rangle_\perp g_\perp$, where the axiality -- and the PCS
+    surface -- collapse.
+  \item \textbf{The ORCA cross-check}: with \code{DoSusceptibility} the QDPT
+    driver prints the molar susceptibility tensor per temperature in
+    cm$^3$\,K/mol (the cgs-emu value: $\chi_{\mathrm{SI,molar}} = 4\pi
+    \chi_{\mathrm{cgs}}$); this menu's $\chi$ from the parsed g reproduces
+    ORCA's own printed value to the printed precision (0.3759 from CO$^+$,
+    both routes).
+  \item \textbf{Boundaries}: the contact shift is not computed (hyperfine
+    coupling needed); Bleaney's analytic anisotropy theory is documented as
+    context but not implemented as a construction (registered candidate);
+    OpenMolcas-side g/$\chi$ data belong to the OpenMolcas chain (menu 1.4,
+    deployment 0.5).
+\end{itemize}
+\end{readbox}
+
+\section{The ORCA side (Wave 5.2 survey)}
+
+The QDPT driver of ORCA 6.1 (\code{rel} block inside \code{\%casscf} and the
+other modules: \code{DoSOC}, \code{DoSSC}, \code{DoGTensor}, \code{DoDTensor},
+\code{DoSusceptibility}, \code{PrintLevel}) prints the effective-Hamiltonian
+g-matrix, the zero-field-splitting blocks in up to four variants (2nd-order /
+effective-Hamiltonian $\times$ SOC / SOC+SSC; for the O$_2$ fixture $D$ =
+2.1757, 2.1753, 3.1865, 3.1860~cm$^{-1}$) and the per-temperature
+susceptibility tensors.  The reader takes the effective-Hamiltonian g-matrix
+(the other g-like tables in the same output -- Kramers-pair Zeeman matrix
+elements, the ``S contribution'' blocks -- are not the tensor); a Kramers
+doublet prints no ZFS block at all (measured on CO$^+$); and the input echo
+warns when the CASSCF multiplicity list is ascending
+(``CASSCF multiplicity blocks not in descending order''), a property-run
+caveat kept in the fixtures record.

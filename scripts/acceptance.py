@@ -115,6 +115,10 @@ def main() -> int:
             REPO / "fixtures" / "orca" / "h2o_absp.property.txt",
             inputs / "h2o_absp.property.txt",
         )
+        # the menu-35 pNMR trio (structure, QDPT output, run file)
+        pnmr = REPO / "fixtures" / "pnmr" / "co_plus"
+        for name in ("co_plus.xyz", "co_plus_qdpt.out", "co_plus_qdpt_g.yaml"):
+            shutil.copy(pnmr / name, inputs / name)
         # the exact-entropy chain (menu 12): the converged CASSCF output, the
         # FCIDUMP it dumped, and the two orca_2json exports of the gbw
         shutil.copy(FIXTURES / "n2_fcidump_step_a.out", inputs / "n2_fcidump_step_a.out")
@@ -213,6 +217,7 @@ def main() -> int:
                     "33", "work/pysis_h2o_opt",
                     "33", "work/pysis_hess_crash",
                     "34", "work/babu2000_eu3.yaml", "",
+                    "35", "work/co_plus_qdpt_g.yaml",
                     "31", "work/h2o_absp.property.txt",
                     "8", "work/saved.txt",
                     "0",
@@ -591,6 +596,13 @@ def main() -> int:
                 and "7F6 <- 7F0" in jo_report
                 and "1.842" in jo_report,
                 "menu 34 reproduces the published Judd-Ofelt benchmark",
+            )
+            pnmr_report_text = read("co_plus_qdpt_g.yaml.pnmr.fbk.md")
+            check(
+                "effective-Hamiltonian" in pnmr_report_text
+                and "Delta chi_ax = 0.0004e-32" in pnmr_report_text
+                and "0.085" in pnmr_report_text,
+                "menu 35 built chi from the ORCA g and printed the PCS",
             )
             absp_report = read("h2o_absp.property.txt.states.fbk.md")
             check(

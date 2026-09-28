@@ -35,6 +35,7 @@ Available functions:
   32  pysisyphus input (a structure + a method -> a PES-exploration YAML)
   33  pysisyphus run report (a run directory or console capture -> cross-checked record)
   34  Judd-Ofelt intensity parameters (a transition dataset -> Omega_2/4/6 and radiative quantities)
+  35  pNMR pseudocontact shifts (a susceptibility run file + a structure -> per-nucleus PCS)
    0  Quit
 Choose a number (Enter = leave empty)> 17
 Structures manifest JSON path (a list of structures with their exports; see the user guide) (Enter = leave empty)> work/mapping_manifest.json
@@ -264,6 +265,7 @@ Available functions:
   32  pysisyphus input (a structure + a method -> a PES-exploration YAML)
   33  pysisyphus run report (a run directory or console capture -> cross-checked record)
   34  Judd-Ofelt intensity parameters (a transition dataset -> Omega_2/4/6 and radiative quantities)
+  35  pNMR pseudocontact shifts (a susceptibility run file + a structure -> per-nucleus PCS)
    0  Quit
 Choose a number (Enter = leave empty)> 0
 Goodbye.

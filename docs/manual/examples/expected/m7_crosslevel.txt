@@ -35,6 +35,7 @@ Available functions:
   32  pysisyphus input (a structure + a method -> a PES-exploration YAML)
   33  pysisyphus run report (a run directory or console capture -> cross-checked record)
   34  Judd-Ofelt intensity parameters (a transition dataset -> Omega_2/4/6 and radiative quantities)
+  35  pNMR pseudocontact shifts (a susceptibility run file + a structure -> per-nucleus PCS)
    0  Quit
 Choose a number (Enter = leave empty)> 7
 Records JSON path (each item carries label and energies; see section 7 of the guide) (Enter = leave empty)> work/pucl3_s18.json
@@ -81,6 +82,7 @@ Available functions:
   32  pysisyphus input (a structure + a method -> a PES-exploration YAML)
   33  pysisyphus run report (a run directory or console capture -> cross-checked record)
   34  Judd-Ofelt intensity parameters (a transition dataset -> Omega_2/4/6 and radiative quantities)
+  35  pNMR pseudocontact shifts (a susceptibility run file + a structure -> per-nucleus PCS)
    0  Quit
 Choose a number (Enter = leave empty)> 0
 Goodbye.

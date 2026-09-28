@@ -1,0 +1,13 @@
+# pNMR run: CO+ from its own QDPT output (the g-tensor route, a Kramers doublet).
+# The ORCA output is read for the effective-Hamiltonian g-matrix; the
+# susceptibility follows the source's non-symmetric construction.  The tiny
+# PCS values are expected: the CO+ g-anisotropy is 5e-4.
+structure: co_plus.xyz
+center_atom: 1              # C
+temperature: 300
+susceptibility:
+  from: g
+  route: nonsymmetric       # the PDA-consistent construction (the default)
+  spin: 0.5
+  orca_output: co_plus_qdpt.out
+nuclei: [2]

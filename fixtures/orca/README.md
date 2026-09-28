@@ -353,6 +353,28 @@ Points to note (also in `parsers/orca_property.py` and `tests/test_state_data.py
   (fragment guess / explicit active orbitals) or the calculation restarted from
   several starting points.
 
+## QDPT magnetic-property fixtures added 2026-09-28 (server 101, the same ORCA 6.1.1)
+
+The Wave-5.2 probes: what ORCA 6.1's QDPT driver actually prints for the EPR
+g/D tensors and the magnetic susceptibility (menu 35 and its reader).
+
+| Output | Input | Job | Parsing points covered | Run outcome |
+|---|---|---|---|---|
+| `co_plus_qdpt.out` (+ `.property.txt`) | `inputs/co_plus_qdpt.inp` | CO+ / def2-SVP, CAS(9,8) doublet + `rel DoSOC DoGTensor DoDTensor DoSusceptibility` | `ELECTRONIC G-MATRIX FROM EFFECTIVE HAMILTONIAN` (3x3 + g-factors: 2.0017913/2.0022066/2.0022688, iso 2.0020889), the Kramers-pair Zeeman blocks that are **not** the g-tensor, and the per-temperature `SOC CORRECTED ... SUSCEPTIBILITY` tensors (300 temperatures, 1-300 K; chi*T = 0.3759 cm3*K/mol, the cgs-emu molar value) | terminated normally |
+| `o2_qdpt2.out` (+ `.property.txt`) | `inputs/o2_qdpt2.inp` | O2 / def2-SVP, CAS(12,8) + `DoSOC DoSSC DoGTensor DoDTensor` | the **four** ZFS variants (2nd-order / effective-Hamiltonian x SOC / SOC + SSC): D = 2.175688 / 2.175287 / 3.186488 / 3.185964 cm-1, E/D = 0; the traceless eigenvalues satisfy D = 3/2 x the axial eigenvalue (internal gate) | terminated normally |
+| `o2_qdpt.out` | `inputs/o2_qdpt.inp` | O2 / def2-SVP with an under-sized CAS(6,4) and **without** DoSSC | the zero-value ZFS blocks (all four printed, D = 0: the active space carries no SOC path) and the projected-norm warning line; kept as the "zero D" negative fixture | terminated normally |
+
+Points measured on these runs (also in `parsers/orca.py` and `test_pnmr.py`):
+
+- the effective-Hamiltonian g block is the one to read; the same output also
+  prints other g-like tables (Kramers-pair matrix elements, "S contribution")
+  that are not the tensor;
+- a Kramers doublet prints **no** ZFS block at all (measured on CO+);
+- ORCA's printed susceptibility is the **cgs-emu molar** chi*T in cm3*K/mol:
+  chi_SI_molar = 4 pi chi_cgs (pinned by reproducing 0.3759 from the parsed g);
+- the input echo warns "CASSCF multiplicity blocks not in descending order"
+  when the mult list is ascending -- a property-run caveat recorded here.
+
 ## Discipline for extending the fixtures
 
 A new fixture must (1) keep the original output bytes without trimming; (2) be registered

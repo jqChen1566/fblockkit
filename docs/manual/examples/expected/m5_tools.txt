@@ -35,6 +35,7 @@ Available functions:
   32  pysisyphus input (a structure + a method -> a PES-exploration YAML)
   33  pysisyphus run report (a run directory or console capture -> cross-checked record)
   34  Judd-Ofelt intensity parameters (a transition dataset -> Omega_2/4/6 and radiative quantities)
+  35  pNMR pseudocontact shifts (a susceptibility run file + a structure -> per-nucleus PCS)
    0  Quit
 Choose a number (Enter = leave empty)> 5
 Search keywords (several words, space separated) (Enter = leave empty)> mokit
@@ -77,6 +78,7 @@ Available functions:
   32  pysisyphus input (a structure + a method -> a PES-exploration YAML)
   33  pysisyphus run report (a run directory or console capture -> cross-checked record)
   34  Judd-Ofelt intensity parameters (a transition dataset -> Omega_2/4/6 and radiative quantities)
+  35  pNMR pseudocontact shifts (a susceptibility run file + a structure -> per-nucleus PCS)
    0  Quit
 Choose a number (Enter = leave empty)> 6
 Tool index id (e.g. openmolcas; search with menu 5) (Enter = leave empty)> openmolcas
@@ -124,6 +126,7 @@ Available functions:
   32  pysisyphus input (a structure + a method -> a PES-exploration YAML)
   33  pysisyphus run report (a run directory or console capture -> cross-checked record)
   34  Judd-Ofelt intensity parameters (a transition dataset -> Omega_2/4/6 and radiative quantities)
+  35  pNMR pseudocontact shifts (a susceptibility run file + a structure -> per-nucleus PCS)
    0  Quit
 Choose a number (Enter = leave empty)> 6
 Tool index id (e.g. openmolcas; search with menu 5) (Enter = leave empty)> liblan
@@ -216,6 +219,7 @@ Available functions:
   32  pysisyphus input (a structure + a method -> a PES-exploration YAML)
   33  pysisyphus run report (a run directory or console capture -> cross-checked record)
   34  Judd-Ofelt intensity parameters (a transition dataset -> Omega_2/4/6 and radiative quantities)
+  35  pNMR pseudocontact shifts (a susceptibility run file + a structure -> per-nucleus PCS)
    0  Quit
 Choose a number (Enter = leave empty)> 0
 Goodbye.

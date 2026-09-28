@@ -1,0 +1,488 @@
+*************************************************
+******************* ORCA 6.1.1 ******************
+*************************************************
+$Calculation_Status
+   &GeometryIndex 1
+   &version [&Type "String"] "6.1.1"
+   &progName [&Type "String"] "ProgCAS"
+   &Status [&Type "String"] "NORMAL TERMINATION"
+$End
+$Geometry
+   &GeometryIndex 1
+   &NAtoms [&Type "Integer"] 2
+   &NCorelessECP [&Type "Integer"] 0
+   &NGhostAtoms [&Type "Integer"] 0
+   &CartesianCoordinates [&Type "Coordinates", &Dim(2,4), &Units "Bohr"] 
+              C      0.000000000000    0.000000000000    0.000000000000
+              O      0.000000000000    0.000000000000    2.135390531331
+$End
+$CAS_SCF_Energies
+   &GeometryIndex 1
+   &finalEnergy [&Type "Double"]      -1.1224326662034180e+02  "Final GS or SA energy"
+   &numOfElectrons [&Type "Integer"] 13
+   &numOfActiveEl [&Type "Integer"] 9 "Number of active electrons"
+   &numOfActiveOrbs [&Type "Integer"] 8 "Number of active orbitals"
+   &numOfFCElectrons [&Type "Integer"] 0
+   &Method [&Type "String"] "CASSCF"
+   &totalEnergy [&Type "ArrayOfDoubles", &Dim (2,1)] "Total energy of each state"
+                                                         0
+
+0                                     -1.1231015631013206e+02
+1                                     -1.1217637693055154e+02
+   &Mult [&Type "ArrayOfIntegers", &Dim (2,1)] "Multiplicity of each state"
+                                                         0
+
+0                                                        2
+1                                                        2
+   &RelCorr [&Type "String"] "None" "Relativistic correction (SOC and/or SSC)"
+   &NBlocks [&Type "Integer"] 1 "Number of multiplicity blocks"
+   &NRoots [&Type "ArrayOfIntegers", &Dim (1,1)] "Number of roots in each block"
+                                                         0
+
+0                                                        2
+   &NTotalRoots [&Type "Integer"] 2 "Total number of roots"
+   &Block [&Type "ArrayOfIntegers", &Dim (2,1)] "Block index of each state"
+                                                         0
+
+0                                                        0
+1                                                        0
+   &Root [&Type "ArrayOfIntegers", &Dim (2,1)] "Root index within the block"
+                                                         0
+
+0                                                        0
+1                                                        1
+$End
+$Mulliken_Population_Analysis
+   &GeometryIndex 1
+   &NAtoms [&Type "Integer"] 2
+   &ATNO [&Type "ArrayOfIntegers", &Dim (2,1)] 
+                                                         0
+
+0                                                        6
+1                                                        8
+   &AtomicCharges [&Type "ArrayOfDoubles", &Dim (2,1)] 
+                                                         0
+
+0                                      6.3664467006292558e-01
+1                                      3.6335532993709752e-01
+   &Method [&Type "String"] "CASSCF/ALL STATES AVERAGE"
+   &Level [&Type "String"] "Unrelaxed density"
+   &Mult [&Type "Integer"] -1
+   &State [&Type "Integer"] -1
+   &Irrep [&Type "Integer"] 0
+$End
+$Loewdin_Population_Analysis
+   &GeometryIndex 1
+   &NAtoms [&Type "Integer"] 2
+   &ATNO [&Type "ArrayOfIntegers", &Dim (2,1)] 
+                                                         0
+
+0                                                        6
+1                                                        8
+   &AtomicCharges [&Type "ArrayOfDoubles", &Dim (2,1)] 
+                                                         0
+
+0                                      5.4399188425340927e-01
+1                                      4.5600811574663158e-01
+   &Method [&Type "String"] "CASSCF/ALL STATES AVERAGE"
+   &Level [&Type "String"] "Unrelaxed density"
+   &Mult [&Type "Integer"] -1
+   &State [&Type "Integer"] -1
+   &Irrep [&Type "Integer"] 0
+$End
+$Mayer_Population_Analysis
+   &GeometryIndex 1
+   &NAtoms [&Type "Integer"] 2 "Total number of atoms"
+   &NBondOrdersPrint [&Type "Integer"] 1 "The number of bond orders larger than threshold"
+   &bondThresh [&Type "Double"]       1.0000000000000001e-01  "The threshold for printing"
+   &components [&Type "ArrayOfIntegers", &Dim (1,4)] "The indices and atomic numbers of the bonding atoms"
+                                                         0                           1                           2                           3
+
+0                                                        0                           6                           1                           8
+   &BondOrders [&Type "ArrayOfDoubles", &Dim (1,1)] "The bond orders"
+                                                         0
+
+0                                      1.9868565810165479e+00
+   &ATNO [&Type "ArrayOfIntegers", &Dim (2,1)] "Atomic number of the elements"
+                                                         0
+
+0                                                        6
+1                                                        8
+   &NA [&Type "ArrayOfDoubles", &Dim (2,1)] "Mulliken gross atomic population"
+                                                         0
+
+0                                      5.3633553299370762e+00
+1                                      7.6366446700629025e+00
+   &ZA [&Type "ArrayOfDoubles", &Dim (2,1)] "Total nuclear charge"
+                                                         0
+
+0                                      6.0000000000000000e+00
+1                                      8.0000000000000000e+00
+   &QA [&Type "ArrayOfDoubles", &Dim (2,1)] "Mulliken gross atomic charge"
+                                                         0
+
+0                                      6.3664467006292380e-01
+1                                      3.6335532993709752e-01
+   &VA [&Type "ArrayOfDoubles", &Dim (2,1)] "Mayer's total valence"
+                                                         0
+
+0                                      3.1587485671856537e+00
+1                                      2.7884791225143482e+00
+   &BVA [&Type "ArrayOfDoubles", &Dim (2,1)] "Mayer's bonded valence"
+                                                         0
+
+0                                      1.9868565810165479e+00
+1                                      1.9868565810165479e+00
+   &FA [&Type "ArrayOfDoubles", &Dim (2,1)] "Mayer's free valence"
+                                                         0
+
+0                                      1.1718919861691057e+00
+1                                      8.0162254149780021e-01
+   &Method [&Type "String"] "CASSCF/ALL STATES AVERAGE"
+   &Level [&Type "String"] "Unrelaxed density"
+   &Mult [&Type "Integer"] -1
+   &State [&Type "Integer"] -1
+   &Irrep [&Type "Integer"] 0
+$End
+$CASSCF_Absorption_Spectrum
+   &GeometryIndex 1
+   &Method [&Type "Integer"] 2
+   &RelCorrection [&Type "Integer"] 1 "Type of relativistic treatment in QDPT. 0->Unknow, 1->None, 2->SOC, 3->SSC, 4->SOC/SSC"
+   &DensType [&Type "Integer"] 3 "Type of density (electron/spin ...). 0->Unknow, 1->Electronic, 2->Spin, 3->Trans/Electronic, 4->Tran/Spin"
+   &DeriType [&Type "Integer"] 0 "Type of derivative (w.r.t. to what perturbation). 0->Unknown, 1->No Derivative, 2->Electric/Dipole, 3->Electric/Quad, 4->Magnetic/Dipole, 5->Magnetic/Quad"
+   &DensLevel [&Type "Integer"] 0 "// Source of density: relaxed, unrelaxed, ... 0->Unknown, 1->Linearized, 2->Unrelaxed, 3->Relaxed"
+   &Density_name [&Type "String"] "Tdens-CAS"
+   &Representation [&Type "String"] "Length" "Possible values: Unknown,  Length, Velocity"
+   &PointGroup [&Type "String"] "C1"
+   &DoHigherMoments [&Type "Boolean"] false
+   &NTrans [&Type "Integer"] 1
+   &ExcitationEnergies [&Type "ArrayOfDoubles", &Dim (1,11)] 
+                                                         0                           1                           2                           3                           4                           5                           6                           7
+
+0                                      3.6403219887795761e+00         2.9361180016915496e+04         3.4058576645212560e+02         4.3472242505777107e-03         4.8743209875195412e-02        -1.2401048405020934e-01         0.0000000000000000e+00         1.8265981966712927e-01
+                                                         8                           9                          10
+
+0                                      0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00
+   &States [&Type "ArrayOfIntegers", &Dim (1,4)] "The initial and Final states. Col1: Initial State  Col2: Initial Irrep Col3: Final State Col4: Final Irrep"
+                                                         0                           1                           2                           3
+
+0                                                        0                           0                           1                           0
+   &Multiplicities [&Type "ArrayOfDoubles", &Dim (1,2)] "Col1: Multiplicity of the initial state  Col2: Multiplicity of the final state"
+                                                         0                           1
+
+0                                      2.0000000000000000e+00         2.0000000000000000e+00
+   &Temperature [&Type "Double"]       3.0000000000000000e+02
+$End
+$CASSCF_ECD_Spectrum
+   &GeometryIndex 1
+   &Method [&Type "Integer"] 2
+   &RelCorrection [&Type "Integer"] 1 "Type of relativistic treatment in QDPT. 0->Unknow, 1->None, 2->SOC, 3->SSC, 4->SOC/SSC"
+   &DensType [&Type "Integer"] 3 "Type of density (electron/spin ...). 0->Unknow, 1->Electronic, 2->Spin, 3->Trans/Electronic, 4->Tran/Spin"
+   &DeriType [&Type "Integer"] 0 "Type of derivative (w.r.t. to what perturbation). 0->Unknown, 1->No Derivative, 2->Electric/Dipole, 3->Electric/Quad, 4->Magnetic/Dipole, 5->Magnetic/Quad"
+   &DensLevel [&Type "Integer"] 0 "// Source of density: relaxed, unrelaxed, ... 0->Unknown, 1->Linearized, 2->Unrelaxed, 3->Relaxed"
+   &Density_name [&Type "String"] "Tdens-CAS"
+   &Representation [&Type "String"] "Length" "Possible values: Unknown,  Length, Velocity"
+   &PointGroup [&Type "String"] "C1"
+   &DoHigherMoments [&Type "Boolean"] false
+   &NTrans [&Type "Integer"] 1
+   &ExcitationEnergies [&Type "ArrayOfDoubles", &Dim (1,10)] 
+                                                         0                           1                           2                           3                           4                           5                           6                           7
+
+0                                      3.6403219887795761e+00         2.9361180016915496e+04         3.4058576645212560e+02         8.0896779248110911e-08         9.0024342334914492e-02         0.0000000000000000e+00         6.1118871780383728e-02         0.0000000000000000e+00
+                                                         8                           9
+
+0                                      0.0000000000000000e+00         0.0000000000000000e+00
+   &States [&Type "ArrayOfIntegers", &Dim (1,4)] "The initial and Final states. Col1: Initial State  Col2: Initial Irrep Col3: Final State Col4: Final Irrep"
+                                                         0                           1                           2                           3
+
+0                                                        0                           0                           1                           0
+   &Multiplicities [&Type "ArrayOfDoubles", &Dim (1,2)] "Col1: Multiplicity of the initial state  Col2: Multiplicity of the final state"
+                                                         0                           1
+
+0                                      2.0000000000000000e+00         2.0000000000000000e+00
+   &Temperature [&Type "Double"]       3.0000000000000000e+02
+$End
+$CASSCF_G_Tensor
+   &GeometryIndex 1
+   &g_matrix [&Type "ArrayOfDoubles", &Dim (3,3)] 
+                                                         0                           1                           2
+
+0                                      2.0019419085920056e+00        -2.2190060250306567e-04         0.0000000000000000e+00
+1                                     -2.2190059924061980e-04         2.0021181029025188e+00         0.0000000000000000e+00
+2                                      0.0000000000000000e+00         0.0000000000000000e+00         2.0022066259120814e+00
+   &g_elec [&Type "Double"]       2.0023192777999999e+00  "The free electron g-value contribution"
+   &g_RMC [&Type "Double"]      -1.5857781176388340e-04  "The reduced mass correction"
+   &g_DSO [&Type "ArrayOfDoubles", &Dim (1,3)] 
+                                                         0                           1                           2
+
+0                                      1.0936073819836254e-04         4.7137582892338671e-05         1.0926620955069348e-04
+   &g_PSO [&Type "ArrayOfDoubles", &Dim (1,3)] 
+                                                         0                           1                           2
+
+0                                     -4.7880377064884354e-04        -1.2116590468798873e-06        -1.2116590477551027e-06
+   &g_Tot [&Type "ArrayOfDoubles", &Dim (3,1)] 
+                                                         0
+
+0                                      2.0017912569557854e+00
+1                                      2.0022066259120814e+00
+2                                      2.0022687545387385e+00
+   &g_iso [&Type "Double"]       2.0020888791355351e+00
+   &Delta_g [&Type "ArrayOfDoubles", &Dim (1,3)] 
+                                                         0                           1                           2
+
+0                                     -5.2802084421443851e-04        -1.1265188791842462e-04        -5.0523261261314900e-05
+   &Delta_g_iso [&Type "Double"]      -2.3039866446472601e-04
+   &orientation [&Type "ArrayOfDoubles", &Dim (3,3)] 
+                                                         0                           1                           2
+
+0                                     -8.2734369770183114e-01         0.0000000000000000e+00        -5.6169600841830913e-01
+1                                     -5.6169600841830913e-01         0.0000000000000000e+00         8.2734369770183103e-01
+2                                      0.0000000000000000e+00         1.0000000000000000e+00         0.0000000000000000e+00
+   &Method [&Type "String"] "CASSCF"
+   &Level [&Type "String"] "UNKNOWN"
+   &Mult [&Type "Integer"] 2
+   &State [&Type "Integer"] -1
+   &Irrep [&Type "Integer"] 0
+$End
+$CASSCF_G_Tensor
+   &GeometryIndex 1
+   &g_matrix [&Type "ArrayOfDoubles", &Dim (3,3)] 
+                                                         0                           1                           2
+
+0                                     -1.5810526275624648e+00        -1.2281680822834529e+00         0.0000000000000000e+00
+1                                      1.2286268133352201e+00        -1.5809194684276084e+00         0.0000000000000000e+00
+2                                      0.0000000000000000e+00         0.0000000000000000e+00         2.0022066259120814e+00
+   &g_elec [&Type "Double"]       2.0023192777999999e+00  "The free electron g-value contribution"
+   &g_RMC [&Type "Double"]      -1.5857781176388340e-04  "The reduced mass correction"
+   &g_DSO [&Type "ArrayOfDoubles", &Dim (1,3)] 
+                                                         0                           1                           2
+
+0                                      1.0936073819809637e-04         4.7137582892338671e-05         1.0926620955095960e-04
+   &g_PSO [&Type "ArrayOfDoubles", &Dim (1,3)] 
+                                                         0                           1                           2
+
+0                                     -3.5830675123406786e+00        -1.2116590468798873e-06        -3.5834446105736144e+00
+   &g_Tot [&Type "ArrayOfDoubles", &Dim (3,1)] 
+                                                         0
+
+0                                      2.0018793383922415e+00
+1                                      2.0022066259120814e+00
+2                                      2.0023570051516582e+00
+   &g_iso [&Type "Double"]       2.0021476564853273e+00
+   &Delta_g [&Type "ArrayOfDoubles", &Dim (1,3)] 
+                                                         0                           1                           2
+
+0                                     -4.3993940775832741e-04        -1.1265188791842462e-04         3.7727351658300989e-05
+   &Delta_g_iso [&Type "Double"]      -1.7162131467252095e-04
+   &orientation [&Type "ArrayOfDoubles", &Dim (3,3)] 
+                                                         0                           1                           2
+
+0                                     -8.2737355751592134e-01         0.0000000000000000e+00        -5.6165202423159499e-01
+1                                     -5.6165202423159521e-01         0.0000000000000000e+00         8.2737355751592134e-01
+2                                      0.0000000000000000e+00         1.0000000000000000e+00         0.0000000000000000e+00
+   &Method [&Type "String"] "CASSCF"
+   &Level [&Type "String"] "UNKNOWN"
+   &Mult [&Type "Integer"] 2
+   &State [&Type "Integer"] -1
+   &Irrep [&Type "Integer"] 0
+$End
+$CASSCF_Absorption_Spectrum
+   &GeometryIndex 1
+   &Method [&Type "Integer"] 2
+   &RelCorrection [&Type "Integer"] 2 "Type of relativistic treatment in QDPT. 0->Unknow, 1->None, 2->SOC, 3->SSC, 4->SOC/SSC"
+   &DensType [&Type "Integer"] 3 "Type of density (electron/spin ...). 0->Unknow, 1->Electronic, 2->Spin, 3->Trans/Electronic, 4->Tran/Spin"
+   &DeriType [&Type "Integer"] 0 "Type of derivative (w.r.t. to what perturbation). 0->Unknown, 1->No Derivative, 2->Electric/Dipole, 3->Electric/Quad, 4->Magnetic/Dipole, 5->Magnetic/Quad"
+   &DensLevel [&Type "Integer"] 0 "// Source of density: relaxed, unrelaxed, ... 0->Unknown, 1->Linearized, 2->Unrelaxed, 3->Relaxed"
+   &Density_name [&Type "String"] "Tdens-CASQDSOC"
+   &Representation [&Type "String"] "Length" "Possible values: Unknown,  Length, Velocity"
+   &PointGroup [&Type "String"] "C1"
+   &DoHigherMoments [&Type "Boolean"] false
+   &NTrans [&Type "Integer"] 5
+   &ExcitationEnergies [&Type "ArrayOfDoubles", &Dim (5,11)] 
+                                                         0                           1                           2                           3                           4                           5                           6                           7
+
+0                                      1.1600910482911785e-12         9.3567662997604028e-09         1.0687452993515579e+15         0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00
+1                                      3.6403241916254236e+00         2.9361197784067328e+04         3.4058556035566227e+02         2.1736134405447422e-03         4.8743209875195530e-02        -1.1795474429281115e-01         3.8278955748358413e-02         1.7374008727103971e-01
+2                                      3.6403241916258104e+00         2.9361197784070446e+04         3.4058556035562606e+02         1.4993736817104554e-08         3.3623405471137271e-07         0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00
+3                                      3.6403241916265836e+00         2.9361197784076685e+04         3.4058556035555370e+02         1.4993736817548574e-08         3.3623405470617013e-07         0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00
+4                                      3.6403241916269704e+00         2.9361197784079803e+04         3.4058556035551754e+02         2.1736134406432025e-03         4.8743209875195467e-02         1.1795474429677277e-01         3.8278955736150776e-02        -1.7374008727687479e-01
+                                                         8                           9                          10
+
+0                                      0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00
+1                                     -5.6382548682014977e-02         0.0000000000000000e+00         0.0000000000000000e+00
+2                                      0.0000000000000000e+00        -5.7985692607002005e-04         0.0000000000000000e+00
+3                                      0.0000000000000000e+00        -5.7985692606553395e-04         0.0000000000000000e+00
+4                                     -5.6382548664033964e-02         0.0000000000000000e+00         0.0000000000000000e+00
+   &States [&Type "ArrayOfIntegers", &Dim (5,4)] "The initial and Final states. Col1: Initial State  Col2: Initial Irrep Col3: Final State Col4: Final Irrep"
+                                                         0                           1                           2                           3
+
+0                                                        0                          -1                           1                          -1
+1                                                        1                          -1                           2                          -1
+2                                                        1                          -1                           3                          -1
+3                                                        0                          -1                           2                          -1
+4                                                        0                          -1                           3                          -1
+   &Multiplicities [&Type "ArrayOfDoubles", &Dim (5,2)] "Col1: Multiplicity of the initial state  Col2: Multiplicity of the final state"
+                                                         0                           1
+
+0                                      2.0000000000000004e+00         2.0000000000000004e+00
+1                                      2.0000000000000004e+00         2.0000000000000000e+00
+2                                      2.0000000000000004e+00         1.9999999999999998e+00
+3                                      2.0000000000000004e+00         2.0000000000000000e+00
+4                                      2.0000000000000004e+00         1.9999999999999998e+00
+   &Temperature [&Type "Double"]       3.0000000000000000e+02
+$End
+$CASSCF_ECD_Spectrum
+   &GeometryIndex 1
+   &Method [&Type "Integer"] 2
+   &RelCorrection [&Type "Integer"] 2 "Type of relativistic treatment in QDPT. 0->Unknow, 1->None, 2->SOC, 3->SSC, 4->SOC/SSC"
+   &DensType [&Type "Integer"] 3 "Type of density (electron/spin ...). 0->Unknow, 1->Electronic, 2->Spin, 3->Trans/Electronic, 4->Tran/Spin"
+   &DeriType [&Type "Integer"] 0 "Type of derivative (w.r.t. to what perturbation). 0->Unknown, 1->No Derivative, 2->Electric/Dipole, 3->Electric/Quad, 4->Magnetic/Dipole, 5->Magnetic/Quad"
+   &DensLevel [&Type "Integer"] 0 "// Source of density: relaxed, unrelaxed, ... 0->Unknown, 1->Linearized, 2->Unrelaxed, 3->Relaxed"
+   &Density_name [&Type "String"] "Tdens-CASQDSOC"
+   &Representation [&Type "String"] "Length" "Possible values: Unknown,  Length, Velocity"
+   &PointGroup [&Type "String"] "C1"
+   &DoHigherMoments [&Type "Boolean"] false
+   &NTrans [&Type "Integer"] 5
+   &ExcitationEnergies [&Type "ArrayOfDoubles", &Dim (5,10)] 
+                                                         0                           1                           2                           3                           4                           5                           6                           7
+
+0                                      1.1600910482911785e-12         9.3567662997604028e-09         1.0687452993515579e+15         0.0000000000000000e+00         9.4200986444320731e-05         3.0570329430472756e-05         6.3954457902695204e-05         2.0754653644612274e-05
+1                                      3.6403241916254236e+00         2.9361197784067328e+04         3.4058556035566227e+02         4.0448352871623471e-08         8.5628178422511442e-02        -2.7788261271722538e-02         5.8134250382227928e-02        -1.8865865982644576e-02
+2                                      3.6403241916258104e+00         2.9361197784070446e+04         3.4058556035562606e+02         0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00
+3                                      3.6403241916265836e+00         2.9361197784076685e+04         3.4058556035555370e+02         0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00
+4                                      3.6403241916269704e+00         2.9361197784079803e+04         3.4058556035551754e+02         4.0448355326947845e-08        -8.5628178425387377e-02        -2.7788261262860509e-02        -5.8134250384180422e-02        -1.8865865976628014e-02
+                                                         8                           9
+
+0                                      0.0000000000000000e+00         0.0000000000000000e+00
+1                                      0.0000000000000000e+00         0.0000000000000000e+00
+2                                      0.0000000000000000e+00         0.0000000000000000e+00
+3                                      0.0000000000000000e+00         0.0000000000000000e+00
+4                                      0.0000000000000000e+00         0.0000000000000000e+00
+   &States [&Type "ArrayOfIntegers", &Dim (5,4)] "The initial and Final states. Col1: Initial State  Col2: Initial Irrep Col3: Final State Col4: Final Irrep"
+                                                         0                           1                           2                           3
+
+0                                                        0                          -1                           1                          -1
+1                                                        1                          -1                           2                          -1
+2                                                        1                          -1                           3                          -1
+3                                                        0                          -1                           2                          -1
+4                                                        0                          -1                           3                          -1
+   &Multiplicities [&Type "ArrayOfDoubles", &Dim (5,2)] "Col1: Multiplicity of the initial state  Col2: Multiplicity of the final state"
+                                                         0                           1
+
+0                                      2.0000000000000004e+00         2.0000000000000004e+00
+1                                      2.0000000000000004e+00         2.0000000000000000e+00
+2                                      2.0000000000000004e+00         1.9999999999999998e+00
+3                                      2.0000000000000004e+00         2.0000000000000000e+00
+4                                      2.0000000000000004e+00         1.9999999999999998e+00
+   &Temperature [&Type "Double"]       3.0000000000000000e+02
+$End
+$Single_Point_Data
+   &GeometryIndex 1
+   &FinalEnergy [&Type "Double"]      -1.1231015635060683e+02  "Final single point energy"
+   &Converged [&Type "Boolean"] true
+$End
+$Calculation_Info
+   &GeometryIndex 1
+   &Mult [&Type "Integer"] 2
+   &Charge [&Type "Integer"] 1
+   &NumOfAtoms [&Type "Integer"] 2
+   &NumOfElectrons [&Type "Integer"] 13
+   &NumOfBasisFuncts [&Type "Integer"] 28
+   &NumOfAuxCBasisFuncts [&Type "Integer"] 0
+   &NumOfAuxJBasisFuncts [&Type "Integer"] 0
+   &NumOfAuxJKBasisFuncts [&Type "Integer"] 0
+   &NumOfCABSBasisFuncts [&Type "Integer"] 0
+$End
+$CASSCF_Dipole_Moment
+   &GeometryIndex 1
+   &dipoleMagnitude [&Type "Double", &Units "a.u."]       5.5508956779386431e-01
+   &dipoleElecContrib [&Type "ArrayOfDoubles", &Dim (3,1)] "Electronic contribution"
+                                                         0
+
+0                                      0.0000000000000000e+00
+1                                      0.0000000000000000e+00
+2                                     -5.6225581948771652e-01
+   &dipoleNucContrib [&Type "ArrayOfDoubles", &Dim (3,1)] "Nuclear contribution"
+                                                         0
+
+0                                      0.0000000000000000e+00
+1                                      0.0000000000000000e+00
+2                                      7.1662516938522103e-03
+   &dipoleTotal [&Type "ArrayOfDoubles", &Dim (3,1)] "Total"
+                                                         0
+
+0                                      0.0000000000000000e+00
+1                                      0.0000000000000000e+00
+2                                     -5.5508956779386431e-01
+   &doAtomicDipole [&Type "Boolean"] false
+   &Method [&Type "String"] "CASSCF/ALL STATES AVERAGE"
+   &Level [&Type "String"] "Unrelaxed density"
+   &Mult [&Type "Integer"] -1
+   &State [&Type "Integer"] -1
+   &Irrep [&Type "Integer"] 0
+$End
+$CASSCF_Dipole_Moment
+   &GeometryIndex 1
+   &dipoleMagnitude [&Type "Double", &Units "a.u."]       1.0821766424172612e+00
+   &dipoleElecContrib [&Type "ArrayOfDoubles", &Dim (3,1)] "Electronic contribution"
+                                                         0
+
+0                                      0.0000000000000000e+00
+1                                      0.0000000000000000e+00
+2                                     -1.0893428941111134e+00
+   &dipoleNucContrib [&Type "ArrayOfDoubles", &Dim (3,1)] "Nuclear contribution"
+                                                         0
+
+0                                      0.0000000000000000e+00
+1                                      0.0000000000000000e+00
+2                                      7.1662516938522103e-03
+   &dipoleTotal [&Type "ArrayOfDoubles", &Dim (3,1)] "Total"
+                                                         0
+
+0                                      0.0000000000000000e+00
+1                                      0.0000000000000000e+00
+2                                     -1.0821766424172612e+00
+   &doAtomicDipole [&Type "Boolean"] false
+   &Method [&Type "String"] "CASSCF"
+   &Level [&Type "String"] "Unrelaxed density"
+   &Mult [&Type "Integer"] 2
+   &State [&Type "Integer"] 0
+   &Irrep [&Type "Integer"] 0
+$End
+$CASSCF_Dipole_Moment
+   &GeometryIndex 1
+   &dipoleMagnitude [&Type "Double", &Units "a.u."]       2.8002493170464368e-02
+   &dipoleElecContrib [&Type "ArrayOfDoubles", &Dim (3,1)] "Electronic contribution"
+                                                         0
+
+0                                      0.0000000000000000e+00
+1                                      0.0000000000000000e+00
+2                                     -3.5168744864316578e-02
+   &dipoleNucContrib [&Type "ArrayOfDoubles", &Dim (3,1)] "Nuclear contribution"
+                                                         0
+
+0                                      0.0000000000000000e+00
+1                                      0.0000000000000000e+00
+2                                      7.1662516938522103e-03
+   &dipoleTotal [&Type "ArrayOfDoubles", &Dim (3,1)] "Total"
+                                                         0
+
+0                                      0.0000000000000000e+00
+1                                      0.0000000000000000e+00
+2                                     -2.8002493170464368e-02
+   &doAtomicDipole [&Type "Boolean"] false
+   &Method [&Type "String"] "CASSCF"
+   &Level [&Type "String"] "Unrelaxed density"
+   &Mult [&Type "Integer"] 2
+   &State [&Type "Integer"] 1
+   &Irrep [&Type "Integer"] 0
+$End
+$Calculation_Timings
+   &GeometryIndex 1
+   &GTOINT [&Type "Double"]       5.1136970000000019e+00
+   &SCF [&Type "Double"]       7.7493669999999995e+00
+   &CASSCF [&Type "Double"]       5.8231596400000001e+02
+   &PROPINT [&Type "Double"]       2.7625840000000608e+00
+   &PROP [&Type "Double"]       1.0976920000000518e+00
+   &SUM [&Type "Double"]       5.9903930400000013e+02
+$End

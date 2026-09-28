@@ -479,6 +479,45 @@ Emission side & $\propto \nu^3 n_r \chi_{\mathrm{ED}}$ & The papers'
 \end{tabularx}
 \end{center}
 
+\section{pNMR pseudocontact shifts}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{2.0cm} X >{\raggedright\arraybackslash}p{3.2cm}@{}}
+\toprule
+Quantity & Value & Meaning / limits & Source \\
+\midrule
+PDA range of validity & dipolar part within 10~\% beyond $\sim$7~\AA & Below
+  4--5~\AA{} from the centre the contact (through-bond) term dominates the
+  pNMR shielding; a PCS printed there is not a prediction of the total
+  shift.  The near-metal limit is a boundary of the method, not a
+  numerical issue & \textsf{[Measured]} the source's benchmark table \\
+Susceptibility construction & $\chi'$ vs
+  $\mathbf{g}\langle\mathbf{SS}\rangle\mathbf{g}^{\mathsf T}$ & The
+  non-symmetric $\chi' = (\mu_B^2\mu_0g_e/k_BT)\,\mathbf{g}
+  \langle\mathbf{SS}\rangle$ and the symmetric construction give different
+  anisotropies for the same parameters (source benchmark: 14.8 vs
+  27.3$\times10^{-32}$~m$^3$); the first is the PDA-consistent one and this
+  toolkit's default.  State the construction before comparing numbers &
+  \textsf{[Literature]} Mare\v{s} \& Vaara 2018, Eqs.~(3), (5) \\
+PCS invariance & isotropic and antisymmetric parts do not enter & Only the
+  traceless symmetric part of $\chi$ contributes to $\delta_{\mathrm{PCS}}$
+  (exact; tested); the axial limit is exactly
+  $(1/12\pi r^3)\Delta\chi_{\mathrm{ax}}(3\cos^2\theta-1)$ & \textsf{[Measured]}
+  menu 35's invariants \\
+Node condition & $\langle SS\rangle_\parallel g_\parallel =
+  \langle SS\rangle_\perp g_\perp$ & Near-axial systems cross this
+  condition where the axiality -- and the PCS surface -- vanish; the
+  effective-spin dyadic must be built at the actual temperature &
+  \textsf{[Literature]} same, Fig.~5 discussion \\
+ORCA susceptibility units & cm$^3$\,K/mol is the cgs-emu molar value &
+  $\chi_{\mathrm{SI,molar}} = 4\pi\chi_{\mathrm{cgs}}$; the menu's
+  $\chi$ from the parsed g reproduces ORCA's printed value to the printed
+  precision (regression: 0.3759 for CO$^+$) & \textsf{[Measured]} fixtures
+  \file{co\_plus\_qdpt.*} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
 \section{Crystal fields}
 
 \begin{center}

@@ -58,6 +58,7 @@ from .orbitals import (
     orbital_portrait_report,
     orbital_space,
     perturb_batch,
+    pnmr_report,
     state_data_report,
     wasp_guess,
 )
@@ -99,6 +100,7 @@ HANDLERS = {
     "perturb_batch": perturb_batch,
     "state_data_report": state_data_report,
     "judd_ofelt_fit": judd_ofelt_fit,
+    "pnmr_report": pnmr_report,
     "pysisyphus_generate": pysisyphus_generate,
     "pysisyphus_report": pysisyphus_report,
     "dm_batch": dm_batch_generate,

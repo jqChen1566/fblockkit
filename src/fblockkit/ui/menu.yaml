@@ -108,6 +108,9 @@ items:
   - number: "34"
     title: "Judd-Ofelt intensity parameters (a transition dataset -> Omega_2/4/6 and radiative quantities)"
     handler: judd_ofelt_fit
+  - number: "35"
+    title: "pNMR pseudocontact shifts (a susceptibility run file + a structure -> per-nucleus PCS)"
+    handler: pnmr_report
   - number: "0"
     title: Quit
     handler: quit

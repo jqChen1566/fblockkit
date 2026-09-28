@@ -79,6 +79,10 @@ done
 cp -r "$REPO/fixtures/pysisyphus/h2o_opt/qm_calcs" work/qm_calcs
 # the menu-34 Judd-Ofelt dataset (the Eu3+ Babu-2000 regression fixture)
 cp "$REPO/fixtures/judd_ofelt/babu2000_eu3.yaml" work/
+# the menu-35 pNMR pair (the CO+ QDPT run: structure, output, run file)
+cp "$REPO/fixtures/pnmr/co_plus/co_plus.xyz" work/
+cp "$REPO/fixtures/pnmr/co_plus/co_plus_qdpt.out" work/
+cp "$REPO/fixtures/pnmr/co_plus/co_plus_qdpt_g.yaml" work/
 
 for script in scripts/*.txt; do
   name=$(basename "$script" .txt)
