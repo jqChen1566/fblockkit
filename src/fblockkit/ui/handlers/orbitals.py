@@ -872,3 +872,39 @@ def pnmr_report(session: Session) -> None:
     md_path = path.with_name(path.name + ".pnmr.fbk.md")
     md_path.write_text(report_lines, encoding="utf-8")
     session.say(f"Report written: {md_path}")
+
+
+def poly_aniso_report(session: Session) -> None:
+    """Menu 39: polynuclear magnetism from a POLY_ANISO output.
+
+    Reads the cluster report of the ORCA POLY_ANISO driver: the per-center
+    single-ion data, the exchange decomposition, the coupled states, the
+    chiT(T) table and the Van Vleck susceptibility tensors.
+    """
+    from ...analysis import poly_aniso as poly_analysis
+
+    path_text = session.ask("poly_aniso.output path (from otool_poly_aniso)")
+    if not path_text:
+        session.say("Cancelled (no path given).")
+        return
+    path = Path(path_text)
+    try:
+        parsed = parse_auto(path)
+    except (ParserError, OSError) as exc:
+        session.say(f"Polynuclear magnetism report failed: {exc}")
+        return
+    data = parsed.sections.get("poly_aniso") or {}
+    try:
+        body = poly_analysis.render(data, source=path.name)
+    except poly_analysis.PolyAnisoError as exc:
+        session.say(f"Polynuclear magnetism report failed: {exc}")
+        return
+    session.say(body)
+    section = ReportSection(title="Polynuclear magnetism (POLY_ANISO)", body=body)
+    report_lines = f"## {section.title}\n\n{section.body}\n"
+    refs = references_section(poly_analysis.evidence())
+    if refs is not None:
+        report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
+    md_path = path.with_name(path.name + ".polyaniso.fbk.md")
+    md_path.write_text(report_lines, encoding="utf-8")
+    session.say(f"Report written: {md_path}")

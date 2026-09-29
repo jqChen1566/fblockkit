@@ -188,6 +188,11 @@ def _prepare_work() -> None:
     shutil.copy(
         REPO / "fixtures" / "ailft" / "ni_ailft.out", work / "ni_ailft.out"
     )
+    # the menu-39 polynuclear-magnetism fixture (the two-center POLY_ANISO probe)
+    shutil.copy(
+        REPO / "fixtures" / "poly_aniso" / "two_center_probe.out",
+        work / "two_center_probe.out",
+    )
 
 
 @pytest.fixture(scope="module")

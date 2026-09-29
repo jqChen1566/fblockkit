@@ -622,6 +622,39 @@ Termination & LFDFT (ADF) & Ligand-field DFT lives inside the commercial
 \end{tabularx}
 \end{center}
 
+\section{Polynuclear magnetism (POLY\_ANISO)}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{2.6cm} X >{\raggedright\arraybackslash}p{3.0cm}@{}}
+\toprule
+Quantity & Value & Meaning / limits & Source \\
+\midrule
+Exchange constants $J$ & user input, never computed here & The driver takes
+  $J$ from the input (measured elsewhere or fitted); the menu reports it
+  and never fits & \textsf{[Manual]} ORCA 6.1 \S7.18 \\
+Lines model & exact only in three cases & Two isotropic spins; one Ising
+  plus one isotropic spin; two Ising spins; approximate otherwise &
+  \textsf{[Manual]} same \\
+Dipole-dipole coupling & exact from the ab initio moments & Usually
+  dominant in strongly anisotropic lanthanides; needs the centre
+  coordinates (\code{COOR} in the driver input) & \textsf{[Manual]} same \\
+Interaction decomposition & isotropic / symmetric / anti-symmetric weights
+  & The full $3\times3$ interaction matrix decomposed per pair and model;
+  the weights are data facts printed by the driver & \textsf{[Measured]}
+  fixtures \file{poly\_aniso/} \\
+Data-file naming & \code{aniso\_1.input}, \code{aniso\_2.input}, \ldots{}
+  mandatory & Measured: a renamed file aborts the run in
+  \code{inquire\_key\_presence}; the \code{\&POLY\_ANISO} head is equally
+  mandatory (the read stops in \code{fetch\_init} without it) &
+  \textsf{[Measured]} same \\
+Termination & ab initio $J$ (LDF-CAHF / PNO-CASPT2) & The joint computation
+  of exchange splittings lives in MOLPRO (Hallmen et al.\ 2019) -- outside
+  the ORCA ecosystem; registered as a documented termination &
+  \textsf{[Adequacy]} this project's constraint \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
 \section{Crystal fields}
 
 \begin{center}

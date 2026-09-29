@@ -139,6 +139,11 @@ def main() -> int:
             REPO / "fixtures" / "ailft" / "ni_ailft.out",
             inputs / "ni_ailft.out",
         )
+        # the menu-39 polynuclear-magnetism fixture (the two-center POLY_ANISO probe)
+        shutil.copy(
+            REPO / "fixtures" / "poly_aniso" / "two_center_probe.out",
+            inputs / "two_center_probe.out",
+        )
         # the exact-entropy chain (menu 12): the converged CASSCF output, the
         # FCIDUMP it dumped, and the two orca_2json exports of the gbw
         shutil.copy(FIXTURES / "n2_fcidump_step_a.out", inputs / "n2_fcidump_step_a.out")
@@ -242,6 +247,7 @@ def main() -> int:
                     "36", "work/co_magrelax.out",
                     "37", "work/fecl4_xas.out", "2.0",
                     "38", "work/ni_ailft.out", "", "",
+                    "39", "work/two_center_probe.out",
                     "31", "work/h2o_absp.property.txt",
                     "8", "work/saved.txt",
                     "0",
@@ -641,6 +647,14 @@ def main() -> int:
                 and "total RMS = 457.4 cm-1" in ailft_report
                 and "ZETA_D = 664.14 cm-1" in ailft_report,
                 "menu 38 reads the AILFT blocks and reports the fit quality",
+            )
+            poly_report = read("two_center_probe.out.polyaniso.fbk.md")
+            check(
+                "centers: 2 independent, 2 in total" in poly_report
+                and "Isotropic 32.708% / Symmetric 93.839% / Anti-Symmetric 11.155%"
+                in poly_report
+                and "chiT = 0.501549 -> 0.750429 cm3 K mol-1" in poly_report,
+                "menu 39 reads the POLY_ANISO cluster report",
             )
             xas_report = read("fecl4_xas.out.xas.fbk.md")
             check(

@@ -41,6 +41,7 @@ from typing import Any
 from ..knowledge.elements import ElementError, is_f_element
 from ..knowledge.models import ParseResult
 from . import ailft as _ailft
+from . import poly_aniso as _poly_aniso
 from . import rocis_spectra as _rocis_spectra
 from . import single_aniso as _single_aniso
 from .base import ParserError, float_or_none, read_text, register
@@ -52,6 +53,20 @@ PROGRAM = "orca"
 _BANNER_RE = re.compile(r"\*\s+O\s+R\s+C\s+A\s+\*")
 _VERSION_RE = re.compile(r"Program Version\s+(\d+(?:\.\d+)*)")
 TERMINATED_MARK = "****ORCA TERMINATED NORMALLY****"
+
+# The POLY_ANISO output comes from an independent program shipped inside the
+# ORCA distribution (manual sections 7.17/7.18) and carries its own banner
+# instead of the ORCA one -- measured on the fixtures/poly_aniso probe,
+# 2026-09-29.
+_POLY_ANISO_BANNER = "POLY_ANISO Program"
+
+
+def _is_orca_family(head: str) -> bool:
+    """detect()'s view: ORCA output proper (banner + version line), or the
+    POLY_ANISO driver output of the distribution (which has its own banner)."""
+    return (
+        bool(_BANNER_RE.search(head)) and "Program Version" in head
+    ) or _POLY_ANISO_BANNER in head
 
 # --- SCF --------------------------------------------------------------------
 
@@ -1371,12 +1386,16 @@ class OrcaParser:
         (no full parse)."""
         text = read_text(path)
         head = "\n".join(text.splitlines()[:120])
-        return bool(_BANNER_RE.search(head)) and "Program Version" in head
+        return _is_orca_family(head)
 
     def parse(self, path: str | Path) -> ParseResult:
         text = read_text(path)
         lines = text.splitlines()
-        if not _BANNER_RE.search("\n".join(lines[:120])):
+        head = "\n".join(lines[:120])
+        # NOTE: unlike detect() this stays banner-only on purpose -- fragment
+        # files (bare ORBITAL ENERGIES tables with a banner header, see
+        # tests/test_parsers.py) are parsed directly and carry no version line.
+        if not (_BANNER_RE.search(head) or _POLY_ANISO_BANNER in head):
             raise ParserError(
                 f"{path} is not ORCA output (no ORCA banner found). "
                 "Next step: confirm the file comes from ORCA; for another program's "
@@ -1424,6 +1443,7 @@ class OrcaParser:
             "single_aniso": _single_aniso.parse_segments(lines),
             "rocis": _rocis_spectra.parse_rocis(lines),
             "ailft": _ailft.parse_ailft(lines),
+            "poly_aniso": _poly_aniso.parse_poly_aniso(lines),
             "optimization": optimization,
             "dipole": _parse_dipole(lines),
             "soc_present": bool(_SOC_MARKERS_RE.search(text)),

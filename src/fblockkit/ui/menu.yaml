@@ -120,6 +120,9 @@ items:
   - number: "38"
     title: "Ab initio ligand-field analysis (an AILFT output -> LF splitting, Slater-Condon/Racah parameters and the fit quality)"
     handler: ailft_report
+  - number: "39"
+    title: "Polynuclear magnetism (a POLY_ANISO output -> per-center data, the exchange decomposition and the chiT summary)"
+    handler: poly_aniso_report
   - number: "0"
     title: Quit
     handler: quit

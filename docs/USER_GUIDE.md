@@ -1719,6 +1719,47 @@ DFT) lives inside ADF, a commercial package that is not available here --
 registered as a termination: the AILFT route covers the same analysis
 needs from open programs.
 
+## 39 Polynuclear magnetism (a POLY_ANISO output)
+
+**What it is for**: the cluster magnetic analysis ORCA's POLY_ANISO driver
+produces from single-ion ab initio data (manual section 7.18): the
+exchange-coupled states of a polynuclear complex, the interaction-matrix
+decomposition, chiT(T) and the Van Vleck susceptibility tensors.
+
+**How**: menu 39 -> the `poly_aniso.output` path of a run of
+`$ORCA/otool_poly_aniso < poly_aniso.input > poly_aniso.output` (the driver
+is called independently of ORCA).  Each magnetic center is first treated as
+an isolated fragment (`CASSCF/NEVPT2 + SOC + SINGLE_ANISO`, the menu-36
+data); the per-center data files (`<job>.CASSCF.anisofile`) must be placed
+as `aniso_1.input`, `aniso_2.input`, ... -- the names are mandatory
+(measured).  The report is `<output>.polyaniso.fbk.md`.
+
+**How to read it**:
+
+- the per-center echo (data file, coordinates, spin-orbit states and
+  spectrum, g values) -- a cross-check against the menu-36 analysis of the
+  same data;
+- the exchange block: the coupled-state count, the pair list with the J
+  values you supplied, and what models were included (Lines-1,
+  dipole-dipole, the ITO decomposition);
+- the first-order anisotropic coupling: per pair and per model the full 3x3
+  interaction matrix and its decomposition into isotropic / symmetric /
+  anti-symmetric terms with weights;
+- the coupled-state table (Lines / dipole-dipole / total, absolute and
+  relative cm-1), the population analysis and the expectation-value tables
+  (moments per exchange state and center);
+- chiT(T) (101 points by default) and the Van Vleck susceptibility tensor
+  sequence (one 3x3 with main values and main axes per printed temperature).
+
+**Boundaries**: the exchange constants J are your input (measured elsewhere
+or fitted) -- this workflow never computes or fits them; a joint ab initio
+computation of exchange splittings (the LDF-CAHF / many-state PNO-CASPT2
+route) is outside the ORCA ecosystem and is registered as a documented
+termination.  The Lines model is exact only for two isotropic spins, one
+Ising plus one isotropic spin, or two Ising spins, and approximate
+otherwise; the dipole-dipole coupling is evaluated exactly from the ab
+initio moments and usually dominates in strongly anisotropic lanthanides.
+
 ## Appendix A Command line
 
 ```text

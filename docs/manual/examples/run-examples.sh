@@ -91,6 +91,8 @@ cp "$REPO/fixtures/magrelax/co_magrelax.out" work/
 cp "$REPO/fixtures/rocis/fecl4_xas.out" work/
 # the menu-38 AILFT fixture (the Ni(2+) d8 free-ion run)
 cp "$REPO/fixtures/ailft/ni_ailft.out" work/
+# the menu-39 polynuclear-magnetism fixture (the two-center POLY_ANISO probe)
+cp "$REPO/fixtures/poly_aniso/two_center_probe.out" work/
 
 for script in scripts/*.txt; do
   name=$(basename "$script" .txt)

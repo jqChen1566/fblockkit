@@ -1,0 +1,96 @@
+\chapter{Polynuclear magnetism (menu 39)}
+\label{ch:menu39}
+\menulabel{39}
+
+\section{Purpose}
+
+The POLY\_ANISO driver shipped inside the ORCA distribution (manual
+section 7.18) combines the single-ion ab initio data of each magnetic
+centre -- the \code{SINGLE\_ANISO} results of the \code{CASSCF/NEVPT2 + SOC}
+runs, one data file per centre -- with the inter-site magnetic exchange and
+the exact dipole-dipole coupling into the cluster magnetic properties.
+This menu reads what the driver printed: the per-centre echo, the exchange
+decomposition, the coupled states, $\chi T(T)$ and the Van Vleck
+susceptibility tensors.  It never recomputes anything, and it never fits
+the exchange constants.
+
+\section{What you need}
+
+A \code{poly\_aniso.output} produced by
+
+\begin{quote}
+\code{otool\_poly\_aniso < poly\_aniso.input > poly\_aniso.output}
+\end{quote}
+
+(the driver is called independently of ORCA), plus the per-centre data
+files of the \code{SINGLE\_ANISO} runs (the
+\code{<job>.CASSCF.\allowbreak anisofile} files) placed as
+\code{aniso\_1.input}, \code{aniso\_2.input},
+\ldots{} -- the names are mandatory (measured: a renamed file aborts the
+run in \code{inquire\_key\_presence}).  The driver input starts with the
+\code{\&POLY\_ANISO} head (equally mandatory -- without it the read stops
+in \code{fetch\_init}) and carries the cluster definition: the \code{NNEQ}
+block (centre types, equivalent counts, low-lying states per centre, with
+the ab initio / isotropic-centre flags), the \code{COOR} coordinates and
+the exchange constant list (\code{PAIR}/\code{LIN1}, \code{LIN3},
+\code{LIN9}); the exchange constants are user input (measured elsewhere or
+fitted), never computed by the program.
+
+\section{Walkthrough}
+
+The example reads the two-centre probe fixture (two Co(II) single-ion data
+files at invented relative coordinates with an invented $J$ -- a format and
+flow probe, see the boundaries).  The report echoes each centre (g values
+2.0000 / 2.0000 / 1.9995 and the spin-orbit spectrum
+0 / 0 / 29361.20 / 29361.20~cm$^{-1}$, matching the menu-36 analysis of the
+same data), the exchange block ($J$ = 0.10000~cm$^{-1}$), the interaction
+decomposition (LINES-1: isotropic 32.708\,\%, symmetric 93.839\,\%,
+anti-symmetric 11.155\,\%), the coupled states and the $\chi T$ summary.
+
+\lstinputlisting[style=fbkcode, firstline=44, lastline=79,
+  title={The menu-39 example (the per-centre echo, the exchange
+  decomposition, the coupled states and the $\chi T$ summary)}]
+  {examples/expected/m39_polyaniso.txt}
+
+\section{What you get}
+
+The report \code{<output>.polyaniso.fbk.md}: the centre count; per centre
+the data file, the coordinates, the spin-orbit state count and spectrum
+and the g values; the exchange block (coupled states, pair list with the
+$J$ values, which models were included); per pair and model the full
+$3\times3$ interaction matrix with its isotropic / symmetric /
+anti-symmetric decomposition weights; the coupled-state table (Lines /
+dipole-dipole / total, absolute and relative); $\chi T(T)$ over the
+requested temperature range and the Van Vleck susceptibility tensor
+sequence (one $3\times3$ with main values and main axes per printed
+temperature); the closing notes (skipped torque/magnetization by the
+caller's choice, completion).
+
+\section{Conventions, cross-checks and boundaries (measured)}
+
+\begin{readbox}
+\begin{itemize}
+  \item \textbf{The exchange constants are the caller's input}: the driver
+    (and this menu) never computes or fits them; a joint ab initio
+    computation of exchange splittings (the LDF-CAHF / many-state
+    PNO-CASPT2 route of Hallmen et al.\ 2019, a MOLPRO implementation) is
+    outside the ORCA ecosystem -- registered as a documented termination,
+    not implemented.
+  \item \textbf{The Lines model is exact only in three cases} (two
+    isotropic spins; one Ising plus one isotropic spin; two Ising spins)
+    and approximate otherwise; the dipole-dipole coupling is evaluated
+    exactly from the ab initio moments and usually dominates in strongly
+    anisotropic lanthanides (manual section 7.18).
+  \item \textbf{Measured interface facts} (ORCA 6.1.1,
+    \code{otool\_poly\_aniso} v1.0.0, fixtures \file{poly\_aniso/}): the
+    \code{\&POLY\_ANISO} head and the \code{aniso\_N.input} names are
+    mandatory; the driver output is recognised by the toolkit as
+    ORCA-family output (its own banner); the per-centre echo cross-checks
+    the menu-36 SINGLE\_ANISO analysis of the same data (the g and
+    spectrum values agree).
+  \item \textbf{Probe boundary}: the shipped fixture is a format-and-flow
+    probe -- two independent single-ion runs at invented coordinates with
+    an invented $J$ -- not a physical cluster; it validates the formats,
+    the mandatory naming and the report parsing.
+\end{itemize}
+\end{readbox}

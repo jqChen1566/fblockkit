@@ -1,0 +1,14 @@
+&POLY_ANISO
+NNEQ
+2  T
+1  1
+2  2
+PAIR
+1
+1 2 0.1
+COOR
+0.0 0.0 0.0
+0.0 0.0 3.7
+TINT
+0.0 300.0 101
+End of Input
