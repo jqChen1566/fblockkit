@@ -586,6 +586,42 @@ RIXS window & 6-element \code{OrbWin} & The 4-element XAS window gives the
 \end{tabularx}
 \end{center}
 
+\section{Ab initio ligand-field analysis (AILFT)}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{2.6cm} X >{\raggedright\arraybackslash}p{3.0cm}@{}}
+\toprule
+Quantity & Value & Meaning / limits & Source \\
+\midrule
+AILFT fit & engine's own fit, never refitted & The parameters (VLFT,
+  Slater-Condon, Racah, SOC constant) parametrize the ab initio effective
+  Hamiltonian; the menu reads the printed fit and restates its semantics
+  & \textsf{[Manual]} ORCA 6.1 \S3.13.16 \\
+CASSCF-level RMS & intrinsic near zero & The LFT parametrization is exact
+  for the CASSCF level (free-ion measured 0.0); the correlation-level RMS
+  reflects e.g.\ the neglected anisotropy of electron-electron repulsion
+  in covalent complexes & \textsf{[Literature]} Lang, Atanasov \& Neese
+  2020 (rmsd discussion) \\
+F0 / Racah A at NEVPT2 & not defined & F0 (and Racah A) are printed at the
+  CASSCF level only (``fixed''); NEVPT2 starts from $F^2$, $F^4$ ($F^6$)
+  & \textsf{[Manual]} same, measured \\
+Nephelauxetic ratios & need the caller's free-ion references & The menu
+  computes $\beta = B/B_0$ and $\zeta/\zeta_0$ only from values passed at
+  the prompt; reductions are the classic covalency indicators; no built-in
+  free-ion table (registered increment) & \textsf{[Literature]} Jung,
+  Atanasov \& Neese 2017 \\
+SOC constant & ZETA\_D / ZETA\_F from a CASSCF-orbital fit & The engine
+  fits $\zeta$ against the CASSCF-orbital SOC matrix elements; the menu
+  reports the fitted value and the fit's own RMS & \textsf{[Measured]}
+  fixtures \file{ailft/} \\
+Termination & LFDFT (ADF) & Ligand-field DFT lives inside the commercial
+  ADF package -- not available here; the AILFT route covers the same
+  analysis from open programs & \textsf{[Adequacy]} this project's
+  constraint \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
 \section{Crystal fields}
 
 \begin{center}

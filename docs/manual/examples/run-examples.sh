@@ -89,6 +89,8 @@ cp "$REPO/fixtures/single_aniso/co_aniso2.out" work/
 cp "$REPO/fixtures/magrelax/co_magrelax.out" work/
 # the menu-37 core-excited-spectra fixture (the [FeCl4]2- ROCIS run)
 cp "$REPO/fixtures/rocis/fecl4_xas.out" work/
+# the menu-38 AILFT fixture (the Ni(2+) d8 free-ion run)
+cp "$REPO/fixtures/ailft/ni_ailft.out" work/
 
 for script in scripts/*.txt; do
   name=$(basename "$script" .txt)

@@ -38,6 +38,7 @@ Available functions:
   35  pNMR pseudocontact shifts (a susceptibility run file + a structure -> per-nucleus PCS)
   36  Magnetic relaxation and QTM (an ORCA output with SINGLE_ANISO or MAGRELAX -> the barrier estimate and tau(T))
   37  Core-excited spectra XAS/RIXS (a ROCIS output -> the spectra table, the edge branching ratio and the RIXS status)
+  38  Ab initio ligand-field analysis (an AILFT output -> LF splitting, Slater-Condon/Racah parameters and the fit quality)
    0  Quit
 Choose a number (Enter = leave empty)> 36
 ORCA output path (with a SINGLE_ANISO (ANISO sub-block) or MAGRELAX section) (Enter = leave empty)> work/co_aniso2.out
@@ -100,6 +101,7 @@ Available functions:
   35  pNMR pseudocontact shifts (a susceptibility run file + a structure -> per-nucleus PCS)
   36  Magnetic relaxation and QTM (an ORCA output with SINGLE_ANISO or MAGRELAX -> the barrier estimate and tau(T))
   37  Core-excited spectra XAS/RIXS (a ROCIS output -> the spectra table, the edge branching ratio and the RIXS status)
+  38  Ab initio ligand-field analysis (an AILFT output -> LF splitting, Slater-Condon/Racah parameters and the fit quality)
    0  Quit
 Choose a number (Enter = leave empty)> 36
 ORCA output path (with a SINGLE_ANISO (ANISO sub-block) or MAGRELAX section) (Enter = leave empty)> work/co_magrelax.out
@@ -179,6 +181,7 @@ Available functions:
   35  pNMR pseudocontact shifts (a susceptibility run file + a structure -> per-nucleus PCS)
   36  Magnetic relaxation and QTM (an ORCA output with SINGLE_ANISO or MAGRELAX -> the barrier estimate and tau(T))
   37  Core-excited spectra XAS/RIXS (a ROCIS output -> the spectra table, the edge branching ratio and the RIXS status)
+  38  Ab initio ligand-field analysis (an AILFT output -> LF splitting, Slater-Condon/Racah parameters and the fit quality)
    0  Quit
 Choose a number (Enter = leave empty)> 0
 Goodbye.

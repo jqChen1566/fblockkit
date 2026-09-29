@@ -1,0 +1,16 @@
+!NEVPT2 def2-SVP def2-SVP/C TightSCF
+%pal nprocs 8 end
+%maxcore 4000
+%casscf
+  nel 8
+  norb 5
+  ActOrbs dOrbs
+  mult 3,1
+  nroots 10,15
+  rel
+    dosoc true
+  end
+end
+*xyz 2 3
+Ni 0.0000000000 0.0000000000 0.0000000000
+*

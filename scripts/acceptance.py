@@ -134,6 +134,11 @@ def main() -> int:
             REPO / "fixtures" / "rocis" / "fecl4_xas.out",
             inputs / "fecl4_xas.out",
         )
+        # the menu-38 AILFT fixture (the Ni(2+) d8 free-ion run)
+        shutil.copy(
+            REPO / "fixtures" / "ailft" / "ni_ailft.out",
+            inputs / "ni_ailft.out",
+        )
         # the exact-entropy chain (menu 12): the converged CASSCF output, the
         # FCIDUMP it dumped, and the two orca_2json exports of the gbw
         shutil.copy(FIXTURES / "n2_fcidump_step_a.out", inputs / "n2_fcidump_step_a.out")
@@ -236,6 +241,7 @@ def main() -> int:
                     "36", "work/co_aniso2.out",
                     "36", "work/co_magrelax.out",
                     "37", "work/fecl4_xas.out", "2.0",
+                    "38", "work/ni_ailft.out", "", "",
                     "31", "work/h2o_absp.property.txt",
                     "8", "work/saved.txt",
                     "0",
@@ -628,6 +634,13 @@ def main() -> int:
                 and "do not apply" in relax_sa
                 and "7.2538e-02" in relax_sa,
                 "menu 36 guards the near-isotropic KD table and reports the UBAR maximum",
+            )
+            ailft_report = read("ni_ailft.out.ailft.fbk.md")
+            check(
+                "Racah (cm-1): B = 1328.1" in ailft_report
+                and "total RMS = 457.4 cm-1" in ailft_report
+                and "ZETA_D = 664.14 cm-1" in ailft_report,
+                "menu 38 reads the AILFT blocks and reports the fit quality",
             )
             xas_report = read("fecl4_xas.out.xas.fbk.md")
             check(

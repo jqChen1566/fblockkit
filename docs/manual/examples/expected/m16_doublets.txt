@@ -38,6 +38,7 @@ Available functions:
   35  pNMR pseudocontact shifts (a susceptibility run file + a structure -> per-nucleus PCS)
   36  Magnetic relaxation and QTM (an ORCA output with SINGLE_ANISO or MAGRELAX -> the barrier estimate and tau(T))
   37  Core-excited spectra XAS/RIXS (a ROCIS output -> the spectra table, the edge branching ratio and the RIXS status)
+  38  Ab initio ligand-field analysis (an AILFT output -> LF splitting, Slater-Condon/Racah parameters and the fit quality)
    0  Quit
 Choose a number (Enter = leave empty)> 16
 Kramers-doublet table JSON path (per doublet: the three g values and theta3 or the g3 axis; see the user guide) (Enter = leave empty)> work/dy_doublets.json
@@ -96,6 +97,7 @@ Available functions:
   35  pNMR pseudocontact shifts (a susceptibility run file + a structure -> per-nucleus PCS)
   36  Magnetic relaxation and QTM (an ORCA output with SINGLE_ANISO or MAGRELAX -> the barrier estimate and tau(T))
   37  Core-excited spectra XAS/RIXS (a ROCIS output -> the spectra table, the edge branching ratio and the RIXS status)
+  38  Ab initio ligand-field analysis (an AILFT output -> LF splitting, Slater-Condon/Racah parameters and the fit quality)
    0  Quit
 Choose a number (Enter = leave empty)> 0
 Goodbye.

@@ -40,6 +40,7 @@ from typing import Any
 
 from ..knowledge.elements import ElementError, is_f_element
 from ..knowledge.models import ParseResult
+from . import ailft as _ailft
 from . import rocis_spectra as _rocis_spectra
 from . import single_aniso as _single_aniso
 from .base import ParserError, float_or_none, read_text, register
@@ -1422,6 +1423,7 @@ class OrcaParser:
             "susceptibility": _parse_susceptibility(lines),
             "single_aniso": _single_aniso.parse_segments(lines),
             "rocis": _rocis_spectra.parse_rocis(lines),
+            "ailft": _ailft.parse_ailft(lines),
             "optimization": optimization,
             "dipole": _parse_dipole(lines),
             "soc_present": bool(_SOC_MARKERS_RE.search(text)),

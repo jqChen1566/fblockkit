@@ -184,6 +184,10 @@ def _prepare_work() -> None:
     shutil.copy(
         REPO / "fixtures" / "rocis" / "fecl4_xas.out", work / "fecl4_xas.out"
     )
+    # the menu-38 AILFT fixture (the Ni(2+) d8 free-ion run)
+    shutil.copy(
+        REPO / "fixtures" / "ailft" / "ni_ailft.out", work / "ni_ailft.out"
+    )
 
 
 @pytest.fixture(scope="module")

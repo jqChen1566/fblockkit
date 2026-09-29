@@ -709,6 +709,49 @@ def judd_ofelt_fit(session: Session) -> None:
     session.say(f"Report written: {md_path}")
 
 
+def ailft_report(session: Session) -> None:
+    """Menu 38: ab initio ligand-field analysis from an ORCA AILFT output."""
+    from ...analysis import ailft as ailft_analysis
+
+    path_text = session.ask("ORCA output path (a CASSCF run with the AILFT driver)")
+    if not path_text:
+        session.say("Cancelled (no path given).")
+        return
+    path = Path(path_text)
+    try:
+        parsed = parse_auto(path)
+    except (ParserError, OSError) as exc:
+        session.say(f"Ligand-field analysis failed: {exc}")
+        return
+    data = parsed.sections.get("ailft") or {}
+    b0_text = session.ask("Free-ion Racah B (cm-1) for the nephelauxetic ratio (Enter = skip)").strip()
+    zeta_text = session.ask("Free-ion SOC constant zeta0 (cm-1) (Enter = skip)").strip()
+    def _opt(text: str) -> float | None:
+        if not text:
+            return None
+        try:
+            return float(text)
+        except ValueError:
+            session.say(f"Not a number: {text!r}; skipping this reference.")
+            return None
+    try:
+        body = ailft_analysis.render(
+            data, source=path.name, free_ion_B_cm1=_opt(b0_text), free_ion_zeta_cm1=_opt(zeta_text)
+        )
+    except ailft_analysis.AilftError as exc:
+        session.say(f"Ligand-field analysis failed: {exc}")
+        return
+    session.say(body)
+    section = ReportSection(title="Ab initio ligand-field analysis", body=body)
+    report_lines = f"## {section.title}\n\n{section.body}\n"
+    refs = references_section(ailft_analysis.evidence())
+    if refs is not None:
+        report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
+    md_path = path.with_name(path.name + ".ailft.fbk.md")
+    md_path.write_text(report_lines, encoding="utf-8")
+    session.say(f"Report written: {md_path}")
+
+
 def xas_report(session: Session) -> None:
     """Menu 37: core-excited spectra (XAS/RIXS) from a ROCIS output.
 

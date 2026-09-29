@@ -117,6 +117,9 @@ items:
   - number: "37"
     title: "Core-excited spectra XAS/RIXS (a ROCIS output -> the spectra table, the edge branching ratio and the RIXS status)"
     handler: xas_report
+  - number: "38"
+    title: "Ab initio ligand-field analysis (an AILFT output -> LF splitting, Slater-Condon/Racah parameters and the fit quality)"
+    handler: ailft_report
   - number: "0"
     title: Quit
     handler: quit

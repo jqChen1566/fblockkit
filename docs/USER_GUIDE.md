@@ -1679,6 +1679,46 @@ registered candidate increment.  The CAS-CI/RAS-CI XAS protocol
 `maxiter 1`) is documented in the manual chapter but this menu reads ROCIS
 outputs only.
 
+## 38 Ab initio ligand-field analysis (an AILFT output)
+
+**What it is for**: the ligand-field parameters ORCA's AILFT module has
+fitted to an ab initio (SA-CASSCF/NEVPT2) effective Hamiltonian (manual
+section 3.13.16): the ligand-field one-electron eigenfunctions (the LF
+splitting), the Slater-Condon and Racah parameters at each theoretical
+level, the fit quality and the SOC constant.
+
+**How**: menu 38 -> the ORCA output path of a CASSCF run with the AILFT
+driver (`%casscf` with `ActOrbs dOrbs`/`fOrbs` or `LFTCase 3d`/`4f` ...),
+then optionally the free-ion Racah B and/or SOC constant zeta0 for the
+nephelauxetic ratios (Enter skips).  The report is `<output>.ailft.fbk.md`.
+
+**How to read it**:
+
+- one block per level (CASSCF and NEVPT2): the ligand-field eigenfunction
+  energies (cm-1) with their spread, the Slater-Condon parameters (F0 is
+  marked "(fixed)" when taken from the raw two-electron integrals; f shells
+  carry F6), the Racah parameters B, C and C/B, and the `*.lft.gbw` file
+  name (openable with `orca_plot`);
+- the fit quality: total and per-block RMS errors and Pearson's
+  correlation.  The near-zero CASSCF-level RMS is intrinsic -- the LFT
+  parametrization is exact for that level -- while the correlation-level
+  RMS reflects, among other things, the neglected anisotropy of
+  electron-electron repulsion in covalent complexes (Lang, Atanasov &
+  Neese 2020);
+- the SOC constant (ZETA_D for d shells, ZETA_F for f shells; the engine
+  fits it against the CASSCF-orbital SOC matrix elements);
+- when you pass free-ion references, the nephelauxetic ratio
+  beta = B/B0 and the relativistic ratio zeta/zeta0 -- reductions are the
+  classic covalency indicators (Jung, Atanasov & Neese 2017, the
+  actinide/lanthanide AILFT reference).
+
+**Boundaries**: this menu reads the engine's fit and never refits; the
+parameters are model quantities of the ligand-field Hamiltonian (their
+interpretation is the ligand-field model's business).  LFDFT (ligand-field
+DFT) lives inside ADF, a commercial package that is not available here --
+registered as a termination: the AILFT route covers the same analysis
+needs from open programs.
+
 ## Appendix A Command line
 
 ```text

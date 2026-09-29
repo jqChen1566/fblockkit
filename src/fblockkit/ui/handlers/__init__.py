@@ -50,6 +50,7 @@ from .inputs import (
     tool_search,
 )
 from .orbitals import (
+    ailft_report,
     avas_target,
     exact_entropy,
     judd_ofelt_fit,
@@ -104,6 +105,7 @@ HANDLERS = {
     "judd_ofelt_fit": judd_ofelt_fit,
     "pnmr_report": pnmr_report,
     "relaxation_report": relaxation_report,
+    "ailft_report": ailft_report,
     "xas_report": xas_report,
     "pysisyphus_generate": pysisyphus_generate,
     "pysisyphus_report": pysisyphus_report,
