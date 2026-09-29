@@ -1846,6 +1846,117 @@ magnetization route uses the powder-averaged molar table (Bohr magnetons).
 Method reference: Szalowski & Kowalewska 2020 (conventions; the V6
 companion study 2020 uses the same scheme).
 
+## 42 xTB pre-screening run report
+
+**What it is for**: the run facts of an xTB (GFN2-xTB) calculation -- the
+Tier-1 pre-screening level of the protocol chain -- read back from the
+captured output.
+
+**How**: menu 42 -> the capture file (the redirected xtb stdout; include
+stderr with `2>&1` so the closing line survives).  The report is
+`<capture>.xtb.fbk.md`.
+
+**How to read it**:
+
+- the task kinds recognised: single point, geometry optimisation (both
+  the converged and the `--cycles`-exhausted markers are read), and the
+  harmonic frequencies (the block is printed twice; the report says so);
+- the frequency set includes the translation/rotation zeros -- the three
+  or so lowest-positive values are the real vibrations; the imaginary
+  count is cross-checked against the engine's own thermochemistry
+  counters (`# frequencies` / `# imaginary freq.`);
+- an imaginary mode is flagged with its most negative value; the
+  thermochemistry lines (free energy / ZPE) are quoted when the engine
+  printed them.
+
+**Boundaries**: values are GFN2-level pre-screening figures -- they rank
+and seed, they do not replace the target level (a measured example: a
+GFN2 transition state re-optimised at r2SCAN-3c carried seven imaginary
+modes).  GFN2 covers the fifteen lanthanides; the actinides have no
+semi-empirical coverage in this stack, so pre-screening actinide systems
+is out of scope for this engine.  Engine: Bannwarth et al. 2021 (GFN2:
+Bannwarth et al. 2019).
+
+## 43 CREST conformer ensemble
+
+**What it is for**: the final conformer ensemble of a CREST search on the
+GFN2 surface, as a sorted table with Boltzmann weights -- the candidate
+selection step before a target-level re-optimisation.
+
+**How**: menu 43 -> the run directory (or its `crest_conformers.xyz`).
+The three files read are `crest_conformers.xyz` (frame energies),
+`crest.energies` (relative kcal/mol) and `crest_best.xyz`; the report is
+`crest_ensemble.fbk.md` in the run directory.
+
+**How to read it**:
+
+- the table lists index, absolute energy (Eh), relative energy
+  (kcal/mol) and the Boltzmann weight at 298.15 K (R = 1.9872042586e-3
+  kcal mol-1 K-1, normalised over the listed ensemble);
+- a cross-check line states how closely the frame energies reproduce
+  `crest.energies` (three-decimal print precision);
+- indices are post-deduplication positions (CREGEN), not sampling order.
+
+**Boundaries**: the weights are GFN2-level selectors, not final
+stabilities; re-optimise the leading conformers at the target level for
+quantitative comparison.  A run whose input geometry was not
+pre-optimised may abort on a topology change (the capture offers options
+A/B/C) and leaves no ensemble.  Engine: Pracht, Bohle, Grimme 2020.
+
+## 44 MOKIT automr input
+
+**What it is for**: writing the `.gjf` that MOKIT's `automr` consumes --
+a Gaussian-style route line plus the `mokit{}` block -- for the black-box
+multireference workflow (HF -> UNO -> GVB -> CASCI/CASSCF).
+
+**How**: menu 44 -> a structure source (XYZ / ORCA input / ORCA output),
+the method (default `CASSCF`; write `CASSCF(6,6)` to pin the active
+space), the basis, an optional comma-separated `mokit{}` option list
+(e.g. `GVB_prog=Gaussian`), charge, multiplicity, memory and cores.  Two
+files are written next to the source: `<name>_automr.gjf` and the report
+`<name>_automr.fbk.md` (which repeats the file and the run-side
+guidance).
+
+**How to read it**:
+
+- `GVB_prog` accepts GAMESS (the program's default), Gaussian and QChem
+  only; the generator normalises the value and refuses anything else
+  (PySCF is not a GVB backend).  On a machine without GAMESS, choose
+  `GVB_prog=Gaussian`.
+- the option list is passed through after a shape check
+  (comma-separated entries, bare flags such as `charge`/`cart`).
+
+**Boundaries**: this writes the input only; the run itself needs a
+Python matching the MOKIT build (the prebuilt packages are version- and
+NumPy-1-bound) plus a backend.  Read the run back with menu 45.
+
+## 45 MOKIT automr run report
+
+**What it is for**: reading an `automr` run back -- the strategy, the
+stage sequence, the energy chain, the automatically determined active
+space and the termination state.
+
+**How**: menu 45 -> the captured automr output (`automr x.gjf > x.out`).
+The report is `<output>.mokit.fbk.md`.
+
+**How to read it**:
+
+- the energy chain lists every `E(<label>)` row in order (RHF/UHF at HF,
+  then GVB, CASCI/CASSCF): consecutive entries are different
+  wave-function levels, not an error;
+- the active space on the `CASSCF(ne,no)` line is the automatically
+  determined selection (GVB natural-orbital occupations above 0.02)
+  unless the route pinned a size;
+- the program-path survey shows which backends the run found (GAMESS,
+  Gaussian, ORCA ...; `NOT FOUND` entries are listed as measured);
+- the Radical-index tables (after UNO, GVB and CASSCF) and the closing
+  `Normal termination of AutoMR` line state the run's state; without the
+  closing line, every number is partial.
+
+**Boundaries**: the natural-orbital `.fch` side products are listed for
+the audit trail but not parsed.  Cited form: "Jingxiang Zou, Molecular
+Orbital Kit (MOKIT)" (no program paper).
+
 ## Appendix A Command line
 
 ```text

@@ -35,8 +35,12 @@ from .crystal import (
     point_charge_estimate,
 )
 from .external import (
+    crest_report,
+    mokit_generate,
+    mokit_report,
     pysisyphus_generate,
     pysisyphus_report,
+    xtb_report,
 )
 from .inputs import (
     basis_query,
@@ -115,6 +119,10 @@ HANDLERS = {
     "magnetocaloric_report": magnetocaloric_report,
     "pysisyphus_generate": pysisyphus_generate,
     "pysisyphus_report": pysisyphus_report,
+    "xtb_report": xtb_report,
+    "crest_report": crest_report,
+    "mokit_generate": mokit_generate,
+    "mokit_report": mokit_report,
     "dm_batch": dm_batch_generate,
     "dm_select": dm_select,
     "apc_ranking": apc_ranking,

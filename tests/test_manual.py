@@ -215,6 +215,22 @@ def _prepare_work() -> None:
     shutil.copy(
         REPO / "fixtures" / "gaussian" / "g09_h2co_ts.out", work / "g09_h2co_ts.out"
     )
+    # the menu-42..45 external-program fixtures: the xTB captures and the water
+    # geometry (menus 42/44), the CREST ensemble (menu 43) and the automr run of
+    # the generator's own input (menu 45)
+    shutil.copy(REPO / "fixtures" / "xtb" / "h2o_ohess.out", work / "h2o_ohess.out")
+    shutil.copy(
+        REPO / "fixtures" / "xtb" / "nh3_planar_hess.out", work / "nh3_planar_hess.out"
+    )
+    shutil.copy(REPO / "fixtures" / "xtb" / "h2o.xyz", work / "h2o_probe.xyz")
+    crest_run = work / "crest_run"
+    crest_run.mkdir(exist_ok=True)
+    for name in ("crest_conformers.xyz", "crest.energies", "crest_best.xyz"):
+        shutil.copy(REPO / "fixtures" / "crest" / name, crest_run / name)
+    shutil.copy(
+        REPO / "fixtures" / "mokit" / "h2o_generated_automr.out",
+        work / "h2o_generated_automr.out",
+    )
 
 
 @pytest.fixture(scope="module")

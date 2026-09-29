@@ -545,15 +545,24 @@ def test_tool_index_loads_with_evidence():
 
 
 def test_only_integrated_tools_are_marked_active():
-    """status=active must live up to its name: the only thing this version really uses is
-    the autoCAS protocol (the A2 entropy spectrum).
+    """status=active must live up to its name: every id below is used by this version --
+    either through a built interface (menus 4/32/33/42/43/44/45, the OpenMolcas chain
+    template) or through an internalised protocol/algorithm (autoCAS, NIFREC).
 
-    When a tool is genuinely wired in later (MOKIT handing orbitals over, the OpenMolcas
-    magnetic-chain template, say), change it to active here -- this step is the mechanical
-    gate for "registered != used".
+    This step is the mechanical gate for "registered != used": when a tool is genuinely
+    wired in later, add it here in the same change that flips its status.
     """
     active = {record.id for record in load_tools() if record.status == "active"}
-    assert active == {"autocas"}
+    assert active == {
+        "autocas",
+        "basis-set-exchange",
+        "crest",
+        "mokit",
+        "nifrec",
+        "openmolcas",
+        "pysisyphus",
+        "xtb",
+    }
 
 
 def test_tool_entry_without_status_rejected(tmp_path):

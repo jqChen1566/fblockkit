@@ -1,0 +1,137 @@
+
+Checking MOKIT_ROOT ... 
+------ Output of AutoMR of MOKIT(Molecular Orbital Kit) ------
+       GitLab page: https://gitlab.com/jxzou/mokit
+     Documentation: https://doc.mokit.xyz
+           Version: 1.2.8 (2026-Aug-18)
+       How to cite: see README.md or $MOKIT_ROOT/doc/
+
+HOST , Wed Sep 30 00:33:11 2026
+
+Read program paths from environment variables:
+MOKIT_ROOT  = /data1/cjq12/wave61/mokit_v128/mokit-master_linux_py310_gcc10
+gau_path    = /home/chen_jianqi/gaussian/g16/g16
+gms_path    = NOT FOUND
+orca_path   = /home/chen_jianqi/orca/orca_6_1_1/orca
+molpro_path = NOT FOUND
+molcas_path = NOT FOUND
+psi4_path   = NOT FOUND
+dalton_path = NOT FOUND
+bdf_path    = NOT FOUND
+
+memory =   4GB, nproc =   2, method/basis = casscf/cc-pvdz
+
+Keywords in MOKIT{} are merged and shown as follows:
+gvb_prog=gaussian
+
+No. Strategy = 0
+readRHF = F   readUHF = F   readNO  = F   skipHF  = F   Cart    = F
+Vir_Proj= F   UNO     = T   GVB     = T   CASCI   = F   CASSCF  = T
+DMRGCI  = F   DMRGSCF = F   CASPT2  = F   CASPT2K = F   CASPT3  = F
+MRMP2   = F   OVBMP2  = F   SDSPT2  = F   MRCISD  = F   MRCISDT = F
+NEVPT2  = F   NEVPT3  = F   MCPDFT  = F   MRCC    = F   CIonly  = F
+dyn_corr= F   DKH2    = F   X2C     = F   RI      = F   FIC     = F
+DLPNO   = F   F12     = F   HardWFN = F   CrazyWFN= F   OnlyXH  = F
+BgCharge= F   Ana_Grad= F   Pop     = F   NMR     = F   ICSS    = F
+TDHF    = F   SA_CAS  = F   Excited = F   QD      = F   SOC     = F
+Inherit = F   LocPair = F   LocDocc = F   MixedSpin=F   RigidScan=F
+RelaxScan=F   excludeXH=F   Polar   = F   XMult   = 1   NewMult = 0
+Skip_UNO= 0   CtrType = 0   MRCC_type=1   MaxM = 1000   GVB_conv= 5d-4
+LocalM  = pm  ON_thres= 0.02000  OtPDF=NONE  UNO_thres= 0.00001
+RIJK_bas=NONE RIC_bas=NONE F12_cabs=NONE HF_fch=NONE
+
+Check if the keywords are compatible with each other...
+Check done. All keywords are compatible.
+
+-------------------------------------------------------------------------------
+Note: in any following output which starts with '$' symbol, it is the Shell co-
+      mmand used to submit the corresponding job.
+-------------------------------------------------------------------------------
+
+
+Enter subroutine do_hf...
+HF using program gaussian
+
+E(RHF) =       -75.78429273 a.u., <S**2>=  0.000
+E(UHF) =       -75.82292560 a.u., <S**2>=  1.066
+E(UHF2)=       -75.82292560 a.u., <S**2>=  1.066
+E(UHF) < E(RHF), choose UHF wave function.
+Strategy updated:
+
+No. Strategy = 1
+readRHF = F   readUHF = F   readNO  = F   skipHF  = F   Cart    = F
+Vir_Proj= F   UNO     = T   GVB     = T   CASCI   = F   CASSCF  = T
+DMRGCI  = F   DMRGSCF = F   CASPT2  = F   CASPT2K = F   CASPT3  = F
+MRMP2   = F   OVBMP2  = F   SDSPT2  = F   MRCISD  = F   MRCISDT = F
+NEVPT2  = F   NEVPT3  = F   MCPDFT  = F   MRCC    = F   CIonly  = F
+dyn_corr= F   DKH2    = F   X2C     = F   RI      = F   FIC     = F
+DLPNO   = F   F12     = F   HardWFN = F   CrazyWFN= F   OnlyXH  = F
+BgCharge= F   Ana_Grad= F   Pop     = F   NMR     = F   ICSS    = F
+TDHF    = F   SA_CAS  = F   Excited = F   QD      = F   SOC     = F
+Inherit = F   LocPair = F   LocDocc = F   MixedSpin=F   RigidScan=F
+RelaxScan=F   excludeXH=F   Polar   = F   XMult   = 1   NewMult = 0
+Skip_UNO= 0   CtrType = 0   MRCC_type=1   MaxM = 1000   GVB_conv= 5d-4
+LocalM  = pm  ON_thres= 0.02000  OtPDF=NONE  UNO_thres= 0.00001
+RIJK_bas=NONE RIC_bas=NONE F12_cabs=NONE HF_fch=NONE
+Leave subroutine do_hf at Wed Sep 30 00:33:17 2026
+
+
+Enter subroutine get_paired_LMO...
+chem_core=1, ecp_core=0, Nskip_UNO=0
+Two sets of MOs, ist=1, invoke UNO associated rotation.
+$python mokit_gen2_uhf_uno_asrot.py >mokit_gen2_uhf_uno_asrot.out 2>&1
+----------------------- Radical index -----------------------
+biradical character   (1-2t/(1+t^2)) y0=  0.109
+tetraradical character(1-2t/(1+t^2)) y1=  0.041
+Yamaguchi's unpaired electrons  (sum_n n(2-n)      ):  2.132
+Head-Gordon's unpaired electrons(sum_n min(n,(2-n))):  1.279
+Head-Gordon's unpaired electrons(sum_n (n(2-n))^2  ):  1.165
+-------------------------------------------------------------
+Leave subroutine get_paired_LMO at Wed Sep 30 00:33:24 2026
+
+
+Enter subroutine do_gvb...
+nbf=24, nif=24, doubly_occ=1, npair=4, nopen=0, nvir=15
+LocDocc=F, Lin_dep=F
+GVB(4) using program gaussian
+$/home/chen_jianqi/gaussian/g16/g16 mokit_gen2_uhf_uno_asrot2gvb4.gjf
+$gvb_sort_pairs mokit_gen2_uhf_uno_asrot2gvb4.dat 1 0 4
+
+-------------------------------------------------------------------------------
+Warning: since MOKIT 1.2.7rc13, gvb_sort_pairs does not require the user to
+provide nbf and nif. For experienced users who directly use the utility
+gvb_sort_pairs, please update your usage. For common users who does not use it
+directly, please ignore this warning.
+-------------------------------------------------------------------------------
+$dat2fch mokit_gen2_uhf_uno_asrot2gvb4_s.dat mokit_gen2_uhf_uno_asrot2gvb4_s.fch -gvb 4 -open 0 > /dev/null
+$extract_noon2fch mokit_gen2_uhf_uno_asrot2gvb4_s.dat mokit_gen2_uhf_uno_asrot2gvb4_s.fch 2 9 0 -gau
+
+E(GVB) =       -75.91806514 a.u.
+----------------------- Radical index -----------------------
+biradical character y0 = n_LUNO =  0.154
+tetraradical character y1 = n_{LUNO+1} =  0.154
+Yamaguchi's unpaired electrons  (sum_n n(2-n)      ):  1.181
+Head-Gordon's unpaired electrons(sum_n min(n,(2-n))):  0.638
+Head-Gordon's unpaired electrons(sum_n (n(2-n))^2  ):  0.325
+-------------------------------------------------------------
+Leave subroutine do_gvb at Wed Sep 30 00:33:28 2026
+
+
+Enter subroutine do_cas...
+CASSCF(4e,4o) using program pyscf
+doubly_occ=3, nvir=17, Root=0, Xmult=1, RI=F, Force=F
+No. of active alpha/beta e = 2/2
+$python mokit_gen2_uhf_gvb4_CASSCF.py >mokit_gen2_uhf_gvb4_CASSCF.out 2>&1
+
+E(CASCI)  =       -75.90802996 a.u.
+E(CASSCF) =       -75.90823052 a.u.
+----------------------- Radical index -----------------------
+biradical character y0 = n_LUNO =  0.165
+tetraradical character y1 = n_{LUNO+1} =  0.139
+Yamaguchi's unpaired electrons  (sum_n n(2-n)      ):  1.121
+Head-Gordon's unpaired electrons(sum_n min(n,(2-n))):  0.607
+Head-Gordon's unpaired electrons(sum_n (n(2-n))^2  ):  0.315
+-------------------------------------------------------------
+Leave subroutine do_cas at Wed Sep 30 00:33:45 2026
+
+Normal termination of AutoMR at Wed Sep 30 00:33:45 2026

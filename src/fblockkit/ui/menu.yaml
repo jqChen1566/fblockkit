@@ -129,6 +129,18 @@ items:
   - number: "41"
     title: "Magnetic entropy and magnetocaloric effect (levels or POLY_ANISO M(H,T) -> S_mag(T) and -DeltaS(T,H))"
     handler: magnetocaloric_report
+  - number: "42"
+    title: "xTB pre-screening run report (an xtb capture -> run facts, frequencies and the upgrade notes)"
+    handler: xtb_report
+  - number: "43"
+    title: "CREST conformer ensemble (a run directory -> the sorted table with Boltzmann weights)"
+    handler: crest_report
+  - number: "44"
+    title: "MOKIT automr input (a structure + options -> a Gaussian-style .gjf with the mokit{} block)"
+    handler: mokit_generate
+  - number: "45"
+    title: "MOKIT automr run report (an automr output -> the stages, the energy chain and the active space)"
+    handler: mokit_report
   - number: "0"
     title: Quit
     handler: quit

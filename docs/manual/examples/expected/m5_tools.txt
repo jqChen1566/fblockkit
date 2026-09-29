@@ -42,12 +42,16 @@ Available functions:
   39  Polynuclear magnetism (a POLY_ANISO output -> per-center data, the exchange decomposition and the chiT summary)
   40  Hyperfine and EFG parameters (an EPRNMR output -> the A tensor, the EFG principal values and Rho(0))
   41  Magnetic entropy and magnetocaloric effect (levels or POLY_ANISO M(H,T) -> S_mag(T) and -DeltaS(T,H))
+  42  xTB pre-screening run report (an xtb capture -> run facts, frequencies and the upgrade notes)
+  43  CREST conformer ensemble (a run directory -> the sorted table with Boltzmann weights)
+  44  MOKIT automr input (a structure + options -> a Gaussian-style .gjf with the mokit{} block)
+  45  MOKIT automr run report (an automr output -> the stages, the energy chain and the active space)
    0  Quit
 Choose a number (Enter = leave empty)> 5
 Search keywords (several words, space separated) (Enter = leave empty)> mokit
-- MOKIT / automr (A absorb directly; registered (not in use); license: Apache-2.0)
+- MOKIT / automr (B interface; in use; license: Apache-2.0)
   black-box multireference workflow (UNO/GVB route, automatic active-space selection; hands orbitals between 19 programs)
-  Note: v0.1 takes only the "hand orbitals over" step and the UNO/GVB window-selection idea; it is not a whole-package dependency. The official citation form is "Jingxiang Zou, Molecular Orbital Kit (MOKIT)". Not fully functional on Windows.
+  Note: Interfaced as of Wave 6.1 (2026-09-30): menu 44 writes the .gjf + mokit{} input and menu 45 reads the automr output back. Verified end-to-end by running the generated input through a deployed MOKIT 1.2.8 (official prebuilt package; GVB on a Gaussian 16 backend because GAMESS is absent here, CASSCF on its PySCF default) to Normal termination. The official citation form is "Jingxiang Zou, Molecular Orbital Kit (MOKIT)". Not fully functional on Windows.
 
 Available functions:
    1  Check-up and characterisation (read an ORCA or Gaussian output -> analysis + diagnosis report)
@@ -91,17 +95,22 @@ Available functions:
   39  Polynuclear magnetism (a POLY_ANISO output -> per-center data, the exchange decomposition and the chiT summary)
   40  Hyperfine and EFG parameters (an EPRNMR output -> the A tensor, the EFG principal values and Rho(0))
   41  Magnetic entropy and magnetocaloric effect (levels or POLY_ANISO M(H,T) -> S_mag(T) and -DeltaS(T,H))
+  42  xTB pre-screening run report (an xtb capture -> run facts, frequencies and the upgrade notes)
+  43  CREST conformer ensemble (a run directory -> the sorted table with Boltzmann weights)
+  44  MOKIT automr input (a structure + options -> a Gaussian-style .gjf with the mokit{} block)
+  45  MOKIT automr run report (an automr output -> the stages, the energy chain and the active space)
    0  Quit
 Choose a number (Enter = leave empty)> 6
 Tool index id (e.g. openmolcas; search with menu 5) (Enter = leave empty)> openmolcas
 OpenMolcas -- B interface
 Purpose: magnetic-property chain engine (RASSCF/RASSI/SINGLE_ANISO)
-Status: registered (not in use)
+Status: in use
 License: LGPL-2.1 (against the official repository)
 Source: https://gitlab.com/Molcas/OpenMolcas
-Note: One of the first-release coverages -- build the magnetic-property chain template (G3, a later step).
+Note: The magnetic-property chain input template (G3) is implemented and tested in the recipe layer (SA-CASSCF / RASSI / SINGLE_ANISO; deviations from the source SI are tagged in-file; the comment-character rule was checked against the official user guide). The reading side (parsing OpenMolcas output) is not implemented.
 Provenance:
   - [measured] User decision of 2026-09-25 "first release = ORCA deep + OpenMolcas magnetic-property chain template" (00_说明.md §2)
+  - [measured] G3 implementation record (template + spec validation + discipline tests; every line the source does not show is tagged in-file). (SESSION_LOG.md event 20 (commit f72a2e5))
 
 Available functions:
    1  Check-up and characterisation (read an ORCA or Gaussian output -> analysis + diagnosis report)
@@ -145,6 +154,10 @@ Available functions:
   39  Polynuclear magnetism (a POLY_ANISO output -> per-center data, the exchange decomposition and the chiT summary)
   40  Hyperfine and EFG parameters (an EPRNMR output -> the A tensor, the EFG principal values and Rho(0))
   41  Magnetic entropy and magnetocaloric effect (levels or POLY_ANISO M(H,T) -> S_mag(T) and -DeltaS(T,H))
+  42  xTB pre-screening run report (an xtb capture -> run facts, frequencies and the upgrade notes)
+  43  CREST conformer ensemble (a run directory -> the sorted table with Boltzmann weights)
+  44  MOKIT automr input (a structure + options -> a Gaussian-style .gjf with the mokit{} block)
+  45  MOKIT automr run report (an automr output -> the stages, the energy chain and the active space)
    0  Quit
 Choose a number (Enter = leave empty)> 6
 Tool index id (e.g. openmolcas; search with menu 5) (Enter = leave empty)> liblan
@@ -244,6 +257,10 @@ Available functions:
   39  Polynuclear magnetism (a POLY_ANISO output -> per-center data, the exchange decomposition and the chiT summary)
   40  Hyperfine and EFG parameters (an EPRNMR output -> the A tensor, the EFG principal values and Rho(0))
   41  Magnetic entropy and magnetocaloric effect (levels or POLY_ANISO M(H,T) -> S_mag(T) and -DeltaS(T,H))
+  42  xTB pre-screening run report (an xtb capture -> run facts, frequencies and the upgrade notes)
+  43  CREST conformer ensemble (a run directory -> the sorted table with Boltzmann weights)
+  44  MOKIT automr input (a structure + options -> a Gaussian-style .gjf with the mokit{} block)
+  45  MOKIT automr run report (an automr output -> the stages, the energy chain and the active space)
    0  Quit
 Choose a number (Enter = leave empty)> 0
 Goodbye.

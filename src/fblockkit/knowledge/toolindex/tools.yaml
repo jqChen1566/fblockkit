@@ -13,16 +13,21 @@
 - id: mokit
   name: MOKIT / automr
   purpose: black-box multireference workflow (UNO/GVB route, automatic active-space selection; hands orbitals between 19 programs)
-  relation: absorb
-  status: planned
+  relation: interface
+  status: active
   license: Apache-2.0
   source: https://gitlab.com/jxzou/mokit
   note: >-
-    v0.1 takes only the "hand orbitals over" step and the UNO/GVB window-selection idea; it
-    is not a whole-package dependency. The official citation form is "Jingxiang Zou,
-    Molecular Orbital Kit (MOKIT)". Not fully functional on Windows.
+    Interfaced as of Wave 6.1 (2026-09-30): menu 44 writes the .gjf + mokit{} input and menu
+    45 reads the automr output back. Verified end-to-end by running the generated input
+    through a deployed MOKIT 1.2.8 (official prebuilt package; GVB on a Gaussian 16 backend
+    because GAMESS is absent here, CASSCF on its PySCF default) to Normal termination. The
+    official citation form is "Jingxiang Zou, Molecular Orbital Kit (MOKIT)". Not fully
+    functional on Windows.
   evidence:
     - {kind: measured, text: Research synthesis §1 (tools and worked examples) and §5 (direct-wrapping list), ref: 调研/合成_cjq12_全景与方案_20260925.md}
+    - {kind: measured, text: Deployment and acceptance runs (2026-09-30; H2O probes with GVB_prog=Gaussian, CASSCF(4e,4o) automatically determined, Normal termination; one measured boundary: Gaussian 16 crashed on an automatically chosen GVB(5) for N2 on this machine)., ref: fixtures/mokit/README.md}
+    - {kind: manual, text: GVB_prog accepts GAMESS (default), Gaussian and QChem only; PySCF is not a GVB backend., ref: MOKIT manual section 4.4.10, url: https://doc.mokit.xyz/chap4-4.html}
 
 - id: autocas
   name: autoCAS
@@ -31,9 +36,16 @@
   status: active
   license: BSD-3-Clause
   source: pip package scine-autocas (v3.0.0)
-  note: Only the protocol is internalised (thresholds 0.14 / 1–2% fallback, and the localized-basis precondition); the software is not integrated.
+  note: >-
+    Only the protocol is internalised (thresholds 0.14 / 1–2% fallback, and the
+    localized-basis precondition); the software is not integrated. Wave 6.1 assessment
+    (2026-09-30): the program itself cannot run in this environment -- its PySCF interface
+    requires a DMRG solver, the Block2 branch is a NotImplementedError placeholder in
+    release 3.0.0, and the QCMaquis wrapper (scine-qcmaquis) has no PyPI distribution
+    while the conda channel does not answer here.
   evidence:
     - {kind: measured, text: BSD-3 license, pip package name scine-autocas (v3.0.0), ref: B1_可微分DFT_cjq6/AutoCAS方法论_20260921.md}
+    - {kind: measured, text: Run-attempt record (2026-09-30) -- the HF stage converged, the initial CAS(10,8) of N2 was printed, then the missing QCMaquis backend raised NameError inside _setup_qcmaquis; the reachability checks above are recorded in the Wave 6.1 reconnaissance notes., ref: scratch_wave61/00_侦察记录_20260930.md}
 
 - id: activespacefinder
   name: ActiveSpaceFinder
@@ -103,36 +115,52 @@
 
 - id: xtb
   name: xTB
-  purpose: semi-empirical engine (a candidate for embedding in v0.2)
+  purpose: semi-empirical pre-screening engine (the Tier-1 level of the protocol chain)
   relation: interface
-  status: planned
+  status: active
   license: LGPL-3.0
   source: https://github.com/grimme-lab/xtb
-  note: LGPL allows redistribution with the package; v0.1 does not embed it and only records the shape of its input/output.
+  note: >-
+    Interfaced as of Wave 6.1 (2026-09-30): menu 42 reads the run capture back (measured on
+    xTB 6.7.1; fixtures/xtb). LGPL allows redistribution with the package; v0.1 does not
+    embed the engine.
   evidence:
     - {kind: measured, text: Research synthesis §1 and §4 "xtb/CREST are LGPL-3.0 and can be redistributed with the package", ref: 调研/合成_cjq12_全景与方案_20260925.md}
+    - {kind: literature, text: The engine's own citation lines are part of the measured format record., ref: "Bannwarth C., Caldeweyher E., Ehlert S., Hansen A., Pracht P., Seibert J., Spicher S., Grimme S., WIREs Comput. Mol. Sci., 2021, 11, e01493, DOI 10.1002/wcms.1493", bibkey: bannwarth2021xtb}
+    - {kind: measured, text: Reader fixtures and anchors (single point / opt+hess / imaginary-mode / failed-optimisation captures)., ref: fixtures/xtb/README.md}
 
 - id: crest
   name: CREST
-  purpose: conformer search (the zero-barrier benchmark)
+  purpose: conformer search on the GFN2 surface (the zero-barrier benchmark)
   relation: interface
-  status: planned
+  status: active
   license: LGPL-3.0
   source: https://github.com/crest-lab/crest
-  note: A UX benchmark (self-explaining result files); a candidate for embedding in v0.2.
+  note: >-
+    Interfaced as of Wave 6.1 (2026-09-30): menu 43 reads the conformer ensemble back
+    (measured on CREST 3.0.2, n-butane quick search; fixtures/crest). The ensemble energies
+    are GFN2-level candidate selectors, not final rankings. A UX benchmark
+    (self-explaining result files) and a candidate for embedding in v0.2.
   evidence:
     - {kind: measured, text: Research synthesis §1 "the zero-barrier benchmark", ref: 调研/合成_cjq12_全景与方案_20260925.md}
+    - {kind: literature, text: The interfaced program's paper., ref: "Pracht P., Bohle F., Grimme S., Phys. Chem. Chem. Phys., 2020, 22, 7169-7192, DOI 10.1039/C9CP06869D", bibkey: pracht2020crest}
+    - {kind: measured, text: Ensemble fixtures and the measured boundaries (topology-change abort of an unpreoptimised start; doubly recorded fast/slow runs)., ref: fixtures/crest/README.md}
 
 - id: openmolcas
   name: OpenMolcas
   purpose: magnetic-property chain engine (RASSCF/RASSI/SINGLE_ANISO)
   relation: interface
-  status: planned
+  status: active
   license: LGPL-2.1 (against the official repository)
   source: https://gitlab.com/Molcas/OpenMolcas
-  note: One of the first-release coverages -- build the magnetic-property chain template (G3, a later step).
+  note: >-
+    The magnetic-property chain input template (G3) is implemented and tested in the recipe
+    layer (SA-CASSCF / RASSI / SINGLE_ANISO; deviations from the source SI are tagged
+    in-file; the comment-character rule was checked against the official user guide). The
+    reading side (parsing OpenMolcas output) is not implemented.
   evidence:
     - {kind: measured, text: User decision of 2026-09-25 "first release = ORCA deep + OpenMolcas magnetic-property chain template", ref: 00_说明.md §2}
+    - {kind: measured, text: G3 implementation record (template + spec validation + discipline tests; every line the source does not show is tagged in-file)., ref: SESSION_LOG.md event 20 (commit f72a2e5)}
 
 - id: pyscf
   name: PySCF
@@ -163,7 +191,10 @@
   status: planned
   license: to be checked (against the official repository)
   source: https://github.com/qcscine/qcmaquis
-  note: One component of the SCINE stack; tier C registration.
+  note: >-
+    One component of the SCINE stack; tier C registration. Wave 6.1 note: it is also the
+    only DMRG backend autoCAS's PySCF interface can use (its Block2 alternative is an
+    unimplemented placeholder), which is why that program cannot run in this environment.
   evidence:
     - {kind: measured, text: SCINE capability assessment and the research list, ref: 调研/合成_cjq12_全景与方案_20260925.md}
 
@@ -225,3 +256,63 @@
   note: Sits close to fBlockKit's characterisation-analysis column -- check the scope and licence before deciding whether to move it to interface.
   evidence:
     - {kind: measured, text: Noticed during the naming check, see synthesis document §1.4 to-do, ref: 调研/合成_cjq12_全景与方案_20260925.md}
+
+- id: pysisyphus
+  name: pysisyphus
+  purpose: potential-energy-surface exploration (minimum / transition-state searches orchestrating the engine)
+  relation: interface
+  status: active
+  license: GPL-3.0
+  source: https://github.com/eljost/pysisyphus
+  note: >-
+    Interfaced as of Wave 4.6 (2026-09-28): menu 32 writes the run YAML, menu 33 reads the
+    run artifacts back (measured on pysisyphus 1.0.0 driving ORCA 6.1.1; fixtures/pysisyphus).
+    GPL -- the code is not linked in: this toolkit only writes and reads files.
+  evidence:
+    - {kind: literature, text: The interfaced program's paper., ref: "Steinmetzer J., Kupfer T., Graefe S., Int. J. Quantum Chem., 2021, 121(3), e26390, DOI 10.1002/qua.26390", bibkey: steinmetzer2021pysisyphus}
+    - {kind: measured, text: Measured run records and format conventions (including the measured ORCA-side .hess incompatibility that shapes the generator's refusals)., ref: fixtures/pysisyphus/README.md}
+
+- id: nifrec
+  name: NIFREC
+  purpose: imaginary-frequency displacement re-optimisation (a recipe shape)
+  relation: absorb
+  status: active
+  license: MIT
+  source: https://github.com/tanaka-hideya/NIFREC
+  note: >-
+    The displacement recipe is internalised as menu 30 (Wave 4.5, 2026-09-28); the code is
+    not linked in (MIT sources read for the algorithm only). One deviation ships as a
+    service: both displacement directions are written, where the source increases
+    one-directionally.
+  evidence:
+    - {kind: literature, text: The recipe's source record (the paper was unreachable; the algorithm was read from the MIT-licensed sources)., ref: "Tanaka H., Miyano K., ChemRxiv, 2026, DOI 10.26434/chemrxiv.15004859/v1", bibkey: tanaka2026nifrec}
+    - {kind: measured, text: Menu 30 fixtures and the measured relax-to-all-real outcome on the F+H2 probe., ref: fixtures/orca/ (fhh_reopt set; SESSION_LOG.md event 60)}
+
+- id: basis-set-exchange
+  name: Basis Set Exchange (BSE)
+  purpose: basis-set and ECP metadata (the deployed library queried by menu 4's datasource leg)
+  relation: interface
+  status: active
+  license: mixed (the BSE software licence plus each basis set's own terms)
+  source: https://github.com/MolSSI-BSE/basis_set_exchange
+  note: >-
+    Interfaced as of Wave 6.2 (2026-09-29): menu 4 queries a user-deployed BSE snapshot
+    (the SQLite index of the library) read-only; no library content is bundled with this
+    toolkit. Measured on the BSE v0.12 snapshot deployed on this group's machines.
+  evidence:
+    - {kind: literature, text: The BSE resource paper., ref: "Pritchard B. P., Altarawy D., Didier B., Gibson T. D., Windus T. L., J. Chem. Inf. Model., 2019, 59, 4814-4820, DOI 10.1021/acs.jcim.9b00725", bibkey: pritchard2019bse}
+    - {kind: measured, text: Deployed-snapshot survey and the read-only query layer record., ref: fixtures/basisdb/README.md}
+
+- id: tau2
+  name: Tau2
+  purpose: magnetic-relaxation simulation (the successor programme in PHI's role)
+  relation: index
+  status: planned
+  license: to be checked (against the official source)
+  source: recorded from the Wave 6.1 literature check (JCTC 2026)
+  note: >-
+    Registered during the Wave 6.1 assessment (2026-09-30) as the current programme of the
+    Chilton group in magnetic-relaxation simulation; not interfaced. The toolkit's own
+    relaxation reading (menu 36, from SINGLE_ANISO / MAGRELAX output) is independent of it.
+  evidence:
+    - {kind: literature, text: The programme paper., ref: "Atkinson B., Chilton N. F., J. Chem. Theory Comput., 2026, 22, 8119-8130, DOI 10.1021/acs.jctc.6c00890", bibkey: atkinson2026tau2}

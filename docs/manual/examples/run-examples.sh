@@ -103,6 +103,17 @@ cp "$REPO/fixtures/hyperfine/cef3_epr_casscf.out" work/
 cp "$REPO/fixtures/magnetocaloric/poly_mh.out" work/
 # the menu-1 Gaussian leg (the G09 TS-optimization probe)
 cp "$REPO/fixtures/gaussian/g09_h2co_ts.out" work/
+# the menu-42..45 external-program fixtures: the xTB captures and the water
+# geometry (menus 42/44), the CREST ensemble (menu 43) and the automr run of
+# the generator's own input (menu 45)
+cp "$REPO/fixtures/xtb/h2o_ohess.out" work/
+cp "$REPO/fixtures/xtb/nh3_planar_hess.out" work/
+cp "$REPO/fixtures/xtb/h2o.xyz" work/h2o_probe.xyz
+mkdir -p work/crest_run
+cp "$REPO/fixtures/crest/crest_conformers.xyz" work/crest_run/
+cp "$REPO/fixtures/crest/crest.energies" work/crest_run/
+cp "$REPO/fixtures/crest/crest_best.xyz" work/crest_run/
+cp "$REPO/fixtures/mokit/h2o_generated_automr.out" work/
 
 for script in scripts/*.txt; do
   name=$(basename "$script" .txt)
@@ -126,5 +137,10 @@ cp work/*.fbk.mkl expected/products/
 cp work/*.fix_*.inp expected/products/
 cp work/*.pysisyphus.xyz work/*.pysisyphus.yaml expected/products/
 cp -r work/*.fbk.dm expected/products/
+# the menu-44 generated input and the menu-43 ensemble report (the latter lives
+# inside its run directory; the products copy keeps just the report)
+cp work/*_automr.gjf expected/products/
+mkdir -p expected/products/crest_run
+cp work/crest_run/crest_ensemble.fbk.md expected/products/crest_run/
 
 echo "done; products in expected/products/"

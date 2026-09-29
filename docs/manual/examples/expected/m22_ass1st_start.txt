@@ -42,6 +42,10 @@ Available functions:
   39  Polynuclear magnetism (a POLY_ANISO output -> per-center data, the exchange decomposition and the chiT summary)
   40  Hyperfine and EFG parameters (an EPRNMR output -> the A tensor, the EFG principal values and Rho(0))
   41  Magnetic entropy and magnetocaloric effect (levels or POLY_ANISO M(H,T) -> S_mag(T) and -DeltaS(T,H))
+  42  xTB pre-screening run report (an xtb capture -> run facts, frequencies and the upgrade notes)
+  43  CREST conformer ensemble (a run directory -> the sorted table with Boltzmann weights)
+  44  MOKIT automr input (a structure + options -> a Gaussian-style .gjf with the mokit{} block)
+  45  MOKIT automr run report (an automr output -> the stages, the energy chain and the active space)
    0  Quit
 Choose a number (Enter = leave empty)> 22
 Structure file (XYZ) path (Enter = leave empty)> work/h2o.xyz
@@ -116,6 +120,10 @@ Available functions:
   39  Polynuclear magnetism (a POLY_ANISO output -> per-center data, the exchange decomposition and the chiT summary)
   40  Hyperfine and EFG parameters (an EPRNMR output -> the A tensor, the EFG principal values and Rho(0))
   41  Magnetic entropy and magnetocaloric effect (levels or POLY_ANISO M(H,T) -> S_mag(T) and -DeltaS(T,H))
+  42  xTB pre-screening run report (an xtb capture -> run facts, frequencies and the upgrade notes)
+  43  CREST conformer ensemble (a run directory -> the sorted table with Boltzmann weights)
+  44  MOKIT automr input (a structure + options -> a Gaussian-style .gjf with the mokit{} block)
+  45  MOKIT automr run report (an automr output -> the stages, the energy chain and the active space)
    0  Quit
 Choose a number (Enter = leave empty)> 0
 Goodbye.

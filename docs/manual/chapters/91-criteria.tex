@@ -819,3 +819,39 @@ Composition table & print flag needed & \code{\%output Print[P\_ReducedOrbPopMO\
 \bottomrule
 \end{tabularx}
 \end{center}
+
+\section{External-program interfaces (xTB / CREST / MOKIT)}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{3.4cm} X >{\raggedright\arraybackslash}p{2.6cm}@{}}
+\toprule
+Quantity & Value & Meaning / limits & Source \\
+\midrule
+xTB task markers & converged / FAILED both read &
+  ``GEOMETRY OPTIMIZATION CONVERGED AFTER $N$'' or ``FAILED TO CONVERGE
+  \ldots IN $N$''; the frequency block is printed twice (kept as measured);
+  imaginary modes cross-checked against the engine's counter and its
+  5~cm$^{-1}$ significance cut-off & \textsf{[Measured]} xTB 6.7.1 \\
+xTB level discipline & pre-screening only & GFN2 structures/energies rank
+  and seed; a measured example: a GFN2 TS re-optimised at r2SCAN-3c carried
+  seven imaginary modes; GFN2 covers the fifteen lanthanides, no actinide
+  coverage in this stack & \textsf{[Measured]} group's SCINE record \\
+CREST weights & $R = 1.9872042586\times10^{-3}$~kcal~mol$^{-1}$~K$^{-1}$
+  (CODATA), normalised over the listed ensemble & Indices are
+  post-deduplication positions; the weights are GFN2-level selectors, not
+  final stabilities & \textsf{[Measured]} CREST 3.0.2 \\
+CREST abort boundary & topology change on an unpreoptimised input & The
+  capture offers options A/B/C; the run then leaves no ensemble (measured
+  on the first probe) & \textsf{[Measured]} CREST 3.0.2 \\
+MOKIT GVB backend & GAMESS default; Gaussian/QChem alternates & PySCF is
+  not a GVB backend (refused by the generator); with no GAMESS, use
+  \code{GVB\_prog=Gaussian} & \textsf{[Manual]} MOKIT \S4.4.10 \\
+MOKIT active space & automatic from the GVB occupations (threshold 0.02) &
+  pinned only when written (\code{CASSCF(6,6)}); read off the CASSCF line
+  & \textsf{[Measured]} MOKIT 1.2.8 \\
+MOKIT side products & \code{.fch}/\code{.dat} listed, not parsed & One
+  measured crash boundary: an automatically chosen GVB(5) crashed
+  Gaussian~16 on this group's machines & \textsf{[Measured]} MOKIT 1.2.8 \\
+\bottomrule
+\end{tabularx}
+\end{center}

@@ -1,0 +1,152 @@
+fBlockKit -- the f-block calculation toolkit (input generation + characterisation analysis; it runs no calculations)
+
+Available functions:
+   1  Check-up and characterisation (read an ORCA or Gaussian output -> analysis + diagnosis report)
+   2  Coordination geometry and symmetry hints (read an XYZ structure)
+   3  Generate an ORCA input (system profile -> input file + run guidance)
+   4  Basis-set / ECP recommendation (element/valence/targets)
+   5  Search the tool index (keywords)
+   6  Tool onboarding notes (by index id)
+   7  Cross-level solution consistency (records JSON input)
+   8  Save this session as a script
+   9  SCF rescue (triage + corrected input files)
+  10  Crystal-field fit (levels + coefficients JSON)
+  11  Point-charge crystal-field estimate (read an XYZ structure + charges)
+  12  Exact active-space analysis (CASSCF output + FCIDUMP: four-state entropy, environment spin entropy, atomic-term check; optional orca_2json exports)
+  13  Orbital-space comparison (two orca_2json exports: subspace fraction and space-change SVD)
+  14  AVAS target projection (an orbital export + a target AO shell -> active-space size)
+  15  Orbital portrait (an export -> occupation, bonding label, shell composition, extent)
+  16  Magnetic-doublet criterion (a Kramers-doublet table JSON -> g_T * theta_3 and the QTM line)
+  17  Cross-structure orbital mapping (a manifest of exports -> consistent active spaces along a path)
+  18  WASP guess transfer (neighbour orbitals -> an interpolated, gbw-ready mkl for a geometry series)
+  19  Dipole-moment candidate batch (a structure -> prep + CASCI inputs + manifest for the DM-AS scan)
+  20  Dipole-moment selection (the batch outputs + a reference -> the active space by DM-AS)
+  21  APC orbital ranking (an export with the Fock exchange block -> ranked active space at a CSF cap)
+  22  ASS1ST round-1 input (a structure + an initial active space -> a CASSCF+FIC-NEVPT2 round)
+  23  ASS1ST selection round (a NEVPT2-density export -> quasi-NOON tables + the next round's input)
+  24  QICAS active-space optimization (an FCIDUMP -> F_QI-minimized orbitals and the CASCI check)
+  25  AEGISS selection (entropy screening + an AO projection -> a compact active space)
+  26  TNASS subset selection (an FCIDUMP -> the S2-maximizing orbital subset)
+  27  DeltaSCF / MOM excited-state SCF input (a structure + an excitation spec -> an input)
+  28  RAS / ORMAS model-space input (a structure + a partition mask -> an ORCA input)
+  29  Perturbed multistart batch (a converged reference mkl + its input -> restart inputs)
+  30  Imaginary-mode displacement (a frequency output + its input -> restart inputs)
+  31  CASSCF state data (a property file -> per-state energies and transitions)
+  32  pysisyphus input (a structure + a method -> a PES-exploration YAML)
+  33  pysisyphus run report (a run directory or console capture -> cross-checked record)
+  34  Judd-Ofelt intensity parameters (a transition dataset -> Omega_2/4/6 and radiative quantities)
+  35  pNMR pseudocontact shifts (a susceptibility run file + a structure -> per-nucleus PCS)
+  36  Magnetic relaxation and QTM (an ORCA output with SINGLE_ANISO or MAGRELAX -> the barrier estimate and tau(T))
+  37  Core-excited spectra XAS/RIXS (a ROCIS output -> the spectra table, the edge branching ratio and the RIXS status)
+  38  Ab initio ligand-field analysis (an AILFT output -> LF splitting, Slater-Condon/Racah parameters and the fit quality)
+  39  Polynuclear magnetism (a POLY_ANISO output -> per-center data, the exchange decomposition and the chiT summary)
+  40  Hyperfine and EFG parameters (an EPRNMR output -> the A tensor, the EFG principal values and Rho(0))
+  41  Magnetic entropy and magnetocaloric effect (levels or POLY_ANISO M(H,T) -> S_mag(T) and -DeltaS(T,H))
+  42  xTB pre-screening run report (an xtb capture -> run facts, frequencies and the upgrade notes)
+  43  CREST conformer ensemble (a run directory -> the sorted table with Boltzmann weights)
+  44  MOKIT automr input (a structure + options -> a Gaussian-style .gjf with the mokit{} block)
+  45  MOKIT automr run report (an automr output -> the stages, the energy chain and the active space)
+   0  Quit
+Choose a number (Enter = leave empty)> 45
+automr output file path (the captured 'automr x.gjf' stdout) (Enter = leave empty)> work/h2o_generated_automr.out
+MOKIT automr run report
+Source: h2o_generated_automr.out
+
+Version: 1.2.8 (2026-Aug-18)
+Program paths: bdf=NOT FOUND, dalton=NOT FOUND, gau=/home/chen_jianqi/gaussian/g16/g16, gms=NOT FOUND, molcas=NOT FOUND, molpro=NOT FOUND, orca=/home/chen_jianqi/orca/orca_6_1_1/orca, psi4=NOT FOUND
+Run settings: memory 4GB, nproc 2, method/basis casscf/cc-pvdz
+MOKIT options (merged): gvb_prog=gaussian
+Strategy (No. 1) active flags: UNO, GVB, CASSCF
+Stages: HF -> UNO rotation -> GVB -> CASSCF/CASCI
+
+Energy chain:
+  RHF     -75.78429273 Eh  <S**2> = 0.000
+  UHF     -75.82292560 Eh  <S**2> = 1.066
+  UHF2    -75.82292560 Eh  <S**2> = 1.066
+  GVB     -75.91806514 Eh
+  CASCI   -75.90802996 Eh
+  CASSCF  -75.90823052 Eh
+GVB: 4 pair(s), program gaussian
+Active space (automatically determined): CAS(4e,4o), program pyscf
+
+Radical index (table 1 of 3):
+  biradical character y0: 0.109
+  tetraradical character y1: 0.041
+  Yamaguchi unpaired electrons: 2.132
+  Head-Gordon unpaired (min): 1.279
+  Head-Gordon unpaired (squared): 1.165
+
+Radical index (table 2 of 3):
+  biradical character y0: 0.154
+  tetraradical character y1: 0.154
+  Yamaguchi unpaired electrons: 1.181
+  Head-Gordon unpaired (min): 0.638
+  Head-Gordon unpaired (squared): 0.325
+
+Radical index (table 3 of 3):
+  biradical character y0: 0.165
+  tetraradical character y1: 0.139
+  Yamaguchi unpaired electrons: 1.121
+  Head-Gordon unpaired (min): 0.607
+  Head-Gordon unpaired (squared): 0.315
+
+Side products echoed by the run (audit trail, not parsed here):
+  mokit_gen2_uhf_uno_asrot2gvb4.gjf
+  mokit_gen2_uhf_uno_asrot2gvb4.dat
+  mokit_gen2_uhf_uno_asrot2gvb4_s.dat
+  mokit_gen2_uhf_uno_asrot2gvb4_s.fch
+
+Termination: Normal termination of AutoMR -- the workflow ran to its end.
+
+Reading notes: the active space on the CASSCF line is the automatically determined selection (GVB natural-orbital occupations above the 0.02 threshold); writing CASSCF(n,m) in the route line pins the size instead. The energy chain shows the flow RHF/UHF (the lower one is kept) -> GVB -> CASCI/CASSCF, so consecutive entries are different wave-function levels, not an error. GVB runs need a backend program (GAMESS by default; Gaussian and QChem are the alternates -- PySCF is not a GVB backend); the CASSCF stage defaults to PySCF. The natural-orbital .fch side products are listed for the audit trail but this report does not parse them (stated boundary); dynamic-correlation stages (CASPT2/NEVPT2/DMRG) appear in the strategy table only when requested.
+Report written: work\h2o_generated_automr.mokit.fbk.md
+
+Available functions:
+   1  Check-up and characterisation (read an ORCA or Gaussian output -> analysis + diagnosis report)
+   2  Coordination geometry and symmetry hints (read an XYZ structure)
+   3  Generate an ORCA input (system profile -> input file + run guidance)
+   4  Basis-set / ECP recommendation (element/valence/targets)
+   5  Search the tool index (keywords)
+   6  Tool onboarding notes (by index id)
+   7  Cross-level solution consistency (records JSON input)
+   8  Save this session as a script
+   9  SCF rescue (triage + corrected input files)
+  10  Crystal-field fit (levels + coefficients JSON)
+  11  Point-charge crystal-field estimate (read an XYZ structure + charges)
+  12  Exact active-space analysis (CASSCF output + FCIDUMP: four-state entropy, environment spin entropy, atomic-term check; optional orca_2json exports)
+  13  Orbital-space comparison (two orca_2json exports: subspace fraction and space-change SVD)
+  14  AVAS target projection (an orbital export + a target AO shell -> active-space size)
+  15  Orbital portrait (an export -> occupation, bonding label, shell composition, extent)
+  16  Magnetic-doublet criterion (a Kramers-doublet table JSON -> g_T * theta_3 and the QTM line)
+  17  Cross-structure orbital mapping (a manifest of exports -> consistent active spaces along a path)
+  18  WASP guess transfer (neighbour orbitals -> an interpolated, gbw-ready mkl for a geometry series)
+  19  Dipole-moment candidate batch (a structure -> prep + CASCI inputs + manifest for the DM-AS scan)
+  20  Dipole-moment selection (the batch outputs + a reference -> the active space by DM-AS)
+  21  APC orbital ranking (an export with the Fock exchange block -> ranked active space at a CSF cap)
+  22  ASS1ST round-1 input (a structure + an initial active space -> a CASSCF+FIC-NEVPT2 round)
+  23  ASS1ST selection round (a NEVPT2-density export -> quasi-NOON tables + the next round's input)
+  24  QICAS active-space optimization (an FCIDUMP -> F_QI-minimized orbitals and the CASCI check)
+  25  AEGISS selection (entropy screening + an AO projection -> a compact active space)
+  26  TNASS subset selection (an FCIDUMP -> the S2-maximizing orbital subset)
+  27  DeltaSCF / MOM excited-state SCF input (a structure + an excitation spec -> an input)
+  28  RAS / ORMAS model-space input (a structure + a partition mask -> an ORCA input)
+  29  Perturbed multistart batch (a converged reference mkl + its input -> restart inputs)
+  30  Imaginary-mode displacement (a frequency output + its input -> restart inputs)
+  31  CASSCF state data (a property file -> per-state energies and transitions)
+  32  pysisyphus input (a structure + a method -> a PES-exploration YAML)
+  33  pysisyphus run report (a run directory or console capture -> cross-checked record)
+  34  Judd-Ofelt intensity parameters (a transition dataset -> Omega_2/4/6 and radiative quantities)
+  35  pNMR pseudocontact shifts (a susceptibility run file + a structure -> per-nucleus PCS)
+  36  Magnetic relaxation and QTM (an ORCA output with SINGLE_ANISO or MAGRELAX -> the barrier estimate and tau(T))
+  37  Core-excited spectra XAS/RIXS (a ROCIS output -> the spectra table, the edge branching ratio and the RIXS status)
+  38  Ab initio ligand-field analysis (an AILFT output -> LF splitting, Slater-Condon/Racah parameters and the fit quality)
+  39  Polynuclear magnetism (a POLY_ANISO output -> per-center data, the exchange decomposition and the chiT summary)
+  40  Hyperfine and EFG parameters (an EPRNMR output -> the A tensor, the EFG principal values and Rho(0))
+  41  Magnetic entropy and magnetocaloric effect (levels or POLY_ANISO M(H,T) -> S_mag(T) and -DeltaS(T,H))
+  42  xTB pre-screening run report (an xtb capture -> run facts, frequencies and the upgrade notes)
+  43  CREST conformer ensemble (a run directory -> the sorted table with Boltzmann weights)
+  44  MOKIT automr input (a structure + options -> a Gaussian-style .gjf with the mokit{} block)
+  45  MOKIT automr run report (an automr output -> the stages, the energy chain and the active space)
+   0  Quit
+Choose a number (Enter = leave empty)> 0
+Goodbye.

@@ -1,0 +1,10 @@
+44
+work/h2o_probe.xyz
+CASSCF
+cc-pVDZ
+GVB_prog=Gaussian
+0
+1
+4
+2
+0

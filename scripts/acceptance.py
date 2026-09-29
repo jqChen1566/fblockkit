@@ -159,6 +159,25 @@ def main() -> int:
             REPO / "fixtures" / "magnetocaloric" / "poly_mh.out",
             inputs / "poly_mh.out",
         )
+        # the menu-42..45 external-program fixtures: the xTB captures and the
+        # water geometry (menus 42/44), the CREST ensemble (menu 43) and the
+        # automr run of the generator's own input (menu 45)
+        shutil.copy(
+            REPO / "fixtures" / "xtb" / "h2o_ohess.out", inputs / "h2o_ohess.out"
+        )
+        shutil.copy(
+            REPO / "fixtures" / "xtb" / "nh3_planar_hess.out",
+            inputs / "nh3_planar_hess.out",
+        )
+        shutil.copy(REPO / "fixtures" / "xtb" / "h2o.xyz", inputs / "h2o_probe.xyz")
+        crest_run = inputs / "crest_run"
+        crest_run.mkdir(exist_ok=True)
+        for name in ("crest_conformers.xyz", "crest.energies", "crest_best.xyz"):
+            shutil.copy(REPO / "fixtures" / "crest" / name, crest_run / name)
+        shutil.copy(
+            REPO / "fixtures" / "mokit" / "h2o_generated_automr.out",
+            inputs / "h2o_generated_automr.out",
+        )
         # the menu-1 Gaussian leg (the G09 TS-optimization probe)
         shutil.copy(
             REPO / "fixtures" / "gaussian" / "g09_h2co_ts.out",
@@ -273,6 +292,12 @@ def main() -> int:
                     "40", "work/cef3_epr_casscf.out", "",
                     "41", "work/poly_mh.out",
                     "41", "work/co_aniso2.out",
+                    "42", "work/h2o_ohess.out",
+                    "42", "work/nh3_planar_hess.out",
+                    "43", "work/crest_run",
+                    "44", "work/h2o_probe.xyz", "CASSCF", "cc-pVDZ",
+                    "GVB_prog=Gaussian", "0", "1", "4", "2",
+                    "45", "work/h2o_generated_automr.out",
                     "31", "work/h2o_absp.property.txt",
                     "8", "work/saved.txt",
                     "0",
@@ -717,6 +742,37 @@ def main() -> int:
                 and "A transition-state optimisation without a frequency verification"
                 in gaussian_report,
                 "menu 1 characterises a Gaussian output through the shared rules",
+            )
+            xtb_report = read("h2o_ohess.xtb.fbk.md")
+            check(
+                "xTB 6.7.1" in xtb_report
+                and "Geometry optimisation: converged after 5 iteration(s)" in xtb_report
+                and "1538.60" in xtb_report,
+                "menu 42 reads the xTB capture (markers and the frequency set)",
+            )
+            xtb_imag = read("nh3_planar_hess.xtb.fbk.md")
+            check(
+                "imaginary: 1" in xtb_imag and "-1337.66 cm-1" in xtb_imag,
+                "menu 42 flags the imaginary mode of the planar-ammonia probe",
+            )
+            crest_report = read("crest_run/crest_ensemble.fbk.md")
+            check(
+                "Conformers: 2" in crest_report
+                and "0.7322" in crest_report
+                and "Cross-check" in crest_report,
+                "menu 43 reads the CREST ensemble (table, weights, cross-check)",
+            )
+            gjf = read("h2o_probe_automr.gjf")
+            check(
+                gjf.startswith("%mem=4GB") and "mokit{GVB_prog=Gaussian}" in gjf,
+                "menu 44 generates the automr input (route + mokit{} block)",
+            )
+            mokit_report = read("h2o_generated_automr.mokit.fbk.md")
+            check(
+                "Active space (automatically determined): CAS(4e,4o)" in mokit_report
+                and "Normal termination of AutoMR" in mokit_report
+                and "gvb_prog=gaussian" in mokit_report,
+                "menu 45 reads the automr run (active space, chain, termination)",
             )
             xas_report = read("fecl4_xas.out.xas.fbk.md")
             check(
