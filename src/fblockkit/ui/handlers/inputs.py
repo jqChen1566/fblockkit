@@ -286,6 +286,31 @@ def basis_query(session: Session) -> None:
     if profile is None:
         return
     _print_advice(session, recommend_basis_ecp(profile))
+    # the optional datasource leg (plan item 6.2): query the deployed basis
+    # library (the group's basisdb, a BSE snapshot with a SQLite index) for
+    # the sets that cover one element
+    symbol = session.ask(
+        "Datasource query: element symbol for the deployed basis library"
+        " (Enter = skip; library auto-detected: $FBK_BASISDB, then"
+        " ~/projects/orca_basis_sets)"
+    ).strip()
+    if not symbol:
+        return
+    from ...knowledge import basisdb as basisdb_query
+
+    library = basisdb_query.find_library()
+    if library is None:
+        session.say(
+            "No basis library found ($FBK_BASISDB unset and"
+            " ~/projects/orca_basis_sets absent) -- skipping the datasource query."
+        )
+        return
+    try:
+        body = basisdb_query.render_query(library, symbol)
+    except basisdb_query.BasisdbError as exc:
+        session.say(f"Basis-library query failed: {exc}")
+        return
+    session.say(body)
 
 
 # --- 5/6 tool index ---------------------------------------------------------

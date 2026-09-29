@@ -1,7 +1,7 @@
 fBlockKit -- the f-block calculation toolkit (input generation + characterisation analysis; it runs no calculations)
 
 Available functions:
-   1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)
+   1  Check-up and characterisation (read an ORCA or Gaussian output -> analysis + diagnosis report)
    2  Coordination geometry and symmetry hints (read an XYZ structure)
    3  Generate an ORCA input (system profile -> input file + run guidance)
    4  Basis-set / ECP recommendation (element/valence/targets)
@@ -61,7 +61,7 @@ Corrected input written: work\scf_noconv.fix_prescf.inp
   change: appended step 2 as a commented block: your input with 'moread' on the simple-input line and '%moinp "prescf.gbw"' after it
 
 Available functions:
-   1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)
+   1  Check-up and characterisation (read an ORCA or Gaussian output -> analysis + diagnosis report)
    2  Coordination geometry and symmetry hints (read an XYZ structure)
    3  Generate an ORCA input (system profile -> input file + run guidance)
    4  Basis-set / ECP recommendation (element/valence/targets)
@@ -119,7 +119,7 @@ SCF CONVERGENCE
 SCF looks healthy: no triage finding.
 
 Available functions:
-   1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)
+   1  Check-up and characterisation (read an ORCA or Gaussian output -> analysis + diagnosis report)
    2  Coordination geometry and symmetry hints (read an XYZ structure)
    3  Generate an ORCA input (system profile -> input file + run guidance)
    4  Basis-set / ECP recommendation (element/valence/targets)

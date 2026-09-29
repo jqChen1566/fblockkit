@@ -14,9 +14,13 @@ profile as \menu{3}).
 
 \section{Walkthrough}
 
-\lstinputlisting[style=fbkcode, firstline=16, lastline=36,
-  title={The menu-4 example session (Pu, Cl)}]
+\lstinputlisting[style=fbkcode, firstline=46, lastline=75,
+  title={The menu-4 example session (Pu, Cl, with the datasource query)}]
   {examples/expected/m4_basis.txt}
+
+Run the session above: the recommendation tiers come from the rules alone;
+when the deployed basis library is reachable, the same session also answers
+the datasource question with the sets that cover the given element.
 
 \section{What you get}
 
@@ -41,6 +45,20 @@ everything with provenance. The example shows the three shapes of an answer:
     $5f^{n-1}6d^1$).
 \end{itemize}
 
+\subsection*{The datasource leg (the deployed basis library)}
+
+The optional last question queries the group's basisdb deployment (a Basis
+Set Exchange v0.12 snapshot with a SQLite metadata index; on 101 under
+\code{~/projects/orca\_basis\_sets}), looked up through \code{\$FBK\_BASISDB}
+and then \code{$\sim$/projects/orca\_basis\_sets}.  The report lists the sets
+that cover the element -- name, family, relativistic method, the ORCA
+built-in flag (reachable through \code{!name}; external sets load via
+\code{GTOName} with an absolute path, the library's own BASIS\_USAGE.md
+documents both), ECP pairing, contracted-function size (over the set's full
+element range) and reference count -- and summarises the auxiliary roles
+(rifit/jkfit/\dots) by count.  No library content ships with this program:
+the query opens the caller's deployment read-only.
+
 \section{How to read the numbers}
 
 \begin{readbox}
@@ -62,6 +80,9 @@ rules match on (elements, valence, targets) -- there is no hidden state.
 \begin{refusalbox}
 \begin{itemize}
   \item This is a lookup, not a calculation: no file is written.
+  \item The datasource leg states it plainly when no library is reachable
+    (the question is skipped, not guessed at), and it never bundles library
+    content -- it opens the deployment the caller points at.
   \item ECP parameters from an external source (a Basis Set Exchange download,
     say) must be inlined into the ORCA input and checked by hand -- the
     program says so where that route is suggested.

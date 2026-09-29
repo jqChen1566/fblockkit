@@ -36,15 +36,20 @@ You get a numbered menu. Type your answer at each prompt: **pressing Enter alone
 takes the default**; a text file holding your inputs, one per line, is a replayable
 script (Section 8).
 
-## 1 Check-up and characterisation (read an ORCA output)
+## 1 Check-up and characterisation (read an ORCA or Gaussian output)
 
-**What it is for**: turn one ORCA output file into an "analysis + diagnosis" report.
+**What it is for**: turn one ORCA output file (deep analysis) -- or a
+Gaussian 09/16 output (the minimal fact set: termination, SCF, frequency and
+optimization facts) -- into an "analysis + diagnosis" report.
 
-**What you need**: an ORCA 6.x output file (`.out`/`.log`). The per-MO composition
-analysis needs the `LOEWDIN ORBITAL-COMPOSITIONS` table in the output (add
-`%output Print[P_ReducedOrbPopMO_L] 1` to the input; it is printed at the normal
-print level); when the table is absent, that analysis section is skipped with an
-explanation.
+**What you need**: an ORCA 6.x output file (`.out`/`.log`), or a Gaussian
+09/16 output; the diagnosis rules run off the shared fact vocabulary, so
+Gaussian files get the engine-independent checks (termination, SCF,
+frequencies, optimization) while ORCA-only analyses are skipped. The per-MO
+composition analysis needs the `LOEWDIN ORBITAL-COMPOSITIONS` table in the
+ORCA output (add `%output Print[P_ReducedOrbPopMO_L] 1` to the input; it is
+printed at the normal print level); when the table is absent, that analysis
+section is skipped with an explanation.
 
 **How**: choose menu 1, then give the file path.
 
@@ -144,14 +149,24 @@ sources are in the generated guidance):
 
 ## 4 Basis-set / ECP recommendation
 
-**What it is for**: look up recommendations without generating a file.
+**What it is for**: look up recommendations without generating a file --
+plus an optional datasource leg that queries the deployed basis library.
 
-**How**: menu 4, then element list, charge, multiplicity, valence, targets.
+**How**: menu 4, then element list, charge, multiplicity, valence, targets;
+finally (optionally) an element symbol for the deployed basis library
+(Enter skips).  The library is auto-detected: `$FBK_BASISDB`, then
+`~/projects/orca_basis_sets` (the basisdb deployment, a Basis Set Exchange
+snapshot with a SQLite index).
 
 **What you get**: recommendation tiers (each with its matching auxiliary basis
 and rationale), boundary cautions (for example: the standard def2 family stops
 at Rn and does not cover the actinides), and not-applicable tiers with their hard
-refusal conditions. Everything carries its provenance.
+refusal conditions. Everything carries its provenance.  The datasource leg
+lists, for the queried element, the sets that cover it -- name, family,
+relativistic method, whether ORCA reaches them through a built-in keyword or
+through GTOName, ECP pairing, contracted-function size and reference count.
+No library content ships with this program: the query runs against the
+deployment you point at.
 
 ## 5 Search the tool index
 

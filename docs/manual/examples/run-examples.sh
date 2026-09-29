@@ -9,6 +9,9 @@ cd "$(dirname "$0")"
 REPO=../../..
 export PYTHONUTF8=1
 export PYTHONPATH="$REPO/src"
+# the menu-4 datasource leg queries the deployed basis library; point it at
+# the shipped miniature so the capture is byte-identical on both ends
+export FBK_BASISDB="$REPO/fixtures/basisdb/mini_basis.db"
 PY=python
 
 rm -rf work
@@ -98,6 +101,8 @@ cp "$REPO/fixtures/poly_aniso/two_center_probe.out" work/
 cp "$REPO/fixtures/hyperfine/cef3_epr_dft.out" work/
 cp "$REPO/fixtures/hyperfine/cef3_epr_casscf.out" work/
 cp "$REPO/fixtures/magnetocaloric/poly_mh.out" work/
+# the menu-1 Gaussian leg (the G09 TS-optimization probe)
+cp "$REPO/fixtures/gaussian/g09_h2co_ts.out" work/
 
 for script in scripts/*.txt; do
   name=$(basename "$script" .txt)

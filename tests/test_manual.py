@@ -17,6 +17,7 @@ copied into examples/work/ and the deterministic input generator runs there.
 from __future__ import annotations
 
 import io
+import os
 import re
 import shutil
 import subprocess
@@ -91,6 +92,11 @@ def _matches(expected: str, produced: str) -> bool:
 def _prepare_work() -> None:
     work = EXAMPLES / "work"
     work.mkdir(exist_ok=True)
+    # the menu-4 datasource leg queries the deployed basis library; the same
+    # relative path run-examples.sh exports, so the library path printed into
+    # the capture matches on replay (the comparison normalises separators,
+    # not absolute/relative forms)
+    os.environ["FBK_BASISDB"] = "../../../fixtures/basisdb/mini_basis.db"
     subprocess.run(
         [sys.executable, "generate_inputs.py"],
         cwd=EXAMPLES,
@@ -204,6 +210,10 @@ def _prepare_work() -> None:
     # the menu-41 magnetocaloric fixture (the POLY_ANISO M(H) probe)
     shutil.copy(
         REPO / "fixtures" / "magnetocaloric" / "poly_mh.out", work / "poly_mh.out"
+    )
+    # the menu-1 Gaussian leg (the G09 TS-optimization probe)
+    shutil.copy(
+        REPO / "fixtures" / "gaussian" / "g09_h2co_ts.out", work / "g09_h2co_ts.out"
     )
 
 

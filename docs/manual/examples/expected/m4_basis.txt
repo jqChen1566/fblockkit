@@ -1,7 +1,7 @@
 fBlockKit -- the f-block calculation toolkit (input generation + characterisation analysis; it runs no calculations)
 
 Available functions:
-   1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)
+   1  Check-up and characterisation (read an ORCA or Gaussian output -> analysis + diagnosis report)
    2  Coordination geometry and symmetry hints (read an XYZ structure)
    3  Generate an ORCA input (system profile -> input file + run guidance)
    4  Basis-set / ECP recommendation (element/valence/targets)
@@ -64,9 +64,18 @@ Not applicable: 5f-in-core pseudopotentials (the AnPP2/AnBS2 family) apply to th
   - Forbidden when the ground state is 5f^(n-1) 6d^1 (III) or 5f^(n-2) 6d^1 (IV) (the source paper's own prohibition).
   - Properties that depend on the half-filled / filled 5f breakpoints (the even-odd effect at Cm and Lr, for instance) cannot be reproduced.
 - Matched at metal valence 3 (entries that do not list a valence are treated as the general tier).
+Datasource query: element symbol for the deployed basis library (Enter = skip; library auto-detected: $FBK_BASISDB, then ~/projects/orca_basis_sets) (Enter = leave empty)> Ce
+Basis-library query: Ce at ..\..\..\fixtures\basisdb\mini_basis.db
+  2 entries: 2 orbital + none auxiliary
+
+  -- orbital basis sets ([built-in] = ORCA !name; [external] = GTOName) --
+    [built-in] def2-svp                   ahlrichs   rel=none       1058 fn  refs 30  ECP
+    [built-in] def2-tzvp                  ahlrichs   rel=none       1373 fn  refs 31  ECP
+
+  Reading notes: ECP marks sets that pair with an effective-core potential for this element; external sets load via GTOName with an absolute path (the library's BASIS_USAGE.md documents both paths); sizes count contracted functions over the set's full element range.
 
 Available functions:
-   1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)
+   1  Check-up and characterisation (read an ORCA or Gaussian output -> analysis + diagnosis report)
    2  Coordination geometry and symmetry hints (read an XYZ structure)
    3  Generate an ORCA input (system profile -> input file + run guidance)
    4  Basis-set / ECP recommendation (element/valence/targets)

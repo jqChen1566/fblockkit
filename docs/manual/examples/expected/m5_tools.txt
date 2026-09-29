@@ -1,7 +1,7 @@
 fBlockKit -- the f-block calculation toolkit (input generation + characterisation analysis; it runs no calculations)
 
 Available functions:
-   1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)
+   1  Check-up and characterisation (read an ORCA or Gaussian output -> analysis + diagnosis report)
    2  Coordination geometry and symmetry hints (read an XYZ structure)
    3  Generate an ORCA input (system profile -> input file + run guidance)
    4  Basis-set / ECP recommendation (element/valence/targets)
@@ -50,7 +50,7 @@ Search keywords (several words, space separated) (Enter = leave empty)> mokit
   Note: v0.1 takes only the "hand orbitals over" step and the UNO/GVB window-selection idea; it is not a whole-package dependency. The official citation form is "Jingxiang Zou, Molecular Orbital Kit (MOKIT)". Not fully functional on Windows.
 
 Available functions:
-   1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)
+   1  Check-up and characterisation (read an ORCA or Gaussian output -> analysis + diagnosis report)
    2  Coordination geometry and symmetry hints (read an XYZ structure)
    3  Generate an ORCA input (system profile -> input file + run guidance)
    4  Basis-set / ECP recommendation (element/valence/targets)
@@ -104,7 +104,7 @@ Provenance:
   - [measured] User decision of 2026-09-25 "first release = ORCA deep + OpenMolcas magnetic-property chain template" (00_说明.md §2)
 
 Available functions:
-   1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)
+   1  Check-up and characterisation (read an ORCA or Gaussian output -> analysis + diagnosis report)
    2  Coordination geometry and symmetry hints (read an XYZ structure)
    3  Generate an ORCA input (system profile -> input file + run guidance)
    4  Basis-set / ECP recommendation (element/valence/targets)
@@ -203,7 +203,7 @@ Boundaries and settled conventions:
 (printed for Dy as the example: the cluster CAS size follows the f count of the centre, (f-count)e,7o for any Ln3+/An3+ ion)
 
 Available functions:
-   1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)
+   1  Check-up and characterisation (read an ORCA or Gaussian output -> analysis + diagnosis report)
    2  Coordination geometry and symmetry hints (read an XYZ structure)
    3  Generate an ORCA input (system profile -> input file + run guidance)
    4  Basis-set / ECP recommendation (element/valence/targets)

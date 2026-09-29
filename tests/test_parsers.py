@@ -53,8 +53,8 @@ def _sections(name: str) -> dict:
 # --- identification and generic behaviour -----------------------------------
 
 
-def test_registry_has_orca():
-    assert [p.program for p in available()] == ["orca"]
+def test_registry_has_orca_and_gaussian():
+    assert {p.program for p in available()} == {"orca", "gaussian"}
 
 
 def test_all_fixtures_parse_as_orca():

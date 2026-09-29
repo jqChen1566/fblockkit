@@ -1,7 +1,7 @@
 fBlockKit -- the f-block calculation toolkit (input generation + characterisation analysis; it runs no calculations)
 
 Available functions:
-   1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)
+   1  Check-up and characterisation (read an ORCA or Gaussian output -> analysis + diagnosis report)
    2  Coordination geometry and symmetry hints (read an XYZ structure)
    3  Generate an ORCA input (system profile -> input file + run guidance)
    4  Basis-set / ECP recommendation (element/valence/targets)
@@ -57,7 +57,7 @@ DM-AS candidate batch written: work\h2o.fbk.dm
 Next step: run the script on the cluster (run_scan.sh), fill the reference output into the manifest, then use menu 20.
 
 Available functions:
-   1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)
+   1  Check-up and characterisation (read an ORCA or Gaussian output -> analysis + diagnosis report)
    2  Coordination geometry and symmetry hints (read an XYZ structure)
    3  Generate an ORCA input (system profile -> input file + run guidance)
    4  Basis-set / ECP recommendation (element/valence/targets)

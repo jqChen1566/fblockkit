@@ -59,6 +59,29 @@ Chapter~\ref{ch:report}; the following sections point at the variants.
   \item \file{name.fbk.json} -- the same content as data, for scripting.
 \end{itemize}
 
+\subsection*{The Gaussian leg (the minimal fact set)}
+
+Gaussian 09/16 outputs are identified by their ``Entering Gaussian System''
+banner and mapped onto the shared diagnosis vocabulary -- termination, SCF
+(``SCF Done'' shape), frequency blocks (the ``Frequencies --'' lines; the
+engine's ``N imaginary frequencies'' mark is kept alongside the counted
+value) and the optimization cycle facts (``Step number N out of a maximum
+of M'', ``Optimization completed.''/``Stationary point found.'', and the
+``ts'' token of the echoed input line).  Engine-independent rules then fire
+normally -- the example's TS optimisation without a frequency verification
+is caught by the same rule as on ORCA files -- while ORCA-only analyses and
+rules stay absent.  Boundaries: Gaussian CASSCF facts are registered as a
+follow-up (no sample in hand); the ``SCF Done'' parse follows the published
+line shape with its real fixture anchor registered (the two shipped G09
+probes are external-driver runs without an SCF line); the suggested-action
+text of shared rules may quote ORCA syntax -- the rule and its reasoning
+are engine-independent, the syntax is not.
+
+\lstinputlisting[style=fbkcode, firstline=146, lastline=151,
+  title={The Gaussian leg of the menu-1 example (a G09 TS optimisation
+  without frequency verification)}]
+  {examples/expected/m1_checkup.txt}
+
 \section{How to read the numbers}
 
 Each analysis section states its own criteria and caveats; the full criterion

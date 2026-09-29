@@ -37,6 +37,7 @@ EXAMPLES = REPO / "docs" / "manual" / "examples"
 PY = sys.executable
 ENV = dict(os.environ)
 ENV["PYTHONUTF8"] = "1"
+ENV["FBK_BASISDB"] = str(REPO / "fixtures" / "basisdb" / "mini_basis.db")
 if (REPO / "src").is_dir():
     ENV["PYTHONPATH"] = str(REPO / "src")
 
@@ -158,6 +159,11 @@ def main() -> int:
             REPO / "fixtures" / "magnetocaloric" / "poly_mh.out",
             inputs / "poly_mh.out",
         )
+        # the menu-1 Gaussian leg (the G09 TS-optimization probe)
+        shutil.copy(
+            REPO / "fixtures" / "gaussian" / "g09_h2co_ts.out",
+            inputs / "g09_h2co_ts.out",
+        )
         # the exact-entropy chain (menu 12): the converged CASSCF output, the
         # FCIDUMP it dumped, and the two orca_2json exports of the gbw
         shutil.copy(FIXTURES / "n2_fcidump_step_a.out", inputs / "n2_fcidump_step_a.out")
@@ -211,13 +217,14 @@ def main() -> int:
                 [
                     "1", "work/n2_casscf_nevpt2.out",
                     "1", "work/n2_caspt2.out",
+                    "1", "work/g09_h2co_ts.out",
                     "1", "work/co_plus_soc.out",
                     "1", "work/fhh_optts_freq.out",
                     "1", "work/n2_stretch_local_spin.out",
                     "1", "work/n2_diffuse.out",
                     "2", "work/octahedron.xyz", "Oh",
                     "3", "Ce", "3", "2", "3", "energy", "work/ce_atom.xyz", "1", "1,7,2,1", "default", "5000",
-                    "4", "Pu,Cl", "0", "2", "3", "energy",
+                    "4", "Pu,Cl", "0", "2", "3", "energy", "Ce",
                     "5", "dmrg",
                     "6", "openmolcas",
                     "6", "liblan",
@@ -697,6 +704,19 @@ def main() -> int:
                 "route: spin-orbit levels" in mce_levels
                 and "R ln(N) = 11.5263" in mce_levels,
                 "menu 41 runs the levels route on the SINGLE_ANISO spectrum",
+            )
+            check(
+                "Basis-library query: Ce at" in out
+                and "[built-in] def2-svp" in out
+                and "1058 fn  refs 30  ECP" in out,
+                "menu 4 queries the deployed basis library (datasource leg)",
+            )
+            gaussian_report = read("g09_h2co_ts.out.fbk.md")
+            check(
+                "D4-TS-NO-FREQUENCY-VERIFICATION" in gaussian_report
+                and "A transition-state optimisation without a frequency verification"
+                in gaussian_report,
+                "menu 1 characterises a Gaussian output through the shared rules",
             )
             xas_report = read("fecl4_xas.out.xas.fbk.md")
             check(

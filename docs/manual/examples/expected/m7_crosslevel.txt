@@ -1,7 +1,7 @@
 fBlockKit -- the f-block calculation toolkit (input generation + characterisation analysis; it runs no calculations)
 
 Available functions:
-   1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)
+   1  Check-up and characterisation (read an ORCA or Gaussian output -> analysis + diagnosis report)
    2  Coordination geometry and symmetry hints (read an XYZ structure)
    3  Generate an ORCA input (system profile -> input file + run guidance)
    4  Basis-set / ECP recommendation (element/valence/targets)
@@ -54,7 +54,7 @@ Records JSON path (each item carries label and energies; see section 7 of the gu
   Evidence: [literature] Lu J.-B., Zhang Y.-Y., Liu J.-B., Li J., J. Chem. Theory Comput., 2025, 21(1), 170-182, DOI 10.1021/acs.jctc.4c01189 (SI Table S18)
 
 Available functions:
-   1  Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)
+   1  Check-up and characterisation (read an ORCA or Gaussian output -> analysis + diagnosis report)
    2  Coordination geometry and symmetry hints (read an XYZ structure)
    3  Generate an ORCA input (system profile -> input file + run guidance)
    4  Basis-set / ECP recommendation (element/valence/targets)

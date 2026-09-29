@@ -13,7 +13,7 @@ from ..session import Session
 
 
 def report_output(session: Session) -> None:
-    path_text = session.ask("ORCA output file path")
+    path_text = session.ask("Output file path (ORCA or Gaussian)")
     if not path_text:
         session.say("Cancelled (no path given).")
         return

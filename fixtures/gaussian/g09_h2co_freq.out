@@ -1,0 +1,323 @@
+ Entering Gaussian System, Link 0=g09
+ Initial command:
+ /sob/g09/l1.exe "/sob/g09/scratch/Gau-84191.inp" -scrdir="/sob/g09/scratch/"
+ Default is to use a total of   4 processors:
+                                4 via shared-memory
+                                1 via Linda
+ Entering Link 1 = /sob/g09/l1.exe PID=     84193.
+  
+ Copyright (c) 1988,1990,1992,1993,1995,1998,2003,2009,2013,
+            Gaussian, Inc.  All Rights Reserved.
+  
+ This is part of the Gaussian(R) 09 program.  It is based on
+ the Gaussian(R) 03 system (copyright 2003, Gaussian, Inc.),
+ the Gaussian(R) 98 system (copyright 1998, Gaussian, Inc.),
+ the Gaussian(R) 94 system (copyright 1995, Gaussian, Inc.),
+ the Gaussian 92(TM) system (copyright 1992, Gaussian, Inc.),
+ the Gaussian 90(TM) system (copyright 1990, Gaussian, Inc.),
+ the Gaussian 88(TM) system (copyright 1988, Gaussian, Inc.),
+ the Gaussian 86(TM) system (copyright 1986, Carnegie Mellon
+ University), and the Gaussian 82(TM) system (copyright 1983,
+ Carnegie Mellon University). Gaussian is a federally registered
+ trademark of Gaussian, Inc.
+  
+ This software contains proprietary and confidential information,
+ including trade secrets, belonging to Gaussian, Inc.
+  
+ This software is provided under written license and may be
+ used, copied, transmitted, or stored only in accord with that
+ written license.
+  
+ The following legend is applicable only to US Government
+ contracts under FAR:
+  
+                    RESTRICTED RIGHTS LEGEND
+  
+ Use, reproduction and disclosure by the US Government is
+ subject to restrictions as set forth in subparagraphs (a)
+ and (c) of the Commercial Computer Software - Restricted
+ Rights clause in FAR 52.227-19.
+  
+ Gaussian, Inc.
+ 340 Quinnipiac St., Bldg. 40, Wallingford CT 06492
+  
+  
+ ---------------------------------------------------------------
+ Warning -- This program may not be used in any manner that
+ competes with the business of Gaussian, Inc. or will provide
+ assistance to any competitor of Gaussian, Inc.  The licensee
+ of this program is prohibited from giving any competitor of
+ Gaussian, Inc. access to this program.  By using this program,
+ the user acknowledges that Gaussian, Inc. is engaged in the
+ business of creating and licensing software in the field of
+ computational chemistry and represents and warrants to the
+ licensee that it is not a competitor of Gaussian, Inc. and that
+ it will not use this program in any manner prohibited above.
+ ---------------------------------------------------------------
+  
+
+ Cite this work as:
+ Gaussian 09, Revision D.01,
+ M. J. Frisch, G. W. Trucks, H. B. Schlegel, G. E. Scuseria, 
+ M. A. Robb, J. R. Cheeseman, G. Scalmani, V. Barone, B. Mennucci, 
+ G. A. Petersson, H. Nakatsuji, M. Caricato, X. Li, H. P. Hratchian, 
+ A. F. Izmaylov, J. Bloino, G. Zheng, J. L. Sonnenberg, M. Hada, 
+ M. Ehara, K. Toyota, R. Fukuda, J. Hasegawa, M. Ishida, T. Nakajima, 
+ Y. Honda, O. Kitao, H. Nakai, T. Vreven, J. A. Montgomery, Jr., 
+ J. E. Peralta, F. Ogliaro, M. Bearpark, J. J. Heyd, E. Brothers, 
+ K. N. Kudin, V. N. Staroverov, T. Keith, R. Kobayashi, J. Normand, 
+ K. Raghavachari, A. Rendell, J. C. Burant, S. S. Iyengar, J. Tomasi, 
+ M. Cossi, N. Rega, J. M. Millam, M. Klene, J. E. Knox, J. B. Cross, 
+ V. Bakken, C. Adamo, J. Jaramillo, R. Gomperts, R. E. Stratmann, 
+ O. Yazyev, A. J. Austin, R. Cammi, C. Pomelli, J. W. Ochterski, 
+ R. L. Martin, K. Morokuma, V. G. Zakrzewski, G. A. Voth, 
+ P. Salvador, J. J. Dannenberg, S. Dapprich, A. D. Daniels, 
+ O. Farkas, J. B. Foresman, J. V. Ortiz, J. Cioslowski, 
+ and D. J. Fox, Gaussian, Inc., Wallingford CT, 2013.
+ 
+ ******************************************
+ Gaussian 09:  ES64L-G09RevD.01 24-Apr-2013
+                30-May-2018 
+ ******************************************
+ %chk=TS.chk
+ %nproc=1
+ Will use up to    1 processors via shared memory.
+ -----------------------------------------
+ # freq geom=allcheck external='./orca.sh'
+ -----------------------------------------
+ 1/10=4,18=10,29=7,30=1,38=1/1,3;
+ 2/12=2,40=1/2;
+ 3/11=9,14=-4,16=1,25=1,30=1,41=9900000,43=2,71=2,140=1/1;
+ 4/20=17,22=2,24=3,113=1,114=1/2;
+ 6/7=2,8=2,9=2,10=2/1;
+ 7/8=1,25=1,44=-1/16;
+ 1/10=4,18=10,30=1/3;
+ 99//99;
+ Structure from the checkpoint file:  "TS.chk"
+ -------------------
+ Title Card Required
+ -------------------
+ Charge =  0 Multiplicity = 1
+ Redundant internal coordinates found in file.
+ C,0,0.4441349954,-0.5875753001,0.
+ N,0,-0.3597058989,0.3052807443,0.
+ H,0,-0.6917290064,-1.0305667642,0.
+ Recover connectivity data from disk.
+
+ GradGradGradGradGradGradGradGradGradGradGradGradGradGradGradGradGradGrad
+ Berny optimization.
+ Initialization pass.
+ Trust Radius=3.00D-01 FncErr=1.00D-07 GrdErr=1.00D-07
+ Number of steps in this run=      2 maximum allowed number of steps=      2.
+ GradGradGradGradGradGradGradGradGradGradGradGradGradGradGradGradGradGrad
+
+                          Input orientation:                          
+ ---------------------------------------------------------------------
+ Center     Atomic      Atomic             Coordinates (Angstroms)
+ Number     Number       Type             X           Y           Z
+ ---------------------------------------------------------------------
+      1          6           0        0.444135   -0.587575    0.000000
+      2          7           0       -0.359706    0.305281    0.000000
+      3          1           0       -0.691729   -1.030567    0.000000
+ ---------------------------------------------------------------------
+                    Distance matrix (angstroms):
+                    1          2          3
+     1  C    0.000000
+     2  N    1.201396   0.000000
+     3  H    1.219192   1.376491   0.000000
+ Stoichiometry    CHN
+ Framework group  CS[SG(CHN)]
+ Deg. of freedom     3
+ Full point group                 CS      NOp   2
+ Largest Abelian subgroup         CS      NOp   2
+ Largest concise Abelian subgroup C1      NOp   1
+                         Standard orientation:                         
+ ---------------------------------------------------------------------
+ Center     Atomic      Atomic             Coordinates (Angstroms)
+ Number     Number       Type             X           Y           Z
+ ---------------------------------------------------------------------
+      1          6           0        0.081468    0.631467    0.000000
+      2          7           0        0.081468   -0.569929    0.000000
+      3          1           0       -1.059086    0.200696    0.000000
+ ---------------------------------------------------------------------
+ Rotational constants (GHZ):    402.6681661     53.8805305     47.5217092
+ Standard basis: STO-3G (5D, 7F)
+ There are     9 symmetry adapted cartesian basis functions of A'  symmetry.
+ There are     2 symmetry adapted cartesian basis functions of A"  symmetry.
+ There are     9 symmetry adapted basis functions of A'  symmetry.
+ There are     2 symmetry adapted basis functions of A"  symmetry.
+    11 basis functions,    33 primitive gaussians,    11 cartesian basis functions
+     7 alpha electrons        7 beta electrons
+       nuclear repulsion energy        23.7949934679 Hartrees.
+ NAtoms=    3 NActive=    3 NUniq=    3 SFac= 1.00D+00 NAtFMM=   60 NAOKFM=F Big=F
+ Integral buffers will be    131072 words long.
+ Raffenetti 1 integral format.
+ Two-electron integral symmetry is turned on.
+ External calculation of energy, first and second derivatives.
+ Running external command "./orca.sh R"
+         input file       "/sob/g09/scratch/Gau-84193.EIn"
+         output file      "/sob/g09/scratch/Gau-84193.EOu"
+         message file     "/sob/g09/scratch/Gau-84193.EMs"
+         fchk file        "/sob/g09/scratch/Gau-84193.EFC"
+         mat. el file     "/sob/g09/scratch/Gau-84193.EUF"
+Generating mol.inp
+Running ORCA...
+ORCA running finished!
+Extracting data from ORCA outputs via extderi
+ Recovered energy= -93.2545621818     dipole=      0.000000000000      0.000000000000      0.000000000000
+ Energy=    -93.2545622     NIter=   0.
+ Dipole moment=       0.000000       0.000000       0.000000
+ Full mass-weighted force constant matrix:
+ Low frequencies ----1089.0060  -26.8515    4.8026    6.5786   10.7832   16.2187
+ Low frequencies ---   26.5880 1993.2341 2500.2502
+ ******    1 imaginary frequencies (negative Signs) ****** 
+ Diagonal vibrational polarizability:
+        0.0000000       0.0000000       0.0000000
+ Harmonic frequencies (cm**-1), IR intensities (KM/Mole), Raman scattering
+ activities (A**4/AMU), depolarization ratios for plane and unpolarized
+ incident light, reduced masses (AMU), force constants (mDyne/A),
+ and normal coordinates:
+                      1                      2                      3
+                     A'                     A'                     A'
+ Frequencies --  -1089.0060              1993.2341              2500.2502
+ Red. masses --      1.1666                11.6836                 1.0603
+ Frc consts  --      0.8151                27.3492                 3.9053
+ IR Inten    --      0.0000                 0.0000                 0.0000
+  Atom  AN      X      Y      Z        X      Y      Z        X      Y      Z
+     1   6     0.07   0.05   0.00    -0.03   0.71   0.00     0.06   0.02   0.00
+     2   7    -0.07   0.02   0.00     0.01  -0.63   0.00     0.02  -0.01   0.00
+     3   1     0.15  -0.98   0.00     0.21   0.24   0.00    -0.99  -0.11   0.00
+
+ -------------------
+ - Thermochemistry -
+ -------------------
+ Temperature   298.150 Kelvin.  Pressure   1.00000 Atm.
+ Atom     1 has atomic number  6 and mass  12.00000
+ Atom     2 has atomic number  7 and mass  14.00307
+ Atom     3 has atomic number  1 and mass   1.00783
+ Molecular mass:    27.01090 amu.
+ Principal axes and moments of inertia in atomic units:
+                           1         2         3
+     Eigenvalues --     4.48196  33.49524  37.97719
+           X           -0.02946   0.99957   0.00000
+           Y            0.99957   0.02946   0.00000
+           Z            0.00000   0.00000   1.00000
+ This molecule is an asymmetric top.
+ Rotational symmetry number  1.
+ Rotational temperatures (Kelvin)     19.32500     2.58585     2.28068
+ Rotational constants (GHZ):         402.66817    53.88053    47.52171
+    1 imaginary frequencies ignored.
+ Zero-point vibrational energy      26877.0 (Joules/Mol)
+                                    6.42376 (Kcal/Mol)
+ Vibrational temperatures:   2867.82  3597.30
+          (Kelvin)
+ 
+ Zero-point correction=                           0.010237 (Hartree/Particle)
+ Thermal correction to Energy=                    0.013070
+ Thermal correction to Enthalpy=                  0.014014
+ Thermal correction to Gibbs Free Energy=        -0.010794
+ Sum of electronic and zero-point Energies=            -93.244325
+ Sum of electronic and thermal Energies=               -93.241492
+ Sum of electronic and thermal Enthalpies=             -93.240548
+ Sum of electronic and thermal Free Energies=          -93.265356
+ 
+                     E (Thermal)             CV                S
+                      KCal/Mol        Cal/Mol-Kelvin    Cal/Mol-Kelvin
+ Total                    8.202              5.976             52.214
+ Electronic               0.000              0.000              0.000
+ Translational            0.889              2.981             35.816
+ Rotational               0.889              2.981             16.396
+ Vibrational              6.424              0.014              0.002
+                       Q            Log10(Q)             Ln(Q)
+ Total Bot       0.922543D+05          4.964986         11.432304
+ Total V=0       0.471659D+10          9.673628         22.274352
+ Vib (Bot)       0.195609D-04         -4.708611        -10.841976
+ Vib (V=0)       0.100007D+01          0.000031          0.000072
+ Electronic      0.100000D+01          0.000000          0.000000
+ Translational   0.551777D+07          6.741764         15.523485
+ Rotational      0.854738D+03          2.931833          6.750795
+ ***** Axes restored to original set *****
+ -------------------------------------------------------------------
+ Center     Atomic                   Forces (Hartrees/Bohr)
+ Number     Number              X              Y              Z
+ -------------------------------------------------------------------
+      1        6          -0.000053074    0.000009535    0.000000000
+      2        7           0.000013534   -0.000046024    0.000000000
+      3        1           0.000039539    0.000036489    0.000000000
+ -------------------------------------------------------------------
+ Cartesian Forces:  Max     0.000053074 RMS     0.000030007
+
+ GradGradGradGradGradGradGradGradGradGradGradGradGradGradGradGradGradGrad
+ Berny optimization.
+ Search for a local minimum.
+ Step number   1 out of a maximum of    2
+ All quantities printed in internal units (Hartrees-Bohrs-Radians)
+ Second derivative matrix not updated -- analytic derivatives used.
+ The second derivative matrix:
+                          X1        Y1        Z1        X2        Y2
+           X1           0.45322
+           Y1          -0.41312   0.58037
+           Z1           0.00000   0.00000   0.00004
+           X2          -0.36682   0.49682   0.00000   0.41911
+           Y2           0.54390  -0.53955   0.00000  -0.50300   0.54767
+           Z2           0.00000   0.00000  -0.00002   0.00000   0.00000
+           X3          -0.08670  -0.08332   0.00000  -0.05228  -0.04090
+           Y3          -0.13040  -0.04123   0.00000   0.00619  -0.00811
+           Z3           0.00000   0.00000  -0.00002   0.00000   0.00000
+                          Z2        X3        Y3        Z3
+           Z2           0.00004
+           X3           0.00000   0.13897
+           Y3           0.00000   0.12422   0.04934
+           Z3          -0.00001   0.00000   0.00000   0.00003
+ ITU=  0
+     Eigenvalues ---   -0.09821   0.32186   1.94069
+ Eigenvalue     1 is  -9.82D-02 should be greater than     0.000000 Eigenvector:
+                          Y3        X3        X1        Y2        X2
+   1                    0.76289  -0.41866   0.33254  -0.32844  -0.14964
+                          Y1        Z3        Z1        Z2
+   1                    0.04331   0.00000   0.00000   0.00000
+ Angle between quadratic step and forces=  40.38 degrees.
+ ClnCor:  largest displacement from symmetrization is 3.03D-20 for atom     3.
+ Linear search not attempted -- first point.
+ ClnCor:  largest displacement from symmetrization is 2.48D-16 for atom     2.
+ TrRot= -0.000025 -0.000031  0.000000  0.000001  0.000000  0.000001
+ Variable       Old X    -DE/DX   Delta X   Delta X   Delta X     New X
+                                 (Linear)    (Quad)   (Total)
+    X1        0.83929  -0.00005   0.00000  -0.00004  -0.00006   0.83923
+    Y1       -1.11036   0.00001   0.00000  -0.00002  -0.00005  -1.11040
+    Z1        0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+    X2       -0.67975   0.00001   0.00000  -0.00001  -0.00004  -0.67978
+    Y2        0.57690  -0.00005   0.00000  -0.00005  -0.00008   0.57682
+    Z2        0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+    X3       -1.30718   0.00004   0.00000   0.00012   0.00010  -1.30708
+    Y3       -1.94749   0.00004   0.00000   0.00016   0.00012  -1.94737
+    Z3        0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+         Item               Value     Threshold  Converged?
+ Maximum Force            0.000053     0.000450     YES
+ RMS     Force            0.000030     0.000300     YES
+ Maximum Displacement     0.000123     0.001800     YES
+ RMS     Displacement     0.000065     0.001200     YES
+ Predicted change in Energy=-7.597076D-09
+ Optimization completed.
+    -- Stationary point found.
+ GradGradGradGradGradGradGradGradGradGradGradGradGradGradGradGradGradGrad
+
+ 1\1\GINC-192\Freq\RExternal='./orca.sh'\ZDO\C1H1N1\ROOT\30-May-2018\0\
+ \# freq geom=allcheck external='./orca.sh'\\Title Card Required\\0,1\C
+ ,0.4441349954,-0.5875753001,0.\N,-0.3597058989,0.3052807443,0.\H,-0.69
+ 17290064,-1.0305667642,0.\\Version=ES64L-G09RevD.01\HF=-93.2545622\RMS
+ D=0.000e+00\RMSF=3.001e-05\ZeroPoint=0.0102369\Thermal=0.0130701\Dipol
+ e=0.,0.,0.\PG=CS [SG(C1H1N1)]\NImag=1\\0.45321637,-0.41312309,0.580370
+ 05,0.,0.,0.00004262,-0.36682056,0.49682315,0.,0.41911259,0.54389998,-0
+ .53954607,0.,-0.50299829,0.54766752,0.,0.,-0.00001607,0.,0.,0.00004103
+ ,-0.08669628,-0.08332088,0.,-0.05227839,-0.04089724,0.,0.13897285,-0.1
+ 3040248,-0.04123277,0.,0.00618589,-0.00811058,0.,0.12421746,0.04934181
+ ,0.,0.,-0.00001618,0.,0.,-0.00001055,0.,0.,0.00002574\\0.00005307,-0.0
+ 0000953,0.,-0.00001353,0.00004602,0.,-0.00003954,-0.00003649,0.\\\@
+
+
+ IT TAKES GREATER CHARACTER TO CARRY OFF GOOD FORTUNE THAN BAD.
+                     FRENCH PROVERB.
+ Job cpu time:       0 days  0 hours  0 minutes  0.4 seconds.
+ File lengths (MBytes):  RWF=      5 Int=      0 D2E=      0 Chk=      1 Scr=      1
+ Normal termination of Gaussian 09 at Wed May 30 06:18:26 2018.

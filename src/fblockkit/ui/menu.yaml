@@ -7,7 +7,7 @@
 version: 1
 items:
   - number: "1"
-    title: Check-up and characterisation (read an ORCA output -> analysis + diagnosis report)
+    title: Check-up and characterisation (read an ORCA or Gaussian output -> analysis + diagnosis report)
     handler: report_output
   - number: "2"
     title: Coordination geometry and symmetry hints (read an XYZ structure)

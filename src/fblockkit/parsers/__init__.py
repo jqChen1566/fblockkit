@@ -25,6 +25,7 @@ from .base import (
     read_text,
     register,
 )
+from . import gaussian  # noqa: F401  (import registers the Gaussian parser and exposes gaussian.facts)
 from . import orca  # noqa: F401  (import registers the ORCA parser and exposes orca.facts)
 
 __all__ = [
@@ -48,6 +49,8 @@ def facts_from(result: ParseResult) -> dict[str, Any]:
     """
     if result.program == orca.PROGRAM:
         return orca.facts(result)
+    if result.program == gaussian.PROGRAM:
+        return gaussian.facts(result)
     raise ParserError(
         f"no fact extractor for {result.program} yet. Next step: implement that "
         f"program's facts mapping in the parsers layer and register its field "
