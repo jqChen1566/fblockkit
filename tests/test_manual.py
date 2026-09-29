@@ -180,6 +180,10 @@ def _prepare_work() -> None:
     shutil.copy(
         REPO / "fixtures" / "magrelax" / "co_magrelax.out", work / "co_magrelax.out"
     )
+    # the menu-37 core-excited-spectra fixture (the [FeCl4]2- ROCIS run)
+    shutil.copy(
+        REPO / "fixtures" / "rocis" / "fecl4_xas.out", work / "fecl4_xas.out"
+    )
 
 
 @pytest.fixture(scope="module")

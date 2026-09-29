@@ -37,6 +37,7 @@ Available functions:
   34  Judd-Ofelt intensity parameters (a transition dataset -> Omega_2/4/6 and radiative quantities)
   35  pNMR pseudocontact shifts (a susceptibility run file + a structure -> per-nucleus PCS)
   36  Magnetic relaxation and QTM (an ORCA output with SINGLE_ANISO or MAGRELAX -> the barrier estimate and tau(T))
+  37  Core-excited spectra XAS/RIXS (a ROCIS output -> the spectra table, the edge branching ratio and the RIXS status)
    0  Quit
 Choose a number (Enter = leave empty)> 5
 Search keywords (several words, space separated) (Enter = leave empty)> mokit
@@ -81,6 +82,7 @@ Available functions:
   34  Judd-Ofelt intensity parameters (a transition dataset -> Omega_2/4/6 and radiative quantities)
   35  pNMR pseudocontact shifts (a susceptibility run file + a structure -> per-nucleus PCS)
   36  Magnetic relaxation and QTM (an ORCA output with SINGLE_ANISO or MAGRELAX -> the barrier estimate and tau(T))
+  37  Core-excited spectra XAS/RIXS (a ROCIS output -> the spectra table, the edge branching ratio and the RIXS status)
    0  Quit
 Choose a number (Enter = leave empty)> 6
 Tool index id (e.g. openmolcas; search with menu 5) (Enter = leave empty)> openmolcas
@@ -130,6 +132,7 @@ Available functions:
   34  Judd-Ofelt intensity parameters (a transition dataset -> Omega_2/4/6 and radiative quantities)
   35  pNMR pseudocontact shifts (a susceptibility run file + a structure -> per-nucleus PCS)
   36  Magnetic relaxation and QTM (an ORCA output with SINGLE_ANISO or MAGRELAX -> the barrier estimate and tau(T))
+  37  Core-excited spectra XAS/RIXS (a ROCIS output -> the spectra table, the edge branching ratio and the RIXS status)
    0  Quit
 Choose a number (Enter = leave empty)> 6
 Tool index id (e.g. openmolcas; search with menu 5) (Enter = leave empty)> liblan
@@ -224,6 +227,7 @@ Available functions:
   34  Judd-Ofelt intensity parameters (a transition dataset -> Omega_2/4/6 and radiative quantities)
   35  pNMR pseudocontact shifts (a susceptibility run file + a structure -> per-nucleus PCS)
   36  Magnetic relaxation and QTM (an ORCA output with SINGLE_ANISO or MAGRELAX -> the barrier estimate and tau(T))
+  37  Core-excited spectra XAS/RIXS (a ROCIS output -> the spectra table, the edge branching ratio and the RIXS status)
    0  Quit
 Choose a number (Enter = leave empty)> 0
 Goodbye.

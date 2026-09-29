@@ -709,6 +709,50 @@ def judd_ofelt_fit(session: Session) -> None:
     session.say(f"Report written: {md_path}")
 
 
+def xas_report(session: Session) -> None:
+    """Menu 37: core-excited spectra (XAS/RIXS) from a ROCIS output.
+
+    Reads the ROCIS absorption blocks, reports the transition table and the
+    edge branching ratio, and states the RIXS bookkeeping of the run.
+    """
+    from ...analysis import xas as xas_analysis
+
+    path_text = session.ask("ORCA output path (a ROCIS core-excited-spectra run)")
+    if not path_text:
+        session.say("Cancelled (no path given).")
+        return
+    path = Path(path_text)
+    try:
+        parsed = parse_auto(path)
+    except (ParserError, OSError) as exc:
+        session.say(f"Core-excited spectra report failed: {exc}")
+        return
+    data = parsed.sections.get("rocis") or {}
+    stat_text = session.ask(
+        "Statistical branching ratio for the comparison (Enter = report the ratio only)"
+    ).strip()
+    r_stat = None
+    if stat_text:
+        try:
+            r_stat = float(stat_text)
+        except ValueError:
+            session.say(f"Not a number: {stat_text!r}; reporting the ratio only.")
+    try:
+        body = xas_analysis.render(data, source=path.name, r_stat=r_stat)
+    except xas_analysis.XasError as exc:
+        session.say(f"Core-excited spectra report failed: {exc}")
+        return
+    session.say(body)
+    section = ReportSection(title="Core-excited spectra (XAS/RIXS)", body=body)
+    report_lines = f"## {section.title}\n\n{section.body}\n"
+    refs = references_section(xas_analysis.evidence())
+    if refs is not None:
+        report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
+    md_path = path.with_name(path.name + ".xas.fbk.md")
+    md_path.write_text(report_lines, encoding="utf-8")
+    session.say(f"Report written: {md_path}")
+
+
 def relaxation_report(session: Session) -> None:
     """Menu 36: magnetic relaxation / QTM metrics from an ORCA output.
 

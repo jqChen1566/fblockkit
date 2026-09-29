@@ -1,0 +1,35 @@
+# [Fe(II)Cl4]2- - ROCIS - L-edge XAS + RIXS (Wave 5.4 probe)
+!x2c x2c-SVPall AutoAux TightSCF
+%pal nprocs 8 end
+%maxcore 4000
+%scf
+  HFTyp ROHF
+  ROHF_CASE HIGHSPIN
+  ROHF_NEL[1] 4
+end
+%rocis
+  DoGenROCIS true
+  ReferenceMult 5
+  NRoots 30
+  OrbWin 6,8,0,2000
+  DoPNO true
+  TCutPNO 1e-11
+  XASelems 0
+  rel
+    DoSOC true
+    DoRIXS false
+    DoRIXSSOC false
+    DoElastic true
+  end
+  DoHigherMult true
+  DoLowerMult true
+  DoRI true
+  Decomposefosc true
+end
+*xyz -2 5
+Fe -0.009575 0.000087 0.011550
+Cl -1.774578 -1.558533 -0.219791
+Cl -0.681385 1.874633 1.289404
+Cl 0.666770 0.847828 -2.091305
+Cl 1.756927 -1.164015 1.071196
+*

@@ -1,0 +1,93 @@
+\chapter{Core-excited spectra XAS/RIXS (menu 37)}
+\label{ch:menu37}
+\menulabel{37}
+
+\section{Purpose}
+
+The ROCIS module of ORCA computes transition-metal L-edge spectra (manual
+section 5.7) and, through the same block, RIXS cross sections; the
+CAS-CI/RAS-CI protocol of section 3.13.18 covers core-excited XAS/RIXS in
+much the same two-step way.  This menu reads what such a run already
+contains: the transition table of its best absorption block, the edge
+branching ratio of the spin-orbit-split pair, and the RIXS bookkeeping
+(refusal mode, evaluated cross sections, or not requested).
+
+\section{What you need}
+
+An ORCA output of a ROCIS run: \code{\%rocis} with \code{DoGenROCIS true},
+\code{ReferenceMult} matching the ROHF solution, an \code{OrbWin} donor
+window on the core shell (e.g.\ the transition metal 2p) and, for the
+SOC-corrected tables, \code{rel DoSOC true}.  Optionally answer the second
+question (the statistical branching ratio) to get the ratio/stat column.
+
+\section{Walkthrough}
+
+The example reads the [FeCl$_4$]$^{2-}$ fixture: thirty roots per spin
+block, \code{DecomposeFosc}, \code{DoSOC} -- fourteen absorption blocks in
+the output, of which the SOC-corrected electric-dipole table is the primary
+one (2235 state pairs, 935 with non-zero oscillator strength).
+
+\lstinputlisting[style=fbkcode, firstline=42, lastline=58,
+  title={The menu-37 example (top: the interaction and the primary-block
+  header with the first transitions)}]
+  {examples/expected/m37_xas.txt}
+
+\lstinputlisting[style=fbkcode, firstline=129, lastline=137,
+  title={The menu-37 example (the elision note, the edge branching and the
+  statistical comparison)}]
+  {examples/expected/m37_xas.txt}
+
+\section{What you get}
+
+The report \code{<output>.xas.fbk.md}:
+
+\begin{itemize}
+  \item the excitation-table summary (root count, multiplicities, lowest
+    excitation);
+  \item the primary block's transition table (non-zero fosc rows, capped at
+    80 with an elision note): initial/final root with their multiplicity
+    labels and the energy in eV;
+  \item the branching split at the largest energy gap: each cluster's
+    count, energy range, fosc-weighted centroid and summed oscillator
+    strength, the low/high ratio and -- when a statistical value was given
+    -- the ratio/stat column;
+  \item the RIXS bookkeeping of the run.
+\end{itemize}
+
+\section{Conventions, cross-checks and boundaries (measured)}
+
+\begin{readbox}
+\begin{itemize}
+  \item \textbf{The SOC-corrected tables are population weighted}: their
+    fosc column header is \code{fosc(D2) (*population)}; the reader keeps
+    the printed value and this menu repeats the semantic.  The SOC tables
+    list the full state-pair matrix (thousands of rows, mostly zero); the
+    report lists the non-zero ones and states both counts.
+  \item \textbf{The branching ratio is a data fact}: the two clusters are
+    found by the largest energy gap (the natural default for a
+    spin-orbit-split edge), and the menu does not name the edges -- the
+    assignment depends on the donor/acceptor windows.  The statistical
+    references (2:1 for a 2p edge, 3:2 for a 3d edge, from the
+    $(2j+1)$ degeneracies) are compared only when the caller passes one;
+    deviations indicate electrostatic and spin-orbit effects
+    (Thole \& van der Laan 1988; the menu cites the source rather than
+    reimplementing its atomic rules).
+  \item \textbf{The RIXS refusal mode is the measured default of a
+    4-element \code{OrbWin}}: the engine identifies the RIXS flags and
+    then reports zero intermediate/final states (the 6-element window
+    carries the two donor spaces the RIXS variant needs).  The report
+    carries the engine's own TIP.  The six-element semantics of a
+    \emph{successful} RIXS run were not established in this round's
+    probing -- the measured variants were refused or crashed (an acceptor
+    window covering doubly occupied orbitals segfaults) -- so generating
+    RIXS inputs is registered as a candidate increment; on success the
+    report prints the transition counts and the
+    \code{orca\_mapspc ... RIXS} recipe of manual section 5.7.4.2.
+  \item \textbf{Boundaries}: ROCIS's own accuracy statement applies
+    (section 5.7.3: several approximations; qualitatively correct
+    results).  The CAS-CI/RAS-CI XAS protocol (section 3.13.18: a valence
+    SA-CASSCF first, then \code{\%scf rotate} the core orbitals into the
+    active space with \code{FrozenCore FC\_NONE} and \code{maxiter 1}) is
+    documented in this chapter; this menu reads ROCIS outputs.
+\end{itemize}
+\end{readbox}

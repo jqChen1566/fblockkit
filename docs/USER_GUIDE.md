@@ -1628,6 +1628,57 @@ statistics; the source of the dilution design rules) is a registered
 candidate increment pending its closed-access papers; polynuclear exchange
 and the POLY_ANISO route belong to the multinuclear item (5.6).
 
+## 37 Core-excited spectra XAS/RIXS (a ROCIS output)
+
+**What it is for**: the core-excited absorption spectra an ORCA ROCIS
+calculation already contains (the transition-metal L-edge protocol of the
+manual's section 5.7, and the CAS-CI/RAS-CI protocol of section 3.13.18):
+the transition table of the best available spectrum block, the edge
+branching ratio of the spin-orbit-split pair, and the run's RIXS
+bookkeeping.
+
+**How**: menu 37 -> the ORCA output path of a ROCIS run (`%rocis` with
+`DoGenROCIS`), then optionally a statistical branching ratio for the
+comparison (Enter to report the ratio only).  The report is
+`<output>.xas.fbk.md`.
+
+**How to read it**:
+
+- the primary block is the SOC-corrected electric-dipole table when the run
+  has `DoSOC` (its fosc column is **weighted by the initial-state
+  population**, as the engine's column header says), otherwise the plain
+  electric-dipole table; with `DecomposeFosc` up to seven blocks exist
+  (electric and velocity dipoles plus five combined D2/M2/Q2 variants);
+- the transition table lists the non-zero-fosc transitions (up to 80; the
+  SOC-corrected tables hold thousands of state pairs, most of them zero --
+  the report says how many);
+- the **branching ratio** splits the transitions at their largest energy
+  gap (the natural two-cluster default for a spin-orbit-split edge) and
+  reports each cluster's centroid and summed oscillator strength and the
+  low/high ratio.  The ratio is a data fact; the deviation from the
+  statistical value (2:1 for a 2p edge, 3:2 for a 3d edge -- from the
+  (2j+1) degeneracies) indicates electrostatic and spin-orbit effects
+  (Thole & van der Laan 1988, whose rules this menu cites rather than
+  reimplements).  Pass your reference value as the menu's second answer to
+  get the ratio/stat column;
+- the RIXS bookkeeping states which of the three situations the run is in:
+  not requested; the engine's **refusal mode** (the RIXS flags with zero
+  intermediate/final states -- measured on a 4-element OrbWin, which lacks
+  the second donor space the RIXS variant needs); or cross sections
+  evaluated, with the transition counts and the `orca_mapspc` recipe
+  (manual section 5.7.4.2) for the 2D data files.
+
+**Boundaries**: ROCIS applies several approximations (the manual says the
+results are qualitatively correct); the menu does not name the edge
+clusters (their assignment depends on the orbital windows), it reports the
+low/high clusters and the ratio.  The six-element `OrbWin` semantics of a
+successful RIXS run were not established in this round's probing (the
+measured variants were refused or crashed); generating RIXS inputs is a
+registered candidate increment.  The CAS-CI/RAS-CI XAS protocol
+(section 3.13.18: rotate the core orbitals in, `FrozenCore FC_NONE`,
+`maxiter 1`) is documented in the manual chapter but this menu reads ROCIS
+outputs only.
+
 ## Appendix A Command line
 
 ```text

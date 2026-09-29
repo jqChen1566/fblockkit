@@ -37,6 +37,7 @@ Available functions:
   34  Judd-Ofelt intensity parameters (a transition dataset -> Omega_2/4/6 and radiative quantities)
   35  pNMR pseudocontact shifts (a susceptibility run file + a structure -> per-nucleus PCS)
   36  Magnetic relaxation and QTM (an ORCA output with SINGLE_ANISO or MAGRELAX -> the barrier estimate and tau(T))
+  37  Core-excited spectra XAS/RIXS (a ROCIS output -> the spectra table, the edge branching ratio and the RIXS status)
    0  Quit
 Choose a number (Enter = leave empty)> 24
 FCIDUMP path (a converged CASSCF dump; the window QICAS optimizes within) (Enter = leave empty)> work/FCIDUMP
@@ -109,6 +110,7 @@ Available functions:
   34  Judd-Ofelt intensity parameters (a transition dataset -> Omega_2/4/6 and radiative quantities)
   35  pNMR pseudocontact shifts (a susceptibility run file + a structure -> per-nucleus PCS)
   36  Magnetic relaxation and QTM (an ORCA output with SINGLE_ANISO or MAGRELAX -> the barrier estimate and tau(T))
+  37  Core-excited spectra XAS/RIXS (a ROCIS output -> the spectra table, the edge branching ratio and the RIXS status)
    0  Quit
 Choose a number (Enter = leave empty)> 0
 Goodbye.

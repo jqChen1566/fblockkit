@@ -62,6 +62,7 @@ from .orbitals import (
     relaxation_report,
     state_data_report,
     wasp_guess,
+    xas_report,
 )
 from .selection import (
     aegiss_select,
@@ -103,6 +104,7 @@ HANDLERS = {
     "judd_ofelt_fit": judd_ofelt_fit,
     "pnmr_report": pnmr_report,
     "relaxation_report": relaxation_report,
+    "xas_report": xas_report,
     "pysisyphus_generate": pysisyphus_generate,
     "pysisyphus_report": pysisyphus_report,
     "dm_batch": dm_batch_generate,

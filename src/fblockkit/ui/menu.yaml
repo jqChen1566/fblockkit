@@ -114,6 +114,9 @@ items:
   - number: "36"
     title: "Magnetic relaxation and QTM (an ORCA output with SINGLE_ANISO or MAGRELAX -> the barrier estimate and tau(T))"
     handler: relaxation_report
+  - number: "37"
+    title: "Core-excited spectra XAS/RIXS (a ROCIS output -> the spectra table, the edge branching ratio and the RIXS status)"
+    handler: xas_report
   - number: "0"
     title: Quit
     handler: quit

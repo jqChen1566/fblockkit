@@ -87,6 +87,8 @@ cp "$REPO/fixtures/pnmr/co_plus/co_plus_qdpt_g.yaml" work/
 # its single-mode Orca_Magrelax run)
 cp "$REPO/fixtures/single_aniso/co_aniso2.out" work/
 cp "$REPO/fixtures/magrelax/co_magrelax.out" work/
+# the menu-37 core-excited-spectra fixture (the [FeCl4]2- ROCIS run)
+cp "$REPO/fixtures/rocis/fecl4_xas.out" work/
 
 for script in scripts/*.txt; do
   name=$(basename "$script" .txt)

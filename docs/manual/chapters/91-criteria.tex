@@ -557,6 +557,35 @@ Orbach fit & $\ln\tau$ vs $1/T$, $\ge$ 3 finite positive points &
 \end{tabularx}
 \end{center}
 
+\section{Core-excited spectra (XAS/RIXS)}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{2.6cm} X >{\raggedright\arraybackslash}p{3.0cm}@{}}
+\toprule
+Quantity & Value & Meaning / limits & Source \\
+\midrule
+Primary spectrum block & SOC-corrected electric dipole first & With \code{DoSOC}
+  the SOC tables weight fosc by the initial-state population (the column
+  header says so) and list the full state-pair matrix (thousands of rows,
+  mostly zero); the menu lists the non-zero rows and both counts &
+  \textsf{[Measured]} fixtures \file{rocis/} \\
+Branching split & largest energy gap (two-cluster default) & The clusters
+  are data (low/high energy); the menu does not name the edges -- the
+  assignment depends on the donor/acceptor windows.  The statistical
+  references (2:1 for a 2p edge, 3:2 for a 3d edge, from the $(2j+1)$
+  degeneracies) enter only through the caller's value; deviations indicate
+  electrostatic and spin-orbit effects & \textsf{[Literature]} Thole \&
+  van der Laan 1988 (rules cited, not reimplemented) \\
+RIXS window & 6-element \code{OrbWin} & The 4-element XAS window gives the
+  engine's refusal mode (RIXS flags with zero intermediate/final states);
+  the acceptor window must not cover doubly occupied orbitals (measured:
+  segfault) and the six-element semantics of a \emph{successful} run were
+  not established in this round & \textsf{[Measured]} fixtures
+  \file{rocis/} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
 \section{Crystal fields}
 
 \begin{center}

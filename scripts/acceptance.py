@@ -129,6 +129,11 @@ def main() -> int:
             REPO / "fixtures" / "magrelax" / "co_magrelax.out",
             inputs / "co_magrelax.out",
         )
+        # the menu-37 core-excited-spectra fixture (the [FeCl4]2- ROCIS run)
+        shutil.copy(
+            REPO / "fixtures" / "rocis" / "fecl4_xas.out",
+            inputs / "fecl4_xas.out",
+        )
         # the exact-entropy chain (menu 12): the converged CASSCF output, the
         # FCIDUMP it dumped, and the two orca_2json exports of the gbw
         shutil.copy(FIXTURES / "n2_fcidump_step_a.out", inputs / "n2_fcidump_step_a.out")
@@ -230,6 +235,7 @@ def main() -> int:
                     "35", "work/co_plus_qdpt_g.yaml",
                     "36", "work/co_aniso2.out",
                     "36", "work/co_magrelax.out",
+                    "37", "work/fecl4_xas.out", "2.0",
                     "31", "work/h2o_absp.property.txt",
                     "8", "work/saved.txt",
                     "0",
@@ -622,6 +628,13 @@ def main() -> int:
                 and "do not apply" in relax_sa
                 and "7.2538e-02" in relax_sa,
                 "menu 36 guards the near-isotropic KD table and reports the UBAR maximum",
+            )
+            xas_report = read("fecl4_xas.out.xas.fbk.md")
+            check(
+                "ratio (low/high) = 56.355" in xas_report
+                and "935 with non-zero fosc" in xas_report
+                and "RIXS: not requested" in xas_report,
+                "menu 37 reads the ROCIS blocks and reports the branching ratio",
             )
             relax_mr = read("co_magrelax.out.relax.fbk.md")
             check(
