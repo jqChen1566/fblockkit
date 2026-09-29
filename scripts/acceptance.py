@@ -144,6 +144,20 @@ def main() -> int:
             REPO / "fixtures" / "poly_aniso" / "two_center_probe.out",
             inputs / "two_center_probe.out",
         )
+        # the menu-40 hyperfine fixtures (DFT and CASSCF EPRNMR probes) and the
+        # menu-41 magnetocaloric fixture (the POLY_ANISO M(H) probe)
+        shutil.copy(
+            REPO / "fixtures" / "hyperfine" / "cef3_epr_dft.out",
+            inputs / "cef3_epr_dft.out",
+        )
+        shutil.copy(
+            REPO / "fixtures" / "hyperfine" / "cef3_epr_casscf.out",
+            inputs / "cef3_epr_casscf.out",
+        )
+        shutil.copy(
+            REPO / "fixtures" / "magnetocaloric" / "poly_mh.out",
+            inputs / "poly_mh.out",
+        )
         # the exact-entropy chain (menu 12): the converged CASSCF output, the
         # FCIDUMP it dumped, and the two orca_2json exports of the gbw
         shutil.copy(FIXTURES / "n2_fcidump_step_a.out", inputs / "n2_fcidump_step_a.out")
@@ -248,6 +262,10 @@ def main() -> int:
                     "37", "work/fecl4_xas.out", "2.0",
                     "38", "work/ni_ailft.out", "", "",
                     "39", "work/two_center_probe.out",
+                    "40", "work/cef3_epr_dft.out", "0.5",
+                    "40", "work/cef3_epr_casscf.out", "",
+                    "41", "work/poly_mh.out",
+                    "41", "work/co_aniso2.out",
                     "31", "work/h2o_absp.property.txt",
                     "8", "work/saved.txt",
                     "0",
@@ -655,6 +673,30 @@ def main() -> int:
                 in poly_report
                 and "chiT = 0.501549 -> 0.750429 cm3 K mol-1" in poly_report,
                 "menu 39 reads the POLY_ANISO cluster report",
+            )
+            hyp_report = read("cef3_epr_dft.out.hyperfine.fbk.md")
+            check(
+                "eta = 0.0401" in hyp_report
+                and "eQVzz/h = -165.7642 MHz" in hyp_report
+                and "Rho(0) = 727217" in hyp_report,
+                "menu 40 reads the EPRNMR section and converts the EFG",
+            )
+            hyp_casscf = read("cef3_epr_casscf.out.hyperfine.fbk.md")
+            check(
+                "CASSCF/ALL STATES AVERAGE" in hyp_casscf
+                and "A tensor: not computed" in hyp_casscf,
+                "menu 40 states the CASSCF boundary (A off, EFG kept)",
+            )
+            mce_report = read("poly_mh.out.mce.fbk.md")
+            check(
+                "maximum: -DeltaS = 10.8404 J mol-1 K-1 at T = 1.90 K" in mce_report,
+                "menu 41 runs the Maxwell route on the magnetization table",
+            )
+            mce_levels = read("co_aniso2.out.mce.fbk.md")
+            check(
+                "route: spin-orbit levels" in mce_levels
+                and "R ln(N) = 11.5263" in mce_levels,
+                "menu 41 runs the levels route on the SINGLE_ANISO spectrum",
             )
             xas_report = read("fecl4_xas.out.xas.fbk.md")
             check(

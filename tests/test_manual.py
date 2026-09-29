@@ -193,6 +193,18 @@ def _prepare_work() -> None:
         REPO / "fixtures" / "poly_aniso" / "two_center_probe.out",
         work / "two_center_probe.out",
     )
+    # the menu-40 hyperfine fixtures (DFT and CASSCF EPRNMR probes)
+    shutil.copy(
+        REPO / "fixtures" / "hyperfine" / "cef3_epr_dft.out", work / "cef3_epr_dft.out"
+    )
+    shutil.copy(
+        REPO / "fixtures" / "hyperfine" / "cef3_epr_casscf.out",
+        work / "cef3_epr_casscf.out",
+    )
+    # the menu-41 magnetocaloric fixture (the POLY_ANISO M(H) probe)
+    shutil.copy(
+        REPO / "fixtures" / "magnetocaloric" / "poly_mh.out", work / "poly_mh.out"
+    )
 
 
 @pytest.fixture(scope="module")

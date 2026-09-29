@@ -1,0 +1,72 @@
+\chapter{Hyperfine and EFG parameters (menu 40)}
+\label{ch:menu40}
+\menulabel{40}
+
+\section{Purpose}
+
+The \code{\%eprnmr} module (manual section 7.51.3) prints the electric and
+magnetic hyperfine structure: the A tensor per nucleus (Fermi contact,
+spin dipole, second-order SOC), the electric field gradient with its
+electron/nuclear decomposition, and the density at the nucleus.  This menu
+reads those blocks and derives the NQR/Mossbauer observables: the nuclear
+quadrupole coupling constant and the first-order quadrupole splitting from
+a caller-supplied nuclear quadrupole moment.
+
+\section{What you need}
+
+An ORCA output with \code{\%eprnmr} and a \code{Nuclei} list; the
+coordinates block must precede \code{\%eprnmr} when \code{Nuclei} is given
+(measured -- otherwise the engine stops with ``nuclear properties are
+requested but no coordinates have been read'').  The A tensor needs the
+per-nucleus parameters (I, P via \code{PPP}/\code{III}); without them the
+engine prints zeros.  Optionally answer the nuclear quadrupole moment
+$Q$ (barn) for the quadrupole conversion.
+
+\section{Walkthrough}
+
+The example reads the all-electron CeF$_3$ probe (EFG principal values
+0.6771983 / 0.7337722 / $-1.4109705$~a.u., $\eta$ = 0.0401,
+Rho(0) = 727217~a.u.$^{-3}$, the A matrix zero because no nuclear
+parameters were given) and converts with $Q$ = 0.5~barn:
+$eQV_{zz}/h$ = $-165.7642$~MHz, $\Delta E_Q$ = 82.9043~MHz -- the
+conversion agrees with the engine's own quadrupole block to $\sim10^{-6}$.
+
+\lstinputlisting[style=fbkcode, firstline=45, lastline=61,
+  title={The menu-40 example (the EFG principal values, the
+  electron/nuclear decomposition and the quadrupole conversion)}]
+  {examples/expected/m40_hyperfine.txt}
+
+\section{What you get}
+
+The report \code{<output>.hyperfine.fbk.md}: per nucleus the printed
+nuclear parameters and the A tensor (A(iso), A(Tot), the FC/SD split);
+the EFG principal values with $|V_{zz}|$, $\eta = (V_{xx}-V_{yy})/V_{zz}$
+(the standard NQR ordering), the orientation and the V(El)/V(Nuc) sum
+cross-check; Rho(0); and -- with $Q$ -- $eQV_{zz}/h$ and the
+first-order $\Delta E_Q$.
+
+\section{Conventions, cross-checks and boundaries (measured)}
+
+\begin{readbox}
+\begin{itemize}
+  \item \textbf{The CASSCF route keeps the EFG but switches the A
+    components off} (measured, method ``CASSCF/ALL STATES AVERAGE''):
+    pair the DFT route for A with the CASSCF route for correlation-aware
+    EFG/Rho(0) as needed.
+  \item \textbf{Rho(0) is basis-domain dependent}: the all-electron probe
+    reports 727216.9~a.u.$^{-3}$, the small-core ECP probe 0.075618828 on
+    the same geometry -- never compare across domains (an isomer-shift
+    reference must come from the same domain).
+  \item \textbf{The EFG is sensitive to SCF micro-solutions} (measured:
+    two identical-input runs reproduced digit-for-digit; a third differing
+    by $2\times10^{-6}$~Eh moved $V_{\mathrm{Tot}}$ by $\sim10^{-4}$ relative)
+    -- converged energy does not imply a reproducible EFG.
+  \item \textbf{Cross-checks in the report}: V(El) + V(Nuc) reproduces
+    V(Tot) to the printed digits, and the nuclear triplet V(Nuc) is
+    identical across routes of the same geometry (both measured).
+  \item \textbf{Boundary (termination)}: core-level photoemission (XPS)
+    has no ORCA module (binary search: zero hits); the XES/SOC-XES strings
+    in the relativistic CASSCF code belong to the ROCIS family (chapter
+    46's domain) -- registered, not implemented.
+\end{itemize}
+\end{readbox}

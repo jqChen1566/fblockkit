@@ -908,3 +908,101 @@ def poly_aniso_report(session: Session) -> None:
     md_path = path.with_name(path.name + ".polyaniso.fbk.md")
     md_path.write_text(report_lines, encoding="utf-8")
     session.say(f"Report written: {md_path}")
+
+
+def hyperfine_report(session: Session) -> None:
+    """Menu 40: hyperfine / EFG report from an ORCA EPRNMR run.
+
+    Reads the electric and magnetic hyperfine structure section: the A
+    tensor per nucleus, the EFG principal values with the electron/nuclear
+    decomposition, and Rho(0); optionally converts the EFG to the nuclear
+    quadrupole coupling constant and the first-order Mossbauer splitting
+    with a caller-supplied nuclear quadrupole moment.
+    """
+    from ...analysis import hyperfine as hyperfine_analysis
+
+    path_text = session.ask("ORCA output path (an EPRNMR run with a Nuclei list)")
+    if not path_text:
+        session.say("Cancelled (no path given).")
+        return
+    path = Path(path_text)
+    q_text = session.ask(
+        "Nuclear quadrupole moment Q (barn) for the quadrupole-splitting conversion (Enter = skip)"
+    ).strip()
+    q_value: float | None = None
+    if q_text:
+        try:
+            q_value = float(q_text)
+        except ValueError:
+            session.say(f"Not a number: {q_text!r}; skipping the conversion.")
+    try:
+        parsed = parse_auto(path)
+    except (ParserError, OSError) as exc:
+        session.say(f"Hyperfine report failed: {exc}")
+        return
+    data = parsed.sections.get("hyperfine") or {}
+    try:
+        body = hyperfine_analysis.render(data, source=path.name, nuclear_Q_barn=q_value)
+    except hyperfine_analysis.HyperfineError as exc:
+        session.say(f"Hyperfine report failed: {exc}")
+        return
+    session.say(body)
+    section = ReportSection(title="Hyperfine / EFG report", body=body)
+    report_lines = f"## {section.title}\n\n{section.body}\n"
+    refs = references_section(hyperfine_analysis.evidence())
+    if refs is not None:
+        report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
+    md_path = path.with_name(path.name + ".hyperfine.fbk.md")
+    md_path.write_text(report_lines, encoding="utf-8")
+    session.say(f"Report written: {md_path}")
+
+
+def magnetocaloric_report(session: Session) -> None:
+    """Menu 41: magnetic entropy and the magnetocaloric effect.
+
+    Routes by content: a POLY_ANISO output with the HINT/TMAG magnetization
+    table goes through the Maxwell relation; a SINGLE_ANISO output (or the
+    per-center spectra of a POLY_ANISO run) goes through the partition
+    function of the spin-orbit levels.
+    """
+    from ...analysis import magnetocaloric as mc_analysis
+
+    path_text = session.ask("ORCA output path (SINGLE_ANISO levels or a POLY_ANISO M(H) run)")
+    if not path_text:
+        session.say("Cancelled (no path given).")
+        return
+    path = Path(path_text)
+    try:
+        parsed = parse_auto(path)
+    except (ParserError, OSError) as exc:
+        session.say(f"Magnetocaloric report failed: {exc}")
+        return
+    poly = parsed.sections.get("poly_aniso") or {}
+    single = parsed.sections.get("single_aniso") or {}
+    try:
+        if poly.get("magnetization"):
+            body = mc_analysis.render_maxwell(poly["magnetization"], source=path.name)
+        else:
+            spectrum: list[float] = []
+            for segment in single.get("segments") or []:
+                if segment.get("soc_spectrum_cm1"):
+                    spectrum = segment["soc_spectrum_cm1"]
+                    break
+            if not spectrum:
+                for center in poly.get("centers") or []:
+                    if center.get("so_spectrum_cm1"):
+                        spectrum = center["so_spectrum_cm1"]
+                        break
+            body = mc_analysis.render_levels(spectrum, source=path.name)
+    except mc_analysis.MagnetocaloricError as exc:
+        session.say(f"Magnetocaloric report failed: {exc}")
+        return
+    session.say(body)
+    section = ReportSection(title="Magnetic entropy / magnetocaloric report", body=body)
+    report_lines = f"## {section.title}\n\n{section.body}\n"
+    refs = references_section(mc_analysis.evidence())
+    if refs is not None:
+        report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
+    md_path = path.with_name(path.name + ".mce.fbk.md")
+    md_path.write_text(report_lines, encoding="utf-8")
+    session.say(f"Report written: {md_path}")

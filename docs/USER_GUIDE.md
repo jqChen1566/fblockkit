@@ -1760,6 +1760,77 @@ Ising plus one isotropic spin, or two Ising spins, and approximate
 otherwise; the dipole-dipole coupling is evaluated exactly from the ab
 initio moments and usually dominates in strongly anisotropic lanthanides.
 
+## 40 Hyperfine and EFG parameters (an EPRNMR output)
+
+**What it is for**: the electric and magnetic hyperfine structure ORCA's
+`%eprnmr` prints (manual section 7.51.3): per nucleus the A-tensor
+components, the electric field gradient with its electron/nuclear
+decomposition, and the density at the nucleus -- the quantities behind
+Mossbauer quadrupole splittings and hyperfine parameters.
+
+**How**: menu 40 -> the ORCA output path (a run with `%eprnmr` and a
+`Nuclei` list; the coordinates block must come before `%eprnmr` --
+measured), then optionally the nuclear quadrupole moment Q (barn) for the
+quadrupole-splitting conversion (Enter skips).  The report is
+`<output>.hyperfine.fbk.md`.
+
+**How to read it**:
+
+- per nucleus the nuclear parameters (I, P, Q as printed) and the A tensor
+  (A(iso), A(Tot), the FC/SD split) -- the MHz values need the nuclear
+  parameters in the input; zeros mean they were not supplied (measured);
+- the EFG: the V(Tot) principal values, |Vzz|, the asymmetry parameter
+  eta = (Vxx - Vyy)/Vzz, the principal axes, and the V(El)/V(Nuc)
+  decomposition with the sum cross-check against V(Tot);
+- Rho(0), the density at the nucleus (the isomer-shift core quantity) --
+  basis-domain dependent: all-electron bases carry the core density, ECP
+  bases report the valence density only; never compare across domains;
+- with Q supplied: eQVzz/h and the first-order quadrupole splitting
+  DeltaE_Q = eQVzz/2 sqrt(1 + eta^2/3).  The conversion constant is
+  CODATA-derived (234.9648 MHz per barn per a.u.; the engine's own
+  quadrupole block agrees to ~1e-6).
+
+**Boundaries**: the engine computes the A components on the DFT routes;
+on CASSCF it switches them off while keeping EFG/Rho(0) (measured).  The
+EFG is sensitive to SCF micro-solutions (measured: two runs of the same
+input differing by 2e-6 Eh in energy moved V(Tot) by ~1e-4 relative) --
+converged energy does not imply a reproducible EFG.  Core-level
+photoemission (XPS) has no ORCA module (binary search: zero hits) --
+registered as a termination; the XES/SOC-XES modes seen in the
+relativistic-CASSCF strings belong to the ROCIS family (menu 37's domain).
+
+## 41 Magnetic entropy and magnetocaloric effect
+
+**What it is for**: the magnetic entropy S(T) and the isothermal entropy
+change -DeltaS(T, H) -- the thermodynamic figures of merit of the
+magnetocaloric effect (molecular coolers).
+
+**How**: menu 41 -> the ORCA output path.  The route is chosen by content:
+a POLY_ANISO output with the HINT/TMAG magnetization table goes through
+the Maxwell relation; a SINGLE_ANISO output (or the per-center spectra of
+a POLY_ANISO run) goes through the partition function of the spin-orbit
+levels.  The report is `<output>.mce.fbk.md`.
+
+**How to read it**:
+
+- levels route: S(T) = R (ln Z + <E>/kT) at B = 0 from the printed
+  spin-orbit levels (each printed line counts as one state, so the
+  engine's level list handles degeneracies); the high-temperature check
+  R ln(N) is printed -- the level list is truncated, so it is an upper
+  bound: do not trust S above the saturation temperature;
+- magnetization route: -DeltaS(T, H) from the Maxwell relation
+  (dS/dH)_T = (dM/dT)_H, integrated over the printed field grid with
+  adjacent-temperature differences; positive values are the direct
+  magnetocaloric effect (the cooling capacity quoted in the literature);
+  the probe maximum is reported.  Converged data (a fine temperature grid)
+  are required.
+
+**Boundaries**: both routes are pure post-processing of printed values;
+the levels route is B = 0 (the levels are field-free) and the
+magnetization route uses the powder-averaged molar table (Bohr magnetons).
+Method reference: Szalowski & Kowalewska 2020 (conventions; the V6
+companion study 2020 uses the same scheme).
+
 ## Appendix A Command line
 
 ```text

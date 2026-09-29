@@ -1,0 +1,12 @@
+!PBE0 x2c-SVPall TightSCF
+%pal nprocs 8 end
+%maxcore 4000
+*xyz 0 2
+Ce 0.000 0.000 0.000
+F  2.200 0.000 0.000
+F -1.100 1.905 0.000
+F -1.100 -1.905 0.000
+*
+%eprnmr
+  Nuclei = all Ce { aiso, adip, fgrad, rho }
+end

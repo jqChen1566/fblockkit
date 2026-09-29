@@ -93,6 +93,11 @@ cp "$REPO/fixtures/rocis/fecl4_xas.out" work/
 cp "$REPO/fixtures/ailft/ni_ailft.out" work/
 # the menu-39 polynuclear-magnetism fixture (the two-center POLY_ANISO probe)
 cp "$REPO/fixtures/poly_aniso/two_center_probe.out" work/
+# the menu-40 hyperfine fixtures (the DFT and CASSCF EPRNMR probes) and the
+# menu-41 magnetocaloric fixture (the POLY_ANISO M(H) probe)
+cp "$REPO/fixtures/hyperfine/cef3_epr_dft.out" work/
+cp "$REPO/fixtures/hyperfine/cef3_epr_casscf.out" work/
+cp "$REPO/fixtures/magnetocaloric/poly_mh.out" work/
 
 for script in scripts/*.txt; do
   name=$(basename "$script" .txt)

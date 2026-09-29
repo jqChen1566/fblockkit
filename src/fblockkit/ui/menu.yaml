@@ -123,6 +123,12 @@ items:
   - number: "39"
     title: "Polynuclear magnetism (a POLY_ANISO output -> per-center data, the exchange decomposition and the chiT summary)"
     handler: poly_aniso_report
+  - number: "40"
+    title: "Hyperfine and EFG parameters (an EPRNMR output -> the A tensor, the EFG principal values and Rho(0))"
+    handler: hyperfine_report
+  - number: "41"
+    title: "Magnetic entropy and magnetocaloric effect (levels or POLY_ANISO M(H,T) -> S_mag(T) and -DeltaS(T,H))"
+    handler: magnetocaloric_report
   - number: "0"
     title: Quit
     handler: quit

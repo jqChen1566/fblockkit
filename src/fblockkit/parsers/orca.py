@@ -41,6 +41,7 @@ from typing import Any
 from ..knowledge.elements import ElementError, is_f_element
 from ..knowledge.models import ParseResult
 from . import ailft as _ailft
+from . import hyperfine as _hyperfine
 from . import poly_aniso as _poly_aniso
 from . import rocis_spectra as _rocis_spectra
 from . import single_aniso as _single_aniso
@@ -1444,6 +1445,7 @@ class OrcaParser:
             "rocis": _rocis_spectra.parse_rocis(lines),
             "ailft": _ailft.parse_ailft(lines),
             "poly_aniso": _poly_aniso.parse_poly_aniso(lines),
+            "hyperfine": _hyperfine.parse_hyperfine(lines),
             "optimization": optimization,
             "dipole": _parse_dipole(lines),
             "soc_present": bool(_SOC_MARKERS_RE.search(text)),

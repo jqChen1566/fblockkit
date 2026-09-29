@@ -67,6 +67,11 @@ _CHIT_ROW_RE = re.compile(
 _COUPLED_ROW_RE = re.compile(
     r"^\s*(\d+)\s*\|\s*(-?[\d.]+)\s*\|\s*(-?[\d.]+)\s*\|\s*(-?[\d.]+)\s*\|\s*(-?[\d.]+)\s*\|\s*$"
 )
+# the M(H) table is printed in chunks of temperature columns (5 per chunk in
+# the sample): each chunk repeats the header "H(T) | STATISTICAL SUM | <T> K. |"
+# and the data rows; the merged matrix is keyed by the field column.
+_MAG_TITLE = "HIGH-FIELD POWDER MAGNETIZATION"
+_MAG_HEADER = "H(T)"
 _VV_ROW_RE = re.compile(r"^\s*([\d.]*)\s*\|\s*([xyz])\s*\|(.*)$")
 
 
@@ -109,6 +114,7 @@ def parse_poly_aniso(lines: list[str]) -> dict[str, Any]:
         "expectation": {"MS": [], "LJ": []},
         "chiT": [],
         "van_vleck": [],
+        "magnetization": None,
         "notes": [],
     }
     section: str | None = None
@@ -120,6 +126,8 @@ def parse_poly_aniso(lines: list[str]) -> dict[str, Any]:
     vv_block: list[dict[str, Any]] = []
     matrix_rows: list[list[float]] = []
     labels: list[dict[str, Any]] = []
+    mag_blocks: list[dict[str, Any]] = []
+    mag_current: dict[str, Any] | None = None
 
     def _flush_spectrum() -> None:
         nonlocal pending_spectrum
@@ -172,6 +180,10 @@ def parse_poly_aniso(lines: list[str]) -> dict[str, Any]:
             continue
         if "VAN VLECK SUSCEPTIBILITY TENSOR" in line:
             section = "van_vleck"
+            continue
+        if _MAG_TITLE in line:
+            section = "magnetization"
+            mag_current = None
             continue
         if "HAPPY" in line and "LANDING" in line:
             out["notes"].append("finished ok")
@@ -297,6 +309,30 @@ def parse_poly_aniso(lines: list[str]) -> dict[str, Any]:
                     }
                 )
             continue
+        # ---- magnetization table (chunked temperature columns) ----------------
+        if section == "magnetization":
+            parts = [item.strip() for item in line.split("|")]
+            if line.lstrip().startswith(_MAG_HEADER):
+                temps: list[float] = []
+                for piece in parts[2:-1]:
+                    if not piece:
+                        continue
+                    token = piece.split()[0]
+                    try:
+                        temps.append(float(token))
+                    except ValueError:
+                        temps = []
+                        break
+                if temps:
+                    mag_current = {"temps": temps, "rows": []}
+                    mag_blocks.append(mag_current)
+                continue
+            if mag_current is not None and len(parts) == len(mag_current["temps"]) + 3:
+                if (h_value := _float_or_none(parts[0])) is not None:
+                    mag_current["rows"].append(
+                        [h_value] + [_float_or_none(item) for item in parts[1:-1]]
+                    )
+            continue
         # ---- population -------------------------------------------------------
         if section == "population":
             parts = [item.strip() for item in line.split("|")]
@@ -367,6 +403,26 @@ def parse_poly_aniso(lines: list[str]) -> dict[str, Any]:
             continue
     _flush_spectrum()
     _flush_matrix()
+    if mag_blocks:
+        temperatures: list[float] = []
+        fields: list[float] = []
+        matrix: list[list[float]] = []
+        sums: list[float] = []
+        for block in mag_blocks:
+            temperatures.extend(block["temps"])
+            if not fields:
+                fields = [row[0] for row in block["rows"]]
+                matrix = [[] for _ in fields]
+                sums = [row[1] for row in block["rows"]]
+            for index, row in enumerate(block["rows"]):
+                if index < len(fields) and abs(row[0] - fields[index]) < 1e-9:
+                    matrix[index].extend(row[2:])
+        out["magnetization"] = {
+            "temperatures_K": temperatures,
+            "fields_T": fields,
+            "statistical_sum": sums,
+            "M_muB": matrix,
+        }
     return out
 
 

@@ -655,6 +655,66 @@ Termination & ab initio $J$ (LDF-CAHF / PNO-CASPT2) & The joint computation
 \end{tabularx}
 \end{center}
 
+\section{Hyperfine and EFG parameters}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{2.6cm} X >{\raggedright\arraybackslash}p{3.0cm}@{}}
+\toprule
+Quantity & Value & Meaning / limits & Source \\
+\midrule
+A tensor (MHz) & needs the nuclear parameters (I, P) & Without
+  \code{PPP}/\code{III} the engine prints zeros (measured); on CASSCF the A
+  components are switched off while EFG/Rho(0) are computed &
+  \textsf{[Measured]} fixtures \file{hyperfine/} \\
+EFG convention & $\eta = (V_{xx}-V_{yy})/V_{zz}$, $|V_{xx}|\le|V_{yy}|\le|V_{zz}|$
+  & The standard NQR ordering; the quadrupole coupling constant
+  $eQV_{zz}/h$ uses the caller's $Q$ (barn); the conversion constant is
+  CODATA-derived (234.9648 MHz/barn/a.u., engine cross-check $\sim10^{-6}$)
+  & \textsf{[Literature]} Aerts \& Brown 2019; Bersohn 1958 \\
+Quadrupole splitting & first order, $I\ge3/2$ &
+  $\Delta E_Q = eQV_{zz}/2\,\sqrt{1+\eta^2/3}$ (higher-order terms
+  neglected) & \textsf{[Literature]} same \\
+Rho(0) & basis-domain dependent & All-electron bases carry the core
+  density (order $10^5$ a.u.$^{-3}$); ECP bases report the valence density
+  (order $10^{-1}$) -- never compare across domains & \textsf{[Measured]}
+  same \\
+EFG reproducibility & sensitive to SCF micro-solutions & Same input
+  reproduced digit-for-digit in two runs; a third run lower by
+  $2\times10^{-6}$~Eh moved $V_{\mathrm{Tot}}$ by $\sim10^{-4}$ relative &
+  \textsf{[Measured]} same \\
+Termination & XPS (core photoemission) & No ORCA module (binary search:
+  zero hits); the XES/SOC-XES strings in the relativistic CASSCF code
+  belong to the ROCIS family (menu 37) -- registered, not implemented &
+  \textsf{[Adequacy]} this project's constraint \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\section{Magnetic entropy and the magnetocaloric effect}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{2.6cm} X >{\raggedright\arraybackslash}p{3.0cm}@{}}
+\toprule
+Quantity & Value & Meaning / limits & Source \\
+\midrule
+Levels route & $S=R(\ln Z+\langle E\rangle/kT)$, $B=0$ & The printed
+  spin-orbit levels (each line = one state; degeneracies as printed); the
+  level list is truncated, so the $R\ln N$ check is an upper bound -- do
+  not trust $S$ above the saturation temperature & \textsf{[Literature]}
+  Szalowski \& Kowalewska 2020 (Eq.~4--5) \\
+Maxwell route & Maxwell relation on the M(H,~T) table
+  & $\Delta S = N_A\mu_B\int_0^H(\partial M/\partial T)_{H'}\,\mathrm{d}H'$
+  from the POLY\_ANISO powder table (Bohr magnetons); adjacent-
+  temperature differences, trapezoid in $H$; converged data required &
+  \textsf{[Literature]} the Maxwell relation; same conventions \\
+Sign convention & table prints $-\Delta S$ & Positive = direct MCE (the
+  cooling capacity quoted in the literature); inverse MCE appears as
+  negative values & \textsf{[Literature]} Szalowski \& Kowalewska 2020
+  (Eq.~11) \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
 \section{Crystal fields}
 
 \begin{center}
