@@ -591,7 +591,7 @@ def render(result: QicasResult) -> str:
 def run(dump: Fcidump, **kwargs) -> ReportSection:
     """The analyser entry point for menu 24."""
     return ReportSection(
-        title="3.4 QICAS active-space optimization",
+        title="QICAS active-space optimization (F_QI-minimised orbitals)",
         body=render(analyze(dump, **kwargs)),
     )
 

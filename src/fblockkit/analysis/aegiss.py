@@ -368,7 +368,7 @@ def render(result: AegissResult) -> str:
 def run(export: OrcaJson, dump: Fcidump, **kwargs) -> ReportSection:
     """The analyser entry point for menu 25."""
     return ReportSection(
-        title="3.9 AEGISS selection (entropy + AO projection)",
+        title="AEGISS selection (entropy + AO projection)",
         body=render(analyze(export, dump, **kwargs)),
     )
 

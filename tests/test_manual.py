@@ -128,6 +128,9 @@ def _prepare_work() -> None:
         )
     shutil.copy(FIXTURES / "n2_scan_1.600.json", work / "n2_scan_1.600.json")
     shutil.copy(FIXTURES / "n2_scan_1.600.mkl", work / "n2_scan_1.600.mkl")
+    shutil.copy(FIXTURES / "n2_cas666_1.600.json", work / "n2_cas666_1.600.json")
+    shutil.copy(FIXTURES / "benzene_rhf.json", work / "benzene_rhf.json")
+    shutil.copy(FIXTURES / "benzene_rhf.mkl", work / "benzene_rhf.mkl")
     # the dipole-moment chain of menus 19/20 (reference, prep and the candidates)
     for name in (
         "h2o_dm_ref_pbe0.out",

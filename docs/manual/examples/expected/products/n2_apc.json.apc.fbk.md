@@ -1,4 +1,4 @@
-## 3.1 ranked-orbital active-space selection (APC-2)
+## ranked-orbital active-space selection (APC-2)
 
 Ranked-orbital active-space selection (APC-2), orbital energies as the model gap:
   system: n2_apc: doubly occupied 7, virtual window 7-27 (21 of 21 virtuals, lowest in energy).
@@ -42,6 +42,7 @@ Selection:
 Boundaries and checks:
   - closed-shell RHF exports only; the source's singly-occupied-orbital rule (assign the maximum approximated entropy) and its UNO variant are not covered
   - APC systematically overestimates the doubly-occupied orbital entropies (R^2 = 0.64, MAE 0.0240 against DMRG; virtuals 0.83/0.0064; ranking precision about 88% on the source's set)
+  - the same source's quality anchor for a selection: it filters its benchmark by a 1.1 eV SA-CASSCF error threshold (dropping 20-40% of the excitations) and reports its statistics on the surviving set -- the threshold is its selection-quality line, not a pass/fail test this menu applies
   - the source expects the scheme to perform worse in much larger systems and where the HF determinant is a poor approximation; the ranking is a screening device, not a converged answer
   - the entropies and the ranking depend on the candidate window; the window is printed above, and N_CSF is checked with eq. (2) at every drop
 

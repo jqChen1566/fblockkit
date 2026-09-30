@@ -14,6 +14,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import numpy as np
 import pytest
 
 from fblockkit.analysis import orbital_mapping as om
@@ -280,6 +281,35 @@ def test_the_series_runs_over_adjacent_pairs():
     rows = om.active_overlap_series(exports, actives, names)
     assert [row[:2] for row in rows] == [("r=1.600", "r=1.610"), ("r=1.610", "r=2.600")]
     assert rows[0][2] > 0.99 and rows[1][2] < 0.9
+    # each row also carries O_min (the smallest singular value of the same block)
+    assert all(len(row) == 4 for row in rows)
+
+
+def test_the_omin_diagnostic_reads_the_frozen_scan():
+    """O_min on the same blocks: the core pair stays aligned through everything;
+    one 0.5-Angstrom triad step lands just above the source's 0.85 line (0.8567)
+    and the other just below (0.8323), while |det S_act| -- the product of the
+    three singular values -- reads 0.72 for both."""
+    triad = [4, 5, 6]
+    assert om.active_overlap_omin(_scan("1.600"), _scan("1.610"), triad) == pytest.approx(
+        0.9980, abs=1e-3
+    )
+    assert om.active_overlap_omin(_scan("1.094"), _scan("1.600"), triad) == pytest.approx(
+        0.8567, abs=1e-3
+    )
+    assert om.active_overlap_omin(_scan("1.610"), _scan("2.600"), triad) == pytest.approx(
+        0.8323, abs=1e-3
+    )
+    assert om.active_overlap_omin(_scan("1.094"), _scan("2.600"), [0, 2]) == pytest.approx(
+        0.9987, abs=1e-3
+    )
+    # the determinant is the product of the singular values of the same block
+    block = om._active_overlap_block(_scan("1.094"), _scan("1.600"), triad)
+    singular = np.linalg.svd(block, compute_uv=False)
+    assert float(abs(np.linalg.det(block))) == pytest.approx(float(singular.prod()), rel=1e-12)
+    assert float(singular.min()) == pytest.approx(
+        om.active_overlap_omin(_scan("1.094"), _scan("1.600"), triad), rel=1e-12
+    )
 
 
 def test_the_aop_refusals():
@@ -303,3 +333,7 @@ def test_the_report_carries_the_aop_block_when_given():
     section = om.run(structures, active_overlap=rows)
     assert "Active-space overlap" in section.body
     assert "preserved" in section.body
+    # the O_min diagnostic and its provenance boundary travel with the block
+    assert "O_min" in section.body
+    assert "0.85" in section.body
+    assert "0.8567" in section.body

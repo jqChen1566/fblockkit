@@ -1,4 +1,4 @@
-## 4.5 imaginary-mode displacement (restart structures for the frequency cure)
+## imaginary-mode displacement (restart structures for the frequency cure)
 
 imaginary mode(s) in the last frequency block: #6 -90.48 cm**-1
 vector: sum of all imaginary modes (de-weighted to Cartesian with the run's own masses, unit norm)

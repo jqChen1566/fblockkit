@@ -5,11 +5,12 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from ...analysis import aegiss, apc, ass1st, dm_selection, geometry as geometry_analysis, qicas, tnass
+from ...analysis import aegiss, apc, ass1st, dm_selection, geometry as geometry_analysis, pios, qicas, tnass
 from ...diagnosis import references_section
 from ...knowledge.models import ReportSection
 from ...parsers import ParserError, parse_auto
 from ...parsers.fcidump import parse_fcidump
+from ...parsers.mkl import parse_mkl
 from ...parsers.orca_json import parse_orca_json
 from ...recipe import ass1st as ass1st_recipe, dm_batch
 from .common import casscf_reference
@@ -545,3 +546,67 @@ def tnass_select(session: Session) -> None:
     session.say(f"Report written: {md_path}")
 
 
+
+
+# --- 48 PiOS pi-orbital active space -----------------------------------------
+
+
+def pios_select(session: Session) -> None:
+    """Menu 48: build the pi-orbital active space of a conjugated system (PiOS)."""
+    path_text = session.ask(
+        "PiOS manifest JSON path (an export, the pi-system atoms and the mkl; see "
+        "the user guide)"
+    )
+    if not path_text:
+        session.say("Cancelled (no manifest given).")
+        return
+    path = Path(path_text)
+
+    def _resolve(entry) -> Path:
+        candidate = Path(str(entry))
+        return candidate if candidate.is_absolute() else path.parent / candidate
+
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        export = parse_orca_json(_resolve(payload["export"]))
+        atoms = [int(index) for index in payload["atoms"]]
+        template_mkl_path = _resolve(payload["mkl"])
+        template_mkl = parse_mkl(template_mkl_path)
+        result = pios.select_pi_space(
+            export,
+            atoms,
+            charge=int(payload["charge"]) if "charge" in payload else None,
+            contributions=payload.get("contributions"),
+            pi_electrons=(
+                int(payload["pi_electrons"]) if "pi_electrons" in payload else None
+            ),
+        )
+    except (OSError, KeyError, TypeError, ValueError, ParserError) as exc:
+        session.say(f"PiOS selection failed: {exc}")
+        return
+    body = pios.render(result)
+    session.say(body)
+    mkl_path = template_mkl_path.with_name(template_mkl_path.stem + ".pios.fbk.mkl")
+    try:
+        pios.write_mkl(template_mkl, result, mkl_path)
+    except (OSError, pios.PiosError) as exc:
+        session.say(f"Writing the pi-space mkl failed: {exc}")
+        return
+    session.say(f"Pi space written: {mkl_path}")
+    n_inactive = sum(1 for value in export.mo_occupations if value > 1.99) - result.n_occupied_pi
+    session.say(
+        f"Next step: run ``orca_2mkl {mkl_path.stem} -gbw`` next to that file, then "
+        f"start the MCSCF with ``!moread`` and %moinp \"{mkl_path.stem}.gbw\" — the "
+        f"written partition is {n_inactive} inactive, then the "
+        f"{len(result.indices)} pi orbitals as the active window."
+    )
+    section = ReportSection(
+        title="A13 PiOS pi-orbital active space (oriented-p projection)", body=body
+    )
+    report_lines = f"## {section.title}\n\n{section.body}\n"
+    refs = references_section(pios.evidence())
+    if refs is not None:
+        report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
+    md_path = path.with_name(path.name + ".pios.fbk.md")
+    md_path.write_text(report_lines, encoding="utf-8")
+    session.say(f"Report written: {md_path}")

@@ -47,6 +47,8 @@ Available functions:
   44  MOKIT automr input (a structure + options -> a Gaussian-style .gjf with the mokit{} block)
   45  MOKIT automr run report (an automr output -> the stages, the energy chain and the active space)
   46  Quantum-tunnelling relaxation prediction (a SINGLE_ANISO output -> tau_QTM and U_eff(T); optional neighbour table for the dipolar model)
+  47  AOP rotation guess (a reference active space + a target export -> a gbw-ready mkl)
+  48  PiOS pi-orbital active space (a pi-system definition + an export -> the pi orbitals and a gbw-ready mkl)
    0  Quit
 Choose a number (Enter = leave empty)> 37
 ORCA output path (a ROCIS core-excited-spectra run) (Enter = leave empty)> work/fecl4_xas.out
@@ -196,6 +198,8 @@ Available functions:
   44  MOKIT automr input (a structure + options -> a Gaussian-style .gjf with the mokit{} block)
   45  MOKIT automr run report (an automr output -> the stages, the energy chain and the active space)
   46  Quantum-tunnelling relaxation prediction (a SINGLE_ANISO output -> tau_QTM and U_eff(T); optional neighbour table for the dipolar model)
+  47  AOP rotation guess (a reference active space + a target export -> a gbw-ready mkl)
+  48  PiOS pi-orbital active space (a pi-system definition + an export -> the pi orbitals and a gbw-ready mkl)
    0  Quit
 Choose a number (Enter = leave empty)> 0
 Goodbye.

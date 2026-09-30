@@ -1,4 +1,4 @@
-## 3.9 AEGISS selection (entropy + AO projection)
+## AEGISS selection (entropy + AO projection)
 
 AEGISS active-space selection (entropy screening + atomic-orbital projection):
   system: benzene; window 6 orbitals, AO label 'C pz' (12 target functions)

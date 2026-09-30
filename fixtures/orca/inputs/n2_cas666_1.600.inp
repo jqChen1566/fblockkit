@@ -1,0 +1,12 @@
+! RHF def2-SVP PAL4
+%maxcore 2000
+%casscf
+  nel 6
+  norb 6
+  mult 1
+  nroots 1
+end
+* xyz 0 1
+N 0 0 0
+N 0 0 1.600
+*

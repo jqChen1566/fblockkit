@@ -74,6 +74,21 @@ class MklError(ParserError):
     """The MKL file cannot be read or written (with a next step)."""
 
 
+def _fnum(value: float, decimals: int) -> str:
+    """Fixed-point formatting with a print-resolution snap against signed zeros.
+
+    A coefficient that is numerically zero but carries BLAS noise of either
+    sign prints as ``-0.0000000`` on one build and ``0.0000000`` on another --
+    the minus consumes a column and the line differs even though the value is
+    zero.  Snapping below half of the last printed digit removes the signed
+    zero without touching any printed digit (the same snap is what makes the
+    examples' captures comparable across machines).
+    """
+    if abs(value) < 0.5 * 10.0 ** (-decimals):
+        value = 0.0
+    return f"{value:.{decimals}f}"
+
+
 @dataclass(frozen=True)
 class MklGroup:
     """One group of up to five orbitals, laid out the way the file stores them."""
@@ -317,12 +332,12 @@ class MklFile:
         lines.append("")
         lines.append("$COORD")
         for z, x, y, zz in self.atoms:
-            lines.append(f"  {z}  {x:.6f}  {y:.6f}  {zz:.6f}")
+            lines.append(f"  {z}  {_fnum(x, 6)}  {_fnum(y, 6)}  {_fnum(zz, 6)}")
         lines.append("$END")
         lines.append("")
         lines.append("$CHARGES")
         for value in self.charges:
-            lines.append(f"  {value:.6f}")
+            lines.append(f"  {_fnum(value, 6)}")
         lines.append("$END")
         lines.append("")
         lines.append("$BASIS")
@@ -332,15 +347,15 @@ class MklFile:
         lines.append("$COEFF_ALPHA")
         for group in self.groups:
             lines.append("  " + "  ".join(f"{label:>3}" for label in group.labels))
-            lines.append("  " + "  ".join(f"{value:13.7f}" for value in group.energies))
+            lines.append("  " + "  ".join(f"{_fnum(value, 7):>13}" for value in group.energies))
             for row in group.rows:
-                lines.append("  " + "  ".join(f"{value:13.7f}" for value in row))
+                lines.append("  " + "  ".join(f"{_fnum(value, 7):>13}" for value in row))
         # the measured file terminates the coefficient block with its own END
         # before the occupations; dropping it made orca_2mkl hang on the read
         lines.append(" $END")
         lines.append("")
         lines.append("$OCC_ALPHA")
-        values = [f"{value:13.7f}" for value in self.occupations]
+        values = [f"{_fnum(value, 7):>13}" for value in self.occupations]
         for start in range(0, len(values), 5):
             lines.append("  " + "  ".join(values[start : start + 5]))
         lines.append(" $END")
@@ -351,13 +366,13 @@ class MklFile:
             lines.append("$COEFF_BETA")
             for group in self.beta_groups:
                 lines.append("  " + "  ".join(f"{label:>3}" for label in group.labels))
-                lines.append("  " + "  ".join(f"{value:13.7f}" for value in group.energies))
+                lines.append("  " + "  ".join(f"{_fnum(value, 7):>13}" for value in group.energies))
                 for row in group.rows:
-                    lines.append("  " + "  ".join(f"{value:13.7f}" for value in row))
+                    lines.append("  " + "  ".join(f"{_fnum(value, 7):>13}" for value in row))
             lines.append(" $END")
             lines.append("")
             lines.append("$OCC_BETA")
-            beta_values = [f"{value:13.7f}" for value in self.beta_occupations]
+            beta_values = [f"{_fnum(value, 7):>13}" for value in self.beta_occupations]
             for start in range(0, len(beta_values), 5):
                 lines.append("  " + "  ".join(beta_values[start : start + 5]))
             lines.append(" $END")

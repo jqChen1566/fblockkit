@@ -117,6 +117,26 @@ verbatim \code{\$BASIS}, grouped coefficients, occupations); the toolkit's
 reader/writer translates its measured p-shell row order to and from the
 export convention.
 
+\section{Input JSON: AOP rotation manifest (menu 47)}
+
+\begin{codeblock}
+{
+  "reference": {                          # the active space to reproduce
+    "export": "cas.json",                 # its orca_2json export
+    "active": [4, 5, 6, 7, 8, 9]},        # 0-based active-orbital indices
+  "target": {                             # the orbital set to start from
+    "export": "scf.json",                 # same basis and atom order
+    "mkl": "scf.mkl"},                    # orca_2mkl <scf> -mkl
+  "closed": 4                             # the target's closed-shell orbital count
+}
+\end{codeblock}
+
+The output \code{<target stem>.aop.fbk.mkl} converts with
+\code{orca\_2mkl <target stem>.aop.fbk -gbw}.  The reference's active list
+must have the same length as the target's active block; the containment
+gate (Chapter~\ref{ch:menu47}) requires the reference to be represented in
+the target's lowest \code{closed + active} orbitals.
+
 \section{Input JSON: DM-AS selection manifest (menu 20)}
 
 \begin{codeblock}

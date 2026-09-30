@@ -55,6 +55,7 @@ from .inputs import (
 )
 from .orbitals import (
     ailft_report,
+    aop_rotation_guess,
     avas_target,
     exact_entropy,
     judd_ofelt_fit,
@@ -75,6 +76,7 @@ from .orbitals import (
 )
 from .selection import (
     aegiss_select,
+    pios_select,
     apc_ranking,
     ass1st_round,
     ass1st_start,
@@ -108,6 +110,7 @@ HANDLERS = {
     "magnetic_doublets": magnetic_doublets_report,
     "orbital_mapping": orbital_mapping_report,
     "wasp_guess": wasp_guess,
+    "aop_rotation_guess": aop_rotation_guess,
     "perturb_batch": perturb_batch,
     "state_data_report": state_data_report,
     "judd_ofelt_fit": judd_ofelt_fit,
@@ -132,6 +135,7 @@ HANDLERS = {
     "ass1st_round": ass1st_round,
     "qicas_optimize": qicas_optimize,
     "aegiss_select": aegiss_select,
+    "pios_select": pios_select,
     "tnass_select": tnass_select,
     "quit": quit_session,
 }

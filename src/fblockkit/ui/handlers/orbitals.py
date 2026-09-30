@@ -14,7 +14,7 @@ from ...parsers import ParserError, parse_auto
 from ...parsers.fcidump import parse_fcidump
 from ...parsers.mkl import parse_mkl
 from ...parsers.orca_json import parse_orca_json
-from ...recipe import guess_transfer
+from ...recipe import aop_rotation, guess_transfer
 from ..session import Session
 def exact_entropy(session: Session) -> None:
     """Menu 12: the exact four-state entropy from a CASSCF output + its FCIDUMP.
@@ -539,6 +539,65 @@ def wasp_guess(session: Session) -> None:
     session.say(f"Report written: {md_path}")
 
 
+# --- 47 AOP rotation guess ----------------------------------------------------
+
+
+def aop_rotation_guess(session: Session) -> None:
+    """Menu 47: rotate a target's orbitals onto a reference active space (two-step SVD)."""
+    path_text = session.ask(
+        "Rotation manifest JSON path (a reference active space and the target's "
+        "export + mkl; see the user guide)"
+    )
+    if not path_text:
+        session.say("Cancelled (no path given).")
+        return
+    path = Path(path_text)
+
+    def _resolve(entry) -> Path:
+        candidate = Path(str(entry))
+        return candidate if candidate.is_absolute() else path.parent / candidate
+
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        reference_entry = payload["reference"]
+        reference = parse_orca_json(_resolve(reference_entry["export"]))
+        active = list(reference_entry["active"])
+        target_entry = payload["target"]
+        target = parse_orca_json(_resolve(target_entry["export"]))
+        template_mkl_path = _resolve(target_entry["mkl"])
+        template_mkl = parse_mkl(template_mkl_path)
+        result = aop_rotation.rotate_guess(
+            reference, target, active, n_closed=int(payload["closed"])
+        )
+    except (OSError, KeyError, TypeError, ValueError, ParserError) as exc:
+        session.say(f"AOP rotation failed: {exc}")
+        return
+    body = aop_rotation.render(result)
+    session.say(body)
+    guess_path = template_mkl_path.with_name(template_mkl_path.stem + ".aop.fbk.mkl")
+    try:
+        aop_rotation.write_guess_mkl(template_mkl, result, guess_path)
+    except (OSError, aop_rotation.AopError) as exc:
+        session.say(f"Writing the guess mkl failed: {exc}")
+        return
+    session.say(f"Guess written: {guess_path}")
+    session.say(
+        f"Next step: run ``orca_2mkl {guess_path.stem} -gbw`` next to that file, then "
+        f"start the target calculation with ``!moread`` and %moinp \"{guess_path.stem}.gbw\"."
+    )
+    section = ReportSection(
+        title="G7 AOP rotation guess (a target orbital set aligned onto a reference active space)",
+        body=body,
+    )
+    report_lines = f"## {section.title}\n\n{section.body}\n"
+    refs = references_section(aop_rotation.evidence())
+    if refs is not None:
+        report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
+    md_path = path.with_name(path.name + ".aop.fbk.md")
+    md_path.write_text(report_lines, encoding="utf-8")
+    session.say(f"Report written: {md_path}")
+
+
 def perturb_batch(session: Session) -> None:
     """Menu 29: perturb a converged reference's orbitals into K restart inputs."""
     from ...recipe import perturb_guess
@@ -632,7 +691,7 @@ def perturb_batch(session: Session) -> None:
         )
     )
     section = ReportSection(
-        title="4.1 perturbed multistart batch (randomized occupied-virtual mixing)",
+        title="perturbed multistart batch (randomized occupied-virtual mixing)",
         body=body,
     )
     report_lines = f"## {section.title}\n\n{section.body}\n"

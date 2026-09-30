@@ -375,6 +375,56 @@ Points measured on these runs (also in `parsers/orca.py` and `test_pnmr.py`):
 - the input echo warns "CASSCF multiplicity blocks not in descending order"
   when the mult list is ascending -- a property-run caveat recorded here.
 
+## AOP rotation fixtures added 2026-09-30 (server 101, the same ORCA 6.1.1)
+
+The AOP rotation guard of menu 47 (`recipe/aop_rotation.py`) turns on one measured
+quantity -- how well the reference active space is represented in the target's lowest
+closed+active orbitals -- so the fixture pair carries both sides of that gate.
+
+| Output | Input | Job | Points covered | Run outcome |
+|---|---|---|---|---|
+| `n2_cas666_1.600.out` (+ `.json`) | `inputs/n2_cas666_1.600.inp` | N2/def2-SVP at 1.600 Angstrom, plain CASSCF(6,6), one root (`! RHF` then `%casscf nel 6 norb 6`) | the **reference** of the same-geometry AOP pair: 7 macro-iterations to -108.772368734133 Eh, N(occ) = 1.90611 1.72344 1.72344 0.27643 0.27643 0.09416; the export (`orca_2json` on the converged gbw, the standard json.conf) carries orbitals 4..9 as the active window | terminated normally |
+| `n2_aop_1.600.out` | `inputs/n2_aop_1.600.inp` | the same geometry, started from the menu-47 rotation of the RHF set onto that reference (`! NoIter moread` + `%moinp` the converted `.aop.fbk.gbw` + `%casscf MaxIter 64`) | the positive engine anchor: 6 macro-iterations to -108.772368704909 Eh (same solution; the SCF is skipped, the aufbau route runs it); no delocalized-closed warning | terminated normally |
+| `n2_cas666_1.094.json` | (from the CASSCF(6,6) run at 1.094 Angstrom, `! RHF def2-SVP`, converged at -108.950671929454 Eh) | the **non-corresponding reference** for the gate: its active space includes a 2s-type sigma* whose 1.600 counterpart sits above the RHF window (overlap 0.008 with orbital 9; the sigma*'s best target partners are orbitals 10/16/20) | containment 0.022: the menu refuses this reference; before the gate existed its rotation produced a guess whose closed block ORCA flagged as delocalized | terminated normally |
+| `n2_aop_1.600_mismatch.out` | `inputs/n2_aop_1.600_mismatch.inp` | the measured failure behind the gate: the same input as `n2_aop_1.600.inp` but pointed at the guess built from the 1.094 reference | the CASSCF left the intended basin: 4 delocalized-closed warnings at the guess check, then 30 macro-iterations to a wrong solution, -77.092699913422 Eh (above the RHF energy) | terminated normally |
+
+ORCA mechanics measured on these runs (also recorded in
+`docs/USER_GUIDE.md` section 47 and the manual's chapter 56):
+
+- `!NoIter` caps the CASSCF at one macro-iteration ("MaxMacroIter 1 detected
+  >>> CAS-CI"): without `%casscf MaxIter` the run is a CAS-CI from the given
+  orbitals and does not optimise them;
+- `orca_2json <base>.gbw` (explicit extension) is the form measured here;
+  the export needs the `<base>.json.conf` present -- with a stale/garbage
+  conf file the output silently shrinks to the header block;
+- the written `.aop.fbk.mkl` converts with `orca_2mkl <name>.aop.fbk -gbw`
+  and ORCA accepts the result as INITIAL GUESS: MOREAD (the same route as
+  menu 18's `.fbk.mkl`).
+
+## PiOS fixtures added 2026-09-30 (server 101, the same ORCA 6.1.1)
+
+| Output | Input | Job | Points covered | Run outcome |
+|---|---|---|---|---|
+| `benzene_rhf.json` (+ `.mkl`) | `inputs/benzene_rhf.inp` | benzene / cc-pVDZ, RHF TightSCF; export with `{"MOCoefficients": true, "1elIntegrals": ["H", "S"], "FockMatrix": ["J", "K"]}` (the S/H/J/K chain menu 48 needs for the Fock semicanonicalisation) | the PiOS fixture (`analysis/pios.py`, menu 48): S-Matrix + MOs + H + J + K for 114 AOs (1.9 MB -- the Fock pair dominates); the mkl is the write-back template | terminated normally |
+| `benzene_pios.out` (+ `.json`) | `inputs/benzene_pios.inp` (the menu-48 rotation of the written pi space, `!NoIter moread` + `%moinp` + `%casscf MaxIter 64`) | the CASSCF(6,6) started from the written pi space | the engine anchor: same solution as the RHF-plus-CASSCF fixture `benzene.out` (-230.793818903 vs -230.793818898 Eh) in 13 macro-iterations (the aufbau fixture takes 7); no delocalized-closed warning; the active window is orbitals 18..23 | terminated normally |
+
+Measured anchors on these fixtures (also in `tests/test_pios.py`):
+
+- the projection spectra: occupied 0.7789 / 0.7649 / 0.7649 (next 0.000),
+  virtual 1.000 / 1.000 / 1.000 (next 0.235); the projector trace closes at
+  6.000 exactly (2.309 + 3.691, the p_z dimension);
+- the Fock assembly H + J + K reproduces the canonical orbital energies on
+  the MO-basis diagonal (max 1.1e-7; the menu-21 cross-check);
+- the SVD between the guess's active space and the converged CAS(6,6) reads
+  (0.9999, 0.9999, 0.9999, 0.7573, 0.7573, 0.6558) -- the virtual-side gap
+  equals the converged pi* orbitals' own out-of-plane character, i.e. the
+  polarisation the pure-p route cannot carry (the source reports 0.9708-1.0
+  with its IAO/aug-cc-pVTZ setup);
+- `orca_2json` with a `FockMatrix` conf against `benzene_pios.gbw` crashed
+  (segfault, rc=2 -- the run's `.densities` sidecar is not the SCF's); the
+  coefficients-only conf (`{"MOCoefficients": true}`) exports fine.  The
+  same trap applies to any post-SCF gbw whose densities sidecar is absent.
+
 ## Discipline for extending the fixtures
 
 A new fixture must (1) keep the original output bytes without trimming; (2) be registered

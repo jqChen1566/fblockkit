@@ -456,7 +456,7 @@ def render(round_: Ass1stRound) -> str:
 def run(export: OrcaJson, **kwargs) -> ReportSection:
     """The analyser entry point for menu 23."""
     return ReportSection(
-        title="3.3 ASS1ST selection round",
+        title="ASS1ST selection round (NEVPT2-density quasi-NOONs)",
         body=render(analyze_round(export, **kwargs)),
     )
 

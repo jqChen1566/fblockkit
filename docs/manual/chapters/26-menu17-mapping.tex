@@ -46,12 +46,14 @@ orientation.  The manifest JSON schema is in Chapter~\ref{ch:formats}.
   {examples/expected/m17_mapping.txt}
 
 With an \code{active} block in the manifest, the same report carries the
-overlap-preservation scalar of the second source (its Supporting Information)
-for every adjacent pair:
+overlap-preservation scalar of the second source (its Supporting Information
+Eq.~(2); the main text's Eqs.~(1)--(3) give the general form) for every
+adjacent pair, together with the alignment diagnostic $O_{\min}$ of that
+source's main text:
 
-\lstinputlisting[style=fbkcode, firstline=204, lastline=208,
+\lstinputlisting[style=fbkcode, firstline=232, lastline=236,
   title={The active-space overlap block of the same run (\code{active} =
-  the bond triad)}]
+  the bond triad; $|\det S_{\mathrm{act}}|$ and $O_{\min}$)}]
   {examples/expected/m17_mapping.txt}
 
 The selection given for one structure ($\{4\}$ of the equilibrium geometry)
@@ -97,6 +99,15 @@ consistent active space; plus a report file
     drops below 35 non-matchable orbitals).  The report shows that instead of
     hiding it; the occupied side is where the protocol's canonical behaviour
     (cores map, changing bonds do not) is read.
+  \item \textbf{Two numbers, one block.}  $|\det S_{\mathrm{act}}|$ multiplies
+    the block's singular values, so one poor direction drags it down, while
+    $O_{\min}$ \emph{is} the smallest singular value --- the second source's
+    alignment diagnostic, whose working criterion ($O_{\min} \ge 0.85$) is
+    calibrated on its own condensed-phase dataset (quoted as such in the
+    report).  In the example the two 0.5-\AA{} steps read $|\det|$ 0.7172 and
+    0.7251 with $O_{\min}$ 0.8567 and 0.8323: only the second crosses the
+    source's line, and the block's boundary notes state which setting each
+    number belongs to.
 \end{itemize}
 \end{readbox}
 

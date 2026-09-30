@@ -47,6 +47,8 @@ Available functions:
   44  MOKIT automr input (a structure + options -> a Gaussian-style .gjf with the mokit{} block)
   45  MOKIT automr run report (an automr output -> the stages, the energy chain and the active space)
   46  Quantum-tunnelling relaxation prediction (a SINGLE_ANISO output -> tau_QTM and U_eff(T); optional neighbour table for the dipolar model)
+  47  AOP rotation guess (a reference active space + a target export -> a gbw-ready mkl)
+  48  PiOS pi-orbital active space (a pi-system definition + an export -> the pi orbitals and a gbw-ready mkl)
    0  Quit
 Choose a number (Enter = leave empty)> 21
 orca_2json export path (needs the FockMatrix K-Matrix block; the user guide has the exact request) (Enter = leave empty)> work/n2_apc.json
@@ -96,6 +98,7 @@ Selection:
 Boundaries and checks:
   - closed-shell RHF exports only; the source's singly-occupied-orbital rule (assign the maximum approximated entropy) and its UNO variant are not covered
   - APC systematically overestimates the doubly-occupied orbital entropies (R^2 = 0.64, MAE 0.0240 against DMRG; virtuals 0.83/0.0064; ranking precision about 88% on the source's set)
+  - the same source's quality anchor for a selection: it filters its benchmark by a 1.1 eV SA-CASSCF error threshold (dropping 20-40% of the excitations) and reports its statistics on the surviving set -- the threshold is its selection-quality line, not a pass/fail test this menu applies
   - the source expects the scheme to perform worse in much larger systems and where the HF determinant is a poor approximation; the ranking is a screening device, not a converged answer
   - the entropies and the ranking depend on the candidate window; the window is printed above, and N_CSF is checked with eq. (2) at every drop
 Report written: work\n2_apc.json.apc.fbk.md
@@ -147,6 +150,8 @@ Available functions:
   44  MOKIT automr input (a structure + options -> a Gaussian-style .gjf with the mokit{} block)
   45  MOKIT automr run report (an automr output -> the stages, the energy chain and the active space)
   46  Quantum-tunnelling relaxation prediction (a SINGLE_ANISO output -> tau_QTM and U_eff(T); optional neighbour table for the dipolar model)
+  47  AOP rotation guess (a reference active space + a target export -> a gbw-ready mkl)
+  48  PiOS pi-orbital active space (a pi-system definition + an export -> the pi orbitals and a gbw-ready mkl)
    0  Quit
 Choose a number (Enter = leave empty)> 21
 orca_2json export path (needs the FockMatrix K-Matrix block; the user guide has the exact request) (Enter = leave empty)> work/n2_apc.json
@@ -197,6 +202,7 @@ Selection:
 Boundaries and checks:
   - closed-shell RHF exports only; the source's singly-occupied-orbital rule (assign the maximum approximated entropy) and its UNO variant are not covered
   - APC systematically overestimates the doubly-occupied orbital entropies (R^2 = 0.64, MAE 0.0240 against DMRG; virtuals 0.83/0.0064; ranking precision about 88% on the source's set)
+  - the same source's quality anchor for a selection: it filters its benchmark by a 1.1 eV SA-CASSCF error threshold (dropping 20-40% of the excitations) and reports its statistics on the surviving set -- the threshold is its selection-quality line, not a pass/fail test this menu applies
   - the source expects the scheme to perform worse in much larger systems and where the HF determinant is a poor approximation; the ranking is a screening device, not a converged answer
   - the entropies and the ranking depend on the candidate window; the window is printed above, and N_CSF is checked with eq. (2) at every drop
 Report written: work\n2_apc.json.apc.fbk.md
@@ -248,6 +254,8 @@ Available functions:
   44  MOKIT automr input (a structure + options -> a Gaussian-style .gjf with the mokit{} block)
   45  MOKIT automr run report (an automr output -> the stages, the energy chain and the active space)
   46  Quantum-tunnelling relaxation prediction (a SINGLE_ANISO output -> tau_QTM and U_eff(T); optional neighbour table for the dipolar model)
+  47  AOP rotation guess (a reference active space + a target export -> a gbw-ready mkl)
+  48  PiOS pi-orbital active space (a pi-system definition + an export -> the pi orbitals and a gbw-ready mkl)
    0  Quit
 Choose a number (Enter = leave empty)> 0
 Goodbye.

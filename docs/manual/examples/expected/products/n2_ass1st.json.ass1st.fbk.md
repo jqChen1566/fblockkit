@@ -1,4 +1,4 @@
-## 3.3 ASS1ST selection round
+## ASS1ST selection round (NEVPT2-density quasi-NOONs)
 
 ASS1ST selection round (NEVPT2 quasi-natural occupation numbers):
   system: n2_ass1st; 6 active orbitals (6e) against 4 internal and 18 external; single state

@@ -1,0 +1,106 @@
+\chapter{AOP rotation guess (menu 47)}
+\label{ch:menu47}
+\menulabel{47}
+
+\section{Purpose}
+
+Starting a MCSCF calculation in the right basin.  When the desired active
+space is known from a reference calculation, the AOP protocol (Paz, Baleeva
+\& Glover 2021) rotates the current orbital set onto that reference by the
+singular value decomposition of their mutual overlap and uses the rotated
+orbitals as the MCSCF initial guess: maximum overlap with the reference, no
+manual orbital picking.  The rotation runs in two steps
+(Eqs.~(4)--(11)) so that closed and virtual character stay out of the active
+block.
+
+\section{What you need}
+
+A \emph{reference} export carrying the active orbitals to reproduce (e.g.
+the converged CASSCF gbw of a related calculation) with the 0-based indices
+of its active orbitals, and the \emph{target}: the \code{orca\_2json} export
+of the orbital set to start from (an RHF/DFT run of the same system and
+basis at the target geometry), its mkl, and the target's number of
+closed-shell orbitals.  The manifest schema is in
+Chapter~\ref{ch:formats}.
+
+\section{Walkthrough}
+
+The example rotates the RHF orbital set of N$_2$ at 1.600~\AA{} onto the
+converged CASSCF(6,6) active space of the same geometry -- the source's own
+setting (a known reference active space, the SCF orbitals as the starting
+point) in miniature:
+
+\lstinputlisting[style=fbkcode, firstline=53, lastline=61,
+  title={The menu-47 example (containment 0.958, O\_min 1.000000)}]
+  {examples/expected/m47_aop.txt}
+
+The aligned set is written as a gbw-ready mkl, and the report lists the
+criteria and boundaries (lines 62--74 of the same capture).
+
+\section{What you get}
+
+The report \code{<manifest>.aop.fbk.md} (reference, target, the target's
+partition, the containment diagnostic, $O_{\min}$ of the built active
+block, the orthonormality residual, and the boundary notes) plus the
+written \file{<target>.aop.fbk.mkl}: convert it with
+\code{orca\_2mkl <name> -gbw} and read it with \code{!moread} and
+\code{\%moinp}.
+
+\section{Conventions, cross-checks and boundaries (measured)}
+
+\begin{readbox}
+\begin{itemize}
+  \item \textbf{The same-geometry reference is reproduced exactly.}  With
+    the CASSCF(6,6)/def2-SVP active space at 1.600~\AA{} as the reference
+    and the RHF set of the same geometry as the target, the built active
+    block is the reference: $O_{\min}$ reads exactly 1.000000, the
+    orthonormality residual sits at the numerical floor
+    ($9.8\times10^{-15}$), and the reference's representation in the
+    target's closed+active window (containment) reads 0.958.
+  \item \textbf{The engine side was validated end to end}: the written
+    guess was converted (\code{orca\_2mkl}), read by ORCA
+    (\code{!NoIter moread} + \code{\%moinp} + \code{\%casscf} \code{MaxIter})
+    and the CASSCF(6,6) converged from it in 6 macro-iterations to
+    $-108.772368705$~Eh where the aufbau start takes 7 to
+    $-108.772368734$~Eh -- the same solution.  Two ORCA mechanics, measured:
+    \code{NoIter} alone caps the macro-iterations at 1 (a CAS-CI from the
+    given orbitals), so the \code{\%casscf} block must lift the cap with
+    \code{MaxIter} for the orbitals to be optimised.
+  \item \textbf{The containment gate is measured, not assumed.}  The
+    reference active space must be represented in the target's lowest
+    \code{closed + active} orbitals at least to the source's own 0.85 line
+    (containment).  The gate exists because a non-corresponding
+    cross-geometry reference -- the CASSCF(6,6) active space of 1.094~\AA{}
+    against the RHF set of 1.600~\AA{}, containment 0.022 -- produced a
+    guess whose closed block ORCA flagged as delocalized, and the CASSCF
+    wandered to a wrong solution ($-77.09$~Eh after 30 macro-iterations).
+    The menu now refuses that input with the reason and the next step.
+  \item \textbf{The \code{O\_min} line is the source's diagnostic on the
+    guess.}  The source calibrates its 0.85 working line on
+    \emph{converged} orbitals (its 3000-configuration dataset); here it
+    belongs to the guess, and a high value alone does not certify a usable
+    guess (the refused mismatch case above read $O_{\min}$ 0.92 -- the
+    containment gate is what catches it).  Within a degenerate reference
+    window the individual orbital assignment is arbitrary; the SVD fixes
+    the subspace, which is what $O_{\min}$ reads.
+\end{itemize}
+\end{readbox}
+
+\section{Refusals and related sections}
+
+\begin{refusalbox}
+\begin{itemize}
+  \item A target export without the S-Matrix, without coefficients, or
+    from a different system/basis/atom order is refused with the next
+    step; so is an empty active list, an out-of-range index, or a
+    closed+active partition that exceeds the target's orbital count.
+  \item A reference whose active space is not represented in the target's
+    closed+active window (containment below 0.85) is refused: the
+    two-step construction cannot keep a clean closed block on such a pair.
+\end{itemize}
+\end{refusalbox}
+
+Related: \menu{18} (the WASP initial guess -- same write-back route,
+interpolated instead of rotated), \menu{17} (the cross-structure mapping
+and its overlap diagnostics, which measure the same MO-overlap SVD along a
+path), and Chapter~\ref{ch:criteria} for the criterion table.

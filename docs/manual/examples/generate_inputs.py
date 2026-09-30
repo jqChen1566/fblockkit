@@ -186,6 +186,33 @@ guess_payload = {
 )
 print("wrote work/guess_manifest.json")
 
+# --- the AOP rotation manifest (menu 47): the reference is the converged
+# CASSCF(6,6) active space at the target's own geometry, the target the RHF
+# orbital set and its mkl.
+
+aop_payload = {
+    "reference": {"export": "n2_cas666_1.600.json", "active": [4, 5, 6, 7, 8, 9]},
+    "target": {"export": "n2_scan_1.600.json", "mkl": "n2_scan_1.600.mkl"},
+    "closed": 4,
+}
+(WORK / "aop_manifest.json").write_text(
+    json.dumps(aop_payload, indent=1) + "\n", encoding="utf-8"
+)
+print("wrote work/aop_manifest.json")
+
+# --- the PiOS manifest (menu 48): the benzene RHF export and its mkl, with the
+# six ring carbons as the pi system.
+
+pios_payload = {
+    "export": "benzene_rhf.json",
+    "atoms": [0, 1, 2, 3, 4, 5],
+    "mkl": "benzene_rhf.mkl",
+}
+(WORK / "pios_manifest.json").write_text(
+    json.dumps(pios_payload, indent=1) + "\n", encoding="utf-8"
+)
+print("wrote work/pios_manifest.json")
+
 # --- the dipole-moment (DM-AS) examples: the water structure for menu 19, and
 # the filled manifest over the shipped candidate outputs for menu 20.
 

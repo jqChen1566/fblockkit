@@ -1,4 +1,4 @@
-## 3.4 QICAS active-space optimization
+## QICAS active-space optimization (F_QI-minimised orbitals)
 
 QICAS orbital optimization (out-of-CAS correlation over orbital rotations):
   window: 6 orbitals, 6 electrons; target (2e, 4o) with 2 closed, 4 active, 0 virtual

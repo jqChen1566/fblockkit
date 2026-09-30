@@ -47,6 +47,8 @@ Available functions:
   44  MOKIT automr input (a structure + options -> a Gaussian-style .gjf with the mokit{} block)
   45  MOKIT automr run report (an automr output -> the stages, the energy chain and the active space)
   46  Quantum-tunnelling relaxation prediction (a SINGLE_ANISO output -> tau_QTM and U_eff(T); optional neighbour table for the dipolar model)
+  47  AOP rotation guess (a reference active space + a target export -> a gbw-ready mkl)
+  48  PiOS pi-orbital active space (a pi-system definition + an export -> the pi orbitals and a gbw-ready mkl)
    0  Quit
 Choose a number (Enter = leave empty)> 32
 Structure source path (XYZ / ORCA input / ORCA output) (Enter = leave empty)> work/h2o_start.xyz
@@ -121,6 +123,8 @@ Available functions:
   44  MOKIT automr input (a structure + options -> a Gaussian-style .gjf with the mokit{} block)
   45  MOKIT automr run report (an automr output -> the stages, the energy chain and the active space)
   46  Quantum-tunnelling relaxation prediction (a SINGLE_ANISO output -> tau_QTM and U_eff(T); optional neighbour table for the dipolar model)
+  47  AOP rotation guess (a reference active space + a target export -> a gbw-ready mkl)
+  48  PiOS pi-orbital active space (a pi-system definition + an export -> the pi orbitals and a gbw-ready mkl)
    0  Quit
 Choose a number (Enter = leave empty)> 32
 Structure source path (XYZ / ORCA input / ORCA output) (Enter = leave empty)> work/h2o_ts.xyz
@@ -198,6 +202,8 @@ Available functions:
   44  MOKIT automr input (a structure + options -> a Gaussian-style .gjf with the mokit{} block)
   45  MOKIT automr run report (an automr output -> the stages, the energy chain and the active space)
   46  Quantum-tunnelling relaxation prediction (a SINGLE_ANISO output -> tau_QTM and U_eff(T); optional neighbour table for the dipolar model)
+  47  AOP rotation guess (a reference active space + a target export -> a gbw-ready mkl)
+  48  PiOS pi-orbital active space (a pi-system definition + an export -> the pi orbitals and a gbw-ready mkl)
    0  Quit
 Choose a number (Enter = leave empty)> 32
 Structure source path (XYZ / ORCA input / ORCA output) (Enter = leave empty)> work/h2o_ts.xyz
@@ -261,6 +267,8 @@ Available functions:
   44  MOKIT automr input (a structure + options -> a Gaussian-style .gjf with the mokit{} block)
   45  MOKIT automr run report (an automr output -> the stages, the energy chain and the active space)
   46  Quantum-tunnelling relaxation prediction (a SINGLE_ANISO output -> tau_QTM and U_eff(T); optional neighbour table for the dipolar model)
+  47  AOP rotation guess (a reference active space + a target export -> a gbw-ready mkl)
+  48  PiOS pi-orbital active space (a pi-system definition + an export -> the pi orbitals and a gbw-ready mkl)
    0  Quit
 Choose a number (Enter = leave empty)> 
 (end of input, exiting.)

@@ -39,6 +39,17 @@ feature, not one number.  The source notes that ``tau <= 0.5`` is the
 reasonable range for comparing orbital populations and reads its own example
 at ``tau_min = 0.5`` for both sets.
 
+Alongside the map, the module carries the **active-space overlap check** of a
+second source (Paz, Baleeva & Glover 2021), evaluated between adjacent
+structures of a series: the active orbitals of the two structures are matched
+by their overlap block ``S_act`` (that source's Supporting Information
+Eq. (2), the main text's Eqs. (1)-(3) being the general statement); its
+``|det S_act|`` reads whether the selected subspace survived the step, and
+``O_min`` -- the smallest singular value of the same block, that source's
+main-text alignment diagnostic -- is printed alongside, with the source's own
+working criterion (``O_min >= 0.85``) quoted as its calibration for its own
+setting.
+
 Measured boundaries of this ORCA route
 --------------------------------------
 The source computes both criteria in Serenity (kinetic energies; shell-wise
@@ -88,6 +99,7 @@ __all__ = [
     "descriptors_from_export",
     "match_orbitals",
     "active_overlap_determinant",
+    "active_overlap_omin",
     "active_overlap_series",
     "analyze",
     "render",
@@ -256,30 +268,11 @@ def match_orbitals(a: OrbitalDescriptor, b: OrbitalDescriptor, tau: float) -> bo
     return sum(abs(x - y) for (_, x), (_, y) in zip(a.shells, b.shells)) < tau
 
 
-# --- the active-space overlap check (AOP, SI-derived) -------------------------
+# --- the active-space overlap check (AOP) -------------------------------------
 
 
-def active_overlap_determinant(export_a, export_b, active_a, active_b=None) -> float:
-    """``|det S_act|`` between two structures' active blocks (the AOP scalar).
-
-    The second source's overlap-preservation check, from its Supporting
-    Information (Eq. (2) there; the main text is not yet available): the active
-    orbitals of the two structures are matched by their overlap,
-
-        S_act[i, j] = <psi_i^(A) | psi_j^(B)>  ~=  c_i^(A)T  S^(B)  c_j^(B),
-
-    using the *current* (second) structure's AO overlap -- justified in the
-    source because the geometries change only minimally between adjacent steps
-    of its geodesic interpolation.  ``|det S_act| ~ 1`` means the active space
-    was preserved between the two structures; a value towards 0 means at least
-    one active orbital exchanged with the inactive space.  The determinant is
-    taken in absolute value: orbital phases are arbitrary.
-
-    Applicability: the source uses this between *adjacent* small steps.  For
-    distant structures the one-metric approximation behind ``S_act`` no longer
-    holds and the number is a demonstration of degradation, not a calibrated
-    reading; the report says so and prints the value without a threshold.
-    """
+def _active_overlap_block(export_a, export_b, active_a, active_b=None) -> np.ndarray:
+    """The overlap block S_act between two structures' active orbitals."""
     coefficients_a = np.array(export_a.mo_coefficients, dtype=float).T
     coefficients_b = np.array(export_b.mo_coefficients, dtype=float).T
     if export_b.overlap is None:
@@ -301,16 +294,69 @@ def active_overlap_determinant(export_a, export_b, active_a, active_b=None) -> f
                     f"'{export.base_name}'s {coefficients.shape[1]} orbitals. Next step: "
                     "check the active-space list."
                 )
-    block = coefficients_a[:, indices_a].T @ overlap @ coefficients_b[:, indices_b]
-    return float(abs(np.linalg.det(block)))
+    return coefficients_a[:, indices_a].T @ overlap @ coefficients_b[:, indices_b]
 
 
-def active_overlap_series(exports, actives, names=None) -> tuple[tuple[str, str, float], ...]:
-    """The AOP scalar for every adjacent pair of a series (given order).
+def active_overlap_determinant(export_a, export_b, active_a, active_b=None) -> float:
+    """``|det S_act|`` between two structures' active blocks (the AOP scalar).
 
-    ``actives``: mapping structure name -> active-orbital indices; ``names``:
-    the display/lookup names (default: the exports' own base names).  A pair
-    whose two lists disagree in length is refused (the determinant needs
+    The second source's overlap-preservation check (Supporting Information
+    Eq. (2); the main text states the general form of the overlap matrix and
+    its SVD, Eqs. (1)-(3)): the active orbitals of the two structures are
+    matched by their overlap,
+
+        S_act[i, j] = <psi_i^(A) | psi_j^(B)>  ~=  c_i^(A)T  S^(B)  c_j^(B),
+
+    using the *current* (second) structure's AO overlap -- justified in the
+    source because the geometries change only minimally between adjacent steps
+    of its geodesic interpolation.  ``|det S_act| ~ 1`` means the active space
+    was preserved between the two structures; a value towards 0 means at least
+    one active orbital exchanged with the inactive space.  The determinant is
+    taken in absolute value: orbital phases are arbitrary.
+
+    Applicability: the source uses this between *adjacent* small steps.  For
+    distant structures the one-metric approximation behind ``S_act`` no longer
+    holds and the number is a demonstration of degradation, not a calibrated
+    reading; the report says so and prints the value without a threshold.
+    """
+    return float(abs(np.linalg.det(_active_overlap_block(export_a, export_b, active_a, active_b))))
+
+
+def active_overlap_omin(export_a, export_b, active_a, active_b=None) -> float:
+    """The smallest singular value of the same block (the source's ``O_min``).
+
+    The main text's alignment diagnostic: the n_ref-th (smallest) singular
+    value of the MO-overlap SVD reports how well a set of orbitals could be
+    aligned onto a reference set (its Eqs. (1)-(3)); near 1 the alignment
+    succeeded, a small value means at least one aligned direction is poor.
+    The source reads ``O_min`` off its two-step orbital rotation of
+    same-geometry SCF orbitals onto a reference active space and uses
+    ``O_min >= 0.85`` as its working criterion, calibrated on the bimodal
+    distribution of its 3000-configuration dataset (its Fig. S6).  Here the
+    same diagnostic is evaluated on the adjacent-geometry block above -- a
+    different (and stricter) configuration -- so the value is printed as a
+    diagnostic, and the 0.85 line is quoted as the source's criterion for its
+    own setting, not as this block's threshold.
+
+    The two numbers are not interchangeable: the determinant multiplies all
+    singular values, so a single poor direction can drag it well below 1 while
+    ``O_min`` stays above the source's line (measured on the frozen scan: the
+    bond triad across a 0.5-Angstrom step gives |det| 0.7172 with
+    ``O_min`` 0.8567 -- the three singular values are 0.915, 0.915, 0.857).
+    """
+    singular = np.linalg.svd(
+        _active_overlap_block(export_a, export_b, active_a, active_b), compute_uv=False
+    )
+    return float(singular.min())
+
+
+def active_overlap_series(exports, actives, names=None) -> tuple[tuple[str, str, float, float], ...]:
+    """The AOP scalars for every adjacent pair of a series (given order).
+
+    Each row carries ``(name_a, name_b, |det S_act|, O_min)``.  ``actives``:
+    mapping structure name -> active-orbital indices; ``names``: the
+    display/lookup names (default: the exports' own base names).  A pair whose
+    two lists disagree in length is refused (the overlap block needs
     square blocks from the same-size spaces).
     """
     labels = [export.base_name for export in exports] if names is None else [str(n) for n in names]
@@ -342,6 +388,7 @@ def active_overlap_series(exports, actives, names=None) -> tuple[tuple[str, str,
                 name_a,
                 name_b,
                 active_overlap_determinant(first, second, active_a, active_b),
+                active_overlap_omin(first, second, active_a, active_b),
             )
         )
     return tuple(rows)
@@ -657,20 +704,24 @@ def render(result: MappingResult, structures) -> str:
 
 
 def render_active_overlap(rows) -> str:
-    """The active-space overlap (AOP) block: one |det S_act| per adjacent pair."""
+    """The active-space overlap (AOP) block: |det S_act| and O_min per adjacent pair."""
     lines = [
         "Active-space overlap between adjacent structures (|det S_act|, the "
-        "overlap-preservation scalar of the second source's Supporting Information):",
-        "  pair                                        |det S_act|   reading",
+        "overlap-preservation scalar of the second source's Supporting Information; "
+        "O_min, the smallest singular value of the same block -- its main-text "
+        "alignment diagnostic):",
+        "  pair                                        |det S_act|     O_min   reading",
     ]
-    for first, second, value in rows:
-        if value >= 0.9:
+    for first, second, determinant, omin in rows:
+        if determinant >= 0.9:
             reading = "preserved"
-        elif value <= 0.1:
+        elif determinant <= 0.1:
             reading = "an active/inactive exchange is likely"
         else:
             reading = "partial"
-        lines.append(f"  {first} -> {second:<28} {value:>10.6f}   {reading}")
+        lines.append(
+            f"  {first} -> {second:<28} {determinant:>10.6f} {omin:>9.6f}   {reading}"
+        )
     lines += [
         "",
         "Boundaries of this check:",
@@ -678,11 +729,20 @@ def render_active_overlap(rows) -> str:
         "approximation for small steps of its geodesic interpolation; between distant "
         "structures the number demonstrates degradation rather than certifying "
         "preservation",
-        "  - the source gives the qualitative reading only (near 1 preserved, near 0 an "
-        "exchange); the printed bands are this project's reading of that scale, not the "
-        "source's thresholds (measured on the frozen N2 scan: the two 1s core orbitals "
-        "give 1.0000 for every pair, the bond triad 0.9955 across a 0.01-Angstrom step "
-        "and 0.72 across 0.5-Angstrom steps)",
+        "  - the source reads |det S_act| qualitatively (near 1 preserved, near 0 an "
+        "exchange) and gives O_min >= 0.85 as its working criterion for aligning onto "
+        "a reference active space, calibrated on the bimodal distribution of its "
+        "3000-configuration dataset; there O_min is read off the two-step rotation of "
+        "same-geometry SCF orbitals, here it is taken on the adjacent-geometry block "
+        "above -- the printed value is a diagnostic and the 0.85 line is quoted as the "
+        "source's calibration for its own setting, not as this block's threshold",
+        "  - the bands on |det S_act| are this project's reading of that scale "
+        "(measured on the frozen N2 scan: the two 1s core orbitals give 1.0000 with "
+        "O_min 0.9987 for every pair; the bond triad gives 0.9955 across a "
+        "0.01-Angstrom step and 0.7172 / 0.7251 across the two 0.5-Angstrom steps, "
+        "where O_min reads 0.8567 and 0.8323 -- the determinant multiplies the three "
+        "singular values, so one poor direction dominates its drop, and the second "
+        "0.5-Angstrom step is where the value crosses the source's 0.85 line)",
         "  - the determinant is taken in absolute value (orbital phases are arbitrary); "
         "it measures whether the active *subspace* survived, while the mapping above "
         "follows individual orbitals -- the two answers can differ (a rotation inside "
@@ -749,19 +809,21 @@ def evidence() -> tuple[Evidence, ...]:
         Evidence(
             kind=EVIDENCE_LITERATURE,
             text=(
-                "The active-space overlap scalar: between adjacent (small-step) "
+                "The active-space overlap check: between adjacent (small-step) "
                 "structures, match the active orbitals by their overlap -- approximated "
                 "with the current geometry's AO overlap -- and read |det S_act|: near 1 "
                 "the active space was preserved, near 0 at least one active/inactive "
-                "exchange happened. From the second source's Supporting Information "
-                "(its Eq. (2)); the main text is not yet available, so the protocol's "
-                "applicability beyond adjacent small steps is recorded as unverified and "
-                "the report prints the value without a threshold."
+                "exchange happened (Supporting Information Eq. (2)). The main text "
+                "states the general MO-overlap matrix and its SVD (Eqs. (1)-(3)), uses "
+                "the smallest singular value O_min as the alignment diagnostic with a "
+                "working criterion O_min >= 0.85 calibrated on the bimodal distribution "
+                "of its 3000-configuration dataset (Fig. S6), and builds the two-step "
+                "orbital rotation of its AOP-MCSCF scheme on the same SVD (Eqs. (4)-(11))."
             ),
             ref=(
-                "Supporting Information, section I ('Determination of active space "
-                "consistency between interpolated geometries', Eq. (2)); main text "
-                "pending (DOI 10.1063/5.0058673)"
+                "Paz A. S. P., Baleeva N. S., Glover W. J., J. Chem. Phys., 2021, 155, "
+                "071103, DOI 10.1063/5.0058673 (Eqs. (1)-(11); Supporting Information "
+                "Eq. (2); the O_min criterion in section III)"
             ),
             url="https://doi.org/10.1063/5.0058673",
             bibkey="paz2021active",

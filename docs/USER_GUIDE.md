@@ -722,17 +722,26 @@ menu reports the consistent space it implies.
 **Optional: the active-space overlap (`active` block)**: give per-structure
 active-orbital lists (`"active": {"r=1.094": [4, 5, 6], ...}`) and the report
 adds the *overlap-preservation* scalar of the second source (its Supporting
-Information): between each adjacent pair, |det S_act| ~ 1 means the active
-space survived, ~ 0 means at least one active orbital exchanged with the
-inactive space (measured on the frozen scan: the cores give 1.0000 for every
-pair, the bond triad 0.9955 across a 0.01-Angstrom step and 0.72 across
-0.5-Angstrom steps). The number uses the *second* structure's overlap -- the
-source's own small-step approximation -- so between distant structures it
-demonstrates degradation rather than certifying preservation, and the printed
-bands are this project's reading of the source's qualitative scale. Note the
-two checks answer different questions: the determinant tracks the active
-*subspace* (a rotation inside a degenerate window leaves it near 1), while the
-mapping follows individual orbitals.
+Information Eq. (2); its main text Eqs. (1)-(3) give the general form) for
+every adjacent pair, with the source's alignment diagnostic `O_min` (the
+smallest singular value of the same block) alongside. |det S_act| ~ 1 means
+the active space survived, ~ 0 means at least one active orbital exchanged
+with the inactive space; `O_min` ~ 1 means every aligned direction is good,
+and a value below the source's working line (0.85, calibrated on its own
+condensed-phase dataset and quoted as such) flags at least one poor direction.
+The two numbers differ in weight: the determinant multiplies all singular
+values (measured on the frozen scan: the cores give 1.0000 with `O_min` 0.9987
+for every pair; the bond triad gives 0.9955 across a 0.01-Angstrom step and
+0.7172 / 0.7251 with `O_min` 0.8567 / 0.8323 across the two 0.5-Angstrom
+steps -- one poor direction dominates the determinant's drop, and only the
+second 0.5-Angstrom step crosses the source's line). The number uses the
+*second* structure's overlap -- the source's own small-step approximation --
+so between distant structures it demonstrates degradation rather than
+certifying preservation, and the printed bands are this project's reading of
+the source's qualitative scale. Note the two checks answer different
+questions: the determinant tracks the active *subspace* (a rotation inside a
+degenerate window leaves it near 1), while the mapping follows individual
+orbitals.
 
 ## 18 WASP guess transfer (neighbours -> a gbw-ready mkl)
 
@@ -1996,6 +2005,143 @@ the neighbour geometry as a table (crystal-structure parsing sits
 outside this menu).  The 18-complex literature regression
 of the equivalent-Zeeman model ships as a fixture and reproduces to
 0.006 in log10(tau).
+
+## 47 AOP rotation guess (a reference active space -> a gbw-ready mkl)
+
+**What it is for**: starting a MCSCF calculation in the *right basin*. When
+the desired active space is known from a reference calculation, the AOP
+protocol (Paz, Baleeva & Glover 2021) rotates the current orbital set onto
+that reference by the singular value decomposition of their mutual overlap
+and uses the rotated orbitals as the MCSCF initial guess -- maximum overlap
+with the reference, no manual orbital picking.
+
+**What you need**:
+
+- the *reference*: an `orca_2json` export carrying its active orbitals (e.g.
+  the converged CASSCF gbw of a related calculation) plus the 0-based
+  indices of its active orbitals;
+- the *target*: the export of the orbital set to start from (an RHF/DFT run
+  at the target geometry; same system, same basis, same atom order) and the
+  target's mkl (for the write-back, as in menu 18). The target's partition
+  -- how many closed-shell orbitals the target calculation will use -- is
+  given as `closed`; the active count is the reference's list length.
+
+**How**: menu 47 -> a manifest JSON:
+
+```json
+{
+  "reference": {"export": "n2_cas666_1.600.json", "active": [4, 5, 6, 7, 8, 9]},
+  "target": {"export": "n2_scan_1.600.json", "mkl": "n2_scan_1.600.mkl"},
+  "closed": 4
+}
+```
+
+The two-step SVD rotation (the source's Eqs. (4)-(11)) first rotates the
+target's lowest closed+active orbitals onto the reference, then concatenates
+the rotated active block with the untouched virtuals and rotates again --
+keeping closed and virtual character out of the active block. The result is
+written as `<target>.aop.fbk.mkl` (gbw-ready: `orca_2mkl <name> -gbw`), and
+the report is `<manifest>.aop.fbk.md`.
+
+**How to read it**:
+
+- **reference containment in the window** is the gate: how well the
+  reference active space is represented in the target's lowest
+  `closed + active` orbitals (the smallest singular value of the first SVD).
+  Below the source's own 0.85 line the construction cannot keep a clean
+  closed block and the menu refuses with the reason (measured: a
+  non-corresponding cross-geometry reference read 0.022 and sent the CASSCF
+  to a wrong solution -- the gate exists because of that measurement);
+- **O_min of the built active block** is the source's alignment diagnostic
+  on the guess (the smallest singular value of the built block against the
+  reference; 1.000000 means the reference active space is reproduced
+  exactly -- the same-geometry fixture reads exactly that). The 0.85 working
+  line of the source is quoted for its setting: it belongs to *converged*
+  orbitals there, here it belongs to the guess;
+- the **orthonormality residual** (at the numerical floor for a healthy
+  pair) confirms the guess is a unitary rotation of the target's own set:
+  the occupation/energy tags written with it are the target's, and ORCA
+  re-optimises from there.
+
+**Boundaries**: same system/basis/atom order for reference and target (the
+coefficient matrices live in one AO frame); the overlap uses the target's
+S matrix -- exact when the shared atoms sit at the same geometry (the
+source's own application), the source's small-step approximation otherwise;
+the reference must *correspond* to the target's desired active space (the
+containment gate catches the extreme mismatch, not a subtle one). The
+division of labour matches menu 18's: this writes the guess, ORCA
+optimises. For the engine side, ORCA reads such a guess with
+`!NoIter moread` + `%moinp` and a `%casscf` `MaxIter` (without `NoIter` the
+run is a CAS-CI, and `NoIter` alone caps the macro-iterations at 1).
+
+## 48 PiOS pi-orbital active space (a pi-system definition + an export)
+
+**What it is for**: the active space of a conjugated pi-system, built
+automatically (Sayfutyarova & Hammes-Schiffer 2019). For an aromatic ring
+or a conjugated chain, the chemically meaningful active space is the pi
+space -- the occupied and virtual MOs built from the atoms' out-of-plane p
+orbitals -- and PiOS constructs it from a single-reference wavefunction by
+projection, with a Huckel-style electron count.
+
+**What you need**: an `orca_2json` export of the RHF calculation (with the
+`S-Matrix`, the `H-Matrix` and the `FockMatrix` pair -- conf:
+`{"MOCoefficients": true, "1elIntegrals": ["H", "S"], "FockMatrix": ["J", "K"]}`),
+the 0-based indices of the pi-system atoms, and the system's mkl (for the
+write-back, as in menu 18).
+
+**How**: menu 48 -> a manifest JSON:
+
+```json
+{
+  "export": "benzene_rhf.json",
+  "atoms": [0, 1, 2, 3, 4, 5],
+  "mkl": "benzene_rhf.mkl",
+  "charge": 0,             
+  "pi_electrons": 6,        
+  "contributions": [1, 1, 1, 1, 1, 1]   
+}
+```
+
+Only the first three keys are required. The plane comes from the atom
+positions (inertia tensor), the electron count from the connectivity
+(covalent-radius bonds; each sp2 carbon counts one pi electron, N/P count
+one on two sigma bonds and two on three; `contributions` overrides per
+atom, `pi_electrons` the total, `charge` shifts it up for anions). The
+module projects the occupied and virtual MOs onto the oriented p orbitals
+and writes `CAS(N_e, |M|)` -- the pi space -- as
+`<mkl stem>.pios.fbk.mkl`, gbw-ready for a `%moinp` CASSCF start; the
+report is `<manifest>.pios.fbk.md`.
+
+**How to read it**:
+
+- the **projection spectra** are the source's own validity measure: the
+  selected orbitals should have clearly the largest eigenvalues (benzene:
+  occupied 0.7789 / 0.7649 / 0.7649 against 0.000 for everything else;
+  virtual 1.000 / 1.000 / 1.000 against 0.235). A selected eigenvalue below
+  an excluded one means the atom set or the electron count deserves a
+  second look;
+- the **selected pi orbitals** are listed with their semicanonical Fock
+  energies and their parent SCF orbitals (the largest weights), so the
+  space can be related to the input;
+- the written partition is **inactive | pi occupied | pi virtual |
+  inactive virtual**, i.e. the pi space is the active window of a
+  `%casscf nel N norb |M|` run.
+
+**Boundaries**: one pi system per call; closed-shell (RHF) exports; the
+oriented p orbitals come from the calculation's own basis (the valence p
+shell per atom) -- the source builds them in an auxiliary MINAO basis
+through IAOs, which needs the cross-basis overlap ORCA does not export.
+Measured consequence on the benzene fixture: the guess's active space
+reproduces the CASSCF-optimised space with SVD eigenvalues 0.9999 / 0.9999
+/ 0.9999 / 0.7573 / 0.7573 / 0.6558 -- the occupied side is exact and the
+virtual gap equals the converged pi* orbitals' own out-of-plane
+polarisation, which the pure-p route cannot carry (the source reports
+0.9708-1.0 with its IAO / aug-cc-pVTZ setup). On this fixture a CASSCF
+started from the written space converges to the same solution as the
+aufbau start in 13 macro-iterations against 7 -- the source's large gains
+are in condensed-phase settings, where the aufbau window fails outright.
+Approximately planar atom sets only (the report prints the maximum
+out-of-plane deviation).
 
 ## Appendix A Command line
 

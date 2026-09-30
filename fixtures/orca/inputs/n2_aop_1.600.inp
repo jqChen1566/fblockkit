@@ -1,0 +1,14 @@
+! RHF def2-SVP NoIter moread PAL4
+%moinp "n2_scan_1.600.aop.fbk.gbw"
+%maxcore 2000
+%casscf
+  nel 6
+  norb 6
+  mult 1
+  nroots 1
+  MaxIter 64
+end
+* xyz 0 1
+N 0 0 0
+N 0 0 1.600
+*

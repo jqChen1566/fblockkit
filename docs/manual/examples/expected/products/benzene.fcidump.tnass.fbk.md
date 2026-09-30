@@ -1,4 +1,4 @@
-## 3.5 TNASS selection (Renyi-2 bipartition)
+## TNASS selection (Renyi-2 bipartition)
 
 TNASS active-space selection (Renyi-2 entropy of the bipartition):
   method: greedy; target size 4 of the window's spatial orbitals

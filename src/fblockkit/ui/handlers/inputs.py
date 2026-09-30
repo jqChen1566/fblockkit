@@ -269,7 +269,7 @@ def imag_disp_generate(session: Session) -> None:
         "rerun does the work"
     )
     section = ReportSection(
-        title="4.5 imaginary-mode displacement (restart structures for the frequency cure)",
+        title="imaginary-mode displacement (restart structures for the frequency cure)",
         body=body,
     )
     report_lines = f"## {section.title}\n\n{section.body}\n"

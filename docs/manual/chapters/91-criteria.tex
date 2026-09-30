@@ -39,15 +39,18 @@ Non-matchable block & one class together & Menu~\menu{17}: the orbitals that
   one-centre hybrids are the block & \textsf{[Literature]} same;
   \textsf{[Measured]} the frozen scan fixtures \\
 Active-space overlap & $|\det S_{\mathrm{act}}|$ near 1 preserved, near 0 an
-  exchange & Menu~\menu{17}'s optional \code{active} block (the second source's
-  Supporting Information): the active block of two \emph{adjacent} structures
-  matched by overlap, the current geometry's $S$ used for the whole matrix (its
-  small-step approximation).  The printed bands are this project's reading of
-  the source's qualitative scale -- measured: cores 1.0000 for every pair, the
-  bond triad 0.9955 across 0.01~\AA{} and 0.72 across 0.5~\AA{}; a synthetic
-  active$\leftrightarrow$inactive exchange lands at $6\times10^{-5}$ &
-  \textsf{[Literature]} Paz et al.\ 2021 SI Eq.~(2), main text pending;
-  \textsf{[Measured]} the frozen scan \\
+  exchange; $O_{\min}$ (the smallest singular value of the same block) printed
+  with the source's own criterion $O_{\min}\ge 0.85$ quoted for its setting &
+  Menu~\menu{17}'s optional \code{active} block (the second source's main text
+  Eqs.~(1)--(3) and Supporting Information Eq.~(2)): the active block of two
+  \emph{adjacent} structures matched by overlap, the current geometry's $S$
+  used for the whole matrix (its small-step approximation).  The printed bands
+  are this project's reading of the source's qualitative scale -- measured:
+  cores 1.0000 with $O_{\min}$ 0.9987 for every pair, the bond triad 0.9955
+  across 0.01~\AA{} and 0.7172 / 0.7251 ($O_{\min}$ 0.8567 / 0.8323) across
+  0.5~\AA{}; a synthetic active$\leftrightarrow$inactive exchange lands at
+  $6\times10^{-5}$ & \textsf{[Literature]} Paz et al.\ 2021, Eqs.~(1)--(3),
+  SI Eq.~(2); \textsf{[Measured]} the frozen scan \\
 Guess transfer (WASP) & no threshold; $1/d$ weights & Menu~\menu{18}: the
   target's guess as the 1/d-weighted interpolation of the neighbours over
   $\delta$, orthonormalised in the target's metric; the written mkl converts
@@ -57,6 +60,35 @@ Guess transfer (WASP) & no threshold; $1/d$ weights & Menu~\menu{18}: the
   scan's branch -- branch continuity must be checked after any transfer &
   \textsf{[Literature]} the review's WASP (Eqs.~(11)--(13));
   \textsf{[Measured]} the frozen chain \\
+AOP rotation guess & containment $\ge 0.85$ (this project's gate, at the
+  source's alignment line); $O_{\min}$ of the built block as the diagnostic &
+  Menu~\menu{47}: the two-step SVD rotation of the target's orbitals onto a
+  reference active space (the source's Eqs.~(4)--(11)); containment is the
+  smallest singular value of the reference-to-window overlap, and below the
+  gate the construction cannot keep a clean closed block -- the gate came
+  out of a measured failure (a non-corresponding reference at containment
+  0.022 sent the CASSCF to a wrong solution, $-77.09$~Eh).  Measured
+  anchors: a same-geometry reference reads containment 0.958 with $O_{\min}$
+  exactly 1.000000 and a CASSCF start that converges in 6 macro-iterations
+  to the same solution as the aufbau start (7) &
+  \textsf{[Literature]} Paz et al.\ 2021, Eqs.~(1)--(11);
+  \textsf{[Measured]} the frozen CASSCF runs \\
+PiOS pi active space & no threshold; the projection spectra are the
+  reading & Menu~\menu{48}: the pi plane, the electron count from the
+  connectivity, the projection of the occupied and virtual MOs onto the
+  oriented valence p orbitals, and the selection of the
+  $N_{\pi,\mathrm{occ}} = N_{\pi,e}/2$ largest eigenvalues per side (the
+  source's Eqs.~(1)--(16), with the calculation's own basis in place of
+  the MINAO/IAO one -- cross-basis overlap is not exported).  Measured on
+  the benzene fixture: occupied 0.7789 / 0.7649 / 0.7649 against 0.000,
+  virtual 1.000 / 1.000 / 1.000 against 0.235, the projector trace exact
+  (2.309 + 3.691 = 6); the guess's active space against the converged
+  CAS(6,6) reads SVD 0.9999 / 0.9999 / 0.9999 / 0.7573 / 0.7573 / 0.6558,
+  the virtual gap being the converged pi* orbitals' own out-of-plane
+  character &
+  \textsf{[Literature]} Sayfutyarova \& Hammes-Schiffer 2019,
+  Eqs.~(1)--(16); \textsf{[Measured]} the benzene fixture and its CASSCF
+  validation run \\
 Dipole-moment selection (DM-AS) & no threshold; smallest deviation wins
   (ties: smaller space) & Menus~\menu{19}/\menu{20}: candidates (the source's
   PASS family, 6--14 electrons with $n_\mathrm{e}/2+3 \le n_\mathrm{o} \le
@@ -78,6 +110,8 @@ APC ranked-orbital selection & no threshold; CSF cap & Menu~\menu{21}:
   occupied and two unoccupied orbitals (the source's stability floor).
   The source's error record travels with every report (doubly-occupied
   entropy $R^2=0.64$, MAE $0.0240$ against DMRG; precision about $88\%$);
+  the source's own selection-quality anchor (a 1.1~eV SA-CASSCF error
+  threshold dropping 20--40\% of its benchmark) travels with it too;
   entropies agreeing to $10^{-12}$ rank by orbital index (BLAS determinism).
   Measured anchor: the N$_2$ max(10,10) selection lands exactly on the
   source's $(10,10)=19404$ entry &

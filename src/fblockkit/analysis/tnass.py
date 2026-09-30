@@ -358,7 +358,7 @@ def render(result: TnassResult) -> str:
 def run(dump: Fcidump, **kwargs) -> ReportSection:
     """The analyser entry point for menu 26."""
     return ReportSection(
-        title="3.5 TNASS selection (Renyi-2 bipartition)",
+        title="TNASS selection (Renyi-2 bipartition)",
         body=render(analyze(dump, **kwargs)),
     )
 

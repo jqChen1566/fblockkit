@@ -43,6 +43,11 @@ cp "$REPO/fixtures/orca/n2_scan_1.610.loc.json" work/
 cp "$REPO/fixtures/orca/n2_scan_2.600.loc.json" work/
 cp "$REPO/fixtures/orca/n2_scan_1.600.json" work/
 cp "$REPO/fixtures/orca/n2_scan_1.600.mkl" work/
+# the menu-47 AOP rotation reference (the CASSCF(6,6) active space at the same geometry)
+cp "$REPO/fixtures/orca/n2_cas666_1.600.json" work/
+# the menu-48 PiOS pair (the benzene RHF export with the Fock family, and its mkl)
+cp "$REPO/fixtures/orca/benzene_rhf.json" work/
+cp "$REPO/fixtures/orca/benzene_rhf.mkl" work/
 # the dipole-moment chain of menus 19/20 (six single-root candidates + reference)
 cp "$REPO/fixtures/orca/h2o_dm_ref_pbe0.out" work/
 cp "$REPO/fixtures/orca/h2o_dm_prep_mp2.out" work/

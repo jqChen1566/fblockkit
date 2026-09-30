@@ -1,4 +1,4 @@
-## 4.1 perturbed multistart batch (randomized occupied-virtual mixing)
+## perturbed multistart batch (randomized occupied-virtual mixing)
 
 perturbed start 1 (seed 20260927):
   occupied window (mkl columns): 0, 1, 2, 3, 4

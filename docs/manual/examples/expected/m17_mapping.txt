@@ -47,6 +47,8 @@ Available functions:
   44  MOKIT automr input (a structure + options -> a Gaussian-style .gjf with the mokit{} block)
   45  MOKIT automr run report (an automr output -> the stages, the energy chain and the active space)
   46  Quantum-tunnelling relaxation prediction (a SINGLE_ANISO output -> tau_QTM and U_eff(T); optional neighbour table for the dipolar model)
+  47  AOP rotation guess (a reference active space + a target export -> a gbw-ready mkl)
+  48  PiOS pi-orbital active space (a pi-system definition + an export -> the pi orbitals and a gbw-ready mkl)
    0  Quit
 Choose a number (Enter = leave empty)> 17
 Structures manifest JSON path (a list of structures with their exports; see the user guide) (Enter = leave empty)> work/mapping_manifest.json
@@ -229,15 +231,16 @@ Criteria and boundaries:
   - The mapping compares the structures in their own frames: same basis set, same atom order, same orientation of the whole system. Rotated or permuted structures are refused by the shell-key check or give a meaningless map.
   - The selection itself is not part of this module: menu 12's entropy protocol (or any other) provides the annotation, and the module reports the consistent active space it implies through the classes.
 
-Active-space overlap between adjacent structures (|det S_act|, the overlap-preservation scalar of the second source's Supporting Information):
-  pair                                        |det S_act|   reading
-  r=1.094 -> r=1.600                        0.717243   partial
-  r=1.600 -> r=1.610                        0.995475   preserved
-  r=1.610 -> r=2.600                        0.725063   partial
+Active-space overlap between adjacent structures (|det S_act|, the overlap-preservation scalar of the second source's Supporting Information; O_min, the smallest singular value of the same block -- its main-text alignment diagnostic):
+  pair                                        |det S_act|     O_min   reading
+  r=1.094 -> r=1.600                        0.717243  0.856734   partial
+  r=1.600 -> r=1.610                        0.995475  0.998011   preserved
+  r=1.610 -> r=2.600                        0.725063  0.832325   partial
 
 Boundaries of this check:
   - S_act uses the *second* structure's AO overlap, the source's own approximation for small steps of its geodesic interpolation; between distant structures the number demonstrates degradation rather than certifying preservation
-  - the source gives the qualitative reading only (near 1 preserved, near 0 an exchange); the printed bands are this project's reading of that scale, not the source's thresholds (measured on the frozen N2 scan: the two 1s core orbitals give 1.0000 for every pair, the bond triad 0.9955 across a 0.01-Angstrom step and 0.72 across 0.5-Angstrom steps)
+  - the source reads |det S_act| qualitatively (near 1 preserved, near 0 an exchange) and gives O_min >= 0.85 as its working criterion for aligning onto a reference active space, calibrated on the bimodal distribution of its 3000-configuration dataset; there O_min is read off the two-step rotation of same-geometry SCF orbitals, here it is taken on the adjacent-geometry block above -- the printed value is a diagnostic and the 0.85 line is quoted as the source's calibration for its own setting, not as this block's threshold
+  - the bands on |det S_act| are this project's reading of that scale (measured on the frozen N2 scan: the two 1s core orbitals give 1.0000 with O_min 0.9987 for every pair; the bond triad gives 0.9955 across a 0.01-Angstrom step and 0.7172 / 0.7251 across the two 0.5-Angstrom steps, where O_min reads 0.8567 and 0.8323 -- the determinant multiplies the three singular values, so one poor direction dominates its drop, and the second 0.5-Angstrom step is where the value crosses the source's 0.85 line)
   - the determinant is taken in absolute value (orbital phases are arbitrary); it measures whether the active *subspace* survived, while the mapping above follows individual orbitals -- the two answers can differ (a rotation inside the window leaves |det| near 1 while the mapping reports no match)
 Report written: work\mapping_manifest.json.mapping.fbk.md
 
@@ -288,6 +291,8 @@ Available functions:
   44  MOKIT automr input (a structure + options -> a Gaussian-style .gjf with the mokit{} block)
   45  MOKIT automr run report (an automr output -> the stages, the energy chain and the active space)
   46  Quantum-tunnelling relaxation prediction (a SINGLE_ANISO output -> tau_QTM and U_eff(T); optional neighbour table for the dipolar model)
+  47  AOP rotation guess (a reference active space + a target export -> a gbw-ready mkl)
+  48  PiOS pi-orbital active space (a pi-system definition + an export -> the pi orbitals and a gbw-ready mkl)
    0  Quit
 Choose a number (Enter = leave empty)> 0
 Goodbye.

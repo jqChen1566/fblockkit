@@ -206,12 +206,17 @@ def main() -> int:
             "dy_doublets.json",
             "mapping_manifest.json",
             "guess_manifest.json",
+            "aop_manifest.json",
+            "pios_manifest.json",
+            "benzene_rhf.json",
+            "benzene_rhf.mkl",
             "n2_scan_1.094.loc.json",
             "n2_scan_1.600.loc.json",
             "n2_scan_1.610.loc.json",
             "n2_scan_2.600.loc.json",
             "n2_scan_1.600.json",
             "n2_scan_1.600.mkl",
+            "n2_cas666_1.600.json",
             "h2o.xyz",
             "h2co.xyz",
             "n2.xyz",
@@ -307,6 +312,8 @@ def main() -> int:
                     "46", "work/co_aniso2.out", "20.0", "",
                     "46", "work/co_aniso2.out", "20.0", "work/qtm_neighbours.txt",
                     "1.0, 0.3, 0.05",
+                    "47", "work/aop_manifest.json",
+                    "48", "work/pios_manifest.json",
                     "31", "work/h2o_absp.property.txt",
                     "8", "work/saved.txt",
                     "0",
@@ -472,9 +479,10 @@ def main() -> int:
             check(
                 "Active-space overlap" in mapping
                 and "0.995" in mapping
+                and "0.998011" in mapping
                 and "preserved" in mapping,
                 "menu 17 report: the active-space overlap block reads the scan's "
-                "small step as preserved",
+                "small step as preserved, with the O_min diagnostic alongside",
             )
 
             guess = read("guess_manifest.json.guess.fbk.md")
@@ -783,6 +791,38 @@ def main() -> int:
                 and "Spin-dipolar model" in qtm_report
                 and "Dilution variant" in qtm_report,
                 "menu 46 predicts the tunnelling time (both models and the dilution)",
+            )
+            aop_report = read("aop_manifest.json.aop.fbk.md")
+            check(
+                "AOP rotation guess" in aop_report
+                and "reference containment in the window: 0.958" in aop_report
+                and "O_min of the built active block:    1.000000" in aop_report,
+                "menu 47 rotates onto the reference active space (containment 0.958, "
+                "O_min 1.000000)",
+            )
+            aop_written = read("n2_scan_1.600.aop.fbk.mkl")
+            check(
+                "$COEFF_ALPHA" in aop_written
+                and "$BASIS" in aop_written
+                and "$OCC_ALPHA" in aop_written,
+                "menu 47 wrote the gbw-ready mkl next to the target mkl template",
+            )
+
+            pios_report = read("pios_manifest.json.pios.fbk.md")
+            check(
+                "A13 PiOS pi-orbital active space" in pios_report
+                and "CAS(6e, 6o)" in pios_report
+                and "0.778934" in pios_report
+                and "1.000000" in pios_report,
+                "menu 48 builds the benzene pi space (CAS(6e, 6o), the projection "
+                "spectra pinned)",
+            )
+            pios_written = read("benzene_rhf.pios.fbk.mkl")
+            check(
+                "$COEFF_ALPHA" in pios_written
+                and "$BASIS" in pios_written
+                and "$OCC_ALPHA" in pios_written,
+                "menu 48 wrote the gbw-ready mkl next to the benzene mkl template",
             )
             mokit_report = read("h2o_generated_automr.mokit.fbk.md")
             check(
