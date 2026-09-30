@@ -1,24 +1,60 @@
-# fBlockKit (the f-block calculation toolkit)
+<div align="center">
+
+# fBlockKit
+
+**the f-block calculation toolkit** -- input generation and characterisation
+analysis for strongly correlated systems and lanthanide/actinide calculations
+
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
+[![Python](https://img.shields.io/badge/python-%E2%89%A53.11-blue)](https://www.python.org/)
+[![Release](https://img.shields.io/badge/release-v0.1.0-brightgreen)](https://github.com/jqChen1566/fblockkit/releases)
+[![Status](https://img.shields.io/badge/status-early%20development-yellow)](#status)
+
+</div>
 
 A zero-barrier workbench for strongly correlated systems and lanthanide/actinide
-calculations. It does two things, and it never runs a calculation for you:
+calculations.  It writes the input file and reads the results back; running the
+calculation itself stays with you.  Every conclusion it draws carries its
+provenance: a program-manual quote (with section and URL), a literature
+reference (with DOI and a paste-ready BibTeX entry), or a measured record.  The
+decision layer is a deterministic rule engine -- no machine learning, no network
+access, no file uploads.
 
-1. **Generates input files** -- system profile in, runnable ORCA input (method chain,
-   basis set / ECP, active space, convergence settings) plus plain run guidance out;
-2. **Reads results** -- an output file (or a structure file) in, a characterisation
-   report out: orbital composition, occupation and entropy analysis, multi-reference
-   character, local spin analysis, crystal-field fitting and point-charge estimates,
-   cross-level consistency, SCF rescue, transition-state checks.
+## Functionality
 
-Every conclusion carries its provenance: a program-manual quote (with section and
-URL), a literature reference (with DOI and a paste-ready BibTeX entry), or a measured
-record. The decision layer is a deterministic rule engine -- no machine learning, no
-network access, no file uploads.
+**Input generation** (a system profile in, runnable files out):
+
+- ORCA input from a few questions about your system: method chain, basis set /
+  ECP, active space, convergence settings, plus plain run guidance (menus 3, 4);
+- focused generators: DeltaSCF / MOM excited-state SCF (27), RAS / ORMAS model
+  spaces (28), multistart and imaginary-mode restart inputs (29, 30), multireference
+  recipes with their gates (6);
+- an OpenMolcas magnetic-chain template (SA-CASSCF / RASSI / SINGLE_ANISO);
+- external-program inputs: pysisyphus PES exploration (32) and MOKIT/automr (44).
+
+**Characterisation analysis** (a file in, a provenance-carrying report out):
+
+- the check-up report and SCF rescue: composition, active-space analysis,
+  multi-reference diagnostics, oscillation/trajectory checks, wrong-solution
+  warnings (1, 9);
+- exact active-space analysis from an FCIDUMP (four-state entropy, environment
+  spin entropy, atomic-term check; 12) and the selection family: AVAS (14),
+  orbital portrait (15), cross-structure mapping (17), WASP guess transfer (18),
+  dipole-moment selection (19, 20), APC ranking (21), ASS1ST (22, 23), QICAS
+  (24), AEGISS (25), TNASS (26);
+- crystal-field fitting (10) and point-charge estimates (11); cross-level
+  solution consistency (7); CASSCF state data and transitions (31);
+- magnetic and spectroscopic side: Judd-Ofelt intensities (34), pNMR shifts
+  (35), relaxation / QTM (36), hyperfine / EFG (40), magnetocaloric effect
+  (41), tunnelling-relaxation prediction (46), XAS/RIXS (37), AILFT (38),
+  polynuclear magnetism (39);
+- external-program readings: xTB campaigns (42), CREST conformer ensembles
+  (43), MOKIT/automr runs (45), pysisyphus runs (33).
 
 ## Status
 
-v0.1 -- **early development**. The interfaces and the report formats may still change
-between releases.
+v0.1 -- **early development**. The interfaces and the report formats may still
+change between releases.
 
 ## Install
 
@@ -59,6 +95,47 @@ and `docs/USER_GUIDE.md` ships inside the program itself.
 4. Reports are plain Markdown (read them in any editor); the manual's menus and
    the guide's section numbers match one-to-one, so a report's section can be
    looked up directly.
+
+### A worked example
+
+The whole session is a replayable script -- the same construction the manual's
+worked examples use:
+
+```text
+# session.txt  --  replay with:  fblockkit run session.txt
+1
+n2_casscf_nevpt2.out
+0
+```
+
+```console
+$ fblockkit run session.txt
+Choose a number (Enter = leave empty)> 1
+Output file path (ORCA or Gaussian) (Enter = leave empty)> n2_casscf_nevpt2.out
+Report written: n2_casscf_nevpt2.out.fbk.md
+Data written: n2_casscf_nevpt2.out.fbk.json
+Analysis sections: 3.
+Diagnosis: Warning 3 (details in the report file).
+```
+
+The report it writes (excerpt):
+
+```markdown
+# fBlockKit report
+
+## Summary
+
+Subject: n2_casscf_nevpt2.out
+Counts: Warning 3
+
+## A1 orbital composition (per MO, Loewdin)
+
+Dominant shells of the active orbitals (0.02 < occ < 1.98):
+  MO    5  occ 1.7092  N1 p 48.8%; next: N2 p 48.8%
+  MO    6  occ 1.7092  N1 p 48.8%; next: N2 p 48.8%
+  MO    7  occ 0.2936  N1 p 48.2%; next: N2 p 48.2%
+  MO    8  occ 0.2936  N1 p 48.2%; next: N2 p 48.2%
+```
 
 ### The whole program as a script
 
@@ -102,8 +179,21 @@ Materials Science, Jinan University, Guangzhou, China.
 
 ## Citing
 
-If you use this software, cite it as described in `CITATION.cff`. The reports list
-the complete citation and BibTeX entry of every reference they use.
+If you use this software, cite it as described in `CITATION.cff`:
+
+```bibtex
+@software{fblockkit,
+  author  = {Chen, Jianqi},
+  title   = {{fBlockKit}: the f-block calculation toolkit},
+  year    = {2026},
+  version = {0.1.0},
+  url     = {https://github.com/jqChen1566/fblockkit},
+  license = {Apache-2.0},
+}
+```
+
+The reports list the complete citation and BibTeX entry of every reference they
+use.
 
 ## License
 
