@@ -177,6 +177,13 @@ the onboarding notes for the external programs the toolkit pairs with.
 fBlockKit is developed by Jianqi Chen (陈建棋), College of Chemistry and
 Materials Science, Jinan University, Guangzhou, China.
 
+## Funding
+
+This project is supported by the Jinan University Provincial College Students'
+Innovation and Entrepreneurship Training Program (Project No. S202610559049).
+
+本项目受暨南大学省级大学生创新创业训练计划资助（项目编号：S202610559049）。
+
 ## Citing
 
 If you use this software, cite it as described in `CITATION.cff`:
