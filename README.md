@@ -174,8 +174,8 @@ the onboarding notes for the external programs the toolkit pairs with.
 
 ## Author
 
-fBlockKit is developed by Jianqi Chen (陈建棋), College of Chemistry and
-Materials Science, Jinan University, Guangzhou, China.
+fBlockKit is developed by Jianqi Chen, Wen Zeng and Guanghui Song, College
+of Chemistry and Materials Science, Jinan University, Guangzhou, China.
 
 ## Funding
 
@@ -190,7 +190,7 @@ If you use this software, cite it as described in `CITATION.cff`:
 
 ```bibtex
 @software{fblockkit,
-  author  = {Chen, Jianqi},
+  author  = {Jianqi Chen and Wen Zeng and Guanghui Song},
   title   = {{fBlockKit}: the f-block calculation toolkit},
   year    = {2026},
   version = {0.1.0},
