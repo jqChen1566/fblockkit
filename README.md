@@ -22,11 +22,45 @@ between releases.
 
 ## Install
 
-- **pip**: `pip install fblockkit` (Python >= 3.11; needs PyYAML, Jinja2, NumPy);
-- **green package**: unpack the archive for your platform and run `fblockkit.exe`
-  (Windows) or `fblockkit` (Linux) -- no Python installation needed.
+Pick the distribution form that suits you (all are attached to the repository's
+**Releases** page):
+
+- **Windows green package** (no Python needed): download
+  `fblockkit-<version>-windows-x64.zip`, unpack it anywhere and run
+  `fblockkit.exe` (or just double-click it).  The folder is self-contained and
+  portable.
+- **pip** (Python >= 3.11; dependencies PyYAML, Jinja2, NumPy):
+  `pip install fblockkit` -- then the `fblockkit` command is on your PATH from
+  any directory.
+- **from source** (for development): `pip install .` inside a checkout; the
+  build/test scripts are described under Development below.
+
+The compiled manual (one chapter per menu entry, the criteria and format
+references) is attached as a PDF to the **manual release** on the Releases page,
+and `docs/USER_GUIDE.md` ships inside the program itself.
 
 ## Use
+
+### First five minutes
+
+1. Start it: run `fblockkit` (or double-click `fblockkit.exe`).  You get a
+   numbered menu; type a number and answer the prompts -- every prompt shows its
+   default, and Enter accepts it.  No programming is involved.
+2. **Already have an engine output?**  Choose menu 1 and give the path: a
+   check-up report appears next to the file (`<file>.fbk.md`, plus a
+   machine-readable `.fbk.json`) with the orbital and active-space analysis,
+   multi-reference diagnostics and findings -- each conclusion carrying its
+   provenance.
+3. **Need an input file?**  Choose menu 3 (input generation) or menu 4 (basis
+   set / ECP advice): a few questions about your system yield a runnable ORCA
+   input, a run-guidance block and an optional OpenMolcas magnetic-chain
+   template.  Run the input on your machine or cluster, then feed the output
+   back to menu 1.
+4. Reports are plain Markdown (read them in any editor); the manual's menus and
+   the guide's section numbers match one-to-one, so a report's section can be
+   looked up directly.
+
+### The whole program as a script
 
 ```text
 fblockkit                     interactive menu (numbered, append-only)
@@ -36,9 +70,10 @@ fblockkit search KEYWORDS     search the external-tool index
 fblockkit guide TOOL_ID       tool onboarding notes
 ```
 
-The guide (`docs/USER_GUIDE.md`) is isomorphic to the menu: its section numbers are
-the menu numbers. You need no programming to use the menu; every prompt shows its
-default and pressing Enter accepts it.
+Anything the interactive session does is scriptable: record a session
+(`--record`), replay it later (`run`), and get byte-identical reports -- this is
+also how the manual's worked examples are produced.  `search` and `guide` give
+the onboarding notes for the external programs the toolkit pairs with.
 
 ## Documentation
 

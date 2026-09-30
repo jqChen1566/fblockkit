@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 license = "Apache-2.0"
 license-files = ["LICENSE", "NOTICE"]
-authors = [{ name = "jqChen1566", email = "chen_jianqi1566@163.com" }]
+authors = [{ name = "Jianqi Chen (陈建棋)", email = "chen_jianqi1566@163.com" }]
 keywords = [
     "quantum chemistry",
     "f-block",
