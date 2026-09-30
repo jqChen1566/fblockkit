@@ -90,9 +90,14 @@ the target from the calculation's \emph{own} AOs (the source's non-minimal
 ANO variant, its outlook Section~5.1), because ORCA's own AVAS minimal basis
 was measured to have no entry for Eu -- the same coverage gap that
 \code{orca\_loc} shows, recorded in the fixtures README. The emitted
-\code{\%scf avas} block is for the systems where ORCA's built-in implementation
-does work; on the f block, the target-AO analysis here plus a window chosen
-from it is the available route.
+\code{\%scf avas} block lists the target AOs explicitly, so it does not go
+through the minimal basis: measured on Eu\textsuperscript{3+} (2026-10-01),
+the block with the 28 $4f$ targets and \code{!moread} of a converged gbw
+placed the seven $4f$ orbitals in one contiguous window (P-matrix eigenvalues
+0.99598--0.99965) -- the way the $f^6$ fixture was built. Cold-started the
+same block aborts (``NO OCCUPIED ORBITAL selected by AVAS''), the guess
+keeping the $4f$ virtual; the pre-converged gbw is the condition on the f
+block.
 
 \section{Caveats, refusals and related sections}
 

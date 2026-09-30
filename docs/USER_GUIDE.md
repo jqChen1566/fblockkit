@@ -524,8 +524,12 @@ computable from an export alone and is the only route open to the f block
 (ORCA's own AVAS minimal basis was measured to have no f-block entries, Eu).
 ORCA's CASSCF takes its active space by orbital order, not by an index list, so
 the deliverable is the size and the verdict on a window, not a restart file;
-the emitted `%scf avas` block covers the systems where ORCA's built-in AVAS
-works.
+the emitted `%scf avas` block lists the target AOs explicitly (it does not go
+through the minimal basis) and was measured to work on the f block:
+Eu3+, 2026-10-01, with `!moread` of a converged gbw it placed the seven 4f
+orbitals in one contiguous window. Cold-started it aborts ("NO OCCUPIED
+ORBITAL selected by AVAS") because the guess keeps the 4f virtual -- the
+pre-converged gbw is the condition on the f block.
 
 ## 15 Orbital portrait (an export -> descriptor table)
 

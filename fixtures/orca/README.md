@@ -148,6 +148,10 @@ being generated for a future wave of the toolkit. The files themselves
 stay in the repository: as a *negative* fixture the chain is exactly what the
 f-character check and the atomic-term check are for.
 
+(Update 2026-10-01: the clean 4f6 chain promised above is the AVAS fixture at
+the end of this file; its window reads 1.0000/0.9999 f character on all seven
+orbitals.)
+
 | `n2_basis.out` | N2 / def2-SVP, HF single point with `!PrintBasis` | the basis block in ORCA's input format (`BASIS SET IN INPUT FORMAT`): per element, one `<L> <nprim>` header per shell and one `index exponent coefficient(s)` row per primitive. Measured: N = 7s4p1d, diffusest s exponent 0.1876459, diffusest p 0.2195435 |
 | `n2_diffuse.out` | the N2/def2-SVP CAS(6,6) chain rerun with both `!PrintBasis` and `%output Print[P_ReducedOrbPopMO_L] 1 end` | the rule-G fixture: basis exponents *and* the per-orbital composition table in one output (final CASSCF energy reproduces the chain's -108.950671945 Eh). The printed basis block appears twice (main basis, then the /C auxiliary); the reader takes the first and stops at the following non-shell line |
 | `eu_basis.out` | Eu3+ / SARC2-DKH-QZVP with `!PrintBasis` (SCF capped at two iterations; only the printed basis is used) | the f-block basis face: four f contractions with diffusest exponents 4.870 / 1.956 / 0.786 / 0.316, matching the four f shells the exports label; the all-electron basis has no ECP block |
@@ -424,6 +428,64 @@ Measured anchors on these fixtures (also in `tests/test_pios.py`):
   (segfault, rc=2 -- the run's `.densities` sidecar is not the SCF's); the
   coefficients-only conf (`{"MOCoefficients": true}`) exports fine.  The
   same trap applies to any post-SCF gbw whose densities sidecar is absent.
+
+## Eu f6 positive fixture added 2026-10-01 (server 101, the same ORCA 6.1.1)
+
+The positive pin of the atomic-term check: a CAS-CI of the Eu3+ 4f6 shell in a
+window whose seven orbitals all carry the f character (1.0000/0.9999 measured).
+It replaces the d-solution chain above, which stays in the repository as the
+negative record.
+
+| File | Produced by | Points covered | Run outcome |
+|---|---|---|---|
+| `eu3_f6_casscf.fcidump` | `! DKH2 SARC2-DKH-QZVP SARC2-DKH-QZVP/JK TightSCF NoIter FCIDUMP moread` + `%moinp "eu3_f6_step_s.gbw"` + the `%scf avas` block below + `%casscf nel 6 norb 7 mult 7 nroots 1`, server 101 | the f6 fixture of `tests/test_atomic_terms.py`: NORB=7, NELEC=6, MS2=6, ECORE=-10806.908755032708; the CAS-CI roots solve to l_eff 2.996-2.999, s_eff 3.0000, <S^2> = 12, <J^2> ~ 24 | the dump is written, then a signal-11 abort in the `TSharkBasis::FreeMemory` cleanup (the FCIDUMP-dump mode's abnormal exit -- the n2 dump exits 126 by design instead); the file itself is complete |
+| `eu3_f6_casscf.json` | `orca_2json` of the same gbw with `eu3_f6_casscf.json.conf` = `{"MOCoefficients": true, "1elIntegrals": ["S"]}` | the S-Matrix plus all 176 MOs (1.6 MB); the active window is orbitals 27..33 (0-based), the seven l=3 orbitals the AVAS block placed there | terminated normally |
+
+Route measured on the way, so the dead ends are not re-explored:
+
+- the pre-`Rotate` chain on this molecule is the d-solution above (the
+  model-potential guess puts the 4f into the virtual space);
+- the `%scf Rotate {27,34} ... {33,40}` swap moves the guess so a TRAH CASSCF
+  starts from the guess's f region; that run reached -10832.019475 in 45
+  macro-iterations and stalled there (||Error||_2 pinned at 9.4e-2, steps
+  rejected, trust radius down to 0.006) and never converged; its own export
+  shows the window still 5f + 2 non-f, so it is no source either;
+- a plain SCF (`eu3_f6_step_s.inp`: the same Rotate, no `%casscf`) converges
+  in 29 cycles to -10832.734172863649 Eh (UHF) and its own population table
+  places the occupied 4f at 27..32, 5d at 33..37, and the seventh, empty 4f
+  at 39; with an energy-ordered window the seventh f can never be contiguous
+  with the other six (the empty f sits above the empty d), which is why the
+  AVAS construction, not a window choice, is the mechanism that works;
+- ORCA's `%scf avas` run cold (without `moread`) fails on this molecule with
+  "NO OCCUPIED ORBITAL selected by AVAS" -- the guess has no 4f in the
+  occupied block -- and aborts with 0 active electrons; with `moread` of the
+  converged SCF the same block reads AVAS electrons 6 / AVAS orbitals 7, and
+  the P-matrix eigenvalues of orbitals 27..33 are 0.995980-0.999653.
+
+The emitted target block (28 targets = 4 f shells x 7 m_l of Eu, centre 0):
+
+```
+%scf
+  avas
+    system
+      shell  1,1,1,1,1,1,1, 2,2,2,2,2,2,2, 3,3,3,3,3,3,3, 4,4,4,4,4,4,4
+      l      3,3,3,3,3,3,3, 3,3,3,3,3,3,3, 3,3,3,3,3,3,3, 3,3,3,3,3,3,3
+      m_l    0,1,-1,2,-2,3,-3, ... (repeated per shell)
+      center 0, 0, ..., 0
+    end
+  end
+end
+```
+
+The CI roots carry <J^2> ~ 24 by a structural argument, not by fitting: the
+Hamiltonian is real symmetric, its eigenvectors are real, and <L_z> is the
+quadratic form of a real antisymmetric matrix, which vanishes for every real
+vector.  Hence <L.S> = 0 and <J^2> = <L^2> + <S^2> = 24 for each root.  The
+stretched J = 6 combination (<J^2> = 42) is complex and is not an eigenvector
+of the scalar Hamiltonian; the test's earlier expectation of j_eff = 6 was a
+scaffold assumption and has been corrected to `<J^2> = 24 +/- 0.1` against
+this measurement.  Reproducibility was checked by a second identical run: the
+two FCIDUMP files are byte-identical (`cmp`).
 
 ## Discipline for extending the fixtures
 

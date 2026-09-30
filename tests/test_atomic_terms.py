@@ -268,7 +268,7 @@ def test_evidence_carries_the_source_entry():
 # --- the real-data pin (needs the f6 fixture pair) ----------------------------
 
 F6_DUMP = FIXTURES / "eu3_f6_casscf.fcidump"
-F6_JSON = FIXTURES / "eu3_f6_casscf.canonical.json"
+F6_JSON = FIXTURES / "eu3_f6_casscf.json"
 
 
 @pytest.mark.skipif(
@@ -276,11 +276,19 @@ F6_JSON = FIXTURES / "eu3_f6_casscf.canonical.json"
     reason="the f6 fixture pair is not in the repository yet",
 )
 def test_the_eu_f6_fixture_is_the_7f_term():
+    # The fixture pair is the AVAS-placed pure-4f window (orbitals 27..33,
+    # 0-based) of the Eu3+ SCF run: the dump carries that active block and the
+    # export carries all orbitals, so the window is taken by index.  The CI
+    # roots are real eigenvectors of a real Hamiltonian, hence <L_z> = 0 and
+    # <J^2> = <L^2> + <S^2> = 24 for every root; the stretched J = 6
+    # combination (J^2 = 42) is complex and is not an eigenvector of the
+    # scalar Hamiltonian.  The reference energy is the root-0 total
+    # (the printed inactive energy plus the locally rebuilt CAS-CI root).
     dump = parse_fcidump(F6_DUMP)
     export = parse_orca_json(F6_JSON)
-    state = solve_fci(dump, reference_energy=-10826.6, multiplicity=7)
+    state = solve_fci(dump, reference_energy=-10832.705335426, multiplicity=7)
     densities = spin_densities(state)
-    window = range(dump.norb)  # the fixture dump carries only the active block
+    window = range(27, 34)  # the AVAS-placed active window in the export
     coefficients = np.array(export.mo_coefficients).T[:, list(window)]
     result = analyze_terms(
         densities,
@@ -293,5 +301,5 @@ def test_the_eu_f6_fixture_is_the_7f_term():
     )
     assert result.l_eff == pytest.approx(3.0, abs=0.02)
     assert result.s_eff == pytest.approx(3.0, abs=0.02)
-    assert result.j_eff == pytest.approx(6.0, abs=0.05)  # the stretched 7F component
+    assert result.j2 == pytest.approx(24.0, abs=0.1)  # a real root: <L.S> = 0
     assert result.hund is not None and result.hund.l == 3.0
