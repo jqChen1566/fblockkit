@@ -307,7 +307,8 @@ def main() -> int:
                     "41", "work/co_aniso2.out",
                     "42", "work/h2o_ohess.out",
                     "42", "work/nh3_planar_hess.out",
-                    "43", "work/crest_run",
+                    "43", "1", "work/crest_run",
+                    "43", "2", "work/crest_run", "", "", "", "",
                     "44", "work/h2o_probe.xyz", "CASSCF", "cc-pVDZ",
                     "GVB_prog=Gaussian", "0", "1", "4", "2",
                     "45", "work/h2o_generated_automr.out",
@@ -789,6 +790,12 @@ def main() -> int:
                 and "0.7322" in crest_report
                 and "Cross-check" in crest_report,
                 "menu 43 reads the CREST ensemble (table, weights, cross-check)",
+            )
+            crest_upg = read("crest_run/upgrade/conf_01.opt.inp")
+            check(
+                crest_upg.startswith("! Opt r2SCAN-3c")
+                and "* xyz 0 1" in crest_upg,
+                "menu 43 mode 2 writes the upgrade input (method line, xyz block)",
             )
             gjf = read("h2o_probe_automr.gjf")
             check(

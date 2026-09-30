@@ -151,5 +151,7 @@ cp work/*_automr.gjf expected/products/
 cp work/poly_aniso.input expected/products/
 mkdir -p expected/products/crest_run
 cp work/crest_run/crest_ensemble.fbk.md expected/products/crest_run/
+# the menu-43 upgrade batch (mode 2) lives inside the run directory
+cp -r work/crest_run/upgrade expected/products/crest_run/
 
 echo "done; products in expected/products/"

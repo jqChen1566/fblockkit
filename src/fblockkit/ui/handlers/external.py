@@ -224,7 +224,14 @@ def xtb_report(session: Session) -> None:
 
 
 def crest_report(session: Session) -> None:
-    """Menu 43: read a CREST conformer ensemble (sorted table + weights)."""
+    """Menu 43: read a CREST conformer ensemble, or write the ORCA upgrade inputs."""
+    mode = session.ask(
+        "What do you need? (1) read the ensemble (Boltzmann table), "
+        "(2) write the ORCA upgrade inputs (Enter = 1)"
+    ).strip()
+    if mode == "2":
+        _crest_upgrade_write(session)
+        return
     path_text = session.ask(
         "CREST run directory, or its crest_conformers.xyz file"
     )
@@ -242,6 +249,71 @@ def crest_report(session: Session) -> None:
     session.say(body)
     md_path = directory / "crest_ensemble.fbk.md"
     _write_report(md_path, "CREST conformer ensemble (B-layer reading)", body, crest_analysis.evidence())
+    session.say(f"Report written: {md_path}")
+
+
+def _crest_upgrade_write(session: Session) -> None:
+    """Menu 43, mode 2: write one ORCA optimisation input per conformer."""
+    from ...recipe import crest_upgrade
+
+    path_text = session.ask(
+        "CREST run directory, or its crest_conformers.xyz file"
+    )
+    if not path_text:
+        session.say("Cancelled (no path given).")
+        return
+    path = Path(path_text)
+    try:
+        ensemble = read_crest_directory(path)
+    except (CrestError, OSError) as exc:
+        session.say(f"CREST ensemble read failed: {exc}")
+        return
+    directory = path if path.is_dir() else path.parent
+    count_text = session.ask(
+        f"Conformers to upgrade, lowest first (1-{len(ensemble.frames)}; "
+        "Enter = all)"
+    )
+    count = None
+    if count_text:
+        try:
+            count = int(count_text)
+        except ValueError:
+            session.say("The count must be an integer. Cancelled.")
+            return
+    method = session.ask(
+        "Method line for the upgrade", default=crest_upgrade.DEFAULT_METHOD
+    )
+    charge_text = session.ask("Charge and multiplicity", default="0 1")
+    try:
+        charge, multiplicity = (int(token) for token in charge_text.split())
+    except ValueError:
+        session.say("Charge and multiplicity must read 'q m', e.g. '0 1'. Cancelled.")
+        return
+    target_text = session.ask(
+        "Output directory (Enter = the run's 'upgrade' subdirectory)"
+    )
+    target = Path(target_text) if target_text else directory / "upgrade"
+    try:
+        plan = crest_upgrade.write_upgrade_inputs(
+            ensemble,
+            target,
+            method=method,
+            charge=charge,
+            multiplicity=multiplicity,
+            count=count,
+        )
+    except (crest_upgrade.UpgradeError, OSError) as exc:
+        session.say(f"Writing the upgrade inputs failed: {exc}")
+        return
+    body = crest_upgrade.render_plan(plan)
+    session.say(body)
+    md_path = plan.directory / "crest_upgrade.fbk.md"
+    _write_report(
+        md_path,
+        "CREST conformer upgrade (upgrade inputs for the ensemble)",
+        body,
+        crest_upgrade.evidence(),
+    )
     session.say(f"Report written: {md_path}")
 
 

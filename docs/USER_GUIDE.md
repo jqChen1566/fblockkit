@@ -1931,6 +1931,19 @@ quantitative comparison.  A run whose input geometry was not
 pre-optimised may abort on a topology change (the capture offers options
 A/B/C) and leaves no ensemble.  Engine: Pracht, Bohle, Grimme 2020.
 
+**Writing the upgrade inputs (mode 2)**: answer `2` at the first question,
+then give the run directory (or `crest_conformers.xyz`), the conformer
+count (Enter = the whole ensemble, lowest first), the method line
+(Enter = `r2SCAN-3c`), the charge and multiplicity (Enter = `0 1`) and the
+output directory (Enter = the run's `upgrade/` subdirectory).  One
+`conf_XX.opt.inp` per conformer is written there (the ensemble geometry
+verbatim, `! Opt <method>`), with `crest_upgrade.fbk.md` listing each input,
+its ensemble energy and its relative energy, the submission line and the
+boundaries.  Measured: the first fixture input ran to the converged
+optimisation (`HURRAY`) on 6.1.1.  Re-ranking the upgraded energies back
+into the ensemble weights is registered as the next increment; the
+geometries are used as-is.
+
 ## 44 MOKIT automr input
 
 **What it is for**: writing the `.gjf` that MOKIT's `automr` consumes --
