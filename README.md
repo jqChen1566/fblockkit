@@ -95,15 +95,6 @@ the onboarding notes for the external programs the toolkit pairs with.
 - the decision layer is a deterministic rule engine -- no machine learning, no
   online service, and every conclusion carries its provenance.
 
-## Provenance and verification
-
-- every rule carries non-empty evidence, and literature evidence must point into
-  `src/fblockkit/knowledge/sources.bib` (DOI-verified entries) or loading fails;
-- the test suite is the acceptance contract: a layering contract (import-linter)
-  plus the tests, run with `bash scripts/verify.sh`;
-- the parser regular expressions are fixed against real ORCA 6.1.1 output
-  (`fixtures/orca/`, each fixture registered with its source in the fixture README).
-
 ## Author
 
 fBlockKit is developed by Jianqi Chen (陈建棋), College of Chemistry and
