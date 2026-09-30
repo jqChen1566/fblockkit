@@ -16,3 +16,6 @@ packaging/.buildenv/
 
 # the built manual (a release artefact; see docs/manual/build.sh)
 docs/manual/main.pdf
+
+# the release-build output directory (artefacts go to the GitHub releases)
+dist_build/
