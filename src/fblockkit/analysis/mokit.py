@@ -1,4 +1,4 @@
-"""6.1: the MOKIT/automr run report (menu 45).
+"""the MOKIT/automr run report (menu 45).
 
 Renders one automr capture: the program-path survey, the run settings and
 merged mokit{} options, the final strategy table, the stage sequence, the

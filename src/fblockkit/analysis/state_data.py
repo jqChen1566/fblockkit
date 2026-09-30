@@ -1,7 +1,7 @@
-"""4.2: CASSCF per-state data from the property file (menu 31).
+"""CASSCF per-state data from the property file (menu 31).
 
 What a single output can and cannot say about state tracking (the availability
-survey of Wave 4.2, measured on ORCA 6.1.1):
+survey, measured on ORCA 6.1.1):
 
 - **CI vectors are not persistable.**  The CASSCF module keeps them in run-time
   temporaries (ORCA's TCIVectorStorage restart files), and the ``.cis`` file the
@@ -32,7 +32,7 @@ output, the eV/cm-1 conversion against itself, the oscillator strength against
 (2/3) dE_au D2, D2 against the dipole components' squares) and honest
 boundaries.
 
-The absorption column layout was pinned in Wave 5.1 on purpose-built ORCA
+The absorption column layout was pinned on purpose-built ORCA
 probes with **nonzero** values (``fixtures/orca/h2o_absp.*``; the earlier N2
 fixture has symmetry-forbidden zeros only): 11 columns =
 [eV, cm-1, nm, fosc, D2, then the complex dipole components as (re, im)
@@ -90,7 +90,7 @@ class StateEntry:
 class Transition:
     """One absorption line: the state pair, its energy and its dipole data.
 
-    The measured layout of ``ExcitationEnergies`` (Wave 5.1, the H2O probe
+    The measured layout of ``ExcitationEnergies`` (the H2O probe
     fixtures ``h2o_absp.*`` with nonzero values): column 0/1 = energy in eV
     and cm-1, 2 = wavelength (nm), 3 = oscillator strength fosc (D2 gauge),
     4 = D2 (au^2), then **six numbers = the complex dipole components as
@@ -326,7 +326,7 @@ def render(table: dict, lines: tuple[Transition, ...], *, source: str) -> str:
             )
     out += [
         "",
-        "Boundaries (the Wave-4.2 availability survey):",
+        "Boundaries (the availability survey):",
         "  - the CI vectors are not persistable (run-time temporaries only; the .cis "
         "file belongs to the CIS/STEOM modules), so state identity along a series "
         "cannot be read from one output;",
@@ -338,7 +338,7 @@ def render(table: dict, lines: tuple[Transition, ...], *, source: str) -> str:
         "densities (the menu-23 chain) -- a tracker across a series is registered as a "
         "candidate increment;",
         "  - the absorption columns are the measured layout [eV, cm-1, nm, fosc, D2, "
-        "DX(re,im), DY(re,im), DZ(re,im)] (nonzero probes, Wave 5.1); a SOC run's "
+        "DX(re,im), DY(re,im), DZ(re,im)] (nonzero probes); a SOC run's "
         "duplicate section is read at its highest &RelCorrection, and the "
         "magnetic-dipole data live in the separate ECD section (not shown here).",
     ]

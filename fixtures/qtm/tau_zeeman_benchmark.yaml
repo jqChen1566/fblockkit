@@ -1,0 +1,29 @@
+# Literature regression for the equivalent-Zeeman tunnelling model (menu 46).
+#
+# Data provenance (transcribed from the two papers, 2026-09-30):
+# - the principal g values: Aravena, J. Phys. Chem. Lett. 2019 [sic 2018], 9,
+#   5327-5333, Supporting Information Table S1 (ab initio gx/gy/gz for the
+#   18-complex validation set; same values the follow-up uses);
+# - log(tau_exp) and log(tau_Zee): Yin & Li, Phys. Chem. Chem. Phys. 2020,
+#   22, 9923-9933, Table 1 (experimental tunnelling times and the values
+#   predicted by the equivalent-Zeeman model with B_ave = 20 mT).
+# The yaml stores log10(tau / s) throughout.
+rows:
+  - {refcode: NAFMIT,   g: [0.000004, 0.000004, 19.865874], log_tau_exp: 1.48,  log_tau_zeeman: 3.34}
+  - {refcode: ZAVSOH,   g: [0.000006, 0.000007, 19.867414], log_tau_exp: 1.23,  log_tau_zeeman: 2.92}
+  - {refcode: FUMCUN01, g: [0.000016, 0.000029, 19.866093], log_tau_exp: 1.16,  log_tau_zeeman: 1.81}
+  - {refcode: TEKYAM,   g: [0.000042, 0.000054, 17.814851], log_tau_exp: -0.27, log_tau_zeeman: 1.13}
+  - {refcode: IMOVAJ,   g: [0.001176, 0.001531, 19.857757], log_tau_exp: -0.46, log_tau_zeeman: -1.72}
+  - {refcode: QUQKUK,   g: [0.001068, 0.001397, 19.806462], log_tau_exp: -1.29, log_tau_zeeman: -1.64}
+  - {refcode: DARTUN,   g: [0.004939, 0.010267, 19.345939], log_tau_exp: -1.86, log_tau_zeeman: -3.27}
+  - {refcode: DARTOH,   g: [0.005416, 0.015420, 19.202304], log_tau_exp: -2.20, log_tau_zeeman: -3.59}
+  - {refcode: UCIBAL,   g: [0.001466, 0.005765, 19.465922], log_tau_exp: -2.23, log_tau_zeeman: -2.71}
+  - {refcode: GAQGOX,   g: [0.002843, 0.004581, 19.475343], log_tau_exp: -2.31, log_tau_zeeman: -2.62}
+  - {refcode: QUQLEV,   g: [0.001625, 0.002911, 19.704637], log_tau_exp: -2.40, log_tau_zeeman: -2.20}
+  - {refcode: TEKXUF,   g: [0.001022, 0.001641, 17.809170], log_tau_exp: -2.49, log_tau_zeeman: -1.77}
+  - {refcode: GUYRAU,   g: [0.006024, 0.007939, 19.404573], log_tau_exp: -2.68, log_tau_zeeman: -3.16}
+  - {refcode: UCEZUZ,   g: [0.004534, 0.008842, 19.550992], log_tau_exp: -2.88, log_tau_zeeman: -3.15}
+  - {refcode: EJASIT,   g: [0.002930, 0.003299, 17.784181], log_tau_exp: -3.01, log_tau_zeeman: -2.49}
+  - {refcode: PAXRIS,   g: [0.005383, 0.006494, 19.726868], log_tau_exp: -3.30, log_tau_zeeman: -3.00}
+  - {refcode: BAJSIQ,   g: [0.013966, 0.067141, 14.808296], log_tau_exp: -3.34, log_tau_zeeman: -4.95}
+  - {refcode: OLUJEM,   g: [0.005942, 0.012068, 19.723286], log_tau_exp: -4.04, log_tau_zeeman: -3.41}

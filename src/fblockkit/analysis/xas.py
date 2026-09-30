@@ -1,4 +1,4 @@
-"""5.4: XAS report from ROCIS core-excited spectra (menu 37).
+"""XAS report from ROCIS core-excited spectra (menu 37).
 
 Reads the absorption-spectrum blocks the ROCIS module prints (manual section
 5.7; measured format notes in ``parsers/rocis_spectra.py`` and the fixtures)

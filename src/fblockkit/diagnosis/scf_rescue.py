@@ -12,7 +12,7 @@ Two entry points for a job whose SCF cannot be trusted:
 - :func:`propose_fixes` turns those findings into *new* input files: a ``SlowConv``
   variant, a two-step route that runs a cheap pre-SCF and reads its orbitals back,
   and (for a rising or oscillating trajectory) a ``TRAH`` variant -- the manual's
-  robust second-order SCF (Wave 4.7's capability map: ORCA has no keyword spelled
+  robust second-order SCF (the capability map: ORCA has no keyword spelled
   ARH; TRAH is its trust-region augmented-Hessian route, AutoTRAH default on, and
   SOSCF the approximate second-order one).
 
@@ -279,7 +279,7 @@ EV_TRAH_WHEN_SOSCF = Evidence(
     text=(
         _Q_TRAH_SOSCF
         + " TRAH (the trust-region augmented-Hessian second-order SCF, the section after "
-        "SOSCF) is the manual's robust answer for difficult cases; the Wave-4.7 capability "
+        "SOSCF) is the manual's robust answer for difficult cases; the capability "
         "map: ORCA has no keyword spelled ARH -- TRAH is its second-order augmented-Hessian "
         "route (AutoTRAH default on), and SOSCF the approximate one."
     ),

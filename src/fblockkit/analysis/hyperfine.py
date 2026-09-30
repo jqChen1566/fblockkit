@@ -1,4 +1,4 @@
-"""5.7: the hyperfine / EFG report from an ORCA EPRNMR run (menu 40).
+"""the hyperfine / EFG report from an ORCA EPRNMR run (menu 40).
 
 Reads the "ELECTRIC AND MAGNETIC HYPERFINE STRUCTURE" section (manual
 section 7.51.3): per nucleus the A-tensor components (Fermi contact, spin

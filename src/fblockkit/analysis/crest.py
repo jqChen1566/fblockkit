@@ -1,4 +1,4 @@
-"""6.1: the CREST conformer-ensemble report (menu 43).
+"""the CREST conformer-ensemble report (menu 43).
 
 Renders the measured ensemble (frames, relative energies, the best
 conformer) into the sorted table with Boltzmann weights at a chosen

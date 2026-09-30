@@ -340,8 +340,38 @@ def test_the_report_prints_the_selection_and_the_boundaries():
     assert "R^2 = 0.64" in body
 
 
+def test_the_balanced_apc_n_variant():
+    """APC-N (King 2022): the top-entropy virtuals are set aside during the
+    entropy evaluation, stay candidates at the top of the scale, and the
+    small-fixture selection is unchanged (the extension targets imbalanced
+    large-molecule spaces)."""
+    export = parse_orca_json(N2)
+    base = apc.rank_orbitals(export)
+    assert base.apc_n == 0 and base.set_aside == ()
+    balanced = apc.rank_orbitals(export, apc_n=2)
+    assert balanced.apc_n == 2
+    assert len(balanced.set_aside) == 2
+    aside = [c for c in balanced.candidates if c.role == "virtual(aside)"]
+    assert {c.index for c in aside} == set(balanced.set_aside)
+    top_scale = max(
+        c.entropy for c in balanced.candidates if c.role != "virtual(aside)"
+    )
+    for entry in aside:
+        assert entry.entropy == pytest.approx(top_scale + 0.01)
+    base_selection = apc.select(base, cap=apc.CSF_CAPS["max(10,10)"], cap_label="max(10,10)")
+    balanced_selection = apc.select(
+        balanced, cap=apc.CSF_CAPS["max(10,10)"], cap_label="max(10,10)"
+    )
+    assert balanced_selection.members == base_selection.members
+    with pytest.raises(ApcError, match="negative"):
+        apc.rank_orbitals(export, apc_n=-1)
+    body = apc.render(apc.analyze(export, apc_n=2, cap=apc.CSF_CAPS["max(10,10)"]))
+    assert "selection (APC-2)" in body
+    assert "set 2 high-entropy virtual(s) aside" in body
+
+
 def test_evidence_carries_the_source_and_the_measured_record():
     kinds = {item.kind for item in apc.evidence()}
     assert kinds == {"literature", "measured"}
     bibkeys = {item.bibkey for item in apc.evidence() if item.bibkey}
-    assert bibkeys == {"king2021ranked"}
+    assert bibkeys == {"king2021ranked", "king2022benchmark"}

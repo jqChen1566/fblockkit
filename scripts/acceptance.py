@@ -178,6 +178,11 @@ def main() -> int:
             REPO / "fixtures" / "mokit" / "h2o_generated_automr.out",
             inputs / "h2o_generated_automr.out",
         )
+        # the menu-46 tunnelling fixture (the constructed neighbour probe)
+        shutil.copy(
+            REPO / "fixtures" / "qtm" / "neighbours_example.txt",
+            inputs / "qtm_neighbours.txt",
+        )
         # the menu-1 Gaussian leg (the G09 TS-optimization probe)
         shutil.copy(
             REPO / "fixtures" / "gaussian" / "g09_h2co_ts.out",
@@ -262,7 +267,8 @@ def main() -> int:
                     "18", "work/guess_manifest.json",
                     "19", "work/h2o.xyz", "", "", "", "", "", "",
                     "20", "work/dm_manifest.json",
-                    "21", "work/n2_apc.json", "apc", "23", "max(10,10)", "fock",
+                    "21", "work/n2_apc.json", "apc", "23", "max(10,10)", "fock", "",
+                    "21", "work/n2_apc.json", "apc", "23", "max(10,10)", "fock", "2",
                     "22", "work/h2o.xyz", "0", "1", "4,4", "1", "", "",
                     "23", "work/n2_ass1st.json", "0.03", "", "", "",
                     "24", "work/FCIDUMP", "work/n2_fcidump_step_a.out", "2,4", "touch",
@@ -298,6 +304,9 @@ def main() -> int:
                     "44", "work/h2o_probe.xyz", "CASSCF", "cc-pVDZ",
                     "GVB_prog=Gaussian", "0", "1", "4", "2",
                     "45", "work/h2o_generated_automr.out",
+                    "46", "work/co_aniso2.out", "20.0", "",
+                    "46", "work/co_aniso2.out", "20.0", "work/qtm_neighbours.txt",
+                    "1.0, 0.3, 0.05",
                     "31", "work/h2o_absp.property.txt",
                     "8", "work/saved.txt",
                     "0",
@@ -510,13 +519,14 @@ def main() -> int:
 
             ranking = read("n2_apc.json.apc.fbk.md")
             check(
-                "Ranked-orbital active-space selection (APC)" in ranking
+                "selection (APC-2)" in ranking
                 and "Fock diagonal as the model gap" in ranking
                 and "cap max(10,10) = 19404 CSFs; selected (10e, 10o)" in ranking
                 and "active orbitals: 2, 3, 4, 5, 6, 7, 8, 9, 10, 17" in ranking
-                and "screening device" in ranking,
-                "menu 21 report: the N2 ranking selects the source's (10,10) level "
-                "(19404 CSFs) from the Fock-diagonal branch of the model gap",
+                and "set 2 high-entropy virtual(s) aside" in ranking,
+                "menu 21 report (last call = the balanced APC-2 variant): the N2 "
+                "ranking selects the source's (10,10) level (19404 CSFs) from the "
+                "Fock-diagonal branch of the model gap",
             )
 
             round_one = read("h2o.r1.inp")
@@ -766,6 +776,13 @@ def main() -> int:
             check(
                 gjf.startswith("%mem=4GB") and "mokit{GVB_prog=Gaussian}" in gjf,
                 "menu 44 generates the automr input (route + mokit{} block)",
+            )
+            qtm_report = read("co_aniso2.out.qtm.fbk.md")
+            check(
+                "Ground-state tau_QTM: 1.547e-09 s" in qtm_report
+                and "Spin-dipolar model" in qtm_report
+                and "Dilution variant" in qtm_report,
+                "menu 46 predicts the tunnelling time (both models and the dilution)",
             )
             mokit_report = read("h2o_generated_automr.mokit.fbk.md")
             check(

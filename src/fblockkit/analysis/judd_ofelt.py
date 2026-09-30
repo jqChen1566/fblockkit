@@ -1,4 +1,4 @@
-"""5.1: Judd-Ofelt intensity parameters from a transition dataset (menu 34).
+"""Judd-Ofelt intensity parameters from a transition dataset (menu 34).
 
 The standard Judd-Ofelt (JO) theory expresses an f-f electric-dipole line
 strength as a linear combination of three phenomenological parameters,
@@ -11,8 +11,7 @@ least-squares fit of experimental line strengths gives Omega_2, Omega_4,
 Omega_6 -- the quantities behind Ln3+ absorption/emission intensities,
 radiative rates, branching ratios and lifetimes.
 
-Every convention below was pinned on the sources of this entry (Wave 5.1;
-the close reading is ``文献细读/细读_Judd-Ofelt_两篇_20260928.md``):
+Every convention below was pinned on the sources of this entry (the close reading is ``文献细读/细读_Judd-Ofelt_两篇_20260928.md``):
 
 - **Conversion of a measured oscillator strength to a line strength**
   (Hovhannesyan/Boudon/Lepers, J. Lumin. 2022/2024):

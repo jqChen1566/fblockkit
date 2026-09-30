@@ -141,6 +141,9 @@ items:
   - number: "45"
     title: "MOKIT automr run report (an automr output -> the stages, the energy chain and the active space)"
     handler: mokit_report
+  - number: "46"
+    title: "Quantum-tunnelling relaxation prediction (a SINGLE_ANISO output -> tau_QTM and U_eff(T); optional neighbour table for the dipolar model)"
+    handler: tunnelling_report
   - number: "0"
     title: Quit
     handler: quit

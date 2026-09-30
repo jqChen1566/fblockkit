@@ -1,4 +1,4 @@
-"""5.6: the polynuclear-magnetism workflow from a POLY_ANISO output (menu 39).
+"""the polynuclear-magnetism workflow from a POLY_ANISO output (menu 39).
 
 POLY_ANISO (the ``otool_poly_aniso`` program shipped with ORCA, v1.0.0,
 Ungur & Chibotaru) combines the single-ion ab initio data of each magnetic

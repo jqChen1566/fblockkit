@@ -1,4 +1,4 @@
-"""5.3: magnetic relaxation and QTM metrics (menu 36).
+"""magnetic relaxation and QTM metrics (menu 36).
 
 Both data sources are ORCA 6.1.1 outputs (fixtures ``single_aniso/`` and
 ``magrelax/``; the close reading is ``文献细读/细读_磁弛豫-QTM_Chilton2025.md``):

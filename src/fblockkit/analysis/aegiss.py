@@ -1,4 +1,4 @@
-"""3.9: AEGISS -- entropy screening joined to an atomic-orbital projection.
+"""AEGISS -- entropy screening joined to an atomic-orbital projection.
 
 AEGISS (Tarocco, Haase, Pavošević, Krishna, Guidoni, Knecht & Stella, arXiv
 2026) combines the two complementary selection ideas: *how correlated* an

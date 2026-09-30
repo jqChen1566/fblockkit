@@ -231,6 +231,11 @@ def _prepare_work() -> None:
         REPO / "fixtures" / "mokit" / "h2o_generated_automr.out",
         work / "h2o_generated_automr.out",
     )
+    # the menu-46 tunnelling fixture: the constructed neighbour-table probe
+    shutil.copy(
+        REPO / "fixtures" / "qtm" / "neighbours_example.txt",
+        work / "qtm_neighbours.txt",
+    )
 
 
 @pytest.fixture(scope="module")

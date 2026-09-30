@@ -1,4 +1,4 @@
-"""3.3: ASS1ST active-space construction from NEVPT2 quasi-natural occupations.
+"""ASS1ST active-space construction from NEVPT2 quasi-natural occupations.
 
 The source scheme (Khedkar & Roemelt, JCTC 2019 and 2020) builds an active
 space bottom-up: from a small but chemically reasonable initial CASSCF, a

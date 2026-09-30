@@ -64,7 +64,7 @@ Dipole-moment selection (DM-AS) & no threshold; smallest deviation wins
   difference); the reference's origin (experiment / functional) must be
   stated.  Measured on the H$_2$O fixture chain: PBE0 reference 2.0801~D and
   the winner $(6e, 8o)$ at 0.0081~D.  The per-state variants (EDM/D$^2$DM)
-  are not implemented: ORCA prints only the state-average dipole for
+  are registered: ORCA prints only the state-average dipole for
   state-averaged runs and no TDDFT state dipoles (measured) &
   \textsf{[Literature]} Kaufold et al.\ 2023, 2026; \textsf{[Measured]} the
   H$_2$O chain \\
@@ -622,8 +622,8 @@ SOC constant & ZETA\_D / ZETA\_F from a CASSCF-orbital fit & The engine
   reports the fitted value and the fit's own RMS & \textsf{[Measured]}
   fixtures \file{ailft/} \\
 Termination & LFDFT (ADF) & Ligand-field DFT lives inside the commercial
-  ADF package -- not available here; the AILFT route covers the same
-  analysis from open programs & \textsf{[Adequacy]} this project's
+  ADF package; the AILFT route covers the same analysis from open
+  programs & \textsf{[Adequacy]} this project's
   constraint \\
 \bottomrule
 \end{tabularx}
@@ -689,9 +689,9 @@ EFG reproducibility & sensitive to SCF micro-solutions & Same input
   reproduced digit-for-digit in two runs; a third run lower by
   $2\times10^{-6}$~Eh moved $V_{\mathrm{Tot}}$ by $\sim10^{-4}$ relative &
   \textsf{[Measured]} same \\
-Termination & XPS (core photoemission) & No ORCA module (binary search:
-  zero hits); the XES/SOC-XES strings in the relativistic CASSCF code
-  belong to the ROCIS family (menu 37) -- registered, not implemented &
+Termination & XPS (core photoemission) & Registered: no ORCA module carries
+  the route (binary search: zero hits); the XES/SOC-XES strings in the
+  relativistic CASSCF code belong to the ROCIS family (menu 37) &
   \textsf{[Adequacy]} this project's constraint \\
 \bottomrule
 \end{tabularx}
@@ -852,6 +852,29 @@ MOKIT active space & automatic from the GVB occupations (threshold 0.02) &
 MOKIT side products & \code{.fch}/\code{.dat} listed, not parsed & One
   measured crash boundary: an automatically chosen GVB(5) crashed
   Gaussian~16 on this group's machines & \textsf{[Measured]} MOKIT 1.2.8 \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\section{Quantum-tunnelling relaxation prediction (menu 46)}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{3.4cm} X >{\raggedright\arraybackslash}p{2.6cm}@{}}
+\toprule
+Quantity & Value & Meaning / limits & Source \\
+\midrule
+Zeeman-model regression & 18-complex table, worst 0.006 in $\log_{10}\tau$ &
+  $g$ from the JPCL SI and $\log\tau$ from the PCCP table -- two independent
+  data chains of the same model; $B_{\mathrm{ave}} = 20$~mT & \textsf{[Literature]} Yin \& Li 2020 \\
+Dipolar rate constant & $k = (2\pi k_B/\hbar)\,\langle|E_{sf}|\rangle_K^2$ &
+  the source's one-unit density factor; calibrated on three JPCL-SI
+  complexes ($3.906$ vs.\ $3.91$; $-4.586$ vs.\ $-4.59$) & \textsf{[Measured]} calibration \\
+Axial convention & largest principal $g$ taken as axial & the transverse pair
+  enters $g_{XY}^2$ symmetrically; models are zero-field, Kramers,
+  single-centre & \textsf{[Measured]} implementation note \\
+Dilution slope & Bernoulli construction gives $\approx -1$ (analytic) &
+  the literature reports $-1.93$ for its construction; the difference is
+  recorded, not tuned & \textsf{[Measured]} this manual's program \\
 \bottomrule
 \end{tabularx}
 \end{center}

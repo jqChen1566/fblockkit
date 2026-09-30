@@ -1104,7 +1104,7 @@ report (`<FCIDUMP>.qicas.fbk.md`) with the citations.
   not have -- so F_QI here is not comparable with the source's full-space
   numbers;
 - the optimized rotation is reported as a matrix and used for the CASCI check;
-  writing it back into a `.gbw` (the mkl route of menu 18) is not implemented,
+  writing it back into a `.gbw` (the mkl route of menu 18) is registered as a follow-up,
   and neither is the source's size-selection variant (its Appendix C: minimize
   the total orbital entropy, read the plateau of the threshold diagram).
 
@@ -1199,7 +1199,7 @@ count, and a report (`<FCIDUMP>.tnass.fbk.md`) with the citations.
   approximation;
 - the subset is a spatial-orbital set (both spins together), matching the
   source's selection domain; the source's best-k variant (choose k by the
-  CASCI energy) is not implemented -- run the menu at several target sizes
+  CASCI energy) is registered as a follow-up -- run the menu at several target sizes
   and compare;
 - delivering the space to a CASSCF needs the orbital-order machinery (see
   menu 22's boundary note).
@@ -1424,7 +1424,7 @@ dE in eV and cm-1), plus a report `<property>.states.fbk.md`.
 - a run without a spectrum request carries no `CASSCF_Absorption_Spectrum`
   section; the menu then reports the state table alone.
 
-**State tracking boundary (the Wave-4.2 survey)**: CI vectors are not
+**State tracking boundary (the survey)**: CI vectors are not
 persistable (run-time temporaries only; the `.cis` file belongs to the
 CIS/STEOM modules), so state identity along a geometry series cannot be read
 from one output.  What exists: the output's initial/final dominant-CSF
@@ -1584,7 +1584,7 @@ present).  The report is `<runfile>.pnmr.fbk.md`.
   reproduces ORCA's own printed susceptibility to the printed precision.
 
 **Boundaries**: the contact shift is not computed (it needs hyperfine
-coupling); Bleaney's analytic anisotropy theory is not implemented as a
+coupling); Bleaney's analytic anisotropy theory is registered as a
 construction (the ligand-field review's limits of it frame the menu's
 documentation; a Bleaney comparator is a registered candidate increment);
 the OpenMolcas-side g/chi data belong to the OpenMolcas chain (menus 1.4/
@@ -1730,7 +1730,7 @@ nephelauxetic ratios (Enter skips).  The report is `<output>.ailft.fbk.md`.
 **Boundaries**: this menu reads the engine's fit and never refits; the
 parameters are model quantities of the ligand-field Hamiltonian (their
 interpretation is the ligand-field model's business).  LFDFT (ligand-field
-DFT) lives inside ADF, a commercial package that is not available here --
+DFT) lives inside ADF, a commercial package --
 registered as a termination: the AILFT route covers the same analysis
 needs from open programs.
 
@@ -1956,6 +1956,46 @@ The report is `<output>.mokit.fbk.md`.
 **Boundaries**: the natural-orbital `.fch` side products are listed for
 the audit trail but not parsed.  Cited form: "Jingxiang Zou, Molecular
 Orbital Kit (MOKIT)" (no program paper).
+
+## 46 Quantum-tunnelling relaxation prediction
+
+**What it is for**: predicting the tunnelling relaxation time tau_QTM and
+the effective demagnetization barrier U_eff(T) of a Kramers single-ion
+magnet from its ab initio parameters -- two published models over the
+SINGLE_ANISO data chain of menu 36.
+
+**How**: menu 46 -> the ORCA output (with a SINGLE_ANISO section), the
+B_ave field scale (Enter = 20.0 mT), and optionally a neighbour table for
+the spin-dipolar model (Enter = skip; when a table is given you are also
+asked for optional dilution concentrations).  The report is
+`<output>.qtm.fbk.md`.
+
+**How to read it**:
+
+- the equivalent-Zeeman model (Yin & Li 2020): every Kramers doublet's
+  tau_QTM from its principal g values (the largest principal value is
+  taken as the axial component), and U_eff(T) from the thermally activated
+  weighting over the doublets (contributions listed per doublet; at low
+  temperature the ground doublet dominates and U_eff tends to zero, rising
+  to the Orbach plateau -- when the first excited doublet lies above the
+  temperature grid the report says so);
+- the spin-dipolar model (Aravena 2018; non-collinear form 2026): with a
+  neighbour table (`dx dy dz mx my mz` per line -- position in Angstrom
+  and moment in Bohr magnetons, both in the central ion's principal-g
+  frame) the tunnelling time follows from the closed-form variance sum
+  over independent environment pseudospins; the optional dilution variant
+  (Llanos & Aravena 2019) keeps each neighbour with probability x and
+  reports the median tau over seeded repeats.
+
+**Boundaries**: zero field, Kramers ions, single centre.  B_ave is an
+empirical field scale (the source offers it as adjustable).  These are
+absolute-value predictions from ab initio parameters; menu 36's reading of
+an experimental-style plateau is a separate, data-side quantity -- keep
+the two apart when quoting them side by side.  The dipolar model takes
+the neighbour geometry as a table (crystal-structure parsing sits
+outside this menu).  The 18-complex literature regression
+of the equivalent-Zeeman model ships as a fixture and reproduces to
+0.006 in log10(tau).
 
 ## Appendix A Command line
 

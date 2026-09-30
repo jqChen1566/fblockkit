@@ -24,7 +24,7 @@ cross-checks:
   - closing geometry file vs the closing state: ok (geometry -75.96133849 vs summary -75.96133849 Eh)
   - closing geometry coordinates vs the closing frame: ok (atoms and coordinates within 1e-8 Angstrom)
 
-boundaries (the Wave-4.6 survey of the ORCA 6.1.1 pairing):
+boundaries (the survey of the ORCA 6.1.1 pairing):
   - gradient-driven work is exact through ORCA's .engrad sidecar (the checks above); a TS search is reliable with a model Hessian;
   - frequency-dependent steps inside pysisyphus (hessian_init: calc, do_hess) fail on the '$multiplicity' block -- use a model Hessian and check frequencies outside pysisyphus;
   - the structured history (optimization.h5) is HDF5 and is not read here (h5py is not a dependency); the text artifacts carry the same numbers;

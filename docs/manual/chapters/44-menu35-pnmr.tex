@@ -20,8 +20,8 @@ with $\delta_{\mathrm{PCS}} = -\mathrm{Tr}(\boldsymbol{\sigma}_{\mathrm{dip}})/3
 $\boldsymbol{\chi}'$ the (in general \emph{non-symmetric}) magnetic
 susceptibility tensor in SI volume units.  This menu computes that shift for
 every nucleus of a structure, from a susceptibility tensor given directly or
-built from magnetic parameters -- the landing point of the Wave-5.2 survey of
-pNMR data availability.
+built from magnetic parameters -- the landing point of the pNMR
+data survey.
 
 \section{What you need}
 
@@ -94,13 +94,13 @@ eigenframe, and $\delta_{\mathrm{PCS}}$ in ppm -- plus the report file.
     both routes).
   \item \textbf{Boundaries}: the contact shift is not computed (hyperfine
     coupling needed); Bleaney's analytic anisotropy theory is documented as
-    context but not implemented as a construction (registered candidate);
+    context with a registered candidate construction;
     OpenMolcas-side g/$\chi$ data belong to the OpenMolcas chain (menu 1.4,
     deployment 0.5).
 \end{itemize}
 \end{readbox}
 
-\section{The ORCA side (Wave 5.2 survey)}
+\section{The ORCA side}
 
 The QDPT driver of ORCA 6.1 (\code{rel} block inside \code{\%casscf} and the
 other modules: \code{DoSOC}, \code{DoSSC}, \code{DoGTensor}, \code{DoDTensor},

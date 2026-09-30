@@ -1,4 +1,4 @@
-"""3.4: QICAS -- quantum-information-assisted active-space optimization.
+"""QICAS -- quantum-information-assisted active-space optimization.
 
 The out-of-CAS correlation of a CAS(N_CAS, D_CAS) scheme in an ordered orbital
 basis B is the sum of the single-orbital (four-state) entropies over the

@@ -1,4 +1,4 @@
-"""4.6: the run artifacts of pysisyphus (formats; the reader behind menu 33).
+"""the run artifacts of pysisyphus (formats; the reader behind menu 33).
 
 pysisyphus (Steinmetzer, Kupfer, Graefe, Int. J. Quantum Chem. 2021, 121,
 e26390; GPL-3.0) explores potential-energy surfaces by orchestrating external

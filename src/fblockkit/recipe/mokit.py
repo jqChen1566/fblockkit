@@ -1,4 +1,4 @@
-"""6.1: generating an automr input (menu 44).
+"""generating an automr input (menu 44).
 
 MOKIT (Apache-2.0) consumes one Gaussian-style ``.gjf`` carrying a
 ``mokit{}`` block; ``automr x.gjf > x.out`` then runs the black-box

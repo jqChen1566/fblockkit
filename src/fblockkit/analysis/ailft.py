@@ -1,4 +1,4 @@
-"""5.5: ab initio ligand-field analysis from an ORCA AILFT output (menu 38).
+"""ab initio ligand-field analysis from an ORCA AILFT output (menu 38).
 
 The AILFT module fits the parameters of a ligand-field model (a 5x5 or 7x7
 one-electron matrix plus Slater-Condon/electron-repulsion parameters and the

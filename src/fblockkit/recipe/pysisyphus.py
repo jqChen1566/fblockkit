@@ -1,4 +1,4 @@
-"""4.6: generating a pysisyphus input (menu 32).
+"""generating a pysisyphus input (menu 32).
 
 The B-layer relation to pysisyphus is "generate its input / read its output":
 the program (GPL-3.0) stays external and orchestrates the engine runs itself,

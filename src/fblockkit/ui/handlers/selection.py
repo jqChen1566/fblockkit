@@ -175,6 +175,16 @@ def apc_ranking(session: Session) -> None:
     if delta_text not in ("", "energies", "fock"):
         session.say(f"Cancelled (unknown model-gap source {delta_text!r}).")
         return
+    apc_n_text = session.ask(
+        "Balanced variant: set aside the N highest-entropy virtuals per entropy "
+        "evaluation (Enter = 0, the classic scheme; 2 is the source's recommendation "
+        "for large molecules)"
+    ).strip()
+    try:
+        apc_n = int(apc_n_text) if apc_n_text else 0
+    except ValueError:
+        session.say(f"Cancelled (APC-N must be an integer, got {apc_n_text!r}).")
+        return
     try:
         window_size = int(window_text) if window_text else apc.DEFAULT_WINDOW
     except ValueError:
@@ -202,6 +212,7 @@ def apc_ranking(session: Session) -> None:
             delta=delta_text or "energies",
             cap=cap,
             cap_label=cap_label,
+            apc_n=apc_n,
         )
     except (ParserError, apc.ApcError, OSError, ValueError) as exc:
         session.say(f"APC ranking failed: {exc}")

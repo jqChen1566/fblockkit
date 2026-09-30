@@ -1,0 +1,83 @@
+\chapter{Quantum-tunnelling relaxation prediction (menu 46)}
+\label{ch:menu46}
+\menulabel{46}
+
+\section{Purpose}
+
+Predicts the tunnelling relaxation time $\tau_{\mathrm{QTM}}$ and the
+effective demagnetization barrier $U_{\mathrm{eff}}(T)$ of a Kramers
+single-ion magnet from its ab initio parameters, through two published
+models over the SINGLE\_ANISO data chain of menu 36.
+
+\section{What you need}
+
+An ORCA output with a SINGLE\_ANISO section; the $B_{\mathrm{ave}}$ field
+scale (Enter $=$ 20.0~mT); optionally a neighbour table for the
+spin-dipolar model (\code{dx dy dz mx my mz} per line -- position in
+Angstrom and moment in Bohr magnetons, both in the central ion's
+principal-g frame), plus optional dilution concentrations.
+
+\section{Walkthrough}
+
+The example reads the CO$^{+}$ fixture through both routes: the
+equivalent-Zeeman table (near-isotropic $g$ gives fast QTM,
+$\tau = 1.547\times10^{-9}$~s; the excited doublet at
+29361~cm$^{-1}$ lies far above the grid, and the report says so), then
+with the constructed twelve-centre neighbour probe through the dipolar
+model and the seeded dilution table.
+
+\lstinputlisting[style=fbkcode, firstline=55, lastline=65,
+  title={The menu-46 example (the doublet table and the ground-state
+  tunnelling time)}]
+  {examples/expected/m46_qtm.txt}
+
+\lstinputlisting[style=fbkcode, firstline=171, lastline=182,
+  title={The spin-dipolar block with the dilution medians (the constructed
+  neighbour probe)}]
+  {examples/expected/m46_qtm.txt}
+
+\section{What you get}
+
+The report \code{<output>.qtm.fbk.md}: the per-doublet table (energy,
+$g_{XY}$, $g_Z$, $\tau$), the ground-state $\tau_{\mathrm{QTM}}$, the
+$U_{\mathrm{eff}}(T)$ table with per-doublet contributions, and -- when a
+neighbour table is given -- the dipolar block ($\sigma_r/\sigma_i$,
+$\langle|E_{sf}|\rangle$, $\tau$) and the dilution medians.
+
+\section{Conventions, cross-checks and boundaries (measured)}
+
+\begin{readbox}
+\begin{itemize}
+  \item \textbf{The equivalent-Zeeman regression is exact to the print
+    precision}: the shipped 18-complex literature table ($g$ from the
+    JPCL 2018 SI, $\log\tau$ from the PCCP 2020 Table~1, two independent
+    data chains of the same model) reproduces to a maximum deviation of
+    0.006 in $\log_{10}(\tau)$ at $B_{\mathrm{ave}} = 20$~mT with CODATA
+    constants.
+  \item \textbf{The dipolar Fermi-golden-rule constant carries the
+    source's one-unit density factor $1/k_B$}: the published
+    $\langle|E_{sf}|\rangle$ values of three JPCL-SI complexes (kelvin)
+    reproduce the published tunnelling times through
+    $k = (2\pi k_B/\hbar)\langle|E_{sf}|\rangle_K^2$ -- NAFMIT
+    $8.671\times10^{-9}$~K gives $\log_{10}\tau = 3.906$ against the
+    published 3.91, BAJSIQ $-4.586$ against $-4.59$.
+  \item \textbf{Axial convention}: the largest principal $g$ is taken as
+    the axial component (the formula pair enters $g_{XY}^2$
+    symmetrically); the models are zero-field, Kramers-ion and
+    single-centre.
+  \item \textbf{$B_{\mathrm{ave}}$ is an empirical field scale} (20~mT in
+    the source; the paper states it can be treated as an empirical
+    parameter) -- the value is a menu question.
+  \item \textbf{These predictions are absolute-value estimates}; menu
+    36's reading of an experimental-style plateau is a separate,
+    data-side quantity -- keep the two apart when quoting them side by
+    side.
+  \item \textbf{Scope}: the neighbour geometry enters as a
+    table (crystal-structure parsing sits outside this menu).  A recorded open
+    point: the literature reports a roughly quadratic
+    $\log\tau$-$\log x$ dilution slope ($-1.93$), while the independent
+    Bernoulli construction here approaches the analytic expectation
+    ($-1$) for large neighbour counts; the difference is recorded, not
+    tuned away.
+\end{itemize}
+\end{readbox}

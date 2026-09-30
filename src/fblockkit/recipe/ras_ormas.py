@@ -1,4 +1,4 @@
-"""4.8: RAS / ORMAS (generalized active space) input generation (menu 28).
+"""RAS / ORMAS (generalized active space) input generation (menu 28).
 
 ORCA has no GAS keyword; its model-space counterpart of the generalized
 active space concept is the partition masks carried by the ``refs``

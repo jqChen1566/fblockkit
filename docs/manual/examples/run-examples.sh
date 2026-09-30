@@ -114,6 +114,8 @@ cp "$REPO/fixtures/crest/crest_conformers.xyz" work/crest_run/
 cp "$REPO/fixtures/crest/crest.energies" work/crest_run/
 cp "$REPO/fixtures/crest/crest_best.xyz" work/crest_run/
 cp "$REPO/fixtures/mokit/h2o_generated_automr.out" work/
+# the menu-46 tunnelling fixture: the constructed neighbour-table probe
+cp "$REPO/fixtures/qtm/neighbours_example.txt" work/qtm_neighbours.txt
 
 for script in scripts/*.txt; do
   name=$(basename "$script" .txt)

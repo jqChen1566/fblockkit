@@ -1,4 +1,4 @@
-"""3.3: the ASS1ST round inputs (menus 22 and 23).
+"""the ASS1ST round inputs (menus 22 and 23).
 
 One ASS1ST round is a CASSCF calculation whose perturbation-theory density is
 kept for the next selection step.  Both menus write the same input shape,

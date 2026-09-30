@@ -1,4 +1,4 @@
-"""3.5: TNASS -- subset selection by the Renyi-2 entropy of the bipartition.
+"""TNASS -- subset selection by the Renyi-2 entropy of the bipartition.
 
 TNASS (Mingare, Heuzé & Coveney, arXiv 2026) selects the active space as the
 subset ``A`` of spatial orbitals that **maximizes the Renyi-2 entropy**

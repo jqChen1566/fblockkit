@@ -1,4 +1,4 @@
-"""3.1: ranked-orbital active-space selection with approximate pair coefficients.
+"""ranked-orbital active-space selection with approximate pair coefficients.
 
 The ranked-orbital framework (King & Gagliardi, JCTC 2021) separates *how the
 orbitals are made* from *how they are ranked by importance*: every candidate
@@ -136,6 +136,10 @@ _RANK_RESOLUTION = 12
 
 _ROLE_OCCUPIED = "doubly occupied"
 _ROLE_VIRTUAL = "virtual"
+#: the APC-2 rule sets the highest-entropy virtuals aside during the entropy
+#: evaluation and resets their entropy to the top of the scale (King et al.
+#: 2022; see rank_orbitals)
+_ROLE_VIRTUAL_ASIDE = "virtual(aside)"
 
 _VARIANT_APC = "APC"
 _VARIANT_APCX = "APCX"
@@ -177,6 +181,8 @@ class Ranking:
     candidates: tuple[Candidate, ...]
     window: tuple[int, int]
     n_virtual_available: int
+    apc_n: int = 0
+    set_aside: tuple[int, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -411,12 +417,30 @@ def pair_coefficients(
     )
 
 
+def _rank_entropies(
+    occupied: tuple[int, ...], remaining: list[int], coefficients: dict
+) -> tuple[dict[int, float], dict[int, float]]:
+    """One entropy evaluation over the current virtual candidate set."""
+    occupied_entropies: dict[int, float] = {}
+    for i in occupied:
+        total = sum(coefficients[(i, a)] ** 2 for a in remaining)
+        p = total / (1.0 + total)
+        occupied_entropies[i] = _binary_entropy(p)
+    virtual_entropies: dict[int, float] = {}
+    for a in remaining:
+        total = sum(coefficients[(i, a)] ** 2 for i in occupied)
+        p = total / (1.0 + total)
+        virtual_entropies[a] = _binary_entropy(p)
+    return occupied_entropies, virtual_entropies
+
+
 def rank_orbitals(
     export: OrcaJson,
     *,
     variant: str = _VARIANT_APC,
     window_size: int = DEFAULT_WINDOW,
     delta: str = "energies",
+    apc_n: int = 0,
 ) -> Ranking:
     """Rank the candidate orbitals of one export by APC (or APCX) entropy.
 
@@ -424,21 +448,59 @@ def rank_orbitals(
     virtuals lowest in energy.  ``delta`` = ``"energies"`` uses the exported
     orbital energies (canonical orbitals); ``"fock"`` uses the Fock diagonal in
     the export's own basis (non-canonical or localized sets).
+
+    ``apc_n`` selects the balanced APC-N extension (King et al., J. Chem.
+    Theory Comput. 2022, 18, 6065): in large molecules the classic entropies
+    overestimate the interaction of a few virtuals with all occupied
+    orbitals, inflating the occupied entropies and producing imbalanced
+    spaces.  The extension runs the entropy evaluation ``N`` times, setting
+    aside the highest-entropy virtual of each round (it no longer enters the
+    sums); the set-aside orbitals stay candidates for the selection and
+    carry the top-of-scale entropy, so only a highly imbalanced space would
+    drop them.  ``N = 2`` is the source's recommendation; ``N = 0`` is the
+    classic scheme.
     """
+    if apc_n < 0:
+        raise ApcError("APC-N must not be negative.")
     occupied, virtuals, _, coefficients, delta_source = _prepare(
         export, variant=variant, window_size=window_size, delta=delta
     )
     n_virtual_available = sum(1 for occ in export.mo_occupations if occ <= 1.0)
 
+    remaining = list(virtuals)
+    set_aside: list[int] = []
+    occupied_entropies, virtual_entropies = _rank_entropies(
+        occupied, remaining, coefficients
+    )
+    for _ in range(apc_n):
+        if not remaining:
+            break
+        top = max(remaining, key=lambda a: (virtual_entropies[a], -a))
+        remaining.remove(top)
+        set_aside.append(top)
+        occupied_entropies, virtual_entropies = _rank_entropies(
+            occupied, remaining, coefficients
+        )
+    top_scale = max(
+        list(occupied_entropies.values()) + list(virtual_entropies.values()), default=0.0
+    )
+
     candidates: list[Candidate] = []
     for i in occupied:
-        total = sum(coefficients[(i, a)] ** 2 for a in virtuals)
-        p = total / (1.0 + total)
-        candidates.append(Candidate(index=i, role=_ROLE_OCCUPIED, entropy=_binary_entropy(p)))
+        candidates.append(
+            Candidate(index=i, role=_ROLE_OCCUPIED, entropy=occupied_entropies[i])
+        )
     for a in virtuals:
-        total = sum(coefficients[(i, a)] ** 2 for i in occupied)
-        p = total / (1.0 + total)
-        candidates.append(Candidate(index=a, role=_ROLE_VIRTUAL, entropy=_binary_entropy(p)))
+        if a in set_aside:
+            # the source leaves the set-aside orbitals at the top of the
+            # entropy scale (slightly above the rest, preserving the order)
+            candidates.append(
+                Candidate(index=a, role=_ROLE_VIRTUAL_ASIDE, entropy=top_scale + 0.01)
+            )
+        else:
+            candidates.append(
+                Candidate(index=a, role=_ROLE_VIRTUAL, entropy=virtual_entropies[a])
+            )
     # Entropies that agree to 1e-12 rank by index.  Physically degenerate pairs
     # (the pi_u pair of a linear molecule, for instance) differ only in the last
     # floating-point digits, which may depend on the BLAS the K-matrix transform
@@ -455,6 +517,8 @@ def rank_orbitals(
         candidates=tuple(candidates),
         window=(virtuals[0], virtuals[-1]),
         n_virtual_available=n_virtual_available,
+        apc_n=apc_n,
+        set_aside=tuple(set_aside),
     )
 
 
@@ -525,9 +589,12 @@ def analyze(
     delta: str = "energies",
     cap: int = CSF_CAPS["max(8,8)"],
     cap_label: str | None = None,
+    apc_n: int = 0,
 ) -> ApcReport:
     """Rank and select in one pass (the menu's entry point)."""
-    ranking = rank_orbitals(export, variant=variant, window_size=window_size, delta=delta)
+    ranking = rank_orbitals(
+        export, variant=variant, window_size=window_size, delta=delta, apc_n=apc_n
+    )
     selection = select(ranking, cap=cap, cap_label=cap_label)
     occupied_energy = tuple((i, export.mo_energies[i]) for i in ranking.occupied)
     window_energies = tuple((a, export.mo_energies[a]) for a in ranking.virtuals)
@@ -545,12 +612,22 @@ def analyze(
 def render(report: ApcReport) -> str:
     """The ranked table, the selection and the boundaries."""
     ranking, selection = report.ranking, report.selection
+    scheme = f"{ranking.variant}-{ranking.apc_n}" if ranking.apc_n else ranking.variant
     lines = [
-        f"Ranked-orbital active-space selection ({ranking.variant}), "
+        f"Ranked-orbital active-space selection ({scheme}), "
         f"{ranking.delta_source} as the model gap:",
         f"  system: {ranking.base_name}: doubly occupied {len(ranking.occupied)}, virtual "
         f"window {ranking.window[0]}-{ranking.window[1]} ({len(ranking.virtuals)} of "
         f"{ranking.n_virtual_available} virtuals, lowest in energy).",
+    ]
+    if ranking.apc_n:
+        aside = ", ".join(str(index) for index in ranking.set_aside)
+        lines.append(
+            f"  scheme: the balanced variant set {len(ranking.set_aside)} high-entropy "
+            f"virtual(s) aside during the entropy evaluation (MO {aside}); they stay "
+            "candidates at the top of the entropy scale (King et al. 2022)."
+        )
+    lines += [
         "",
         f"  {'rank':>4}  {'MO':>3}  {'role':<15}  {'S':>8}",
     ]
@@ -613,10 +690,12 @@ def run(
     delta: str = "energies",
     cap: int = CSF_CAPS["max(8,8)"],
     cap_label: str | None = None,
+    apc_n: int = 0,
 ) -> ReportSection:
     """The analyser entry point for menu 21."""
+    scheme = f"{variant}-{apc_n}" if apc_n else variant
     return ReportSection(
-        title=f"3.1 ranked-orbital active-space selection ({variant})",
+        title=f"3.1 ranked-orbital active-space selection ({scheme})",
         body=render(
             analyze(
                 export,
@@ -625,6 +704,7 @@ def run(
                 delta=delta,
                 cap=cap,
                 cap_label=cap_label,
+                apc_n=apc_n,
             )
         ),
     )
@@ -653,6 +733,18 @@ def evidence() -> tuple[Evidence, ...]:
             ),
             url="https://doi.org/10.1021/acs.jctc.1c00037",
             bibkey="king2021ranked",
+        ),
+        Evidence(
+            kind=EVIDENCE_LITERATURE,
+            text=(
+                "The balanced APC-N extension: in large molecules the classic entropies "
+                "inflate the occupied entries and produce imbalanced spaces; the "
+                "extension sets aside the highest-entropy virtuals during the entropy "
+                "evaluation (N = 2 recommended; the SA-CASSCF error threshold of 1.1 eV "
+                "used in that study is the literature's space-quality anchor)."
+            ),
+            ref="King D. S., Hermes M. R., Truhlar D. G., Gagliardi L., J. Chem. Theory Comput., 2022, 18, 6065-6076, DOI 10.1021/acs.jctc.2c00630",
+            bibkey="king2022benchmark",
         ),
         Evidence(
             kind=EVIDENCE_MEASURED,

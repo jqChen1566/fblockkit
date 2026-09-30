@@ -1,4 +1,4 @@
-"""4.6: the B-layer evaluation of pysisyphus -- read one of its runs (menu 33).
+"""the B-layer evaluation of pysisyphus -- read one of its runs (menu 33).
 
 The B-layer relation is "generate its input / read its output" (no code is
 linked in; pysisyphus is GPL-3.0 and stays an external program).  This module
@@ -550,7 +550,7 @@ def render(data: RunData) -> str:
         )
     out += [
         "",
-        "boundaries (the Wave-4.6 survey of the ORCA 6.1.1 pairing):",
+        "boundaries (the survey of the ORCA 6.1.1 pairing):",
         "  - gradient-driven work is exact through ORCA's .engrad sidecar (the checks "
         "above); a TS search is reliable with a model Hessian;",
         "  - frequency-dependent steps inside pysisyphus (hessian_init: calc, do_hess) "

@@ -1,4 +1,4 @@
-"""5.2: pNMR pseudocontact shifts from a magnetic susceptibility tensor (menu 35).
+"""pNMR pseudocontact shifts from a magnetic susceptibility tensor (menu 35).
 
 The pseudocontact shift (PCS) of a nucleus in the point-dipole approximation
 (PDA) is the dipole field of a point magnetic moment at the paramagnetic

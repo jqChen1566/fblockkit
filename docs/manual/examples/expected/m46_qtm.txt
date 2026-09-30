@@ -48,32 +48,42 @@ Available functions:
   45  MOKIT automr run report (an automr output -> the stages, the energy chain and the active space)
   46  Quantum-tunnelling relaxation prediction (a SINGLE_ANISO output -> tau_QTM and U_eff(T); optional neighbour table for the dipolar model)
    0  Quit
-Choose a number (Enter = leave empty)> 34
-Judd-Ofelt dataset path (YAML; see the formats chapter) (Enter = leave empty)> work/babu2000_eu3.yaml
-Least squares: unweighted (Enter) or the normalized 1/S variant (type 1/S) (Enter = leave empty)> 
-Judd-Ofelt intensity parameters (standard JO fit, S-space, unweighted)
-  dataset: babu2000_eu3.yaml
-  host: Sellmeier n0 = 1 (A=1.24278 B=0.023833 um^2); chi_ED = (n^2+2)^2/9 (virtual cavity)
-  Omega_2 = 18.430e-20 cm^2; Omega_4 = 11.017e-20 cm^2; Omega_6 = 2.253e-20 cm^2
-  fit: 9 transitions, sigma = 2.7459e-05 a.u., sigma/S_max = 8.52 %
+Choose a number (Enter = leave empty)> 46
+ORCA output path (with a SINGLE_ANISO section) (Enter = leave empty)> work/co_aniso2.out
+B_ave in mT (the empirical internal-field scale; Enter = 20.0) (Enter = 20.0)> 20.0
+Neighbour table path for the spin-dipolar model (Enter = skip) (Enter = leave empty)> 
+Quantum-tunnelling relaxation prediction
+Source: co_aniso2.out (segment 1 of 1)
+Model: equivalent-Zeeman (Yin & Li 2020), B_ave = 20.0 mT
 
-  transition            energy (cm-1)      f_exp      S_exp (a.u.)    S_ED/S_exp
-  7F6 <- 7F1                   4541.3       1.9830e-06     3.2241e-04         0.941
-  7F6 <- 7F0                   4791.6       1.2320e-06     6.3271e-05         1.842
-  5D1 <- 7F1                  18726.6       4.5000e-07     1.7278e-05         0.990
-  5D2 <- 7F0                  21459.2       3.3300e-07     3.6828e-06         1.430
-  5D3 <- 7F1                  24154.6       3.0200e-07     8.7984e-06         0.881
-  5L6 <- 7F1                  25000.0       1.3830e-06     3.8769e-05         0.199
-  5L6 <- 7F0                  25380.7       3.3380e-06     3.0664e-05         0.386
-  5G2 <- 7F0                  26178.0       5.2300e-07     4.6385e-06         0.851
-  5D4 <- 7F0                  27700.8       4.8900e-07     4.0631e-06         1.259
+Kramers doublets (axial g = the largest principal value):
+   KD      E (cm-1)          g_xy          g_z      tau_QTM (s)
+    1       0.000     2.82808773    1.99999879   1.547e-09 s (= 10^-8.81)
+    2   29361.197     2.82842541    2.00047880   1.547e-09 s (= 10^-8.81)
 
-boundaries (measured and documented in the close-reading record):
-  - the local field is the squared virtual-cavity form (n^2+2)^2/9; the source papers print it without the square -- the square is what their reference code and their published numbers use (regression-tested here);
-  - the U^(lambda) values are host-independent table values for the ion and must come from the same source as the fit (transcribe them together with the dataset and check them against the published fit);
-  - magnetic-dipole contributions are not computed: give f_md per transition where it is significant (the fit subtracts it);
-  - the extended (perturbative X_k) JO models of the 2022/2024 papers need free-ion atomic-structure wave functions and are outside this toolkit's post-processing scope; this menu implements the standard JO fit.
-Report written: work\babu2000_eu3.yaml.jo.fbk.md
+Ground-state tau_QTM: 1.547e-09 s (= 10^-8.81)
+
+U_eff(T) (thermal-activation weighting over the doublets):
+     T (K)   U_eff (cm-1)   contributions (KD: weight)
+      2.0         0.000   1: 1.000, 2: 0.000
+      4.0         0.000   1: 1.000, 2: 0.000
+      6.0         0.000   1: 1.000, 2: 0.000
+      8.0         0.000   1: 1.000, 2: 0.000
+     10.0         0.000   1: 1.000, 2: 0.000
+     15.0         0.000   1: 1.000, 2: 0.000
+     20.0         0.000   1: 1.000, 2: 0.000
+     30.0         0.000   1: 1.000, 2: 0.000
+     40.0         0.000   1: 1.000, 2: 0.000
+     60.0         0.000   1: 1.000, 2: 0.000
+     80.0         0.000   1: 1.000, 2: 0.000
+    100.0         0.000   1: 1.000, 2: 0.000
+    150.0         0.000   1: 1.000, 2: 0.000
+    200.0         0.000   1: 1.000, 2: 0.000
+    300.0         0.000   1: 1.000, 2: 0.000
+  (the first excited doublet lies at 29361.2 cm-1 = 42244 K, far above this temperature grid: the thermally activated regime of the model is not reached in the printed window, and U_eff stays at the ground-state value)
+
+Reading notes: the models are zero-field, Kramers-ion, single-centre descriptions of the tunnelling (QTM) relaxation; B_ave is an empirical field scale (20 mT in the source, adjustable -- the paper states it can be treated as an empirical parameter). The low-temperature U_eff tends to zero (the ground doublet does not contribute to the barrier) and rises to the Orbach plateau. These predictions are absolute-value estimates from ab initio parameters; menu 36's reading of an experimental-style plateau is a separate, data-side quantity -- keep the two apart when quoting them side by side. The dipolar model needs the neighbour geometry as a table (crystal-structure parsing sits outside this menu's scope).
+Report written: work\co_aniso2.out.qtm.fbk.md
 
 Available functions:
    1  Check-up and characterisation (read an ORCA or Gaussian output -> analysis + diagnosis report)
@@ -123,32 +133,54 @@ Available functions:
   45  MOKIT automr run report (an automr output -> the stages, the energy chain and the active space)
   46  Quantum-tunnelling relaxation prediction (a SINGLE_ANISO output -> tau_QTM and U_eff(T); optional neighbour table for the dipolar model)
    0  Quit
-Choose a number (Enter = leave empty)> 34
-Judd-Ofelt dataset path (YAML; see the formats chapter) (Enter = leave empty)> work/babu2000_eu3.yaml
-Least squares: unweighted (Enter) or the normalized 1/S variant (type 1/S) (Enter = leave empty)> 1/S
-Judd-Ofelt intensity parameters (standard JO fit, S-space, weighted (1/S))
-  dataset: babu2000_eu3.yaml
-  host: Sellmeier n0 = 1 (A=1.24278 B=0.023833 um^2); chi_ED = (n^2+2)^2/9 (virtual cavity)
-  Omega_2 = 16.409e-20 cm^2; Omega_4 = 9.658e-20 cm^2; Omega_6 = 1.698e-20 cm^2
-  fit: 9 transitions, sigma = 4.2717e-05 a.u., sigma/S_max = 13.25 %
+Choose a number (Enter = leave empty)> 46
+ORCA output path (with a SINGLE_ANISO section) (Enter = leave empty)> work/co_aniso2.out
+B_ave in mT (the empirical internal-field scale; Enter = 20.0) (Enter = 20.0)> 20.0
+Neighbour table path for the spin-dipolar model (Enter = skip) (Enter = leave empty)> work/qtm_neighbours.txt
+Dilution concentrations, comma-separated (Enter = skip) (Enter = leave empty)> 1.0, 0.3, 0.05
+Quantum-tunnelling relaxation prediction
+Source: co_aniso2.out (segment 1 of 1)
+Model: equivalent-Zeeman (Yin & Li 2020), B_ave = 20.0 mT
 
-  transition            energy (cm-1)      f_exp      S_exp (a.u.)    S_ED/S_exp
-  7F6 <- 7F1                   4541.3       1.9830e-06     3.2241e-04         0.709
-  7F6 <- 7F0                   4791.6       1.2320e-06     6.3271e-05         1.389
-  5D1 <- 7F1                  18726.6       4.5000e-07     1.7278e-05         0.882
-  5D2 <- 7F0                  21459.2       3.3300e-07     3.6828e-06         1.273
-  5D3 <- 7F1                  24154.6       3.0200e-07     8.7984e-06         0.776
-  5L6 <- 7F1                  25000.0       1.3830e-06     3.8769e-05         0.150
-  5L6 <- 7F0                  25380.7       3.3380e-06     3.0664e-05         0.291
-  5G2 <- 7F0                  26178.0       5.2300e-07     4.6385e-06         0.758
-  5D4 <- 7F0                  27700.8       4.8900e-07     4.0631e-06         1.103
+Kramers doublets (axial g = the largest principal value):
+   KD      E (cm-1)          g_xy          g_z      tau_QTM (s)
+    1       0.000     2.82808773    1.99999879   1.547e-09 s (= 10^-8.81)
+    2   29361.197     2.82842541    2.00047880   1.547e-09 s (= 10^-8.81)
 
-boundaries (measured and documented in the close-reading record):
-  - the local field is the squared virtual-cavity form (n^2+2)^2/9; the source papers print it without the square -- the square is what their reference code and their published numbers use (regression-tested here);
-  - the U^(lambda) values are host-independent table values for the ion and must come from the same source as the fit (transcribe them together with the dataset and check them against the published fit);
-  - magnetic-dipole contributions are not computed: give f_md per transition where it is significant (the fit subtracts it);
-  - the extended (perturbative X_k) JO models of the 2022/2024 papers need free-ion atomic-structure wave functions and are outside this toolkit's post-processing scope; this menu implements the standard JO fit.
-Report written: work\babu2000_eu3.yaml.jo.fbk.md
+Ground-state tau_QTM: 1.547e-09 s (= 10^-8.81)
+
+U_eff(T) (thermal-activation weighting over the doublets):
+     T (K)   U_eff (cm-1)   contributions (KD: weight)
+      2.0         0.000   1: 1.000, 2: 0.000
+      4.0         0.000   1: 1.000, 2: 0.000
+      6.0         0.000   1: 1.000, 2: 0.000
+      8.0         0.000   1: 1.000, 2: 0.000
+     10.0         0.000   1: 1.000, 2: 0.000
+     15.0         0.000   1: 1.000, 2: 0.000
+     20.0         0.000   1: 1.000, 2: 0.000
+     30.0         0.000   1: 1.000, 2: 0.000
+     40.0         0.000   1: 1.000, 2: 0.000
+     60.0         0.000   1: 1.000, 2: 0.000
+     80.0         0.000   1: 1.000, 2: 0.000
+    100.0         0.000   1: 1.000, 2: 0.000
+    150.0         0.000   1: 1.000, 2: 0.000
+    200.0         0.000   1: 1.000, 2: 0.000
+    300.0         0.000   1: 1.000, 2: 0.000
+  (the first excited doublet lies at 29361.2 cm-1 = 42244 K, far above this temperature grid: the thermally activated regime of the model is not reached in the printed window, and U_eff stays at the ground-state value)
+
+Spin-dipolar model (Aravena 2018; non-collinear form 2026)
+Neighbour table: qtm_neighbours.txt (12 centres)
+  sigma_r = 2.519437e-25  sigma_i = 2.518835e-25  (J)
+  <|E_sf|> = 2.842540e-25 J
+  tau_QT = 1.434e-09 s (= 10^-8.84)
+  Dilution variant (median over repeats, seeded):
+        x     log10(tau/s)   active centres (median)
+     1.000       -8.843   12
+     0.300       -8.366   4
+     0.050       -7.764   1
+
+Reading notes: the models are zero-field, Kramers-ion, single-centre descriptions of the tunnelling (QTM) relaxation; B_ave is an empirical field scale (20 mT in the source, adjustable -- the paper states it can be treated as an empirical parameter). The low-temperature U_eff tends to zero (the ground doublet does not contribute to the barrier) and rises to the Orbach plateau. These predictions are absolute-value estimates from ab initio parameters; menu 36's reading of an experimental-style plateau is a separate, data-side quantity -- keep the two apart when quoting them side by side. The dipolar model needs the neighbour geometry as a table (crystal-structure parsing sits outside this menu's scope).
+Report written: work\co_aniso2.out.qtm.fbk.md
 
 Available functions:
    1  Check-up and characterisation (read an ORCA or Gaussian output -> analysis + diagnosis report)

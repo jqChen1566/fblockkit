@@ -1,4 +1,4 @@
-"""6.1: the xTB pre-screening report (menu 42).
+"""the xTB pre-screening report (menu 42).
 
 Renders one xTB run capture into the run facts (task kinds, the energy
 chain markers, the frequency set with its imaginary count, the

@@ -1,4 +1,4 @@
-"""4.1: randomized orbital perturbation -- the multi-start cure for SCF
+"""randomized orbital perturbation -- the multi-start cure for SCF
 multi-solutions (menu 29).
 
 Source: Vaucher & Reiher, "Steering Orbital Optimization out of Local Minima

@@ -69,6 +69,7 @@ from .orbitals import (
     magnetocaloric_report,
     relaxation_report,
     state_data_report,
+    tunnelling_report,
     wasp_guess,
     xas_report,
 )
@@ -112,6 +113,7 @@ HANDLERS = {
     "judd_ofelt_fit": judd_ofelt_fit,
     "pnmr_report": pnmr_report,
     "relaxation_report": relaxation_report,
+    "tunnelling_report": tunnelling_report,
     "ailft_report": ailft_report,
     "xas_report": xas_report,
     "poly_aniso_report": poly_aniso_report,

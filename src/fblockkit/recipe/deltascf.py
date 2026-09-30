@@ -1,4 +1,4 @@
-"""4.3: DeltaSCF / MOM excited-state SCF inputs (menu 27).
+"""DeltaSCF / MOM excited-state SCF inputs (menu 27).
 
 ORCA's DeltaSCF route converges the SCF to a chosen excited-state solution (a
 higher-energy stationary point of the SCF energy surface) by constraining the

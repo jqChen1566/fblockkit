@@ -46,6 +46,7 @@ Available functions:
   43  CREST conformer ensemble (a run directory -> the sorted table with Boltzmann weights)
   44  MOKIT automr input (a structure + options -> a Gaussian-style .gjf with the mokit{} block)
   45  MOKIT automr run report (an automr output -> the stages, the energy chain and the active space)
+  46  Quantum-tunnelling relaxation prediction (a SINGLE_ANISO output -> tau_QTM and U_eff(T); optional neighbour table for the dipolar model)
    0  Quit
 Choose a number (Enter = leave empty)> 31
 ORCA property file path (``<base>.property.txt``) (Enter = leave empty)> work/n2_sa.property.txt
@@ -62,11 +63,11 @@ CASSCF state data from n2_sa.property.txt
   0 -> 1 (0->0)   1.0->1.0           10.5689        85243.7   0.0000e+00
   0 -> 2 (0->0)   1.0->1.0           11.3574        91603.9   0.0000e+00
 
-Boundaries (the Wave-4.2 availability survey):
+Boundaries (the availability survey):
   - the CI vectors are not persistable (run-time temporaries only; the .cis file belongs to the CIS/STEOM modules), so state identity along a series cannot be read from one output;
   - the .out side prints the per-root dominant CSF occupations twice (initial state check and final states block), and this property file adds the structured per-state energies and transitions;
   - per-state observables for identity tracking: single-root runs carry the per-state dipole (the menu-19 route), the FIC-NEVPT2 sidecar carries per-root densities (the menu-23 chain) -- a tracker across a series is registered as a candidate increment;
-  - the absorption columns are the measured layout [eV, cm-1, nm, fosc, D2, DX(re,im), DY(re,im), DZ(re,im)] (nonzero probes, Wave 5.1); a SOC run's duplicate section is read at its highest &RelCorrection, and the magnetic-dipole data live in the separate ECD section (not shown here).
+  - the absorption columns are the measured layout [eV, cm-1, nm, fosc, D2, DX(re,im), DY(re,im), DZ(re,im)] (nonzero probes); a SOC run's duplicate section is read at its highest &RelCorrection, and the magnetic-dipole data live in the separate ECD section (not shown here).
 Report written: work\n2_sa.property.txt.states.fbk.md
 
 Available functions:
@@ -115,6 +116,7 @@ Available functions:
   43  CREST conformer ensemble (a run directory -> the sorted table with Boltzmann weights)
   44  MOKIT automr input (a structure + options -> a Gaussian-style .gjf with the mokit{} block)
   45  MOKIT automr run report (an automr output -> the stages, the energy chain and the active space)
+  46  Quantum-tunnelling relaxation prediction (a SINGLE_ANISO output -> tau_QTM and U_eff(T); optional neighbour table for the dipolar model)
    0  Quit
 Choose a number (Enter = leave empty)> 0
 Goodbye.

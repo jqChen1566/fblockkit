@@ -1,4 +1,4 @@
-"""4.5: displacing a geometry along its imaginary mode (menu 30).
+"""displacing a geometry along its imaginary mode (menu 30).
 
 Source: NIFREC (Tanaka & Miyao), the automated no-imaginary-frequency
 workflow (ChemRxiv preprint 10.26434/chemrxiv.15004859/v1; the software is

@@ -848,6 +848,99 @@ def relaxation_report(session: Session) -> None:
     session.say(f"Report written: {md_path}")
 
 
+def tunnelling_report(session: Session) -> None:
+    """Menu 46: tunnelling-relaxation prediction from a SINGLE_ANISO output.
+
+    The equivalent-Zeeman model (Yin & Li 2020) runs on the per-doublet g
+    values and energies alone; the spin-dipolar model (Aravena 2018/2026,
+    dilution variant Llanos & Aravena 2019) takes an optional neighbour
+    table (dx dy dz mx my mz per line, in the central g-frame).
+    """
+    from ...analysis import relaxation as relaxation_analysis
+    from ...analysis import tunnelling as tunnelling_analysis
+    from ...analysis.tunnelling import TunnellingError
+
+    path_text = session.ask("ORCA output path (with a SINGLE_ANISO section)")
+    if not path_text:
+        session.say("Cancelled (no path given).")
+        return
+    path = Path(path_text)
+    try:
+        parsed = parse_auto(path)
+    except (ParserError, OSError) as exc:
+        session.say(f"Tunnelling prediction failed: {exc}")
+        return
+    segments = (parsed.sections.get("single_aniso") or {}).get("segments") or []
+    if not segments:
+        session.say(
+            "No SINGLE_ANISO section found in this output. Next step: give an "
+            "output of a %casscf run with the ANISO sub-block (menu 36's input)."
+        )
+        return
+    b_text = session.ask(
+        "B_ave in mT (the empirical internal-field scale; Enter = 20.0)",
+        default="20.0",
+    )
+    try:
+        b_ave = float(b_text)
+    except ValueError:
+        session.say("B_ave must be a number (mT).")
+        return
+    table_text = session.ask(
+        "Neighbour table path for the spin-dipolar model (Enter = skip)"
+    )
+    neighbour_report = None
+    try:
+        segment = segments[-1]
+        rows = relaxation_analysis.group_metrics(segment)
+        levels = tunnelling_analysis.kd_levels(rows)
+        ueff_rows = tunnelling_analysis.ueff_curve(levels, B_ave_mT=b_ave)
+        if table_text:
+            table_path = Path(table_text)
+            neighbours = tunnelling_analysis.parse_neighbour_table(
+                table_path.read_text(encoding="utf-8", errors="replace")
+            )
+            neighbour_report = {
+                "table": table_path.name,
+                "n_neighbours": len(neighbours),
+                **tunnelling_analysis.dipolar_tau(neighbours, levels[0].g),
+            }
+            dilution_text = session.ask(
+                "Dilution concentrations, comma-separated (Enter = skip)"
+            )
+            if dilution_text.strip():
+                try:
+                    concentrations = tuple(
+                        float(part) for part in dilution_text.split(",") if part.strip()
+                    )
+                except ValueError:
+                    session.say("The dilution concentrations must be numbers; skipping them.")
+                    concentrations = ()
+                if concentrations:
+                    neighbour_report["dilution"] = tunnelling_analysis.dilution_medians(
+                        neighbours, levels[0].g, concentrations
+                    )
+    except (TunnellingError, OSError) as exc:
+        session.say(f"Tunnelling prediction failed: {exc}")
+        return
+    body = tunnelling_analysis.render(
+        source=f"{path.name} (segment {len(segments)} of {len(segments)})",
+        levels=levels,
+        B_ave_mT=b_ave,
+        ueff_rows=ueff_rows,
+        neighbour_report=neighbour_report,
+    )
+    session.say(body)
+    section = ReportSection(title="Quantum-tunnelling relaxation prediction", body=body)
+    report_lines = f"## {section.title}\n\n{section.body}\n"
+    refs = references_section(tunnelling_analysis.evidence())
+    if refs is not None:
+        report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
+    md_path = path.with_name(path.name + ".qtm.fbk.md")
+    md_path.write_text(report_lines, encoding="utf-8")
+    session.say(f"Report written: {md_path}")
+
+
 def pnmr_report(session: Session) -> None:
     """Menu 35: pseudocontact shifts from a susceptibility tensor + a structure."""
     from ...analysis import pnmr as pnmr_analysis
