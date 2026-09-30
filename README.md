@@ -51,13 +51,14 @@ default and pressing Enter accepts it.
   test suite replays them (`tests/test_manual.py`).  The built PDF ships with
   the release archives.
 
-## What it does not do
+## Scope and guarantees
 
-- it never runs a calculation engine (you submit the generated input yourself);
-- it never modifies your files: every product is a new file (`*.fbk.md` /
+- calculations run outside the program: it writes the input file and the run
+  guidance, and you submit the job;
+- your files are read-only: every product is a new file (`*.fbk.md` /
   `*.fbk.json` / `*.fbk.inp`);
-- it uses no machine learning and no online service: the decision layer is a
-  deterministic rule engine.
+- the decision layer is a deterministic rule engine -- no machine learning, no
+  online service, and every conclusion carries its provenance.
 
 ## Provenance and verification
 
@@ -67,6 +68,11 @@ default and pressing Enter accepts it.
   plus the tests, run with `bash scripts/verify.sh`;
 - the parser regular expressions are fixed against real ORCA 6.1.1 output
   (`fixtures/orca/`, each fixture registered with its source in the fixture README).
+
+## Author
+
+fBlockKit is developed by Jianqi Chen (陈建棋), College of Chemistry and
+Materials Science, Jinan University, Guangzhou, China.
 
 ## Citing
 

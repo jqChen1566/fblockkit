@@ -11,7 +11,10 @@ abstract: >-
   measured record).
 type: software
 authors:
-  - name: "jqChen1566"
+  - family-names: "Chen"
+    given-names: "Jianqi"
+    alias: "jqChen1566"
+    affiliation: "College of Chemistry and Materials Science, Jinan University"
     email: "chen_jianqi1566@163.com"
 version: 0.1.0
 date-released: "2026-09-26"
