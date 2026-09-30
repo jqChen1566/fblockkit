@@ -1027,14 +1027,22 @@ def pnmr_report(session: Session) -> None:
 
 
 def poly_aniso_report(session: Session) -> None:
-    """Menu 39: polynuclear magnetism from a POLY_ANISO output.
+    """Menu 39: polynuclear magnetism -- read a POLY_ANISO output or write the input.
 
-    Reads the cluster report of the ORCA POLY_ANISO driver: the per-center
-    single-ion data, the exchange decomposition, the coupled states, the
-    chiT(T) table and the Van Vleck susceptibility tensors.
+    Mode 1 reads the cluster report of the ORCA POLY_ANISO driver (the
+    per-center single-ion data, the exchange decomposition, the coupled
+    states, the chiT(T) table and the Van Vleck susceptibility tensors);
+    mode 2 writes the driver's input plus the cluster checklist.
     """
     from ...analysis import poly_aniso as poly_analysis
 
+    mode = session.ask(
+        "What do you need? (1) read a poly_aniso.output report, (2) write a "
+        "POLY_ANISO input + checklist (Enter = 1)"
+    ).strip()
+    if mode == "2":
+        _poly_aniso_write(session)
+        return
     path_text = session.ask("poly_aniso.output path (from otool_poly_aniso)")
     if not path_text:
         session.say("Cancelled (no path given).")
@@ -1058,6 +1066,132 @@ def poly_aniso_report(session: Session) -> None:
     if refs is not None:
         report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
     md_path = path.with_name(path.name + ".polyaniso.fbk.md")
+    md_path.write_text(report_lines, encoding="utf-8")
+    session.say(f"Report written: {md_path}")
+
+
+def _poly_aniso_write(session: Session) -> None:
+    """Menu 39, mode 2: the POLY_ANISO input writer (cluster description -> input)."""
+    from ...recipe import poly_aniso as poly_recipe
+
+    path_text = session.ask(
+        "Output path for the generated input (Enter = ./poly_aniso.input)"
+    )
+    path = Path(path_text) if path_text else Path("poly_aniso.input")
+
+    def _integers(text: str, count: int | None, what: str):
+        try:
+            values = [int(token) for token in text.replace(",", " ").split()]
+        except ValueError:
+            session.say(f"{what} must be integers, space-separated. Cancelled.")
+            return None
+        if not values or (count is not None and len(values) != count):
+            session.say(
+                f"{what} needs {count if count else 'at least one'} integer(s). "
+                "Cancelled."
+            )
+            return None
+        return values
+
+    types = _integers(
+        session.ask("Number of non-equivalent centre types (1-6)"), 1, "The type count"
+    )
+    if types is None:
+        return
+    n_types = types[0]
+    centres = _integers(
+        session.ask(f"Equivalent centres per type ({n_types} integers)"),
+        n_types,
+        "The centre-count line",
+    )
+    if centres is None:
+        return
+    states = _integers(
+        session.ask(
+            f"Low-lying spin-orbit functions per centre type ({n_types} integers)"
+        ),
+        n_types,
+        "The spin-orbit-count line",
+    )
+    if states is None:
+        return
+
+    def _vector(text: str):
+        try:
+            values = [float(token) for token in text.replace(",", " ").split()]
+        except ValueError:
+            return None
+        return values if len(values) == 3 else None
+
+    coordinates = None
+    first = session.ask(
+        "Coordinates of type 1, 'x y z' in Angstrom (Enter = skip the COOR block)"
+    )
+    if first:
+        row = _vector(first)
+        if row is None:
+            session.say("The coordinates must be three numbers. Cancelled.")
+            return
+        coordinates = [row]
+        for index in range(2, n_types + 1):
+            row = _vector(session.ask(f"Coordinates of type {index}, 'x y z'"))
+            if row is None:
+                session.say("The coordinates must be three numbers. Cancelled.")
+                return
+            coordinates.append(row)
+
+    pairs = []
+    while True:
+        prompt = (
+            "Coupled pair 'i j J' (J in cm-1; Enter = done)"
+            if pairs
+            else "Coupled pair 'i j J' (J in cm-1; at least one pair)"
+        )
+        line = session.ask(prompt)
+        if not line:
+            break
+        try:
+            tokens = line.replace(",", " ").split()
+            first_site, second_site, coupling = int(tokens[0]), int(tokens[1]), float(tokens[2])
+        except (IndexError, ValueError):
+            session.say("A pair line must read 'i j J' (two integers and a number). "
+                        "Cancelled.")
+            return
+        pairs.append((first_site, second_site, coupling))
+
+    grid = None
+    grid_text = session.ask(
+        "Susceptibility grid 't_min t_max n_points' (Enter = skip the TINT block)"
+    )
+    if grid_text:
+        try:
+            tokens = grid_text.replace(",", " ").split()
+            grid = (float(tokens[0]), float(tokens[1]), int(tokens[2]))
+        except (IndexError, ValueError):
+            session.say("The grid must read 't_min t_max n_points'. Cancelled.")
+            return
+    try:
+        plan = poly_recipe.build_input(
+            equivalent_centres=centres,
+            spin_orbit_states=states,
+            pairs=pairs,
+            coordinates=coordinates,
+            temperature_grid=grid,
+        )
+    except poly_recipe.PolyAnisoPlanError as exc:
+        session.say(f"Writing the POLY_ANISO input failed: {exc}")
+        return
+    path.write_text(plan.text, encoding="utf-8")
+    body = poly_recipe.render_plan(plan, path=path)
+    session.say(body)
+    section = ReportSection(
+        title="Polynuclear magnetism input (POLY_ANISO exchange cluster)", body=body
+    )
+    report_lines = f"## {section.title}\n\n{section.body}\n"
+    refs = references_section(poly_recipe.evidence())
+    if refs is not None:
+        report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
+    md_path = path.with_name(path.name + ".fbk.md")
     md_path.write_text(report_lines, encoding="utf-8")
     session.say(f"Report written: {md_path}")
 

@@ -1743,12 +1743,14 @@ DFT) lives inside ADF, a commercial package --
 registered as a termination: the AILFT route covers the same analysis
 needs from open programs.
 
-## 39 Polynuclear magnetism (a POLY_ANISO output)
+## 39 Polynuclear magnetism (a POLY_ANISO output / a POLY_ANISO input)
 
 **What it is for**: the cluster magnetic analysis ORCA's POLY_ANISO driver
 produces from single-ion ab initio data (manual section 7.18): the
 exchange-coupled states of a polynuclear complex, the interaction-matrix
-decomposition, chiT(T) and the Van Vleck susceptibility tensors.
+decomposition, chiT(T) and the Van Vleck susceptibility tensors.  The menu
+also writes the driver's *input*, so the cluster workflow closes inside the
+toolkit.
 
 **How**: menu 39 -> the `poly_aniso.output` path of a run of
 `$ORCA/otool_poly_aniso < poly_aniso.input > poly_aniso.output` (the driver
@@ -1783,6 +1785,23 @@ termination.  The Lines model is exact only for two isotropic spins, one
 Ising plus one isotropic spin, or two Ising spins, and approximate
 otherwise; the dipole-dipole coupling is evaluated exactly from the ab
 initio moments and usually dominates in strongly anisotropic lanthanides.
+
+**Writing the input (mode 2)**: answer `2` at the first question, then give
+the output path (Enter = `./poly_aniso.input`) and the cluster description:
+the number of non-equivalent centre types (1-6); the equivalent centres per
+type and the low-lying spin-orbit functions per type (one line each; the
+exchange basis size is their product); the coordinates per type (Enter =
+skip the COOR block, which switches the exact dipole-dipole coupling off);
+the coupled pairs `i j J` (J in cm-1, one per line, Enter ends -- at least
+one pair); and the susceptibility grid `t_min t_max n_points` (Enter =
+skip).  The written input plus the checklist (place the `aniso_1.input`
+... files, run `otool_poly_aniso < poly_aniso.input > poly_aniso.output`,
+read the result back) go to `<path>` and `<path>.fbk.md`; the generated
+text is accepted by the driver end to end (measured: the two-centre plan
+reproduces the fixture's frozen output byte for byte).  The J values and
+the coordinates are yours -- the writer validates their structure, not
+their physics; the symmetry (`SYMM`) and anisotropic-coupling (`LIN3` /
+`LIN9`) input variants are registered.
 
 ## 40 Hyperfine and EFG parameters (an EPRNMR output)
 

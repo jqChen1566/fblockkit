@@ -47,9 +47,17 @@ same data), the exchange block ($J$ = 0.10000~cm$^{-1}$), the interaction
 decomposition (LINES-1: isotropic 32.708\,\%, symmetric 93.839\,\%,
 anti-symmetric 11.155\,\%), the coupled states and the $\chi T$ summary.
 
-\lstinputlisting[style=fbkcode, firstline=44, lastline=79,
+\lstinputlisting[style=fbkcode, firstline=55, lastline=82,
   title={The menu-39 example (the per-centre echo, the exchange
   decomposition, the coupled states and the $\chi T$ summary)}]
+  {examples/expected/m39_polyaniso.txt}
+
+The second leg of the same example writes the driver's input from the same
+cluster description, with the checklist the workflow needs:
+
+\lstinputlisting[style=fbkcode, firstline=142, lastline=160,
+  title={The menu-39 input writer (mode 2): the questions and the written
+  cluster summary}]
   {examples/expected/m39_polyaniso.txt}
 
 \section{What you get}
@@ -66,6 +74,17 @@ sequence (one $3\times3$ with main values and main axes per printed
 temperature); the closing notes (skipped torque/magnetization by the
 caller's choice, completion).
 
+Mode 2 writes the driver's input instead: \file{<path>} (default
+\file{./poly\_aniso.input}) carries the \code{NNEQ} block (the type count
+with the ab initio flag, the equivalent centres and the spin-orbit
+functions per type), the \code{PAIR} list (Lines-type
+$\sum -J\,\mathbf{s}_i\cdot\mathbf{s}_j$), the optional \code{COOR} block
+(symmetrised per-type coordinates; it switches the exact dipole-dipole
+coupling on) and the optional \code{TINT} grid, closed by
+\code{End of Input}; the report \file{<path>.fbk.md} repeats the cluster
+summary, the data-file checklist (\file{aniso\_1.input}, \ldots), the run
+command and the boundaries.
+
 \section{Conventions, cross-checks and boundaries (measured)}
 
 \begin{readbox}
@@ -75,6 +94,16 @@ caller's choice, completion).
     computation of exchange splittings (the LDF-CAHF / many-state
     PNO-CASPT2 route of Hallmen et al.\ 2019, a MOLPRO implementation) is
     outside the ORCA ecosystem -- registered as a documented termination.
+  \item \textbf{The written input is accepted end to end}: the two-centre
+    plan (2 types $\times$ 1 centre, spin-orbit basis $2+2$, one
+    $J=0.1$~cm$^{-1}$ pair, the two coordinates, \code{TINT}
+    $0$--$300$~K / $101$ points) drives \code{otool\_polyaniso} with the
+    fixture's data files to rc\,=\,0 and reproduces the frozen probe output
+    byte for byte (measured 2026-09-30).  The writer validates the
+    structure (type count 1--6, at least one pair, pair indices,
+    duplicate pairs, coordinate and grid shapes) but not the physics of
+    the $J$ values or the coordinates; the \code{SYMM} and
+    \code{LIN3}/\code{LIN9} input variants are registered.
   \item \textbf{The Lines model is exact only in three cases} (two
     isotropic spins; one Ising plus one isotropic spin; two Ising spins)
     and approximate otherwise; the dipole-dipole coupling is evaluated

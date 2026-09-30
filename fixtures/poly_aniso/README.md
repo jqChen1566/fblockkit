@@ -42,3 +42,15 @@ exists in the ORCA ecosystem anyway -- the exchange constants are user
 input, and the LDF-CAHF / many-state PNO-CASPT2 route is outside this
 tool's scope (registered as a documented termination in the wave 5.6
 records).
+
+## The generated-input acceptance run (2026-09-30, server 101, the same ORCA 6.1.1)
+
+The menu-39 input writer (mode 2) was validated end to end: the plan
+reproducing this fixture's probe (2 types x 1 centre, spin-orbit basis 2+2,
+one J = 0.1 cm-1 pair, coordinates (0,0,0)/(0,0,3.7), TINT 0..300 K / 101
+points) wrote `poly_aniso.input`; feeding it to `otool_poly_aniso` with this
+directory's `aniso_1.input`/`aniso_2.input` returns rc = 0, `POLY_ANISO
+finished sucessfully!`, and reproduces `two_center_probe.out` byte for byte
+(0 differing lines).  The input format itself is the ORCA manual section
+7.18 (the NNEQ flag, the per-type count lines, PAIR under the Lines-type
+Hamiltonian, optional COOR/TINT).

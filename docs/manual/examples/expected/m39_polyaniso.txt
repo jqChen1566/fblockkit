@@ -51,6 +51,7 @@ Available functions:
   48  PiOS pi-orbital active space (a pi-system definition + an export -> the pi orbitals and a gbw-ready mkl)
    0  Quit
 Choose a number (Enter = leave empty)> 39
+What do you need? (1) read a poly_aniso.output report, (2) write a POLY_ANISO input + checklist (Enter = 1) (Enter = leave empty)> 1
 poly_aniso.output path (from otool_poly_aniso) (Enter = leave empty)> work/two_center_probe.out
 Polynuclear magnetism (POLY_ANISO) report (two_center_probe.out)
   centers: 2 independent, 2 in total
@@ -86,6 +87,88 @@ Polynuclear magnetism (POLY_ANISO) report (two_center_probe.out)
 
   Reading notes: the exchange constants are the caller's input (measured elsewhere or fitted) -- this workflow never computes or fits them; a joint ab initio computation of exchange splittings (the LDF-CAHF / many-state PNO-CASPT2 route) is outside the ORCA ecosystem and is registered as a documented termination, not implemented here. The Lines model is exact only for two isotropic spins, one Ising plus one isotropic spin, or two Ising spins, and approximate otherwise; the dipole-dipole coupling is evaluated exactly from the ab initio moments and usually dominates in strongly anisotropic lanthanides (ORCA manual section 7.18; method reference: Ungur & Chibotaru, Chem. Eur. J. 2017).
 Report written: work\two_center_probe.out.polyaniso.fbk.md
+
+Available functions:
+   1  Check-up and characterisation (read an ORCA or Gaussian output -> analysis + diagnosis report)
+   2  Coordination geometry and symmetry hints (read an XYZ structure)
+   3  Generate an ORCA input (system profile -> input file + run guidance)
+   4  Basis-set / ECP recommendation (element/valence/targets)
+   5  Search the tool index (keywords)
+   6  Tool onboarding notes (by index id)
+   7  Cross-level solution consistency (records JSON input)
+   8  Save this session as a script
+   9  SCF rescue (triage + corrected input files)
+  10  Crystal-field fit (levels + coefficients JSON)
+  11  Point-charge crystal-field estimate (read an XYZ structure + charges)
+  12  Exact active-space analysis (CASSCF output + FCIDUMP: four-state entropy, environment spin entropy, atomic-term check; optional orca_2json exports)
+  13  Orbital-space comparison (two orca_2json exports: subspace fraction and space-change SVD)
+  14  AVAS target projection (an orbital export + a target AO shell -> active-space size)
+  15  Orbital portrait (an export -> occupation, bonding label, shell composition, extent)
+  16  Magnetic-doublet criterion (a Kramers-doublet table JSON -> g_T * theta_3 and the QTM line)
+  17  Cross-structure orbital mapping (a manifest of exports -> consistent active spaces along a path)
+  18  WASP guess transfer (neighbour orbitals -> an interpolated, gbw-ready mkl for a geometry series)
+  19  Dipole-moment candidate batch (a structure -> prep + CASCI inputs + manifest for the DM-AS scan)
+  20  Dipole-moment selection (the batch outputs + a reference -> the active space by DM-AS)
+  21  APC orbital ranking (an export with the Fock exchange block -> ranked active space at a CSF cap)
+  22  ASS1ST round-1 input (a structure + an initial active space -> a CASSCF+FIC-NEVPT2 round)
+  23  ASS1ST selection round (a NEVPT2-density export -> quasi-NOON tables + the next round's input)
+  24  QICAS active-space optimization (an FCIDUMP -> F_QI-minimized orbitals and the CASCI check)
+  25  AEGISS selection (entropy screening + an AO projection -> a compact active space)
+  26  TNASS subset selection (an FCIDUMP -> the S2-maximizing orbital subset)
+  27  DeltaSCF / MOM excited-state SCF input (a structure + an excitation spec -> an input)
+  28  RAS / ORMAS model-space input (a structure + a partition mask -> an ORCA input)
+  29  Perturbed multistart batch (a converged reference mkl + its input -> restart inputs)
+  30  Imaginary-mode displacement (a frequency output + its input -> restart inputs)
+  31  CASSCF state data (a property file -> per-state energies and transitions)
+  32  pysisyphus input (a structure + a method -> a PES-exploration YAML)
+  33  pysisyphus run report (a run directory or console capture -> cross-checked record)
+  34  Judd-Ofelt intensity parameters (a transition dataset -> Omega_2/4/6 and radiative quantities)
+  35  pNMR pseudocontact shifts (a susceptibility run file + a structure -> per-nucleus PCS)
+  36  Magnetic relaxation and QTM (an ORCA output with SINGLE_ANISO or MAGRELAX -> the barrier estimate and tau(T))
+  37  Core-excited spectra XAS/RIXS (a ROCIS output -> the spectra table, the edge branching ratio and the RIXS status)
+  38  Ab initio ligand-field analysis (an AILFT output -> LF splitting, Slater-Condon/Racah parameters and the fit quality)
+  39  Polynuclear magnetism (a POLY_ANISO output -> per-center data, the exchange decomposition and the chiT summary)
+  40  Hyperfine and EFG parameters (an EPRNMR output -> the A tensor, the EFG principal values and Rho(0))
+  41  Magnetic entropy and magnetocaloric effect (levels or POLY_ANISO M(H,T) -> S_mag(T) and -DeltaS(T,H))
+  42  xTB pre-screening run report (an xtb capture -> run facts, frequencies and the upgrade notes)
+  43  CREST conformer ensemble (a run directory -> the sorted table with Boltzmann weights)
+  44  MOKIT automr input (a structure + options -> a Gaussian-style .gjf with the mokit{} block)
+  45  MOKIT automr run report (an automr output -> the stages, the energy chain and the active space)
+  46  Quantum-tunnelling relaxation prediction (a SINGLE_ANISO output -> tau_QTM and U_eff(T); optional neighbour table for the dipolar model)
+  47  AOP rotation guess (a reference active space + a target export -> a gbw-ready mkl)
+  48  PiOS pi-orbital active space (a pi-system definition + an export -> the pi orbitals and a gbw-ready mkl)
+   0  Quit
+Choose a number (Enter = leave empty)> 39
+What do you need? (1) read a poly_aniso.output report, (2) write a POLY_ANISO input + checklist (Enter = 1) (Enter = leave empty)> 2
+Output path for the generated input (Enter = ./poly_aniso.input) (Enter = leave empty)> work/poly_aniso.input
+Number of non-equivalent centre types (1-6) (Enter = leave empty)> 2
+Equivalent centres per type (2 integers) (Enter = leave empty)> 1 1
+Low-lying spin-orbit functions per centre type (2 integers) (Enter = leave empty)> 2 2
+Coordinates of type 1, 'x y z' in Angstrom (Enter = skip the COOR block) (Enter = leave empty)> 0.0 0.0 0.0
+Coordinates of type 2, 'x y z' (Enter = leave empty)> 0.0 0.0 3.7
+Coupled pair 'i j J' (J in cm-1; at least one pair) (Enter = leave empty)> 1 2 0.1
+Coupled pair 'i j J' (J in cm-1; Enter = done) (Enter = leave empty)> 
+Susceptibility grid 't_min t_max n_points' (Enter = skip the TINT block) (Enter = leave empty)> 0 300 101
+POLY_ANISO exchange-cluster input (Lines-type exchange + exact dipole-dipole):
+  centre types: 2 (equivalent centres per type: 1, 1)
+  total centres: 2
+  spin-orbit functions per centre type: 2, 2  (exchange basis size 4)
+  coupled pairs: 1 (J in cm-1: 1-2 0.1)
+  dipole-dipole (COOR): included
+  temperature grid: 0..300 K, 101 points
+
+Input written: work\poly_aniso.input
+
+Next steps:
+  1. place one SINGLE_ANISO data file per magnetic centre next to this input, named aniso_1.input, aniso_2.input, ... (each is the <job>.CASSCF.anisofile of a menu-36 chain run; symmetry-equivalent centres of one type share a file)
+  2. run:  otool_poly_aniso < work\poly_aniso.input > poly_aniso.output
+  3. read the result back with this menu's first mode (the poly_aniso.output report)
+
+Boundaries:
+  - the J values and the coordinates are the caller's (the writer does not fit or judge them); the exchange model is the Lines-type Hamiltonian sum -J s_i.s_j over the declared pairs
+  - the COOR block computes the dipolar coupling only for the declared pairs; coordinates are the symmetrised per-type positions in Angstrom
+  - the plan covers the manual's NNEQ/PAIR/COOR/TINT blocks; the symmetry (SYMM) and anisotropic-coupling (LIN3/LIN9) variants are registered
+Report written: work\poly_aniso.input.fbk.md
 
 Available functions:
    1  Check-up and characterisation (read an ORCA or Gaussian output -> analysis + diagnosis report)

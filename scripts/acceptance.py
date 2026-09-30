@@ -298,7 +298,9 @@ def main() -> int:
                     "36", "work/co_magrelax.out",
                     "37", "work/fecl4_xas.out", "2.0",
                     "38", "work/ni_ailft.out", "", "",
-                    "39", "work/two_center_probe.out",
+                    "39", "1", "work/two_center_probe.out",
+                    "39", "2", "work/poly_aniso.input", "2", "1 1", "2 2",
+                    "0.0 0.0 0.0", "0.0 0.0 3.7", "1 2 0.1", "", "0 300 101",
                     "40", "work/cef3_epr_dft.out", "0.5",
                     "40", "work/cef3_epr_casscf.out", "",
                     "41", "work/poly_mh.out",
@@ -723,6 +725,14 @@ def main() -> int:
                 in poly_report
                 and "chiT = 0.501549 -> 0.750429 cm3 K mol-1" in poly_report,
                 "menu 39 reads the POLY_ANISO cluster report",
+            )
+            poly_input = read("poly_aniso.input")
+            check(
+                poly_input.startswith("&POLY_ANISO")
+                and "  2  T" in poly_input
+                and "  1 2 0.1" in poly_input
+                and poly_input.rstrip().endswith("End of Input"),
+                "menu 39 writes the POLY_ANISO input (NNEQ flag, the pair, the terminator)",
             )
             hyp_report = read("cef3_epr_dft.out.hyperfine.fbk.md")
             check(

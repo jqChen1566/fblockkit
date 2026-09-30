@@ -147,6 +147,8 @@ cp -r work/*.fbk.dm expected/products/
 # the menu-44 generated input and the menu-43 ensemble report (the latter lives
 # inside its run directory; the products copy keeps just the report)
 cp work/*_automr.gjf expected/products/
+# the menu-39 generated POLY_ANISO input (the mode-2 leg)
+cp work/poly_aniso.input expected/products/
 mkdir -p expected/products/crest_run
 cp work/crest_run/crest_ensemble.fbk.md expected/products/crest_run/
 
