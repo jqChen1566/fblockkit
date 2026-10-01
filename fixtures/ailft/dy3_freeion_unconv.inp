@@ -1,0 +1,16 @@
+!NEVPT2 def2-SVP def2-SVP/C TightSCF SlowConv
+%pal nprocs 8 end
+%maxcore 4000
+%casscf
+  nel 9
+  norb 7
+  LFTCase 4f
+  mult 6
+  nroots 21
+  rel
+    dosoc true
+  end
+end
+*xyz 3 6
+Dy 0.000 0.000 0.000
+*

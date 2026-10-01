@@ -131,6 +131,12 @@ def _prepare_work() -> None:
     shutil.copy(FIXTURES / "n2_cas666_1.600.json", work / "n2_cas666_1.600.json")
     shutil.copy(FIXTURES / "benzene_rhf.json", work / "benzene_rhf.json")
     shutil.copy(FIXTURES / "benzene_rhf.mkl", work / "benzene_rhf.mkl")
+    # the menu-49 state-tracking sequence (the SA(6,6) exports with 3 and 4
+    # roots, each with its sibling .out for the per-root energies)
+    shutil.copy(FIXTURES / "n2_ass1st_sa.json", work / "n2_ass1st_sa.json")
+    shutil.copy(FIXTURES / "n2_ass1st_sa.out", work / "n2_ass1st_sa.out")
+    shutil.copy(FIXTURES / "n2_ass1st_sa4.json", work / "n2_ass1st_sa4.json")
+    shutil.copy(FIXTURES / "n2_ass1st_sa4.out", work / "n2_ass1st_sa4.out")
     # the dipole-moment chain of menus 19/20 (reference, prep and the candidates)
     for name in (
         "h2o_dm_ref_pbe0.out",

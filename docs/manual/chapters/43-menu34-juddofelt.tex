@@ -41,7 +41,7 @@ literature) twice: unweighted, and with the normalized $1/S$ variant that
 some authors use.  The two give different parameters from the same data --
 which is exactly why the weighting is an explicit question.
 
-\lstinputlisting[style=fbkcode, firstline=39, lastline=64,
+\lstinputlisting[style=fbkcode, firstline=54, lastline=79,
   title={The menu-34 example (unweighted fit of the Eu$^{3+}$ benchmark:
   the parameters, the fit quality and the per-transition ratios)}]
   {examples/expected/m34_juddofelt.txt}
@@ -55,6 +55,14 @@ for every fitted line), and -- when an emission block is present -- the
 $A_{\mathrm{ED}}$ rates, branching ratios and the radiative lifetime.  The
 report file \file{<dataset>.jo.fbk.md} carries the same content with the
 full citations.
+
+Beside the report, the menu writes a plot-ready companion,
+\code{<dataset>.jo.fbk.csv}: one row per fitted transition
+(\code{side,label,energy\_cm1,f\_exp,s\_exp,s\_ed,a\_ed\_s1,branching};
+the emission block's per-transition rows follow when the dataset carries
+one), so an $S_{\mathrm{ED}}$-against-$S_{\exp}$ figure or a branching
+chart can be made in any plotting tool from the same numbers the report
+prints (Chapter~\ref{ch:formats}).
 
 \section{Conventions and boundaries (all measured or source-verified)}
 

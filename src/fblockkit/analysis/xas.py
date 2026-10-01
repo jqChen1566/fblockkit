@@ -32,14 +32,20 @@ from __future__ import annotations
 from typing import Any
 
 from ..knowledge.models import EVIDENCE_LITERATURE, EVIDENCE_MEASURED, Evidence
+from .plot_csv import csv_field, plot_number
 
 __all__ = [
     "XasError",
     "primary_spectrum",
     "branching",
+    "xas_plot_csv",
     "render",
     "evidence",
 ]
+
+#: transitions with fosc below this are print-precision dregs (the report and
+#: the CSV companion drop the same rows)
+_NONZERO_FOSC = 1e-6
 
 #: preference order of the spectrum blocks (population-weighted SOC first)
 PRIMARY_PREFERENCE = (
@@ -132,6 +138,28 @@ def branching(
     return result
 
 
+def xas_plot_csv(data: dict[str, Any]) -> str:
+    """The primary block's transitions as a plot-ready CSV companion.
+
+    One row per transition with non-zero oscillator strength -- the same set
+    the report lists, without the report's 80-row display cap: the state
+    pair, the excitation energy in eV and fosc, i.e. the stick spectrum's
+    numbers, ready to plot or broaden (the formats chapter, "Plot-ready CSV
+    companions").
+    """
+    _key, rows = primary_spectrum(data)
+    lines = ["i_root,i_label,j_root,j_label,energy_eV,fosc"]
+    for row in rows:
+        if row["fosc"] <= _NONZERO_FOSC:
+            continue
+        lines.append(
+            f"{row['i_root']},{csv_field(row['i_label'])},"
+            f"{row['j_root']},{csv_field(row['j_label'])},"
+            f"{plot_number(row['ev'])},{plot_number(row['fosc'])}"
+        )
+    return "\n".join(lines) + "\n"
+
+
 def render(
     data: dict[str, Any],
     *,
@@ -152,7 +180,7 @@ def render(
     key, rows = primary_spectrum(data)
     # the SOC-corrected tables carry the full state-pair matrix; all-zero rows
     # (and the print-precision dregs) are noise for the table and the split
-    nonzero = [row for row in rows if row["fosc"] > 1e-6]
+    nonzero = [row for row in rows if row["fosc"] > _NONZERO_FOSC]
     lines.append("")
     lines.append(
         f"  primary block: {key} ({len(rows)} transitions, {len(nonzero)} with non-zero fosc)"

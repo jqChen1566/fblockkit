@@ -1569,7 +1569,13 @@ the per-transition S_exp and r = S_theory/S_exp table, and a report
   reported as *not determined* (never as a silent zero);
 - magnetic-dipole parts are not computed (they need free-ion wave
   functions): give `f_md` per transition where they are significant — the
-  fit subtracts them, as the source implementations do.
+  fit subtracts them, as the source implementations do;
+- beside the report the menu writes a plot-ready companion,
+  `<dataset>.jo.fbk.csv`: one row per fitted transition
+  (`side,label,energy_cm1,f_exp,s_exp,s_ed,a_ed_s1,branching`, with the
+  emission block's rows when present), so the S_ED-against-S_exp figure or
+  a branching chart can be made in any plotting tool from the same numbers
+  the report prints.
 
 **Boundaries**: the extended (perturbative X_k / configuration-interaction)
 JO models of the 2022/2024 literature need free-ion atomic-structure wave
@@ -1665,6 +1671,10 @@ file with both gets both parts of the report, written as
   single vibrational mode (2299.9 cm-1) no phonon matches its Zeeman gaps,
   so there is no one-phonon channel -- an all-infinity column is a
   structure fact, not a fit target;
+- the magrelax part additionally writes a plot-ready companion,
+  `<output>.relax.fbk.csv` (columns `temperature_K,rate_per_s,tau_s`), so
+  the Arrhenius figure can be made in any plotting tool from the same
+  numbers the report prints;
 - with `DoSSC true` the output contains two complete SINGLE_ANISO segments
   (SOC-only and SOC+SSC; the O2 fixture prints D = 2.175287 vs 3.185964) --
   compare the spectra before mixing numbers across segments.  `MLTP` must
@@ -1717,7 +1727,12 @@ comparison (Enter to report the ratio only).  The report is
   intermediate/final states -- measured on a 4-element OrbWin, which lacks
   the second donor space the RIXS variant needs); or cross sections
   evaluated, with the transition counts and the `orca_mapspc` recipe
-  (manual section 5.7.4.2) for the 2D data files.
+  (manual section 5.7.4.2) for the 2D data files;
+- beside the report the menu writes a plot-ready companion,
+  `<output>.xas.fbk.csv`: every non-zero transition of the primary block
+  -- without the report's 80-row display cap -- as
+  `i_root,i_label,j_root,j_label,energy_eV,fosc`, the stick spectrum
+  ready to plot or broaden in any tool.
 
 **Boundaries**: ROCIS applies several approximations (the manual says the
 results are qualitatively correct); the menu does not name the edge
@@ -1740,8 +1755,11 @@ level, the fit quality and the SOC constant.
 
 **How**: menu 38 -> the ORCA output path of a CASSCF run with the AILFT
 driver (`%casscf` with `ActOrbs dOrbs`/`fOrbs` or `LFTCase 3d`/`4f` ...),
-then optionally the free-ion Racah B and/or SOC constant zeta0 for the
-nephelauxetic ratios (Enter skips).  The report is `<output>.ailft.fbk.md`.
+then optionally a free-ion reference from the built-in table (e.g. `Dy3+`,
+`U3+`: the published trivalent lanthanide/actinide free-ion series plus a
+measured Ni probe, resolved per level), and/or manually entered Racah B and
+zeta0 values (a manual value overrides the table; Enter skips).  The report
+is `<output>.ailft.fbk.md`.
 
 **How to read it**:
 
@@ -1758,10 +1776,15 @@ nephelauxetic ratios (Enter skips).  The report is `<output>.ailft.fbk.md`.
   Neese 2020);
 - the SOC constant (ZETA_D for d shells, ZETA_F for f shells; the engine
   fits it against the CASSCF-orbital SOC matrix elements);
-- when you pass free-ion references, the nephelauxetic ratio
-  beta = B/B0 and the relativistic ratio zeta/zeta0 -- reductions are the
-  classic covalency indicators (Jung, Atanasov & Neese 2017, the
-  actinide/lanthanide AILFT reference).
+- when a free-ion reference is available (the built-in table or a value you
+  enter), the nephelauxetic ratios -- beta = B/B0 for d shells, F2/F20 for
+  f shells, and zeta/zeta0 for both -- reductions are the classic covalency
+  indicators (Jung, Atanasov & Neese 2017, the actinide/lanthanide AILFT
+  reference).  The table resolves the reference level by level; it combines
+  the published lanthanide/actinide series with a measured Ni entry, and
+  the two sources cross-check on Nd to better than 2% at the NEVPT2 level.
+  Entries whose probe run met only the energy criterion are marked
+  energy-only on the report.
 
 **Boundaries**: this menu reads the engine's fit and never refits; the
 parameters are model quantities of the ligand-field Hamiltonian (their
@@ -1893,7 +1916,12 @@ levels.  The report is `<output>.mce.fbk.md`.
   adjacent-temperature differences; positive values are the direct
   magnetocaloric effect (the cooling capacity quoted in the literature);
   the probe maximum is reported.  Converged data (a fine temperature grid)
-  are required.
+  are required;
+- beside the report the menu writes a plot-ready companion,
+  `<output>.mce.fbk.csv`: the levels route's S_mag(T) grid
+  (`temperature_K,entropy_J_per_mol_per_K`) or the Maxwell route's
+  -DeltaS(T, H) table in tidy long form over the full printed field grid
+  (`T_mid_K,field_T,minus_delta_S_J_per_mol_per_K`).
 
 **Boundaries**: both routes are pure post-processing of printed values;
 the levels route is B = 0 (the levels are field-free) and the
@@ -2201,6 +2229,41 @@ aufbau start in 13 macro-iterations against 7 -- the source's large gains
 are in condensed-phase settings, where the aufbau window fails outright.
 Approximately planar atom sets only (the report prints the maximum
 out-of-plane deviation).
+
+## 49 Cross-run state tracking (an ordered run sequence + a target root)
+
+**What it is for**: follow one electronic state across a sequence of runs of
+one geometry, using the density-matrix tracking criterion of Tran, Shea &
+Neuscamman (J. Chem. Theory Comput. 2019, 15, 4790) in its post-processing
+form. Each candidate root of the next run is scored by the Frobenius
+difference of its one-body density matrix against the tracked state's density
+(rotated into the candidate's orbital basis) plus `W0 = (E_t - E_k)^2`; the
+smallest `Q = W0 + D` continues the lineage. Use it across an SA-size change,
+a rerun into a different solution, or any coarse-to-fine sequence where root
+flipping would otherwise go unnoticed.
+
+**What you need**: one `orca_2json` export per run (conf:
+`{"MOCoefficients": true, "1elIntegrals": ["S"], "Densities": ["all"]}`;
+the CASSCF run must keep its densities -- `KeepDens`), and optionally each
+export's sibling `.out` for the per-root energies (without it the report only
+loses the `W0` term, and says so). All runs of the sequence must share atoms,
+coordinates and basis.
+
+**How**: menu 49 -> the exports in tracking order (comma-separated; first
+the run that holds the target state), then the 0-based root index to track.
+
+**What you get**: `<first-export>.track.fbk.md` -- the run list, the target
+label and energy, one table per step (each candidate's mult/root/energy/W0/D/Q
+with the chosen one marked, plus the margin over the runner-up), and the
+boundary declarations.
+
+**Boundaries**: the source's `W1` term (the active-to-virtual stationarity
+measure) is not evaluated (no ORCA export carries the coupling it needs; for
+a converged candidate run it tends to zero), the `1/n_CAS` scaling of `D` is
+not applied, and `omega` is taken as the tracked state's own energy. Single
+geometry sequences only -- the density rotation presupposes one AO space
+(cross-geometry work is menu 17's). A printed-degenerate pair shows up as a
+near-zero margin and is flagged, not resolved.
 
 ## Appendix A Command line
 

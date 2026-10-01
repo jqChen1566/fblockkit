@@ -453,7 +453,10 @@ def test_aborted_casscf_fixtures_capture_their_abort_reasons():
     assert any("IS NOT FULLY CONVERGED" in e for e in default["errors"])
     assert any("Aborting the run" in e for e in default["errors"])
     assert default["casscf"]["present"] is True
-    assert default["casscf"]["converged"] is None
+    # the wavefunction-not-fully-converged text is now recorded as the casscf
+    # section's own verdict too (the same wording the error list carries)
+    assert default["casscf"]["converged"] is False
+    assert default["casscf"]["converged_via"] == "wavefunction not fully converged"
     trah = _sections("generated_yb3_sarc2_trah.out")
     assert trah["terminated_normally"] is False
     assert any("OUT OF MEMORY" in e for e in trah["errors"])

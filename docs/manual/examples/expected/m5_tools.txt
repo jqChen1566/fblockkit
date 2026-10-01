@@ -49,12 +49,13 @@ Available functions:
   46  Quantum-tunnelling relaxation prediction (a SINGLE_ANISO output -> tau_QTM and U_eff(T); optional neighbour table for the dipolar model)
   47  AOP rotation guess (a reference active space + a target export -> a gbw-ready mkl)
   48  PiOS pi-orbital active space (a pi-system definition + an export -> the pi orbitals and a gbw-ready mkl)
+  49  Cross-run state tracking (an ordered run sequence + a target root -> the per-step root-matching table)
    0  Quit
 Choose a number (Enter = leave empty)> 5
 Search keywords (several words, space separated) (Enter = leave empty)> mokit
 - MOKIT / automr (B interface; in use; license: Apache-2.0)
   black-box multireference workflow (UNO/GVB route, automatic active-space selection; hands orbitals between 19 programs)
-  Note: Interfaced as of Wave 6.1 (2026-09-30): menu 44 writes the .gjf + mokit{} input and menu 45 reads the automr output back. Verified end-to-end by running the generated input through a deployed MOKIT 1.2.8 (official prebuilt package; GVB on a Gaussian 16 backend because GAMESS is absent here, CASSCF on its PySCF default) to Normal termination. The official citation form is "Jingxiang Zou, Molecular Orbital Kit (MOKIT)". Not fully functional on Windows.
+  Note: Interfaced as of 2026-09-30: menu 44 writes the .gjf + mokit{} input and menu 45 reads the automr output back. Verified end-to-end by running the generated input through a deployed MOKIT 1.2.8 (official prebuilt package; GVB on a Gaussian 16 backend because GAMESS is absent here, CASSCF on its PySCF default) to Normal termination. The official citation form is "Jingxiang Zou, Molecular Orbital Kit (MOKIT)". Not fully functional on Windows.
 
 Available functions:
    1  Check-up and characterisation (read an ORCA or Gaussian output -> analysis + diagnosis report)
@@ -105,6 +106,7 @@ Available functions:
   46  Quantum-tunnelling relaxation prediction (a SINGLE_ANISO output -> tau_QTM and U_eff(T); optional neighbour table for the dipolar model)
   47  AOP rotation guess (a reference active space + a target export -> a gbw-ready mkl)
   48  PiOS pi-orbital active space (a pi-system definition + an export -> the pi orbitals and a gbw-ready mkl)
+  49  Cross-run state tracking (an ordered run sequence + a target root -> the per-step root-matching table)
    0  Quit
 Choose a number (Enter = leave empty)> 6
 Tool index id (e.g. openmolcas; search with menu 5) (Enter = leave empty)> openmolcas
@@ -116,7 +118,7 @@ Source: https://gitlab.com/Molcas/OpenMolcas
 Note: The magnetic-property chain input template (G3) is implemented and tested in the recipe layer (SA-CASSCF / RASSI / SINGLE_ANISO; deviations from the source SI are tagged in-file; the comment-character rule was checked against the official user guide). The reading side (parsing OpenMolcas output) is not implemented.
 Provenance:
   - [measured] User decision of 2026-09-25 "first release = ORCA deep + OpenMolcas magnetic-property chain template" (00_说明.md §2)
-  - [measured] G3 implementation record (template + spec validation + discipline tests; every line the source does not show is tagged in-file). (SESSION_LOG.md event 20 (commit f72a2e5))
+  - [measured] G3 implementation record (template + spec validation + discipline tests; every line the source does not show is tagged in-file). (the G3 template record (2026-09-25))
 
 Available functions:
    1  Check-up and characterisation (read an ORCA or Gaussian output -> analysis + diagnosis report)
@@ -167,6 +169,7 @@ Available functions:
   46  Quantum-tunnelling relaxation prediction (a SINGLE_ANISO output -> tau_QTM and U_eff(T); optional neighbour table for the dipolar model)
   47  AOP rotation guess (a reference active space + a target export -> a gbw-ready mkl)
   48  PiOS pi-orbital active space (a pi-system definition + an export -> the pi orbitals and a gbw-ready mkl)
+  49  Cross-run state tracking (an ordered run sequence + a target root -> the per-step root-matching table)
    0  Quit
 Choose a number (Enter = leave empty)> 6
 Tool index id (e.g. openmolcas; search with menu 5) (Enter = leave empty)> liblan
@@ -273,6 +276,7 @@ Available functions:
   46  Quantum-tunnelling relaxation prediction (a SINGLE_ANISO output -> tau_QTM and U_eff(T); optional neighbour table for the dipolar model)
   47  AOP rotation guess (a reference active space + a target export -> a gbw-ready mkl)
   48  PiOS pi-orbital active space (a pi-system definition + an export -> the pi orbitals and a gbw-ready mkl)
+  49  Cross-run state tracking (an ordered run sequence + a target root -> the per-step root-matching table)
    0  Quit
 Choose a number (Enter = leave empty)> 0
 Goodbye.

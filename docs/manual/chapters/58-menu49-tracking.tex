@@ -1,0 +1,107 @@
+\chapter{Cross-run state tracking (menu 49)}
+\label{ch:menu49}
+\menulabel{49}
+
+\section{Purpose}
+
+Track one electronic state across a sequence of runs of one geometry.
+The measure is the density-matrix tracking criterion of Tran, Shea \&
+Neuscamman (JCTC 2019) in its post-processing form: every candidate root
+of the next run is scored by the Frobenius difference of its one-body
+reduced density matrix against the tracked state's density (rotated into
+the candidate's orbital basis) plus the energy term $W_0 = (E_t -
+E_k)^2$; the smallest $Q = W_0 + D$ continues the lineage.  Use it where
+root flipping would otherwise go unnoticed: an SA-size change, a rerun
+into a different-shaped solution, or any coarse-to-fine or
+method-to-method sequence of one system.
+
+\section{What you need}
+
+One \code{orca\_2json} export per run
+(\code{\{"MOCoefficients": true, "1elIntegrals": ["S"], "Densities":
+["all"]\}} written next to the gbw; the CASSCF run must have kept its
+densities, \code{KeepDens}), and -- optionally -- each export's sibling
+\code{.out} for the per-root energies (a missing sibling only costs the
+$W_0$ term, which the report then declares).  All runs of the sequence
+must share atoms, coordinates and basis (the export's own S matrix,
+compared across runs), because the density rotation presupposes one AO
+space.
+
+\section{Walkthrough}
+
+The example walks root~0 of the SA(6,6) three-root run into the
+four-root run of the same system (the runs differ only in \code{nroots}
+-- the tracked state must survive the change of the average):
+
+\lstinputlisting[style=fbkcode, firstline=57, lastline=70,
+  title={The menu-49 example (the lineage, the per-candidate table and the
+  margin)}]
+  {examples/expected/m49_tracking.txt}
+
+The ground state matches at $D = 7.2\times10^{-3}$ while every other
+root sits at $0.887$--$0.900$; the same walk from root~1 matches at
+$1.26\times10^{-2}$ with the runner-up at $1.84\times10^{-2}$ (margin
+$6.7\times10^{-3}$), and from root~2 the margin collapses to
+$9\times10^{-16}$: roots 2 and 3 of the four-root run print degenerate,
+and the report marks the step ``nearly degenerate in this metric''.
+
+\section{What you get}
+
+The report \code{<first-export>.track.fbk.md}: the run list in tracking
+order, the target's label and energy, one table per step (each candidate's
+multiplicity, root, energy, $W_0$, $D$ and $Q$, the chosen one marked, and
+the margin over the runner-up), and the boundary declarations.  The walk
+is deterministic and replays byte-identically.
+
+\section{Conventions, cross-checks and boundaries (measured)}
+
+\begin{readbox}
+\begin{itemize}
+  \item \textbf{The density channel and its convention.}  The per-root
+    densities are the \code{Tdens-CAS.mult.<m>.root.<k>.p} entries of the
+    export's Densities sidecar (one per root; the SA(6,6) fixtures ship
+    three and four), read with the menu-23 convention $\Gamma = C\,(S\,
+    D_{\mathrm{json}}\,S)\,C^{\mathsf T}$; every 1-RDM's trace equals the
+    electron count (14 on the N$_2$ fixtures).
+  \item \textbf{The cross-run rotation is a measured identity.}  For runs
+    of one geometry the S matrices agree to the last digit and
+    $M = C_{\mathrm{cand}}\,S\,C_{\mathrm{target}}^{\mathsf T}$ comes out
+    orthogonal to $2\times10^{-14}$; the same state then measures
+    $D = 7.2\times10^{-3}$ across the average-size change (SA~3 roots
+    $\to$ SA~4 roots) and $D = 5.2\times10^{-2}$ across SA $\to$
+    single-root (full orbital relaxation), while wrong roots sit at
+    $0.887$--$0.900$.
+  \item \textbf{Three declared substitutions against the source's
+    $Q = W_0 + W_1 + D$.}  The $W_1$ term (the active-to-virtual
+    stationarity measure) is not evaluated: no ORCA export carries the
+    coupling it needs; for a converged candidate run $W_1$ tends to zero
+    (the source's equivalence, $W_1 = 0$ iff the energy is stationary).
+    The $1/n_{\mathrm{CAS}}$ scaling of $D$ is not applied (it serves the
+    source's portability across active-space sizes; the ranking within
+    one sequence is unaffected).  $\omega$ -- the source's energy target
+    -- is taken as the tracked state's own energy, updated each step.
+  \item \textbf{The margin is the reading.}  The source's own hard case
+    (two roots with similarly structured densities) is on record here:
+    the printed-degenerate pair shows up as a $10^{-16}$ margin, which
+    the report flags rather than resolves; the $10^{-3}$ flagging line is
+    presentational, not a criterion.
+\end{itemize}
+\end{readbox}
+
+\section{Refusals and related sections}
+
+\begin{refusalbox}
+\begin{itemize}
+  \item Fewer than two runs, a target root index the first run does not
+    have (the available labels are listed), runs whose atoms,
+    coordinates (tolerance $10^{-6}$~\AA), or AO dimensions differ, an
+    export without the S-Matrix, and an export without the per-root
+    \code{Tdens-CAS} densities are refused, each with its next step.
+  \item Cross-geometry tracking is outside this menu's scope: the
+    density rotation presupposes one AO space, and the cross-structure
+    orbital mapping (Chapter~\ref{ch:menu17}) remains the route that
+    relates two geometries' orbital spaces.  The single-run per-state
+    tables are Chapter~\ref{ch:menu31}'s ground; the density channel is
+    the menu-23 chain's.
+\end{itemize}
+\end{refusalbox}

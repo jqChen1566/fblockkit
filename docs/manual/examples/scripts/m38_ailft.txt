@@ -1,5 +1,6 @@
 38
 work/ni_ailft.out
+Ni2+
 
 
 0

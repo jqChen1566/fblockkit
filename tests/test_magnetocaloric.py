@@ -114,3 +114,35 @@ def test_the_evidence_is_citable():
     literature = [item for item in evidence if item.kind == "literature"]
     assert literature and "10.3390/ma13020485" in literature[0].ref
     assert "10.1016/j.jmmm.2019.165933" in literature[0].ref
+
+
+def test_the_levels_plot_csv_mirrors_the_report_grid():
+    """The plot-ready companion of the levels route: the report's default
+    temperature grid, the same canonical-ensemble numbers."""
+    spectrum = parse_auto(CO).sections["single_aniso"]["segments"][0]["soc_spectrum_cm1"]
+    csv_text = mc.levels_plot_csv(spectrum)
+    lines = csv_text.splitlines()
+    assert lines[0] == "temperature_K,entropy_J_per_mol_per_K"
+    assert len(lines) == 1 + 9
+    temperatures = [float(line.split(",")[0]) for line in lines[1:]]
+    assert temperatures == [1, 2, 5, 10, 20, 50, 100, 200, 300]
+    last = lines[-1].split(",")
+    assert float(last[1]) == approx(mc.entropy_from_levels(spectrum, [300.0])[0])
+    assert csv_text.endswith("\n") and "\r" not in csv_text
+
+
+def test_the_maxwell_plot_csv_carries_the_full_field_grid(magnet):
+    """The plot-ready companion of the Maxwell route: tidy long form over the
+    full printed field grid (the report shows five probe fields), the same
+    values with the report's sign convention (the column is -DeltaS)."""
+    csv_text = mc.maxwell_plot_csv(magnet)
+    lines = csv_text.splitlines()
+    assert lines[0] == "T_mid_K,field_T,minus_delta_S_J_per_mol_per_K"
+    assert len(lines) == 1 + 5 * 71  # 5 temperature pairs x 71 fields
+    values = [float(line.split(",")[2]) for line in lines[1:]]
+    assert max(values) == approx(10.8404, abs=5e-5)  # the report's probe maximum
+    # the first block starts at the first temperature midpoint over the field grid
+    first = lines[1].split(",")
+    assert float(first[0]) == approx(0.5 * (1.8 + 2.0))
+    assert float(first[1]) == approx(0.0001)
+    assert csv_text.endswith("\n") and "\r" not in csv_text

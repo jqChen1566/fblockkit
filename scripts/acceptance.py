@@ -220,6 +220,10 @@ def main() -> int:
             "pios_manifest.json",
             "benzene_rhf.json",
             "benzene_rhf.mkl",
+            "n2_ass1st_sa.json",
+            "n2_ass1st_sa.out",
+            "n2_ass1st_sa4.json",
+            "n2_ass1st_sa4.out",
             "n2_scan_1.094.loc.json",
             "n2_scan_1.600.loc.json",
             "n2_scan_1.610.loc.json",
@@ -309,7 +313,7 @@ def main() -> int:
                     "36", "work/co_aniso2.out",
                     "36", "work/co_magrelax.out",
                     "37", "work/fecl4_xas.out", "2.0",
-                    "38", "work/ni_ailft.out", "", "",
+                    "38", "work/ni_ailft.out", "Ni2+", "", "",
                     "39", "1", "work/two_center_probe.out",
                     "39", "2", "work/poly_aniso.input", "2", "1 1", "2 2",
                     "0.0 0.0 0.0", "0.0 0.0 3.7", "1 2 0.1", "", "0 300 101",
@@ -329,6 +333,7 @@ def main() -> int:
                     "1.0, 0.3, 0.05",
                     "47", "work/aop_manifest.json",
                     "48", "work/pios_manifest.json",
+                    "49", "work/n2_ass1st_sa.json, work/n2_ass1st_sa4.json", "0",
                     "31", "work/h2o_absp.property.txt",
                     "8", "work/saved.txt",
                     "0",
@@ -737,6 +742,16 @@ def main() -> int:
                 and "1.842" in jo_report,
                 "menu 34 reproduces the published Judd-Ofelt benchmark",
             )
+            jo_csv = read("babu2000_eu3.yaml.jo.fbk.csv")
+            check(
+                jo_csv.startswith(
+                    "side,label,energy_cm1,f_exp,s_exp,s_ed,a_ed_s1,branching"
+                )
+                and len(jo_csv.splitlines()) == 10
+                and jo_csv.splitlines()[1].startswith("absorption,7F6 <- 7F1,")
+                and jo_csv.endswith("\n"),
+                "menu 34 writes the plot-ready transition-table CSV companion",
+            )
             pnmr_report_text = read("co_plus_qdpt_g.yaml.pnmr.fbk.md")
             check(
                 "effective-Hamiltonian" in pnmr_report_text
@@ -751,12 +766,24 @@ def main() -> int:
                 and "7.2538e-02" in relax_sa,
                 "menu 36 guards the near-isotropic KD table and reports the UBAR maximum",
             )
+            relax_csv = read("co_magrelax.out.relax.fbk.csv")
+            check(
+                relax_csv.startswith("temperature_K,rate_per_s,tau_s")
+                and len(relax_csv.splitlines()) == 29
+                and relax_csv.endswith("\n"),
+                "menu 36 writes the plot-ready tau(T) CSV companion (the "
+                "uniformly-zero boundary carried as -inf, no comment lines)",
+            )
             ailft_report = read("ni_ailft.out.ailft.fbk.md")
             check(
                 "Racah (cm-1): B = 1328.1" in ailft_report
                 and "total RMS = 457.4 cm-1" in ailft_report
-                and "ZETA_D = 664.14 cm-1" in ailft_report,
-                "menu 38 reads the AILFT blocks and reports the fit quality",
+                and "ZETA_D = 664.14 cm-1" in ailft_report
+                and "built-in table: Ni2+ casscf level" in ailft_report
+                and "beta = B/B0 = 1.000" in ailft_report,
+                "menu 38 reads the AILFT blocks, reports the fit quality and resolves "
+                "the built-in free-ion reference level by level (the free ion against "
+                "itself: beta = 1.000)",
             )
             poly_report = read("two_center_probe.out.polyaniso.fbk.md")
             check(
@@ -792,11 +819,26 @@ def main() -> int:
                 "maximum: -DeltaS = 10.8404 J mol-1 K-1 at T = 1.90 K" in mce_report,
                 "menu 41 runs the Maxwell route on the magnetization table",
             )
+            mce_csv = read("poly_mh.out.mce.fbk.csv")
+            check(
+                mce_csv.startswith("T_mid_K,field_T,minus_delta_S_J_per_mol_per_K")
+                and len(mce_csv.splitlines()) == 356
+                and mce_csv.endswith("\n"),
+                "menu 41 writes the plot-ready -DeltaS(T, H) CSV companion "
+                "(the full field grid, tidy long form)",
+            )
             mce_levels = read("co_aniso2.out.mce.fbk.md")
             check(
                 "route: spin-orbit levels" in mce_levels
                 and "R ln(N) = 11.5263" in mce_levels,
                 "menu 41 runs the levels route on the SINGLE_ANISO spectrum",
+            )
+            mce_levels_csv = read("co_aniso2.out.mce.fbk.csv")
+            check(
+                mce_levels_csv.startswith("temperature_K,entropy_J_per_mol_per_K")
+                and len(mce_levels_csv.splitlines()) == 10
+                and mce_levels_csv.endswith("\n"),
+                "menu 41 writes the plot-ready S(T) CSV companion (levels route)",
             )
             check(
                 "Basis-library query: Ce at" in out
@@ -880,6 +922,16 @@ def main() -> int:
                 and "$OCC_ALPHA" in pios_written,
                 "menu 48 wrote the gbw-ready mkl next to the benzene mkl template",
             )
+            track_report = read("n2_ass1st_sa.json.track.fbk.md")
+            check(
+                "Cross-run state tracking" in track_report
+                and "7.2159e-03" in track_report
+                and "[chosen]" in track_report
+                and "W1" in track_report
+                and "margin over the runner-up: 1.0401e+00" in track_report,
+                "menu 49 tracks the ground state across the average-size change "
+                "(D = 7.2e-3 against 0.89 for the wrong roots; declarations printed)",
+            )
             mokit_report = read("h2o_generated_automr.mokit.fbk.md")
             check(
                 "Active space (automatically determined): CAS(4e,4o)" in mokit_report
@@ -893,6 +945,14 @@ def main() -> int:
                 and "935 with non-zero fosc" in xas_report
                 and "RIXS: not requested" in xas_report,
                 "menu 37 reads the ROCIS blocks and reports the branching ratio",
+            )
+            xas_csv = read("fecl4_xas.out.xas.fbk.csv")
+            check(
+                xas_csv.startswith("i_root,i_label,j_root,j_label,energy_eV,fosc")
+                and len(xas_csv.splitlines()) == 936
+                and xas_csv.endswith("\n"),
+                "menu 37 writes the plot-ready stick-spectrum CSV companion "
+                "(the full non-zero set, no display cap)",
             )
             relax_mr = read("co_magrelax.out.relax.fbk.md")
             check(

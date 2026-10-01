@@ -62,6 +62,7 @@ from pathlib import Path
 import numpy as np
 
 from ..knowledge.models import EVIDENCE_LITERATURE, EVIDENCE_MEASURED, Evidence
+from .plot_csv import csv_field, plot_number
 
 __all__ = [
     "JudOError",
@@ -72,6 +73,7 @@ __all__ = [
     "read_dataset",
     "fit",
     "emission_rates",
+    "jo_plot_csv",
     "render",
     "evidence",
 ]
@@ -485,6 +487,35 @@ def render(result: FitResult, *, source: str = "") -> str:
     ]
     out += boundaries
     return "\n".join(out)
+
+
+def jo_plot_csv(result: FitResult) -> str:
+    """The fitted transition table as a plot-ready CSV companion.
+
+    One row per fitted transition (``side`` = absorption: the label, the
+    energy, the measured oscillator strength and the measured/fitted line
+    strengths) followed by the emission block's per-transition rows when the
+    dataset carries one (``side`` = emission: label, energy, A_ED and the
+    branching ratio); columns that do not apply to a side are left empty.
+    The derived summaries (Omega, sigma, the radiative lifetime) stay in the
+    report -- the companion carries the per-transition numbers the report's
+    tables print (the formats chapter, "Plot-ready CSV companions").
+    """
+    lines = ["side,label,energy_cm1,f_exp,s_exp,s_ed,a_ed_s1,branching"]
+    for transition, s_exp, s_ed in zip(result.transitions, result.s_exp, result.s_ed):
+        lines.append(
+            f"absorption,{csv_field(transition.label)},"
+            f"{plot_number(transition.energy_cm1)},{plot_number(transition.f_exp)},"
+            f"{plot_number(s_exp)},{plot_number(s_ed)},,"
+        )
+    # emission_rates appends a trailing total row (the report's summary line);
+    # the companion carries only the per-transition rows
+    for row in emission_rates(result)[:-1]:
+        lines.append(
+            f"emission,{csv_field(row['label'])},{plot_number(row['energy_cm1'])},"
+            f",,,{plot_number(row['a_ed_s1'])},{plot_number(row['branching'])}"
+        )
+    return "\n".join(lines) + "\n"
 
 
 def render_emission(rows: tuple[dict, ...]) -> str:

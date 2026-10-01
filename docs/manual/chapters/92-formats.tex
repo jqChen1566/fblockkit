@@ -327,6 +327,27 @@ File & Content \\
 \end{tabularx}
 \end{center}
 
+\section{Plot-ready CSV companions (the report's curves)}
+\label{sec:formats-plotcsv}
+
+Menus whose report is a curve or a table of plottable points additionally
+write a \code{<output>.<menu>.fbk.csv} companion beside the report.  The
+file is deliberately plain: one header line (column names with their
+units, underscore-separated, e.g.\
+\code{temperature\_K,rate\_per\_s,tau\_s}), then one data row per point,
+comma separated, at ten significant digits, with no comment lines and no
+styling information; a text field is quoted only when it would otherwise
+break the row.  It drops straight into spreadsheets, Origin, pandas or
+gnuplot, and the report beside it carries the context (fit window,
+coefficients, boundary notes); the values are the engine's printed
+numbers, so a figure made from the companion is regenerated from the same
+output.  Covered today: menu~34 (the fitted transition table, with the
+emission block's rows when present), menu~36 (the Orca\_Magrelax
+$\tau(T)$ table), menu~37 (the primary block's stick spectrum), and
+menu~41 ($S_{\mathrm{mag}}(T)$ on the levels route; the $-\Delta S(T, H)$
+table on the Maxwell route); further curve-reporting menus join under the
+same convention.
+
 \section{The report as an interface}
 
 The Markdown report is for humans; the JSON companion is the scripting

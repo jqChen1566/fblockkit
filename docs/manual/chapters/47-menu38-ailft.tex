@@ -19,8 +19,10 @@ An ORCA CASSCF output with the AILFT driver requested: \code{ActOrbs
 dOrbs}/\code{fOrbs} (or the \code{LFTCase} shorthand, which also fixes the
 principal quantum number), a CASSCF run over the $d^n$ or $f^n$ space, and
 -- for the correlation-level parameters -- \code{!NEVPT2}.  Optionally
-answer the two questions (free-ion Racah $B_0$ and SOC constant
-$\zeta_0$) to get the nephelauxetic ratios.
+name a free-ion reference from the built-in table (the covered ions are
+listed below) to get the nephelauxetic ratios level by level, or pass the
+two values (free-ion Racah $B_0$ and SOC constant $\zeta_0$) by hand; a
+hand-entered value overrides the table.
 
 \section{Walkthrough}
 
@@ -30,10 +32,10 @@ The example reads the Ni$^{2+}$ $d^8$ fixture: the CASSCF-level parameters
 -- versus NEVPT2-level 457.4~cm$^{-1}$) and the SOC constant
 ZETA\_D = 664.14~cm$^{-1}$.
 
-\lstinputlisting[style=fbkcode, firstline=43, lastline=66,
+\lstinputlisting[style=fbkcode, firstline=54, lastline=83,
   title={The menu-38 example (the two levels, the fit quality and the SOC
-  constant, with a caller-supplied free-ion $B_0$ for the nephelauxetic
-  ratio)}]
+  constant; the built-in free-ion table supplies $B_0$ level by level, and
+  the free ion against itself reads $\beta = 1.000$)}]
   {examples/expected/m38_ailft.txt}
 
 \section{What you get}
@@ -59,12 +61,27 @@ $\beta = B/B_0$ and $\zeta/\zeta_0$.
     2020).  Residual electron repulsion is fitted by $B$ and $C$ (or
     $F^2$, $F^4$, $F^6$); at the NEVPT2 level F0 (and Racah $A$) are not
     defined and are not printed (manual section 3.13.16).
-  \item \textbf{Nephelauxetic readings need the caller's reference}: the
-    menu computes $\beta$ and $\zeta/\zeta_0$ only from the values you
-    pass; reductions relative to free ions are the classic covalency
-    indicators (Jung, Atanasov \& Neese 2017, the actinide/lanthanide
-    AILFT reference).  The menu does not carry a built-in free-ion table
-    (a registered candidate increment).
+  \item \textbf{Nephelauxetic readings resolve per level and per
+    parameter}: the reductions relative to free ions are the classic
+    covalency indicators (Jung, Atanasov \& Neese 2017, the
+    actinide/lanthanide AILFT reference).  The built-in table covers the
+    trivalent lanthanide and actinide series (Ce--Yb, Th--No; the
+    published free-ion AILFT values of that paper, SI sections
+    S3.5.1/S3.1.1: $F^2$/$F^4$/$F^6$ and $\zeta$ per parameter level),
+    plus one measured entry (Ni$^{2+}$ $d^8$, frozen under
+    \file{fixtures/ailft}).  The report resolves the ratio per parameter
+    -- $F^2/F^2_0$ for f shells, $B/B_0$ for d shells,
+    $\zeta/\zeta_0$ for both -- and a hand-entered value overrides the
+    table.  The two kinds of entry were cross-checked against each other
+    on Nd$^{3+}$: the NEVPT2-level $F^2$ and the $\zeta$ agree to better
+    than 2\% between the published SARC2/DKH2 value and this toolkit's
+    def2-SVP probe (the CASSCF-level $F^2$ carries a 7\% basis-set
+    spread, recorded in the module; the Tb entry's NEVPT2 row repeats
+    Gd's digits as printed in the source and is kept verbatim).  One
+    measured engine boundary shaped the probes and is worth knowing: an
+    ORCA 6.1.1 run that used \code{!TRAH} aborts inside the AILFT driver
+    (\code{failed to retrieve the FAO matrix}), so the free-ion probes
+    run without it.
   \item \textbf{The SOC constant comes from a CASSCF-orbital fit}
     (``SPIN ORBIT COUPLING (based on CASSCF orbitals)''); the confidence
     intervals of the fit are printed by the engine and are not restated.
@@ -73,6 +90,13 @@ $\beta = B/B_0$ and $\zeta/\zeta_0$.
     interpretation (AOM-style bonding analysis, two-shell problems) is
     the model's business, and the two-shell parameter spaces are covered
     by the manual's LFTCase list.
+  \item \textbf{An unconverged run is flagged, not silently read}: when the
+    output's own verdict is that the wavefunction is not fully converged
+    (ORCA aborts such runs without using them for properties), the report
+    opens with a RUN STATUS line marking the parameters diagnostic, and an
+    energy-only convergence marker (the gradient criterion silent) gets the
+    provisional caution -- the measured positives are the Dy(3+) free-ion
+    probe's first attempt and a marker-rewritten probe variant.
   \item \textbf{Boundary (termination)}: LFDFT (ligand-field DFT) lives
     inside ADF, a commercial package; the AILFT
     route of this chapter covers the same analysis needs from open programs.

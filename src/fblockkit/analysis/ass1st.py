@@ -283,6 +283,63 @@ class _RoundData:
     external_vectors: "np.ndarray"
 
 
+#: Eigenvalues closer than this count as one degenerate cluster.  The window sits
+#: far above the BLAS-build spread inside a true degeneracy (~1e-15) and far below
+#: chemically meaningful near-degeneracies, so the canonicalisation below removes
+#: exactly the linear-algebra build's freedom.
+_DEGENERACY_WINDOW = 1e-9
+
+
+def _canonicalise_eigenvectors(
+    vals: np.ndarray, vecs: np.ndarray
+) -> np.ndarray:
+    """Re-base degenerate eigenvector clusters and fix the column signs.
+
+    ``eigh`` determines eigenvectors only up to a rotation inside a degenerate
+    cluster and up to each column's sign; both choices differ between BLAS
+    builds, and the written quasi-natural orbitals must not.  Each cluster is
+    therefore re-expressed on the coefficient-space axes (its projector applied
+    to the unit vectors in index order, twice-orthogonalised -- the same
+    discipline as the AOP and PiOS writers), and every column's sign follows the
+    ``2**-j`` weighted sum.  The eigenvalues and the cluster spans are untouched,
+    so the spectra and the partitions cannot change.
+    """
+    result = np.array(vecs, dtype=float, copy=True)
+    n = len(vals)
+    start = 0
+    for position in range(1, n + 1):
+        if position < n and abs(vals[position] - vals[position - 1]) <= _DEGENERACY_WINDOW:
+            continue
+        if position - start > 1:
+            cluster = result[:, start:position]
+            projector = cluster @ cluster.T
+            basis: list[np.ndarray] = []
+            for unit in np.eye(projector.shape[0]):
+                vector = projector @ unit
+                for _ in range(2):
+                    for previous in basis:
+                        vector = vector - float(previous @ vector) * previous
+                norm = float(np.sqrt(max(float(vector @ vector), 0.0)))
+                if norm > 1e-6:
+                    basis.append(vector / norm)
+                    if len(basis) == cluster.shape[1]:
+                        break
+            if len(basis) != cluster.shape[1]:
+                raise Ass1stError(
+                    "a degenerate quasi-natural cluster could not be re-based on "
+                    "the coefficient-space axes; the written file would depend on "
+                    "the linear-algebra build. Next step: report this input "
+                    "together with its export."
+                )
+            result[:, start:position] = np.array(basis).T
+        start = position
+    weights = 2.0 ** -np.arange(result.shape[0])
+    for column in range(result.shape[1]):
+        if float(result[:, column] @ weights) < 0.0:
+            result[:, column] = -result[:, column]
+    return result
+
+
 def _round_data(
     export: OrcaJson,
     entries: tuple[tuple[int, str], ...],
@@ -329,7 +386,8 @@ def _round_data(
 
     def block(values: np.ndarray, line: float, keep_above: bool):
         vals, vecs = np.linalg.eigh(values)
-        order = np.argsort(vals)[::-1]
+        vecs = _canonicalise_eigenvectors(vals, vecs)
+        order = np.argsort(vals, kind="stable")[::-1]
         quasis = tuple(
             QuasiOrbital(
                 occupation=float(vals[i]),

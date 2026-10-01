@@ -164,3 +164,21 @@ def test_the_evidence_is_citable():
     assert references_section(evidence) is not None
     literature = [item for item in evidence if item.kind == "literature"]
     assert literature and "10.1103/PhysRevB.38.3158" in literature[0].ref
+
+
+def test_the_plot_csv_carries_the_full_nonzero_stick_spectrum(parsed):
+    """The plot-ready companion: every non-zero transition of the primary
+    block (the report lists up to 80 and says how many it omitted; the CSV
+    carries the complete set), as energy (eV) + fosc sticks."""
+    csv_text = xas.xas_plot_csv(parsed)
+    lines = csv_text.splitlines()
+    assert lines[0] == "i_root,i_label,j_root,j_label,energy_eV,fosc"
+    assert len(lines) == 1 + 935  # the fixture's non-zero count, untruncated
+    first = lines[1].split(",")
+    assert first[1] == "5.0A" and first[3] == "5.0A"
+    assert float(first[4]) == approx(715.072591, abs=5e-7)
+    assert float(first[5]) == approx(0.000892271, rel=1e-6)
+    assert all(
+        float(line.split(",")[5]) > 1e-6 for line in lines[1:]
+    )  # all-zero state pairs and print dregs stay out
+    assert csv_text.endswith("\n") and "\r" not in csv_text

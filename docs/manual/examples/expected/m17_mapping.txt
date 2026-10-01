@@ -49,6 +49,7 @@ Available functions:
   46  Quantum-tunnelling relaxation prediction (a SINGLE_ANISO output -> tau_QTM and U_eff(T); optional neighbour table for the dipolar model)
   47  AOP rotation guess (a reference active space + a target export -> a gbw-ready mkl)
   48  PiOS pi-orbital active space (a pi-system definition + an export -> the pi orbitals and a gbw-ready mkl)
+  49  Cross-run state tracking (an ordered run sequence + a target root -> the per-step root-matching table)
    0  Quit
 Choose a number (Enter = leave empty)> 17
 Structures manifest JSON path (a list of structures with their exports; see the user guide) (Enter = leave empty)> work/mapping_manifest.json
@@ -293,6 +294,7 @@ Available functions:
   46  Quantum-tunnelling relaxation prediction (a SINGLE_ANISO output -> tau_QTM and U_eff(T); optional neighbour table for the dipolar model)
   47  AOP rotation guess (a reference active space + a target export -> a gbw-ready mkl)
   48  PiOS pi-orbital active space (a pi-system definition + an export -> the pi orbitals and a gbw-ready mkl)
+  49  Cross-run state tracking (an ordered run sequence + a target root -> the per-step root-matching table)
    0  Quit
 Choose a number (Enter = leave empty)> 0
 Goodbye.

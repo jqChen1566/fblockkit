@@ -303,3 +303,48 @@ def test_the_evidence_is_citable():
     assert refs is not None
     literature = [item for item in jo.evidence() if item.kind == "literature"]
     assert literature and "10.1016/j.jlumin.2023.120234" in literature[0].ref
+
+
+def test_the_plot_csv_carries_the_fitted_transition_table(babu):
+    """The plot-ready companion: one row per fitted transition with the
+    measured and fitted line strengths the report's ratio column derives
+    from; the derived summaries stay in the report."""
+    import csv
+    import io
+
+    result = jo.fit(babu, weights="none")
+    csv_text = jo.jo_plot_csv(result)
+    rows = list(csv.reader(io.StringIO(csv_text)))
+    assert rows[0] == ["side", "label", "energy_cm1", "f_exp", "s_exp", "s_ed",
+                       "a_ed_s1", "branching"]
+    assert len(rows) == 1 + result.n_transitions  # the fixture has no emission block
+    cells = rows[1]
+    assert cells[0] == "absorption"
+    assert cells[1] == result.transitions[0].label
+    assert float(cells[2]) == pytest.approx(result.transitions[0].energy_cm1)
+    assert float(cells[3]) == pytest.approx(result.transitions[0].f_exp)
+    assert float(cells[4]) == pytest.approx(result.s_exp[0])
+    assert float(cells[5]) == pytest.approx(result.s_ed[0])
+    assert cells[6] == "" and cells[7] == ""  # no emission columns on this side
+    assert csv_text.endswith("\n") and "\r" not in csv_text
+
+
+def test_the_plot_csv_carries_emission_rows_and_quotes_awkward_labels(babu):
+    import csv
+    import io
+    from dataclasses import replace as dc_replace
+
+    result = jo.fit(babu, weights="none")
+    emission = jo.Transition(
+        label="5D0->7F2, electric", energy_cm1=16000.0, f_exp=0.0, j_low=0,
+        u2=0.1, u4=0.0, u6=0.0, j_up=2,
+    )
+    with_emission = dc_replace(result, emission=(emission,))
+    rows = list(csv.reader(io.StringIO(jo.jo_plot_csv(with_emission))))
+    emission_rows = [row for row in rows[1:] if row[0] == "emission"]
+    assert len(emission_rows) == 1  # the trailing total row stays in the report
+    cells = emission_rows[0]
+    assert cells[1] == "5D0->7F2, electric"  # the comma label survived via quoting
+    assert cells[3] == "" and cells[4] == "" and cells[5] == ""
+    assert float(cells[6]) > 0.0
+    assert 0.0 < float(cells[7]) <= 1.0

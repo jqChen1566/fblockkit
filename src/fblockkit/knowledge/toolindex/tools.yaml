@@ -18,7 +18,7 @@
   license: Apache-2.0
   source: https://gitlab.com/jxzou/mokit
   note: >-
-    Interfaced as of Wave 6.1 (2026-09-30): menu 44 writes the .gjf + mokit{} input and menu
+    Interfaced as of 2026-09-30: menu 44 writes the .gjf + mokit{} input and menu
     45 reads the automr output back. Verified end-to-end by running the generated input
     through a deployed MOKIT 1.2.8 (official prebuilt package; GVB on a Gaussian 16 backend
     because GAMESS is absent here, CASSCF on its PySCF default) to Normal termination. The
@@ -38,14 +38,14 @@
   source: pip package scine-autocas (v3.0.0)
   note: >-
     Only the protocol is internalised (thresholds 0.14 / 1–2% fallback, and the
-    localized-basis precondition); the software is not integrated. Wave 6.1 assessment
-    (2026-09-30): the program itself cannot run in this environment -- its PySCF interface
+    localized-basis precondition); the software is not integrated. Assessment of
+    2026-09-30: the program itself cannot run in this environment -- its PySCF interface
     requires a DMRG solver, the Block2 branch is a NotImplementedError placeholder in
     release 3.0.0, and the QCMaquis wrapper (scine-qcmaquis) has no PyPI distribution
     while the conda channel does not answer here.
   evidence:
-    - {kind: measured, text: BSD-3 license, pip package name scine-autocas (v3.0.0), ref: B1_可微分DFT_cjq6/AutoCAS方法论_20260921.md}
-    - {kind: measured, text: Run-attempt record (2026-09-30) -- the HF stage converged, the initial CAS(10,8) of N2 was printed, then the missing QCMaquis backend raised NameError inside _setup_qcmaquis; the reachability checks above are recorded in the Wave 6.1 reconnaissance notes., ref: scratch_wave61/00_侦察记录_20260930.md}
+    - {kind: measured, text: BSD-3 license, pip package name scine-autocas (v3.0.0), ref: the AutoCAS methodology record (2026-09-21)}
+    - {kind: measured, text: Run-attempt record (2026-09-30) -- the HF stage converged, the initial CAS(10,8) of N2 was printed, then the missing QCMaquis backend raised NameError inside _setup_qcmaquis; the reachability checks above are recorded in the reconnaissance record of 2026-09-30., ref: run-attempt record (2026-09-30)}
 
 - id: activespacefinder
   name: ActiveSpaceFinder
@@ -121,7 +121,7 @@
   license: LGPL-3.0
   source: https://github.com/grimme-lab/xtb
   note: >-
-    Interfaced as of Wave 6.1 (2026-09-30): menu 42 reads the run capture back (measured on
+    Interfaced as of 2026-09-30: menu 42 reads the run capture back (measured on
     xTB 6.7.1; fixtures/xtb). LGPL allows redistribution with the package; v0.1 does not
     embed the engine.
   evidence:
@@ -137,7 +137,7 @@
   license: LGPL-3.0
   source: https://github.com/crest-lab/crest
   note: >-
-    Interfaced as of Wave 6.1 (2026-09-30): menu 43 reads the conformer ensemble back
+    Interfaced as of 2026-09-30: menu 43 reads the conformer ensemble back
     (measured on CREST 3.0.2, n-butane quick search; fixtures/crest). The ensemble energies
     are GFN2-level candidate selectors, not final rankings. A UX benchmark
     (self-explaining result files) and a candidate for embedding in v0.2.
@@ -160,7 +160,7 @@
     reading side (parsing OpenMolcas output) is not implemented.
   evidence:
     - {kind: measured, text: User decision of 2026-09-25 "first release = ORCA deep + OpenMolcas magnetic-property chain template", ref: 00_说明.md §2}
-    - {kind: measured, text: G3 implementation record (template + spec validation + discipline tests; every line the source does not show is tagged in-file)., ref: SESSION_LOG.md event 20 (commit f72a2e5)}
+    - {kind: measured, text: G3 implementation record (template + spec validation + discipline tests; every line the source does not show is tagged in-file)., ref: the G3 template record (2026-09-25)}
 
 - id: pyscf
   name: PySCF
@@ -192,7 +192,7 @@
   license: to be checked (against the official repository)
   source: https://github.com/qcscine/qcmaquis
   note: >-
-    One component of the SCINE stack; tier C registration. Wave 6.1 note: it is also the
+    One component of the SCINE stack; tier C registration. Note: it is also the
     only DMRG backend autoCAS's PySCF interface can use (its Block2 alternative is an
     unimplemented placeholder), which is why that program cannot run in this environment.
   evidence:
@@ -265,7 +265,7 @@
   license: GPL-3.0
   source: https://github.com/eljost/pysisyphus
   note: >-
-    Interfaced as of Wave 4.6 (2026-09-28): menu 32 writes the run YAML, menu 33 reads the
+    Interfaced as of 2026-09-28: menu 32 writes the run YAML, menu 33 reads the
     run artifacts back (measured on pysisyphus 1.0.0 driving ORCA 6.1.1; fixtures/pysisyphus).
     GPL -- the code is not linked in: this toolkit only writes and reads files.
   evidence:
@@ -280,13 +280,13 @@
   license: MIT
   source: https://github.com/tanaka-hideya/NIFREC
   note: >-
-    The displacement recipe is internalised as menu 30 (Wave 4.5, 2026-09-28); the code is
+    The displacement recipe is internalised as menu 30 (2026-09-28); the code is
     not linked in (MIT sources read for the algorithm only). One deviation ships as a
     service: both displacement directions are written, where the source increases
     one-directionally.
   evidence:
     - {kind: literature, text: The recipe's source record (the paper was unreachable; the algorithm was read from the MIT-licensed sources)., ref: "Tanaka H., Miyano K., ChemRxiv, 2026, DOI 10.26434/chemrxiv.15004859/v1", bibkey: tanaka2026nifrec}
-    - {kind: measured, text: Menu 30 fixtures and the measured relax-to-all-real outcome on the F+H2 probe., ref: fixtures/orca/ (fhh_reopt set; SESSION_LOG.md event 60)}
+    - {kind: measured, text: Menu 30 fixtures and the measured relax-to-all-real outcome on the F+H2 probe., ref: fixtures/orca/ (fhh_reopt set)}
 
 - id: basis-set-exchange
   name: Basis Set Exchange (BSE)
@@ -296,7 +296,7 @@
   license: mixed (the BSE software licence plus each basis set's own terms)
   source: https://github.com/MolSSI-BSE/basis_set_exchange
   note: >-
-    Interfaced as of Wave 6.2 (2026-09-29): menu 4 queries a user-deployed BSE snapshot
+    Interfaced as of 2026-09-29: menu 4 queries a user-deployed BSE snapshot
     (the SQLite index of the library) read-only; no library content is bundled with this
     toolkit. Measured on the BSE v0.12 snapshot deployed on this group's machines.
   evidence:
@@ -309,10 +309,45 @@
   relation: index
   status: planned
   license: to be checked (against the official source)
-  source: recorded from the Wave 6.1 literature check (JCTC 2026)
+  source: recorded from the 2026 literature check (JCTC 2026)
   note: >-
-    Registered during the Wave 6.1 assessment (2026-09-30) as the current programme of the
+    Registered in the assessment of 2026-09-30 as the current programme of the
     Chilton group in magnetic-relaxation simulation; not interfaced. The toolkit's own
     relaxation reading (menu 36, from SINGLE_ANISO / MAGRELAX output) is independent of it.
   evidence:
     - {kind: literature, text: The programme paper., ref: "Atkinson B., Chilton N. F., J. Chem. Theory Comput., 2026, 22, 8119-8130, DOI 10.1021/acs.jctc.6c00890", bibkey: atkinson2026tau2}
+
+- id: multiwfn
+  name: Multiwfn
+  purpose: general wavefunction analysis and visualization (isosurfaces, 2D maps, spectra, topology) -- the recommended destination for pictures made from this toolkit's exports
+  relation: index
+  status: planned
+  license: free of charge, closed source (see the program's own terms)
+  source: http://sobereva.com/multiwfn
+  note: >-
+    Not interfaced and not bundled: the division of labour keeps pictures with the
+    user's own styling. The program reads the engine's own formats that this toolkit
+    writes and hands over -- the gbw-ready mkl of the write-back menus (after
+    orca_2mkl -gbw), the AILFT LFT gbw named in the menu-38 report, and the integral
+    dumps -- so orbital, density and spectrum figures can be made there without any
+    conversion by this toolkit. Menus that end in a curve (relaxation, spectra,
+    magnetocaloric, Judd-Ofelt) additionally write a plot-ready CSV beside the report.
+  evidence:
+    - {kind: literature, text: The program's classic paper., ref: "Lu T., Chen F., J. Comput. Chem., 2012, 33 (5), 580-592, DOI 10.1002/jcc.22885", bibkey: lu2012multiwfn}
+    - {kind: literature, text: The 2024 comprehensive overview of the program., ref: "Lu T., J. Chem. Phys., 2024, 161, 082503, DOI 10.1063/5.0216272", bibkey: lu2024multiwfn}
+
+- id: orca-plot
+  name: orca_plot
+  purpose: the ORCA suite's own orbital/density plotting tool (cube files and an interactive mode)
+  relation: index
+  status: planned
+  license: part of the ORCA installation (the ORCA terms apply)
+  source: https://www.faccts.de/docs/orca/6.1/manual/contents/utilitiesvisualization/
+  note: >-
+    Part of every ORCA installation, hence already available wherever the engine
+    runs; the engine-side half of the visualization division of labour. The menu-38
+    report names the AILFT ``*.lft.gbw`` files it writes as openable with this tool,
+    and the write-back menus' mkl files reach the same route through
+    orca_2mkl -gbw.
+  evidence:
+    - {kind: manual, text: The utility is documented with the ORCA manual's orbital-plotting section., ref: ORCA 6.1 manual, utilities/visualization (orca_plot), url: https://www.faccts.de/docs/orca/6.1/manual/contents/utilitiesvisualization/}

@@ -24,6 +24,27 @@ and `src/fblockkit/analysis/ailft.py` (menu 38).  Both runs on 101,
   only); a single f electron has no electron repulsion, so only F0ff
   prints (fixed) and Racah B = 0.0; the ligand-field eigenfunction spread
   is 2333.0 cm^-1 (CASSCF) and the SOC section gives ZETA_F = 638.98 cm^-1.
+- **dy3_freeion_unconv.{inp,out}** -- the Dy(3+) f9 free-ion probe, first
+  attempt (`!NEVPT2 def2-SVP def2-SVP/C TightSCF SlowConv`, `LFTCase 4f`,
+  `mult 6`, `nroots 21`): the CASSCF ran 243 macro-iterations without meeting
+  the criterion; the AILFT module still completed and printed
+  F0ff = 269559.5 (fixed) / F2ff = 115890.8 / Racah B = 515.1 / ZETA_F =
+  2054.43 cm^-1, and ORCA then aborted with "the wavefunction IS NOT FULLY
+  CONVERGED" (the file ends at the abort banner; the process was stopped
+  after it).  This is the measured positive for the run-status flag: the
+  parser records `converged = False, via = "wavefunction not fully
+  converged"` from that text, and menu 38 marks the parameters diagnostic.
+  The TRAH retry is the converged successor of the same probe.
+- **nd3_freeion.{inp,out}** -- the Nd(3+) f3 free-ion probe, no `!TRAH`
+  (measured engine boundary: TRAH runs abort inside the AILFT driver with
+  "failed to retrieve the FAO matrix", reproduced on the Dy and Nd probes;
+  without TRAH the driver runs normally).  CASSCF(3,7), mult 4, nroots 35;
+  the CASSCF converged via the **energy marker** (gradient 3.4e-4 against
+  the 2.5e-4 threshold) -- the measured positive for the report's
+  provisional caution (`converged_via = "energy"`).  AILFT: casscf F0ff =
+  219463.8 (fixed) / F2ff = 94914.9 / Racah B = 421.8; nevpt2 F2ff =
+  75681.6 / B = 336.4; ZETA_F = 907.41.  This run is a source of the
+  built-in free-ion reference table (`knowledge/ailft_references.py`).
 
 ## Measured format points
 
@@ -36,6 +57,11 @@ and `src/fblockkit/analysis/ailft.py` (menu 38).  Both runs on 101,
 - The SOC fit uses the CASSCF orbitals ("SPIN ORBIT COUPLING (based on
   CASSCF orbitals)"); the `-----SOC-CONSTANTS-----` summary carries
   ZETA_D or ZETA_F.
+- The run-ending "the wavefunction IS NOT FULLY CONVERGED" / "Wavefunction
+  not fully converged" text is a third kind of casscf verdict (alongside the
+  ENERGY/GRADIENT markers and the NOT CONVERGED AFTER n CYCLES banner): it can
+  appear with no convergence marker at all, so the section's converged flag
+  would otherwise stay unknown.
 
 ## Regenerating
 

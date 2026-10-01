@@ -40,7 +40,7 @@ Orca\_Magrelax run of the same system -- a single vibrational mode at
 2299.9~cm$^{-1}$ against a 14680.6~cm$^{-1}$ Zeeman gap, whose rate
 table comes out all zeros (the measured boundary case).
 
-\lstinputlisting[style=fbkcode, firstline=41, lastline=61,
+\lstinputlisting[style=fbkcode, firstline=54, lastline=74,
   title={The menu-36 example (the SINGLE\_ANISO part: the per-KD table with
   the guard marks, the barrier estimate and the UBAR summary)}]
   {examples/expected/m36_relaxation.txt}
@@ -66,6 +66,12 @@ The report file \code{<output>.relax.fbk.md} carries:
     $\tau = \tau_0 \exp(U_{\mathrm{eff}}/k_BT)$ (U$_{\mathrm{eff}}$ in K
     and cm$^{-1}$, $\tau_0$ in seconds, $R^2$).
 \end{itemize}
+
+Beside the report, the magrelax part writes a plot-ready companion,
+\code{<output>.relax.fbk.csv}: the $\tau(T)$ table as plain rows
+(\code{temperature\_K,rate\_per\_s,tau\_s}), so an Arrhenius figure can be
+made in any plotting tool from the same numbers the report prints
+(Chapter~\ref{ch:formats}).
 
 \section{Conventions, cross-checks and boundaries (measured)}
 

@@ -49,6 +49,7 @@ Available functions:
   46  Quantum-tunnelling relaxation prediction (a SINGLE_ANISO output -> tau_QTM and U_eff(T); optional neighbour table for the dipolar model)
   47  AOP rotation guess (a reference active space + a target export -> a gbw-ready mkl)
   48  PiOS pi-orbital active space (a pi-system definition + an export -> the pi orbitals and a gbw-ready mkl)
+  49  Cross-run state tracking (an ordered run sequence + a target root -> the per-step root-matching table)
    0  Quit
 Choose a number (Enter = leave empty)> 41
 ORCA output path (SINGLE_ANISO levels or a POLY_ANISO M(H) run) (Enter = leave empty)> work/poly_mh.out
@@ -66,6 +67,7 @@ Magnetic entropy / magnetocaloric report (poly_mh.out)
 
   Reading notes: DeltaS(T, H) = N_A mu_B int (dM/dT)_H dH' (the Maxwell relation; trapezoid over the printed field grid, adjacent-temperature differences; the printed sign convention is DeltaS = S(T,H) - S(T,0), so the table shows -DeltaS). The data must be converged (a fine temperature grid); the field grid starts at 0.0001 T.
 Report written: work\poly_mh.out.mce.fbk.md
+Plot data written: work\poly_mh.out.mce.fbk.csv (Maxwell -DeltaS(T, H) table; columns T_mid_K,field_T,minus_delta_S_J_per_mol_per_K)
 
 Available functions:
    1  Check-up and characterisation (read an ORCA or Gaussian output -> analysis + diagnosis report)
@@ -116,6 +118,7 @@ Available functions:
   46  Quantum-tunnelling relaxation prediction (a SINGLE_ANISO output -> tau_QTM and U_eff(T); optional neighbour table for the dipolar model)
   47  AOP rotation guess (a reference active space + a target export -> a gbw-ready mkl)
   48  PiOS pi-orbital active space (a pi-system definition + an export -> the pi orbitals and a gbw-ready mkl)
+  49  Cross-run state tracking (an ordered run sequence + a target root -> the per-step root-matching table)
    0  Quit
 Choose a number (Enter = leave empty)> 41
 ORCA output path (SINGLE_ANISO levels or a POLY_ANISO M(H) run) (Enter = leave empty)> work/co_aniso2.out
@@ -136,6 +139,7 @@ Magnetic entropy / magnetocaloric report (co_aniso2.out)
 
   Reading notes: S(T) = R (ln Z + <E>/kT) from the printed level spectrum (Szalowski & Kowalewska 2020, Eq. (4)-(5)); only the truncated lowest levels enter, so the high-T limit is an upper bound; the entropy is per mole of magnetic units.
 Report written: work\co_aniso2.out.mce.fbk.md
+Plot data written: work\co_aniso2.out.mce.fbk.csv (S(T) table; columns temperature_K,entropy_J_per_mol_per_K)
 
 Available functions:
    1  Check-up and characterisation (read an ORCA or Gaussian output -> analysis + diagnosis report)
@@ -186,6 +190,7 @@ Available functions:
   46  Quantum-tunnelling relaxation prediction (a SINGLE_ANISO output -> tau_QTM and U_eff(T); optional neighbour table for the dipolar model)
   47  AOP rotation guess (a reference active space + a target export -> a gbw-ready mkl)
   48  PiOS pi-orbital active space (a pi-system definition + an export -> the pi orbitals and a gbw-ready mkl)
+  49  Cross-run state tracking (an ordered run sequence + a target root -> the per-step root-matching table)
    0  Quit
 Choose a number (Enter = leave empty)> 0
 Goodbye.

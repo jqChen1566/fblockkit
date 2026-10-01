@@ -49,6 +49,7 @@ Available functions:
   46  Quantum-tunnelling relaxation prediction (a SINGLE_ANISO output -> tau_QTM and U_eff(T); optional neighbour table for the dipolar model)
   47  AOP rotation guess (a reference active space + a target export -> a gbw-ready mkl)
   48  PiOS pi-orbital active space (a pi-system definition + an export -> the pi orbitals and a gbw-ready mkl)
+  49  Cross-run state tracking (an ordered run sequence + a target root -> the per-step root-matching table)
    0  Quit
 Choose a number (Enter = leave empty)> 37
 ORCA output path (a ROCIS core-excited-spectra run) (Enter = leave empty)> work/fecl4_xas.out
@@ -150,6 +151,7 @@ Core-excited spectra report (fecl4_xas.out)
 
   Boundaries: ROCIS applies several approximations (manual section 5.7.3 says the results are qualitatively correct); the branching ratio is a data fact, and its statistical-value comparison is the caller's stated reference.
 Report written: work\fecl4_xas.out.xas.fbk.md
+Plot data written: work\fecl4_xas.out.xas.fbk.csv (primary-block transitions; columns i_root,i_label,j_root,j_label,energy_eV,fosc)
 
 Available functions:
    1  Check-up and characterisation (read an ORCA or Gaussian output -> analysis + diagnosis report)
@@ -200,6 +202,7 @@ Available functions:
   46  Quantum-tunnelling relaxation prediction (a SINGLE_ANISO output -> tau_QTM and U_eff(T); optional neighbour table for the dipolar model)
   47  AOP rotation guess (a reference active space + a target export -> a gbw-ready mkl)
   48  PiOS pi-orbital active space (a pi-system definition + an export -> the pi orbitals and a gbw-ready mkl)
+  49  Cross-run state tracking (an ordered run sequence + a target root -> the per-step root-matching table)
    0  Quit
 Choose a number (Enter = leave empty)> 0
 Goodbye.

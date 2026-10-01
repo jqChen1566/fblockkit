@@ -254,3 +254,20 @@ def test_the_evidence_is_citable():
     assert references_section(evidence) is not None
     literature = [item for item in evidence if item.kind == "literature"]
     assert literature and "10.1039/d5cs00493d" in literature[0].ref
+
+
+def test_the_magrelax_plot_csv_carries_the_tau_table():
+    """The plot-ready companion: plain rows mirroring the engine's table,
+    including the probe's uniformly-zero-rate boundary (tau = -inf, written
+    as the token the number actually is)."""
+    data = relaxation.read_magrelax(MR / "co_magrelax.out")
+    csv_text = relaxation.magrelax_plot_csv(data)
+    lines = csv_text.splitlines()
+    assert lines[0] == "temperature_K,rate_per_s,tau_s"
+    assert len(lines) == 1 + len(data.tau_s) == 29
+    first = lines[1].split(",")
+    assert float(first[0]) == approx(2.0)
+    assert float(first[1]) == approx(0.0)
+    assert float(first[2]) == float("-inf")
+    assert lines[-1].split(",")[0] == "29"
+    assert csv_text.endswith("\n") and "\r" not in csv_text

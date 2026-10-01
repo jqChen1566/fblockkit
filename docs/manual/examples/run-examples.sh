@@ -48,6 +48,12 @@ cp "$REPO/fixtures/orca/n2_cas666_1.600.json" work/
 # the menu-48 PiOS pair (the benzene RHF export with the Fock family, and its mkl)
 cp "$REPO/fixtures/orca/benzene_rhf.json" work/
 cp "$REPO/fixtures/orca/benzene_rhf.mkl" work/
+# the menu-49 state-tracking sequence (the SA(6,6) exports with 3 and 4 roots,
+# each with its sibling .out for the per-root energies)
+cp "$REPO/fixtures/orca/n2_ass1st_sa.json" work/
+cp "$REPO/fixtures/orca/n2_ass1st_sa.out" work/
+cp "$REPO/fixtures/orca/n2_ass1st_sa4.json" work/
+cp "$REPO/fixtures/orca/n2_ass1st_sa4.out" work/
 # the dipole-moment chain of menus 19/20 (six single-root candidates + reference)
 cp "$REPO/fixtures/orca/h2o_dm_ref_pbe0.out" work/
 cp "$REPO/fixtures/orca/h2o_dm_prep_mp2.out" work/
@@ -141,6 +147,7 @@ cp work/*.fbk.md expected/products/
 cp work/*.fbk.json expected/products/
 cp work/*.fbk.inp expected/products/
 cp work/*.fbk.mkl expected/products/
+cp work/*.fbk.csv expected/products/
 cp work/*.fix_*.inp expected/products/
 cp work/*.pysisyphus.xyz work/*.pysisyphus.yaml expected/products/
 cp -r work/*.fbk.dm expected/products/

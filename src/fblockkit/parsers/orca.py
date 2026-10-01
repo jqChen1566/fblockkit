@@ -113,6 +113,14 @@ _CASSCF_CONVERGED_RE = re.compile(r"----\s*THE CAS-SCF (ENERGY|GRADIENT)\s+HAS C
 # "*       CASSCF NOT CONVERGED AFTER 783 CYCLES       *") -- the flip side of
 # the SCF lookbehind above: this verdict belongs to the casscf section.
 _CASSCF_NOT_CONVERGED_RE = re.compile(r"CASSCF NOT CONVERGED AFTER\s+(\d+)\s+CYCLES")
+# The run-ending verdict when the iteration budget or the thresholds leave the
+# wavefunction short of the criterion (measured on the Dy(3+) free-ion AILFT probe:
+# the AILFT module completed and printed its parameters, then ORCA aborted with this
+# text -- and no CASSCF convergence marker appears anywhere).  Recorded like the
+# NOT CONVERGED banner above, so downstream reports can flag the data as diagnostic.
+_CASSCF_NOT_FULLY_RE = re.compile(
+    r"wavefunction IS NOT FULLY CONVERGED|Wavefunction not fully converged"
+)
 # Active-orbital natural occupations (printed once per macro iteration; take the last)
 _N_OCC_RE = re.compile(r"N\(occ\)=\s+(.*\S)\s*$")
 _FINAL_CASSCF_RE = re.compile(r"^Final CASSCF energy\s+:\s+(-?\d+\.\d+)\s+Eh", re.MULTILINE)
@@ -1283,6 +1291,9 @@ def _parse_casscf(lines: list[str]) -> dict[str, Any]:
         if (m := _CASSCF_NOT_CONVERGED_RE.search(line)) is not None:
             converged = False
             converged_via = f"not converged after {int(m.group(1))} cycles"
+        if _CASSCF_NOT_FULLY_RE.search(line) is not None:
+            converged = False
+            converged_via = "wavefunction not fully converged"
 
         if (m := _N_OCC_RE.search(line)) is not None:
             values = tuple(

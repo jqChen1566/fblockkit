@@ -27,12 +27,12 @@ block, \code{DecomposeFosc}, \code{DoSOC} -- fourteen absorption blocks in
 the output, of which the SOC-corrected electric-dipole table is the primary
 one (2235 state pairs, 935 with non-zero oscillator strength).
 
-\lstinputlisting[style=fbkcode, firstline=42, lastline=58,
+\lstinputlisting[style=fbkcode, firstline=54, lastline=70,
   title={The menu-37 example (top: the interaction and the primary-block
   header with the first transitions)}]
   {examples/expected/m37_xas.txt}
 
-\lstinputlisting[style=fbkcode, firstline=129, lastline=137,
+\lstinputlisting[style=fbkcode, firstline=142, lastline=150,
   title={The menu-37 example (the elision note, the edge branching and the
   statistical comparison)}]
   {examples/expected/m37_xas.txt}
@@ -53,6 +53,14 @@ The report \code{<output>.xas.fbk.md}:
     -- the ratio/stat column;
   \item the RIXS bookkeeping of the run.
 \end{itemize}
+
+Beside the report, the menu writes a plot-ready companion,
+\code{<output>.xas.fbk.csv}: every non-zero transition of the primary block
+-- without the report's 80-row display cap -- as the state roots with their
+labels, the energy in eV and fosc
+(\code{i\_root,i\_label,j\_root,j\_label,energy\_eV,fosc}), so the stick
+spectrum can be plotted or broadened in any tool
+(Chapter~\ref{ch:formats}).
 
 \section{Conventions, cross-checks and boundaries (measured)}
 

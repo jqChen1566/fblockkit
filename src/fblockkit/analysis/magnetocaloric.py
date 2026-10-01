@@ -33,11 +33,14 @@ import math
 from typing import Any
 
 from ..knowledge.models import EVIDENCE_LITERATURE, EVIDENCE_MEASURED, Evidence
+from .plot_csv import plot_number
 
 __all__ = [
     "MagnetocaloricError",
     "entropy_from_levels",
     "maxwell_delta_s",
+    "levels_plot_csv",
+    "maxwell_plot_csv",
     "render_levels",
     "render_maxwell",
     "evidence",
@@ -46,6 +49,9 @@ __all__ = [
 _R_J_MOL_K = 8.314462618  # J mol^-1 K^-1
 _N_A_MU_B = 5.584937  # N_A * mu_B, J T^-1 mol^-1 (molar moment unit)
 _K_B_CM1_PER_K = 0.695034800  # cm^-1 per K; 1/1.438776877 (as in analysis/relaxation.py)
+#: the report's default temperature grid (K) of the levels route; the CSV
+#: companion carries the same grid
+_DEFAULT_TEMPERATURES = (1, 2, 5, 10, 20, 50, 100, 200, 300)
 
 
 class MagnetocaloricError(Exception):
@@ -111,6 +117,70 @@ def maxwell_delta_s(
     return rows
 
 
+def _require_levels(energies_cm1: list[float]) -> None:
+    if not energies_cm1:
+        raise MagnetocaloricError(
+            "no spin-orbit level spectrum found. Next step: use a SINGLE_ANISO "
+            "output (or a POLY_ANISO output with per-center spectra) whose "
+            "'Spin-orbit energy spectra' block is present."
+        )
+
+
+def _magnetization_table(
+    magnetization: dict[str, Any],
+) -> tuple[list[float], list[float], list[list[float]]]:
+    temperatures = magnetization.get("temperatures_K") or []
+    fields = magnetization.get("fields_T") or []
+    matrix = magnetization.get("M_muB") or []
+    if len(temperatures) < 2 or not fields or not matrix:
+        raise MagnetocaloricError(
+            "no magnetization table found. Next step: this route needs a "
+            "POLY_ANISO output with the HINT/TMAG requests (the 'HIGH-FIELD"
+            " POWDER MAGNETIZATION' table)."
+        )
+    return temperatures, fields, matrix
+
+
+def levels_plot_csv(
+    energies_cm1: list[float], temperatures_K: list[float] | None = None
+) -> str:
+    """The S_mag(T) table as a plot-ready CSV companion (the levels route).
+
+    One row per grid temperature (the report's default grid, or the caller's
+    when given) with the magnetic entropy in J mol^-1 K^-1, in the same
+    canonical-ensemble convention the report prints (the formats chapter,
+    "Plot-ready CSV companions").
+    """
+    _require_levels(energies_cm1)
+    grid = list(temperatures_K) if temperatures_K else list(_DEFAULT_TEMPERATURES)
+    values = entropy_from_levels(energies_cm1, grid)
+    lines = ["temperature_K,entropy_J_per_mol_per_K"]
+    lines += [
+        f"{plot_number(temperature)},{plot_number(value)}"
+        for temperature, value in zip(grid, values)
+    ]
+    return "\n".join(lines) + "\n"
+
+
+def maxwell_plot_csv(magnetization: dict[str, Any]) -> str:
+    """The -DeltaS(T, H) table as a plot-ready CSV companion (the Maxwell route).
+
+    Tidy long form -- one row per (temperature midpoint, field) point over
+    the full printed field grid (the report shows five probe fields; the
+    companion carries them all), values in J mol^-1 K^-1 with the report's
+    sign convention: the column is -DeltaS, positive = direct MCE.
+    """
+    temperatures, fields, matrix = _magnetization_table(magnetization)
+    rows = maxwell_delta_s(temperatures, fields, matrix)
+    lines = ["T_mid_K,field_T,minus_delta_S_J_per_mol_per_K"]
+    for row in rows:
+        for field, value in zip(fields, row["delta_S"]):
+            lines.append(
+                f"{plot_number(row['T_K'])},{plot_number(field)},{plot_number(-value)}"
+            )
+    return "\n".join(lines) + "\n"
+
+
 def _summary_points(temperatures: list[float]) -> list[int]:
     wanted = (1, 2, 5, 10, 20, 50, 100, 200, 300)
     return [
@@ -127,13 +197,8 @@ def render_levels(
     temperatures_K: list[float] | None = None,
 ) -> str:
     """The menu-41 report for the levels route."""
-    if not energies_cm1:
-        raise MagnetocaloricError(
-            "no spin-orbit level spectrum found. Next step: use a SINGLE_ANISO "
-            "output (or a POLY_ANISO output with per-center spectra) whose "
-            "'Spin-orbit energy spectra' block is present."
-        )
-    grid = temperatures_K or [1, 2, 5, 10, 20, 50, 100, 200, 300]
+    _require_levels(energies_cm1)
+    grid = temperatures_K or list(_DEFAULT_TEMPERATURES)
     values = entropy_from_levels(energies_cm1, grid)
     high_limit = _R_J_MOL_K * math.log(len(energies_cm1))
     lines = [f"Magnetic entropy / magnetocaloric report ({source})"]
@@ -167,15 +232,7 @@ def render_maxwell(
     field_probe_T: tuple[float, ...] = (1.0, 2.0, 3.0, 5.0, 7.0),
 ) -> str:
     """The menu-41 report for the magnetization (Maxwell) route."""
-    temperatures = magnetization.get("temperatures_K") or []
-    fields = magnetization.get("fields_T") or []
-    matrix = magnetization.get("M_muB") or []
-    if len(temperatures) < 2 or not fields or not matrix:
-        raise MagnetocaloricError(
-            "no magnetization table found. Next step: this route needs a "
-            "POLY_ANISO output with the HINT/TMAG requests (the 'HIGH-FIELD"
-            " POWDER MAGNETIZATION' table)."
-        )
+    temperatures, fields, matrix = _magnetization_table(magnetization)
     rows = maxwell_delta_s(temperatures, fields, matrix)
     lines = [f"Magnetic entropy / magnetocaloric report ({source})"]
     lines.append(

@@ -306,3 +306,46 @@ def test_the_write_back_round_trips_through_the_mkl(tmp_path):
     coefficients = np.asarray(back.coefficients())
     assert coefficients.shape == qno.coefficients.shape
     assert np.abs(coefficients - qno.coefficients).max() < 1e-6
+
+
+# --- the cross-build determinism of the block diagonalisation -----------------
+
+
+def test_the_canonicalised_eigenvectors_survive_a_foreign_blas_choice():
+    """The measured failure (the written qno mkl differed between the two
+    machines): another BLAS picks a different basis inside a degenerate cluster
+    and different column signs.  Simulate it -- rotate the degenerate pair and
+    flip signs -- and demand a bit-identical canonicalisation."""
+    rng = np.random.default_rng(20261001)
+    rotation = np.linalg.qr(rng.normal(size=(4, 4)))[0]
+    block = rotation @ np.diag([1.97680, 1.98196, 2.0, 2.0]) @ rotation.T
+    block = (block + block.T) / 2
+    vals, vecs = np.linalg.eigh(block)
+    assert abs(vals[2] - vals[3]) <= 1e-12  # the degenerate pair, ascending order
+    first = ass1st._canonicalise_eigenvectors(vals, vecs)
+    # the foreign build: same eigenspaces, rotated pair + flipped signs
+    foreign = vecs.copy()
+    c, s = np.cos(0.7), np.sin(0.7)
+    foreign[:, 2:] = foreign[:, 2:] @ np.array([[c, -s], [s, c]])
+    foreign[:, 0] = -foreign[:, 0]
+    foreign[:, 2] = -foreign[:, 2]
+    second = ass1st._canonicalise_eigenvectors(vals, foreign)
+    # the canonicalisation removes the build's freedom; the residual is the
+    # projector's float noise (~1e-15), which the mkl writer's 7-decimal format
+    # absorbs -- byte identity of the written file is the acceptance criterion
+    assert np.abs(first - second).max() < 1e-12
+    assert np.array_equal(np.round(first, 7), np.round(second, 7))
+
+
+def test_the_canonicalised_vectors_keep_the_eigenspaces_and_the_sign_rule():
+    rng = np.random.default_rng(7)
+    rotation = np.linalg.qr(rng.normal(size=(5, 5)))[0]
+    block = rotation @ np.diag([0.02, 0.02, 0.05, 1.0, 2.0]) @ rotation.T
+    block = (block + block.T) / 2
+    vals, vecs = np.linalg.eigh(block)
+    canon = ass1st._canonicalise_eigenvectors(vals, vecs)
+    # orthonormal, same degenerate spans, and the 2^-j sign rule on every column
+    assert np.abs(canon.T @ canon - np.eye(5)).max() < 1e-10
+    assert np.abs(canon[:, :2] @ canon[:, :2].T - vecs[:, :2] @ vecs[:, :2].T).max() < 1e-10
+    weights = 2.0 ** -np.arange(5)
+    assert (canon.T @ weights >= -1e-15).all()

@@ -56,12 +56,26 @@ def _racah_value(level: dict[str, Any], label: str) -> float | None:
     return entry["cm1"] if isinstance(entry, dict) else None
 
 
+def _level_reference(
+    free_ion_reference: tuple[str, dict[str, object]] | None, level_name: str
+) -> dict[str, object]:
+    """The reference entry of one level, tagged with its label for source lines."""
+    if free_ion_reference is None:
+        return {}
+    label, entry = free_ion_reference
+    resolved = dict((entry.get("levels") or {}).get(level_name, {}))
+    resolved["_label"] = label
+    return resolved
+
+
 def render(
     data: dict[str, Any],
     *,
     source: str,
     free_ion_B_cm1: float | None = None,
     free_ion_zeta_cm1: float | None = None,
+    convergence: tuple[bool | None, str | None] = (None, None),
+    free_ion_reference: tuple[str, dict[str, object]] | None = None,
 ) -> str:
     """The menu-38 report body."""
     if not data.get("present"):
@@ -73,6 +87,27 @@ def render(
         )
     lines: list[str] = []
     lines.append(f"Ab initio ligand-field analysis ({source})")
+    status, via = convergence
+    if status is False:
+        via_note = (
+            f" ({via})"
+            if via and via != "wavefunction not fully converged"
+            else ""
+        )
+        lines.append(
+            "  RUN STATUS: the run's own output reports the wavefunction not fully "
+            f"converged{via_note}; ORCA aborted without treating it "
+            "as a property calculation. The parameters below are diagnostic only and "
+            "must not be quoted as converged results. Next step: re-run with a "
+            "stronger convergence route (for the f block, !TRAH) and re-analyse the "
+            "new output."
+        )
+    elif status is True and via == "energy":
+        lines.append(
+            "  RUN STATUS: the convergence marker is the energy criterion only; the "
+            "gradient criterion has not been reported. Treat the parameters as "
+            "provisional until the gradient lines are checked."
+        )
     header = data.get("header", {})
     if header:
         mo = header.get("mo_range")
@@ -114,10 +149,33 @@ def render(
             parts.append(f"C/B = {cb:.3f}")
         if parts:
             lines.append("    Racah (cm-1): " + "  ".join(parts))
-            if b is not None and free_ion_B_cm1:
+            b0 = free_ion_B_cm1
+            b0_source = "caller's reference"
+            level_ref = _level_reference(free_ion_reference, name)
+            if b0 is None and level_ref.get("B") is not None:
+                b0 = level_ref["B"]
+                b0_source = f"built-in table: {level_ref['_label']} {name} level"
+                if level_ref.get("quality") == "energy-only":
+                    b0_source += "; energy-only reference run"
+            if b is not None and b0:
                 lines.append(
-                    f"    nephelauxetic ratio beta = B/B0 = {b / free_ion_B_cm1:.3f}"
-                    f" (B0 = {free_ion_B_cm1:.1f} cm-1, caller's reference)"
+                    f"    nephelauxetic ratio beta = B/B0 = {b / b0:.3f}"
+                    f" (B0 = {b0:.1f} cm-1, {b0_source})"
+                )
+            # f shells: the engine fits F2 (not Racah B); the source defines the
+            # nephelauxetic reduction per parameter, so the ratio is F2/F20.
+            f2_entry = next(
+                (entry for entry in (level.get("slater_condon") or []) if entry["label"] == "F2ff"),
+                None,
+            )
+            if f2_entry is not None and level_ref.get("F2") is not None:
+                f2_0 = level_ref["F2"]
+                f2_source = f"built-in table: {level_ref['_label']} {name} level"
+                if level_ref.get("quality") == "energy-only":
+                    f2_source += "; energy-only reference run"
+                lines.append(
+                    f"    nephelauxetic ratio F2/F20 = {f2_entry['cm1'] / f2_0:.3f}"
+                    f" (F20 = {f2_0:.1f} cm-1, {f2_source})"
                 )
         if level.get("lft_gbw"):
             lines.append(f"    LFT orbitals stored in {level['lft_gbw']}")
@@ -137,12 +195,24 @@ def render(
     soc = data.get("soc")
     if soc:
         summary = soc.get("summary") or {}
+        zeta0 = free_ion_zeta_cm1
+        zeta0_source = "caller's reference"
+        if zeta0 is None and free_ion_reference is not None:
+            ref_label, ref_entry = free_ion_reference
+            for level_name in ("casscf", "nevpt2"):
+                level_ref = (ref_entry.get("levels") or {}).get(level_name, {})
+                if level_ref.get("zeta") is not None:
+                    zeta0 = level_ref["zeta"]
+                    zeta0_source = f"built-in table: {ref_label} {level_name} level"
+                    if level_ref.get("quality") == "energy-only":
+                        zeta0_source += "; energy-only reference run"
+                    break
         for label, value in summary.items():
             lines.append(f"  SOC constant: {label} = {value:.2f} cm-1 (SOC based on {'/'.join(soc['bases'])} orbitals)")
-            if free_ion_zeta_cm1:
+            if zeta0:
                 lines.append(
-                    f"    relativistic nephelauxetic ratio = {value / free_ion_zeta_cm1:.3f}"
-                    f" (zeta0 = {free_ion_zeta_cm1:.1f} cm-1, caller's reference)"
+                    f"    relativistic nephelauxetic ratio = {value / zeta0:.3f}"
+                    f" (zeta0 = {zeta0:.1f} cm-1, {zeta0_source})"
                 )
     lines.append("")
     lines.append(
@@ -152,8 +222,10 @@ def render(
         " in covalent complexes (Lang, Atanasov & Neese, J. Phys. Chem. A 2020)."
         " The parameters are model quantities of the ligand-field Hamiltonian; this"
         " menu reads the engine's fit, it never refits. Nephelauxetic comparisons"
-        " (Jung, Atanasov & Neese, Inorg. Chem. 2017) need the caller's free-ion"
-        " references -- pass them to get the ratios."
+        " (Jung, Atanasov & Neese, Inorg. Chem. 2017) need free-ion references:"
+        " the built-in table covers the probe ions the menu lists, and a"
+        " caller-entered value overrides it; the ratios are resolved per"
+        " parameter level."
     )
     return "\n".join(lines)
 

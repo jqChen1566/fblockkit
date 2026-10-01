@@ -62,6 +62,7 @@ def test_doc_mentions_each_menu_title_topic():
         "Perturbed multistart batch",
         "Imaginary-mode displacement",
         "CASSCF state data",
+        "Cross-run state tracking",
     ):
         assert keyword in text, keyword
 

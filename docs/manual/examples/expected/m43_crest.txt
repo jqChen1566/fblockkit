@@ -49,6 +49,7 @@ Available functions:
   46  Quantum-tunnelling relaxation prediction (a SINGLE_ANISO output -> tau_QTM and U_eff(T); optional neighbour table for the dipolar model)
   47  AOP rotation guess (a reference active space + a target export -> a gbw-ready mkl)
   48  PiOS pi-orbital active space (a pi-system definition + an export -> the pi orbitals and a gbw-ready mkl)
+  49  Cross-run state tracking (an ordered run sequence + a target root -> the per-step root-matching table)
    0  Quit
 Choose a number (Enter = leave empty)> 43
 What do you need? (1) read the ensemble (Boltzmann table), (2) write the ORCA upgrade inputs (Enter = 1) (Enter = leave empty)> 1
@@ -117,6 +118,7 @@ Available functions:
   46  Quantum-tunnelling relaxation prediction (a SINGLE_ANISO output -> tau_QTM and U_eff(T); optional neighbour table for the dipolar model)
   47  AOP rotation guess (a reference active space + a target export -> a gbw-ready mkl)
   48  PiOS pi-orbital active space (a pi-system definition + an export -> the pi orbitals and a gbw-ready mkl)
+  49  Cross-run state tracking (an ordered run sequence + a target root -> the per-step root-matching table)
    0  Quit
 Choose a number (Enter = leave empty)> 43
 What do you need? (1) read the ensemble (Boltzmann table), (2) write the ORCA upgrade inputs (Enter = 1) (Enter = leave empty)> 2
@@ -192,6 +194,7 @@ Available functions:
   46  Quantum-tunnelling relaxation prediction (a SINGLE_ANISO output -> tau_QTM and U_eff(T); optional neighbour table for the dipolar model)
   47  AOP rotation guess (a reference active space + a target export -> a gbw-ready mkl)
   48  PiOS pi-orbital active space (a pi-system definition + an export -> the pi orbitals and a gbw-ready mkl)
+  49  Cross-run state tracking (an ordered run sequence + a target root -> the per-step root-matching table)
    0  Quit
 Choose a number (Enter = leave empty)> 0
 Goodbye.

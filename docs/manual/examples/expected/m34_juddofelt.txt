@@ -49,6 +49,7 @@ Available functions:
   46  Quantum-tunnelling relaxation prediction (a SINGLE_ANISO output -> tau_QTM and U_eff(T); optional neighbour table for the dipolar model)
   47  AOP rotation guess (a reference active space + a target export -> a gbw-ready mkl)
   48  PiOS pi-orbital active space (a pi-system definition + an export -> the pi orbitals and a gbw-ready mkl)
+  49  Cross-run state tracking (an ordered run sequence + a target root -> the per-step root-matching table)
    0  Quit
 Choose a number (Enter = leave empty)> 34
 Judd-Ofelt dataset path (YAML; see the formats chapter) (Enter = leave empty)> work/babu2000_eu3.yaml
@@ -76,6 +77,7 @@ boundaries (measured and documented in the close-reading record):
   - magnetic-dipole contributions are not computed: give f_md per transition where it is significant (the fit subtracts it);
   - the extended (perturbative X_k) JO models of the 2022/2024 papers need free-ion atomic-structure wave functions and are outside this toolkit's post-processing scope; this menu implements the standard JO fit.
 Report written: work\babu2000_eu3.yaml.jo.fbk.md
+Plot data written: work\babu2000_eu3.yaml.jo.fbk.csv (transition table; columns side,label,energy_cm1,f_exp,s_exp,s_ed,a_ed_s1,branching)
 
 Available functions:
    1  Check-up and characterisation (read an ORCA or Gaussian output -> analysis + diagnosis report)
@@ -126,6 +128,7 @@ Available functions:
   46  Quantum-tunnelling relaxation prediction (a SINGLE_ANISO output -> tau_QTM and U_eff(T); optional neighbour table for the dipolar model)
   47  AOP rotation guess (a reference active space + a target export -> a gbw-ready mkl)
   48  PiOS pi-orbital active space (a pi-system definition + an export -> the pi orbitals and a gbw-ready mkl)
+  49  Cross-run state tracking (an ordered run sequence + a target root -> the per-step root-matching table)
    0  Quit
 Choose a number (Enter = leave empty)> 34
 Judd-Ofelt dataset path (YAML; see the formats chapter) (Enter = leave empty)> work/babu2000_eu3.yaml
@@ -153,6 +156,7 @@ boundaries (measured and documented in the close-reading record):
   - magnetic-dipole contributions are not computed: give f_md per transition where it is significant (the fit subtracts it);
   - the extended (perturbative X_k) JO models of the 2022/2024 papers need free-ion atomic-structure wave functions and are outside this toolkit's post-processing scope; this menu implements the standard JO fit.
 Report written: work\babu2000_eu3.yaml.jo.fbk.md
+Plot data written: work\babu2000_eu3.yaml.jo.fbk.csv (transition table; columns side,label,energy_cm1,f_exp,s_exp,s_ed,a_ed_s1,branching)
 
 Available functions:
    1  Check-up and characterisation (read an ORCA or Gaussian output -> analysis + diagnosis report)
@@ -203,6 +207,7 @@ Available functions:
   46  Quantum-tunnelling relaxation prediction (a SINGLE_ANISO output -> tau_QTM and U_eff(T); optional neighbour table for the dipolar model)
   47  AOP rotation guess (a reference active space + a target export -> a gbw-ready mkl)
   48  PiOS pi-orbital active space (a pi-system definition + an export -> the pi orbitals and a gbw-ready mkl)
+  49  Cross-run state tracking (an ordered run sequence + a target root -> the per-step root-matching table)
    0  Quit
 Choose a number (Enter = leave empty)> 0
 Goodbye.

@@ -37,6 +37,7 @@ from pathlib import Path
 import numpy as np
 
 from ..knowledge.models import EVIDENCE_LITERATURE, EVIDENCE_MEASURED, Evidence
+from .plot_csv import plot_number
 
 __all__ = [
     "RelaxationError",
@@ -45,6 +46,7 @@ __all__ = [
     "group_metrics",
     "ueff_estimate",
     "orbach_fit",
+    "magrelax_plot_csv",
     "render_single_aniso",
     "render_magrelax",
     "evidence",
@@ -195,6 +197,33 @@ class MagrelaxData:
     temperatures_k: list[float] = field(default_factory=list)
     rates_s1: list[float] = field(default_factory=list)
     tau_s: list[float] = field(default_factory=list)
+
+
+def magrelax_plot_csv(data: MagrelaxData) -> str:
+    """The tau(T) table as plot-ready CSV (temperature_K, rate_per_s, tau_s).
+
+    Plain comma-separated rows with a single header line and no comment lines, so
+    the file drops straight into plotting tools (spreadsheets, Origin, pandas,
+    gnuplot); the report beside it carries the context (fit window, U_eff,
+    tau_0, the uniformly-zero boundary when no mode resonates).  The values are
+    the engine's printed numbers verbatim, so a figure made from this file can
+    be regenerated from the same output.  A non-finite tau (a table point with
+    no finite rate, as in the uniformly-zero probe) is written as the token the
+    number actually is.
+    """
+    if not (len(data.temperatures_k) == len(data.rates_s1) == len(data.tau_s)):
+        raise RelaxationError(
+            "the magrelax table columns are not aligned "
+            f"({len(data.temperatures_k)} temperatures, {len(data.rates_s1)} rates, "
+            f"{len(data.tau_s)} tau values); refusing to export a misaligned plot "
+            "file. Next step: report this output together with its log."
+        )
+    lines = ["temperature_K,rate_per_s,tau_s"]
+    lines += [
+        f"{plot_number(temperature)},{plot_number(rate)},{plot_number(tau)}"
+        for temperature, rate, tau in zip(data.temperatures_k, data.rates_s1, data.tau_s)
+    ]
+    return "\n".join(lines) + "\n"
 
 
 def _tail_value(line: str) -> str:

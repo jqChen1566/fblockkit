@@ -150,6 +150,9 @@ items:
   - number: "48"
     title: "PiOS pi-orbital active space (a pi-system definition + an export -> the pi orbitals and a gbw-ready mkl)"
     handler: pios_select
+  - number: "49"
+    title: "Cross-run state tracking (an ordered run sequence + a target root -> the per-step root-matching table)"
+    handler: state_tracking_report
   - number: "0"
     title: Quit
     handler: quit

@@ -802,6 +802,12 @@ def judd_ofelt_fit(session: Session) -> None:
     md_path = path.with_name(path.name + ".jo.fbk.md")
     md_path.write_text(report_lines, encoding="utf-8")
     session.say(f"Report written: {md_path}")
+    csv_path = path.with_name(path.name + ".jo.fbk.csv")
+    csv_path.write_text(judd_ofelt_analysis.jo_plot_csv(result), encoding="utf-8")
+    session.say(
+        f"Plot data written: {csv_path} (transition table; columns "
+        "side,label,energy_cm1,f_exp,s_exp,s_ed,a_ed_s1,branching)"
+    )
 
 
 def ailft_report(session: Session) -> None:
@@ -819,6 +825,24 @@ def ailft_report(session: Session) -> None:
         session.say(f"Ligand-field analysis failed: {exc}")
         return
     data = parsed.sections.get("ailft") or {}
+    ref_text = session.ask(
+        "Free-ion reference from the built-in table: element+charge "
+        "(e.g. Nd3+; Enter = skip/manual)"
+    ).strip()
+    reference: tuple[str, dict] | None = None
+    if ref_text:
+        from ...knowledge import ailft_references as free_ion_table
+
+        entry = free_ion_table.lookup(ref_text)
+        if entry is None:
+            session.say(
+                f"{ref_text!r} is not in the built-in table. It covers the "
+                "trivalent lanthanide and actinide series plus the measured "
+                "Ni(2+) probe (the manual lists the ions); enter the "
+                "references manually below, or skip."
+            )
+        else:
+            reference = (ref_text, entry)
     b0_text = session.ask("Free-ion Racah B (cm-1) for the nephelauxetic ratio (Enter = skip)").strip()
     zeta_text = session.ask("Free-ion SOC constant zeta0 (cm-1) (Enter = skip)").strip()
     def _opt(text: str) -> float | None:
@@ -830,8 +854,19 @@ def ailft_report(session: Session) -> None:
             session.say(f"Not a number: {text!r}; skipping this reference.")
             return None
     try:
+        casscf_status = parsed.sections.get("casscf") or {}
+        convergence: tuple[bool | None, str | None] = (
+            (casscf_status.get("converged"), casscf_status.get("converged_via"))
+            if casscf_status.get("present")
+            else (None, None)
+        )
         body = ailft_analysis.render(
-            data, source=path.name, free_ion_B_cm1=_opt(b0_text), free_ion_zeta_cm1=_opt(zeta_text)
+            data,
+            source=path.name,
+            free_ion_B_cm1=_opt(b0_text),
+            free_ion_zeta_cm1=_opt(zeta_text),
+            convergence=convergence,
+            free_ion_reference=reference,
         )
     except ailft_analysis.AilftError as exc:
         session.say(f"Ligand-field analysis failed: {exc}")
@@ -889,6 +924,12 @@ def xas_report(session: Session) -> None:
     md_path = path.with_name(path.name + ".xas.fbk.md")
     md_path.write_text(report_lines, encoding="utf-8")
     session.say(f"Report written: {md_path}")
+    csv_path = path.with_name(path.name + ".xas.fbk.csv")
+    csv_path.write_text(xas_analysis.xas_plot_csv(data), encoding="utf-8")
+    session.say(
+        f"Plot data written: {csv_path} (primary-block transitions; columns "
+        "i_root,i_label,j_root,j_label,energy_eV,fosc)"
+    )
 
 
 def relaxation_report(session: Session) -> None:
@@ -941,6 +982,15 @@ def relaxation_report(session: Session) -> None:
     md_path = path.with_name(path.name + ".relax.fbk.md")
     md_path.write_text(report_lines, encoding="utf-8")
     session.say(f"Report written: {md_path}")
+    if magrelax_data is not None and magrelax_data.tau_s:
+        csv_path = path.with_name(path.name + ".relax.fbk.csv")
+        csv_path.write_text(
+            relaxation_analysis.magrelax_plot_csv(magrelax_data), encoding="utf-8"
+        )
+        session.say(
+            f"Plot data written: {csv_path} (tau(T) table; "
+            "columns temperature_K,rate_per_s,tau_s)"
+        )
 
 
 def tunnelling_report(session: Session) -> None:
@@ -1304,6 +1354,11 @@ def magnetocaloric_report(session: Session) -> None:
     try:
         if poly.get("magnetization"):
             body = mc_analysis.render_maxwell(poly["magnetization"], source=path.name)
+            plot_csv = mc_analysis.maxwell_plot_csv(poly["magnetization"])
+            plot_kind = (
+                "Maxwell -DeltaS(T, H) table; columns "
+                "T_mid_K,field_T,minus_delta_S_J_per_mol_per_K"
+            )
         else:
             spectrum: list[float] = []
             for segment in single.get("segments") or []:
@@ -1316,6 +1371,8 @@ def magnetocaloric_report(session: Session) -> None:
                         spectrum = center["so_spectrum_cm1"]
                         break
             body = mc_analysis.render_levels(spectrum, source=path.name)
+            plot_csv = mc_analysis.levels_plot_csv(spectrum)
+            plot_kind = "S(T) table; columns temperature_K,entropy_J_per_mol_per_K"
     except mc_analysis.MagnetocaloricError as exc:
         session.say(f"Magnetocaloric report failed: {exc}")
         return
@@ -1326,5 +1383,80 @@ def magnetocaloric_report(session: Session) -> None:
     if refs is not None:
         report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
     md_path = path.with_name(path.name + ".mce.fbk.md")
+    md_path.write_text(report_lines, encoding="utf-8")
+    session.say(f"Report written: {md_path}")
+    csv_path = path.with_name(path.name + ".mce.fbk.csv")
+    csv_path.write_text(plot_csv, encoding="utf-8")
+    session.say(f"Plot data written: {csv_path} ({plot_kind})")
+
+
+def state_tracking_report(session: Session) -> None:
+    """Menu 49: track one state across a sequence of runs (density-matrix walk).
+
+    The measure and its declared substitutions live in
+    ``analysis.state_tracking``; this handler collects the ordered exports,
+    reads each run's per-root energies from its sibling ``.out`` when present,
+    and writes the lineage report next to the first export.
+    """
+    from ...analysis import state_tracking as tracking
+
+    runs_text = session.ask(
+        "Run exports in tracking order (orca_2json paths, comma-separated; "
+        "first the run that holds the target state)"
+    )
+    if not runs_text:
+        session.say("Cancelled (no paths given).")
+        return
+    paths = [Path(item.strip()) for item in runs_text.split(",") if item.strip()]
+    if len(paths) < 2:
+        session.say(
+            "State tracking failed: at least two runs are needed. Next step: "
+            "give the exports in tracking order, first the target state's run."
+        )
+        return
+    root_text = session.ask(
+        "Tracking target: 0-based root index in the first export (Enter = 0)"
+    ).strip() or "0"
+    try:
+        target_root = int(root_text)
+    except ValueError:
+        session.say(f"Not an integer root index: {root_text!r}; cancelled.")
+        return
+
+    def _energies(path: Path) -> dict[tuple[int, int], float]:
+        sibling = path.with_suffix(".out")
+        if not sibling.exists():
+            return {}
+        parsed = parse_auto(sibling)
+        table: dict[tuple[int, int], float] = {}
+        casscf = parsed.sections.get("casscf") or {}
+        for block in casscf.get("states", ()):
+            for root in block["roots"]:
+                table[(block["mult"], root["root"])] = root["energy"]
+        return table
+
+    runs = []
+    for path in paths:
+        try:
+            export = parse_orca_json(path)
+            runs.append(
+                tracking.build_run(export, energies=_energies(path), name=path.name)
+            )
+        except (ParserError, tracking.StateTrackingError, OSError) as exc:
+            session.say(f"State tracking failed on {path.name}: {exc}")
+            return
+    try:
+        result = tracking.track(runs, target_root)
+    except tracking.StateTrackingError as exc:
+        session.say(f"State tracking failed: {exc}")
+        return
+    body = tracking.render(result, source=paths[0].name)
+    session.say(body)
+    section = ReportSection(title="Cross-run state tracking", body=body)
+    report_lines = f"## {section.title}\n\n{section.body}\n"
+    refs = references_section(tracking.evidence())
+    if refs is not None:
+        report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
+    md_path = paths[0].with_name(paths[0].name + ".track.fbk.md")
     md_path.write_text(report_lines, encoding="utf-8")
     session.say(f"Report written: {md_path}")

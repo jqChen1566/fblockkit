@@ -648,11 +648,13 @@ CASSCF-level RMS & intrinsic near zero & The LFT parametrization is exact
 F0 / Racah A at NEVPT2 & not defined & F0 (and Racah A) are printed at the
   CASSCF level only (``fixed''); NEVPT2 starts from $F^2$, $F^4$ ($F^6$)
   & \textsf{[Manual]} same, measured \\
-Nephelauxetic ratios & need the caller's free-ion references & The menu
-  computes $\beta = B/B_0$ and $\zeta/\zeta_0$ only from values passed at
-  the prompt; reductions are the classic covalency indicators; no built-in
-  free-ion table (registered increment) & \textsf{[Literature]} Jung,
-  Atanasov \& Neese 2017 \\
+Nephelauxetic ratios & resolved per level and per parameter: built-in
+  table or caller values & $\beta = B/B_0$ (d) or $F^2/F^2_0$ (f), and
+  $\zeta/\zeta_0$, from the built-in free-ion table (the published Ln/An
+  series plus a measured Ni probe; cross-checked on Nd to better than 2\%
+  at the NEVPT2 level) or from caller-entered values, which override the
+  table & \textsf{[Literature]} Jung, Atanasov \& Neese 2017;
+  \textsf{[Measured]} probe runs \\
 SOC constant & ZETA\_D / ZETA\_F from a CASSCF-orbital fit & The engine
   fits $\zeta$ against the CASSCF-orbital SOC matrix elements; the menu
   reports the fitted value and the fit's own RMS & \textsf{[Measured]}

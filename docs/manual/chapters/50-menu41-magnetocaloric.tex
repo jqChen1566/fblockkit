@@ -25,7 +25,7 @@ menu-36 Co spectrum through the levels route (a degenerate ground doublet
 gives the flat $S = R\ln 2$ branch; the truncated level list caps the
 useful range).
 
-\lstinputlisting[style=fbkcode, firstline=45, lastline=61,
+\lstinputlisting[style=fbkcode, firstline=53, lastline=69,
   title={The menu-41 example (the Maxwell route on the magnetization
   table, with the probe maximum)}]
   {examples/expected/m41_magnetocaloric.txt}
@@ -37,6 +37,15 @@ the summary temperatures plus the $R\ln N$ high-temperature check (an
 upper bound, since the level list is truncated); magnetization route --
 the $-\Delta S(T, H)$ table at probe fields with the maximum, from the
 Maxwell relation.
+
+Beside the report, the menu writes a plot-ready companion
+\code{<output>.mce.fbk.csv}, one shape per route: the levels route's
+$S_{\mathrm{mag}}(T)$ grid
+(\code{temperature\_K,entropy\_J\_per\_mol\_per\_K}), or the Maxwell route's
+$-\Delta S(T, H)$ table in tidy long form over the full printed field grid
+(\code{T\_mid\_K,field\_T,minus\_delta\_S\_J\_per\_mol\_per\_K}) -- the
+report shows five probe fields, the companion carries them all
+(Chapter~\ref{ch:formats}).
 
 \section{Conventions, cross-checks and boundaries (measured)}
 
