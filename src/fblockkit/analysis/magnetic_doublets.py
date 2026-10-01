@@ -434,7 +434,7 @@ def render(report: CriterionReport) -> str:
     lines.append(
         "  (* = the reference doublet, quantisation axis for the computed angles)"
         if report.computed_from_axes
-        else "  (* = the reference row; every theta3 was given in the table, no axis was used)"
+        else "  (* = the reference row; no angle needed measuring from an axis)"
     )
     lines += ["", "Criteria and boundaries:"]
     for item in report.checks + report.notes:

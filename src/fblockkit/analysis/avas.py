@@ -4,9 +4,10 @@ The construction (the paper's Eqs. 2-9, 13):
 
 1. choose a set A of target AOs (the paper uses a minimal auxiliary basis; here
    the target is a subset of the calculation's own AOs -- the "non-minimal ANO"
-   route the paper describes in its outlook, which is also the only route open
-   to the f block because ORCA's AVAS minimal basis has no f-block entries,
-   measured on Eu);
+   route the paper describes in its outlook, which is also the f-block route of
+   record because the explicit list does not go through the minimal basis at
+   all: the ecosystem's minimal-basis coverage has no entry for Eu, measured
+   through the engine's own localization tooling);
 2. the projector onto ``span(A)`` in the AO metric, applied to a coefficient
    vector ``c``, is ``c -> i sigma^{-1} i^T S c`` with ``i`` the embedding of the
    A rows and ``sigma = S[AA]`` the target overlap;
@@ -408,8 +409,9 @@ def run(analysis: AvasAnalysis) -> ReportSection:
         "",
         "Boundary of this route: the target set here is a subset of the calculation's own "
         "AOs (the source's non-minimal-ANO variant), which is what makes the projection "
-        "computable from an export alone and is the only route open to the f block -- "
-        "ORCA's AVAS minimal basis was measured to have no f-block entries (Eu). And "
+        "computable from an export alone; the explicit list does not go through the "
+        "minimal basis at all, and the ecosystem's minimal-basis coverage has no entry "
+        "for Eu (measured through the engine's own localization tooling). And "
         "ORCA's CASSCF takes its active space by orbital order, not by an index list: the "
         "(n_el, n_orb) above sizes the input and the window, it does not name the "
         "orbitals to a restart.",
@@ -450,9 +452,11 @@ def evidence() -> tuple[Evidence, ...]:
                 "the whole AO set the occupied spectrum is exactly 1 in every entry, the "
                 "eigenvalues stay in [0, 1], and the sum of the occupied-side "
                 "eigenvalues equals the trace of the projected overlap (the target "
-                "population of the occupied block). ORCA's own AVAS minimal basis is "
-                "measured missing for Eu (the orca_loc counterpart of the same gap), "
-                "which is why the target-set route here is the f-block one."
+                "population of the occupied block). The engine's minimal-basis "
+                "localization tooling has no entry for Eu (\"The minimal basis set is "
+                "not defined for element Eu\", fixtures/orca/README.md), and the "
+                "target-set route here avoids any minimal basis by construction, which "
+                "is why it is the f-block route."
             ),
             ref="tests/test_avas.py; fixtures/orca/README.md",
         ),

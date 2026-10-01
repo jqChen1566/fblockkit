@@ -23,7 +23,11 @@ A JSON table of the doublets: per doublet the three principal $g$ values and
 \emph{either} \code{theta3} (as published tables give it) \emph{or}
 \code{axis3}, the unit axis of the largest value, from which the angle to the
 reference doublet's axis is computed here. The schema is in
-Chapter~\ref{ch:formats}.
+Chapter~\ref{ch:formats}.  Alternatively, the file may be the raw text output
+of an OpenMolcas \code{SINGLE\_ANISO} run (recognized by its pseudospin
+banner): the $g$ tensors of every parsed multiplet are converted into the same
+table, so the engine printout and the hand-written table enter the criterion
+by one door.
 
 \section{Walkthrough}
 
@@ -84,6 +88,17 @@ arithmetic back --- $g_T = 0.782$ and $2.993$ (the table's values), products
 supports excitation, the second facilitates QTM.  That is the menu's purpose in
 one line: given the doublet table, say which side of the line each doublet is
 on, with the domain and the outlier named.
+
+A second, engine-side example closes the same loop through a real calculation:
+the fixtures' Dy(III) $4f^9$ single-ion chain
+(\file{fixtures/openmolcas/dy\_smoke.out}, OpenMolcas v26.06, the input shipped
+beside it) ends in a \code{SINGLE\_ANISO} block whose pseudospin multiplet is
+read directly --- $g_1 = 0.913$, $g_2 = 1.991$, $g_3 = 13.144$, $\theta_3 = 0$
+(a single multiplet is its own reference), $g_T = 0.968$, product $0.00$: the
+ground doublet supports excitation.  The bare ion has no ligand field, so the
+number carries the degeneracy of the free-ion $J = 15/2$ manifold rather than a
+molecular easy axis; the fixture's role is to exercise the reading chain, and
+the fixture README states that boundary.
 
 \section{Refusals and related sections}
 

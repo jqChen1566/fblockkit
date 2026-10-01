@@ -4,7 +4,7 @@ Magnetic-doublet criterion (g_T = (g1 + g2 + g3 sin(theta3)) / 3, degrees; line 
   #   doublet                             E(cm-1)      g1      g2      g3  theta3(deg)      g_T  g_T*theta3  reading
   0 * doublet that supports excitation          -    0.41    0.44    9.04         9.52    0.782        7.44  supports excitation
   1   doublet that facilitates QTM              -    3.45    3.73    5.96        17.58    2.993       52.62  facilitates QTM
-  (* = the reference row; every theta3 was given in the table, no axis was used)
+  (* = the reference row; no angle needed measuring from an axis)
 
 Criteria and boundaries:
   - the criterion: g_T = (g1 + g2 + g3 sin(theta3)) / 3 with theta3 in DEGREES, compared with g_T * theta3 = 20: below the line the doublet can still act as a step of the barrier (supports excitation above it), at or above it the doublet facilitates quantum tunnelling

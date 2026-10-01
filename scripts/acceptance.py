@@ -188,6 +188,11 @@ def main() -> int:
             REPO / "fixtures" / "gaussian" / "g09_h2co_ts.out",
             inputs / "g09_h2co_ts.out",
         )
+        # the OpenMolcas chain (menu 16's engine-side input route)
+        shutil.copy(
+            REPO / "fixtures" / "openmolcas" / "dy_smoke.out",
+            inputs / "dy_smoke.out",
+        )
         # the exact-entropy chain (menu 12): the converged CASSCF output, the
         # FCIDUMP it dumped, and the two orca_2json exports of the gbw
         shutil.copy(FIXTURES / "n2_fcidump_step_a.out", inputs / "n2_fcidump_step_a.out")
@@ -268,6 +273,7 @@ def main() -> int:
                     "14", "work/canonical.json", "0", "p", "2", "", "",
                     "15", "work/canonical.json", "",
                     "16", "work/dy_doublets.json",
+                    "16", "work/dy_smoke.out",
                     "17", "work/mapping_manifest.json",
                     "18", "work/guess_manifest.json",
                     "19", "work/h2o.xyz", "", "", "", "", "", "",
@@ -467,6 +473,16 @@ def main() -> int:
                 and "15.31" in magnetic and "30.25" in magnetic,
                 "menu 16 report: the source's calibration row gets both sides of "
                 "the g_T*theta_3 line, with the domain and the gap",
+            )
+
+            magnetic_molcas = read("dy_smoke.out.magnetic.fbk.md")
+            check(
+                "multiplet 1 (effective S = 1/2)" in magnetic_molcas
+                and "0.968" in magnetic_molcas
+                and "supports excitation" in magnetic_molcas
+                and "13.14" in magnetic_molcas,
+                "menu 16 report: the OpenMolcas SINGLE_ANISO output is read and "
+                "converted (the fixture's ground multiplet, g_T = 0.968)",
             )
 
             mapping = read("mapping_manifest.json.mapping.fbk.md")

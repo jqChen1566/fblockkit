@@ -1,0 +1,37 @@
+&GATEWAY
+Title=dy-ion smoke
+Coord
+1
+Dy3plus
+Dy 0.0 0.0 0.0
+Basis=ANO-RCC-VDZP
+Group = C1
+&SEWARD
+&RASSCF
+Spin
+6
+nActEl
+9 0 0
+Inactive
+27
+Ras2
+7
+CIRoot
+11 11 1
+Iter
+50 50
+&RASSI
+MEES
+SpinOrbit
+PROP
+3
+'ANGMOM' 1
+'ANGMOM' 2
+'ANGMOM' 3
+NR OF JOBIPHS
+1 all
+EJOB
+&SINGLE_ANISO
+MLTP
+1
+2

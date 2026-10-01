@@ -87,9 +87,10 @@ citations.
 The session above runs on the shipped N\textsubscript{2} export. For a
 lanthanide the target is an $f$ shell, and the route matters: this menu builds
 the target from the calculation's \emph{own} AOs (the source's non-minimal
-ANO variant, its outlook Section~5.1), because ORCA's own AVAS minimal basis
-was measured to have no entry for Eu -- the same coverage gap that
-\code{orca\_loc} shows, recorded in the fixtures README. The emitted
+ANO variant, its outlook Section~5.1), so the projection never goes through
+the AVAS minimal basis; the ecosystem's minimal-basis coverage has no entry
+for Eu -- the same coverage gap that \code{orca\_loc} records in the fixtures
+README. The emitted
 \code{\%scf avas} block lists the target AOs explicitly, so it does not go
 through the minimal basis: measured on Eu\textsuperscript{3+} (2026-10-01),
 the block with the 28 $4f$ targets and \code{!moread} of a converged gbw

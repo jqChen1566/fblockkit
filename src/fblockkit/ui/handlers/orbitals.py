@@ -13,6 +13,7 @@ from ...knowledge.models import ReportSection
 from ...parsers import ParserError, parse_auto
 from ...parsers.fcidump import parse_fcidump
 from ...parsers.mkl import parse_mkl
+from ...parsers.molcas_single_aniso import doublets_payload, parse_single_aniso
 from ...parsers.orca_json import parse_orca_json
 from ...recipe import aop_rotation, guess_transfer
 from ..session import Session
@@ -396,17 +397,35 @@ def orbital_portrait_report(session: Session) -> None:
 
 
 def magnetic_doublets_report(session: Session) -> None:
-    """Menu 16: the g_T * theta_3 criterion over a Kramers-doublet table (JSON in)."""
+    """Menu 16: the g_T * theta_3 criterion over a Kramers-doublet table.
+
+    Two input routes.  Either the hand-written JSON table (per doublet: the
+    three g values and theta3 or the g3 axis; see the user guide), or the raw
+    text output of an OpenMolcas SINGLE_ANISO run -- the g tensors of every
+    parsed pseudospin multiplet are converted into the same table, so the
+    engine printout and the manual table enter the criterion by one door.
+    """
     path_text = session.ask(
-        "Kramers-doublet table JSON path (per doublet: the three g values and theta3 "
-        "or the g3 axis; see the user guide)"
+        "Kramers-doublet table JSON path, or OpenMolcas SINGLE_ANISO output path "
+        "(per doublet: the three g values and theta3 or the g3 axis; see the user guide)"
     )
     if not path_text:
         session.say("Cancelled (no path given).")
         return
     path = Path(path_text)
     try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
+        text = path.read_text(encoding="utf-8")
+        if text.lstrip().startswith("{"):
+            payload = json.loads(text)
+        elif "CALCULATION OF PSEUDOSPIN HAMILTONIAN TENSORS" in text:
+            payload = doublets_payload(parse_single_aniso(text))
+        else:
+            session.say(
+                "The file is neither a JSON doublet table nor an OpenMolcas "
+                "SINGLE_ANISO output. Next step: give a JSON object with a "
+                "'doublets' list, or the text output of a SINGLE_ANISO run."
+            )
+            return
         table = magnetic_doublets.parse_doublets(payload)
         section = magnetic_doublets.run(table)
     except (OSError, ValueError) as exc:

@@ -294,7 +294,7 @@ def test_the_report_says_whether_an_axis_was_used():
         )
     )
     body = magnetic_doublets.render(table_only)
-    assert "no axis was used" in body
+    assert "no angle needed" in body
     assert "0 by definition" not in body
     with_axes = magnetic_doublets.analyze(
         parse_doublets(

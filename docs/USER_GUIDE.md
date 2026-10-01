@@ -572,7 +572,7 @@ benchmark found that a larger active space is not automatically a better one
 (autoCAS picked 17 orbitals for CH4 where a smaller space gave half the error),
 so read this panel as evidence for a choice, not as the choice.
 
-## 16 Magnetic-doublet criterion (a Kramers-doublet table JSON)
+## 16 Magnetic-doublet criterion (a Kramers-doublet table, or an OpenMolcas SINGLE_ANISO output)
 
 **What it is for**: the empirical metric a Dy(III) single-molecule-magnet study
 reads off the Kramers-doublet ladder -- which doublet can still act as a step of
@@ -586,10 +586,15 @@ with `g1 <= g2 <= g3` the doublet's principal g values and `theta3` (in
 **degrees**) the angle between its `g3` axis and the ground doublet's `g3` axis.
 Below the line the doublet supports excitation above it; at or above it, QTM is
 opened. Nothing here is computed by an engine: this is pure post-processing of
-the g tensors, so it runs from a small table you prepare.
+the g tensors, so it runs from a small table you prepare -- or from the raw
+text output of an OpenMolcas `SINGLE_ANISO` run, whose printed g tensors are
+converted into that table for you (see the manual's worked example).
 
-**What you need**: a JSON table of the doublets. Per doublet, the three
-principal g values and **either** `theta3` (as published tables give it)
+**What you need**: a JSON table of the doublets -- or, instead, the raw text
+output of an OpenMolcas `SINGLE_ANISO` run, whose printed g tensors are
+converted into the same table (the pseudospin banner is recognized; binary
+`.aniso`/`.rassi.h5` files are not read, the text output is). Per doublet, the
+three principal g values and **either** `theta3` (as published tables give it)
 **or** `axis3` (the unit axis of the largest value, when you have the tensor
 directions), plus an optional `energy`:
 
