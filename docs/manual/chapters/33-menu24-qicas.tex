@@ -37,7 +37,12 @@ the target active space \code{nel,norb} within the window, and --- optionally
 The per-orbital entropy profile before and after the optimization, the
 $F_{\mathrm{QI}}$ values, the CASCI energies in the initial and the optimized
 basis against the window FCI, the Theorem-1 check with the run's own numbers,
-and a report (\file{<FCIDUMP>.qicas.fbk.md}) with the citations.
+and a report (\file{<FCIDUMP>.qicas.fbk.md}) with the citations.  Given the
+run's \code{orca\_2json} export and an mkl template of it (an
+\code{orca\_2mkl} copy of its \code{.gbw}), the menu additionally writes the
+optimized-basis orbital set as \file{<FCIDUMP>.qicas.fbk.mkl}: the window
+columns rotated by the optimizer's accumulated transformation, column order
+preserved, so the same window can be re-run in the optimized basis.
 
 \section{How to read it}
 

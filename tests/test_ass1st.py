@@ -34,6 +34,7 @@ import pytest
 
 from fblockkit.analysis import ass1st
 from fblockkit.analysis.ass1st import Ass1stError, parse_band
+from fblockkit.parsers.mkl import parse_mkl
 from fblockkit.parsers.orca_json import parse_orca_json
 from fblockkit.recipe import ass1st as recipe
 
@@ -262,3 +263,46 @@ def test_the_report_prints_the_tables_and_the_suggestion():
 def test_evidence_carries_the_two_papers():
     bibkeys = {item.bibkey for item in ass1st.evidence() if item.bibkey}
     assert bibkeys == {"khedkar2019ass1st", "khedkar2020sa"}
+
+
+# --- the quasi-natural write-back ---------------------------------------------
+
+
+def test_the_quasi_natural_export_reproduces_the_suggested_window():
+    export = parse_orca_json(ST)
+    round_ = ass1st.analyze_round(export)
+    qno = ass1st.quasi_natural_export(export)
+    suggestion = round_.suggestion
+    assert qno.n_active == suggestion.n_orbitals == 4
+    total_electrons = 2 * len(round_.partition.internal) + round_.partition.n_electrons
+    assert qno.n_inactive == (total_electrons - suggestion.n_electrons) // 2
+    overlap = np.asarray(export.overlap)
+    gram = qno.coefficients.T @ overlap @ qno.coefficients
+    assert np.abs(gram - np.eye(export.n_mo)).max() < 1e-10
+    # the inactive prefix sits above the internal band line; the active window
+    # carries the band orbitals -- the measured split is
+    # [2.0, 2.0, 1.9934, 1.9820, 1.9768] | [1.9363, 1.9363, 0.0660, 0.0660]
+    prefix = qno.occupations[: qno.n_inactive]
+    window = qno.occupations[qno.n_inactive : qno.n_inactive + qno.n_active]
+    assert prefix.min() >= round_.int_line - 1e-9
+    assert (window > round_.ext_line).all() and (window < round_.int_line).all()
+
+
+def test_the_quasi_natural_export_is_deterministic():
+    export = parse_orca_json(ST)
+    first = ass1st.quasi_natural_export(export)
+    second = ass1st.quasi_natural_export(export)
+    assert np.array_equal(first.coefficients, second.coefficients)
+    assert np.array_equal(first.occupations, second.occupations)
+
+
+def test_the_write_back_round_trips_through_the_mkl(tmp_path):
+    export = parse_orca_json(ST)
+    qno = ass1st.quasi_natural_export(export)
+    template = parse_mkl(FIXTURES / "n2_scan_1.600.mkl")
+    out = tmp_path / "qno.mkl"
+    recipe.write_qno_mkl(template, qno.coefficients, qno.occupations, out)
+    back = parse_mkl(out)
+    coefficients = np.asarray(back.coefficients())
+    assert coefficients.shape == qno.coefficients.shape
+    assert np.abs(coefficients - qno.coefficients).max() < 1e-6

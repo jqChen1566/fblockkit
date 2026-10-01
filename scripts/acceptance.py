@@ -193,6 +193,11 @@ def main() -> int:
             REPO / "fixtures" / "openmolcas" / "dy_smoke.out",
             inputs / "dy_smoke.out",
         )
+        # the ASS1ST write-back template (an mkl of the same N2/def2-SVP system)
+        shutil.copy(
+            REPO / "fixtures" / "orca" / "n2_scan_1.600.mkl",
+            inputs / "n2_ass1st_tpl.mkl",
+        )
         # the exact-entropy chain (menu 12): the converged CASSCF output, the
         # FCIDUMP it dumped, and the two orca_2json exports of the gbw
         shutil.copy(FIXTURES / "n2_fcidump_step_a.out", inputs / "n2_fcidump_step_a.out")
@@ -281,8 +286,9 @@ def main() -> int:
                     "21", "work/n2_apc.json", "apc", "23", "max(10,10)", "fock", "",
                     "21", "work/n2_apc.json", "apc", "23", "max(10,10)", "fock", "2",
                     "22", "work/h2o.xyz", "0", "1", "4,4", "1", "", "",
-                    "23", "work/n2_ass1st.json", "0.03", "", "", "",
+                    "23", "work/n2_ass1st.json", "0.03", "", "", "", "work/n2_ass1st_tpl.mkl",
                     "24", "work/FCIDUMP", "work/n2_fcidump_step_a.out", "2,4", "touch",
+                    "work/canonical.json", "work/n2_scan_1.600.mkl",
                     "25", "work/benzene.json", "work/benzene.fcidump", "work/benzene.out", "C pz", "", "",
                     "26", "work/benzene.fcidump", "work/benzene.out", "4", "greedy",
                     "27", "work/h2co.xyz", "0", "1", "0,1", "", "", "", "", "",
@@ -480,9 +486,12 @@ def main() -> int:
                 "multiplet 1 (effective S = 1/2)" in magnetic_molcas
                 and "0.968" in magnetic_molcas
                 and "supports excitation" in magnetic_molcas
-                and "13.14" in magnetic_molcas,
+                and "13.14" in magnetic_molcas
+                and "susceptibility table" in magnetic_molcas
+                and "14.2177" in magnetic_molcas,
                 "menu 16 report: the OpenMolcas SINGLE_ANISO output is read and "
-                "converted (the fixture's ground multiplet, g_T = 0.968)",
+                "converted (the fixture's ground multiplet, g_T = 0.968, with the "
+                "run's own chi*T(300 K) quoted beside it)",
             )
 
             mapping = read("mapping_manifest.json.mapping.fbk.md")
@@ -574,6 +583,13 @@ def main() -> int:
                 "menu 23 report: the N2 round reproduces the block quasi-NOON "
                 "anchors and suggests the pi/pi* quartet",
             )
+            check(
+                "Quasi-natural orbitals written" in round_report
+                and "inactive prefix 5, active window 4" in round_report
+                and product("n2_ass1st.qno.fbk.mkl").is_file(),
+                "menu 23: the quasi-natural write-back lands a gbw-ready mkl "
+                "ordered for the suggested window",
+            )
             next_input = read("n2_ass1st.r2.inp")
             check(
                 "  nel 4" in next_input and "  norb 4" in next_input
@@ -590,6 +606,13 @@ def main() -> int:
                 and "reads as (4e, 4o)" in qicas_report,
                 "menu 24 report: the awkward (2,4) request is repaired to the pi "
                 "space with the Theorem-1 check holding",
+            )
+            check(
+                "QICAS optimized orbitals written" in qicas_report
+                and "closed 1, active 4" in qicas_report
+                and product("FCIDUMP.qicas.fbk.mkl").is_file(),
+                "menu 24: the optimized-basis write-back lands a gbw-ready mkl "
+                "(window columns rotated, order preserved)",
             )
 
             aegiss_report = read("benzene.json.aegiss.fbk.md")

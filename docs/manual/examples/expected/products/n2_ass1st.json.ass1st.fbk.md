@@ -81,3 +81,5 @@ BibTeX (paste-ready):
   doi     = {10.1021/acs.jctc.0c00332},
 }
 ```
+
+Quasi-natural orbitals written: `n2_ass1st.qno.fbk.mkl` (inactive prefix 5, active window 4; the engine's by-orbital-order window reproduces the suggestion).

@@ -21,6 +21,7 @@ from fblockkit.parsers.molcas_single_aniso import (
     MolcasAnisoError,
     doublets_payload,
     parse_single_aniso,
+    parse_susceptibility,
 )
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "openmolcas"
@@ -79,6 +80,24 @@ def test_the_payload_feeds_menu_16_end_to_end(text):
 def test_a_text_without_the_block_is_refused_with_a_next_step():
     with pytest.raises(MolcasAnisoError, match="Next step"):
         parse_single_aniso("hello world, no pseudospin here")
+
+
+def test_the_susceptibility_table_parses(text):
+    table = parse_susceptibility(text)
+    assert table.n_points == 301
+    assert table.temperature_range_k == (0.0, 300.0)
+    assert len(table.points) == 301
+    first, last = table.points[0], table.points[-1]
+    assert first.temperature_k == pytest.approx(0.0001)
+    assert first.chi_t_cm3k_mol == pytest.approx(14.18870104)
+    assert last.temperature_k == pytest.approx(300.0)
+    assert last.chi_t_cm3k_mol == pytest.approx(14.21767223)
+    assert last.chi_cm3_mol == pytest.approx(0.0473922)
+
+
+def test_a_text_without_the_susceptibility_section_is_refused():
+    with pytest.raises(MolcasAnisoError, match="Next step"):
+        parse_susceptibility("no susceptibility section in here")
 
 
 def test_an_incomplete_g_table_is_refused(text):

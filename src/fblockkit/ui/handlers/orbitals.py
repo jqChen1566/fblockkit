@@ -13,7 +13,12 @@ from ...knowledge.models import ReportSection
 from ...parsers import ParserError, parse_auto
 from ...parsers.fcidump import parse_fcidump
 from ...parsers.mkl import parse_mkl
-from ...parsers.molcas_single_aniso import doublets_payload, parse_single_aniso
+from ...parsers.molcas_single_aniso import (
+    MolcasAnisoError,
+    doublets_payload,
+    parse_single_aniso,
+    parse_susceptibility,
+)
 from ...parsers.orca_json import parse_orca_json
 from ...recipe import aop_rotation, guess_transfer
 from ..session import Session
@@ -413,12 +418,24 @@ def magnetic_doublets_report(session: Session) -> None:
         session.say("Cancelled (no path given).")
         return
     path = Path(path_text)
+    chi_line = ""
     try:
         text = path.read_text(encoding="utf-8")
         if text.lstrip().startswith("{"):
             payload = json.loads(text)
         elif "CALCULATION OF PSEUDOSPIN HAMILTONIAN TENSORS" in text:
             payload = doublets_payload(parse_single_aniso(text))
+            try:
+                susceptibility = parse_susceptibility(text)
+                last = susceptibility.points[-1]
+                chi_line = (
+                    f"\nThe output's own susceptibility table: "
+                    f"{susceptibility.n_points} temperature points; "
+                    f"chi*T(300 K) = {last.chi_t_cm3k_mol:.4f} cm3*K/mol "
+                    "(the free-ion 6H15/2 Curie value is about 14.2).\n"
+                )
+            except MolcasAnisoError:
+                chi_line = ""
         else:
             session.say(
                 "The file is neither a JSON doublet table nor an OpenMolcas "
@@ -433,8 +450,8 @@ def magnetic_doublets_report(session: Session) -> None:
             f"Magnetic-doublet reading failed: {exc}"
         )
         return
-    session.say(section.body)
-    report_lines = f"## {section.title}\n\n{section.body}\n"
+    session.say(section.body + chi_line)
+    report_lines = f"## {section.title}\n\n{section.body}\n{chi_line}"
     refs = references_section(magnetic_doublets.evidence())
     if refs is not None:
         report_lines += f"\n## {refs.title}\n\n{refs.body}\n"

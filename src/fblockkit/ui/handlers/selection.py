@@ -318,7 +318,13 @@ def ass1st_round(session: Session) -> None:
     keywords_text = session.ask(
         "Method/basis keywords for the next round (Enter = RHF def2-SVP TightSCF)"
     ).strip()
+    template_text = session.ask(
+        "Quasi-natural mkl template, optional (an orca_2mkl copy of this run's gbw; "
+        "Enter = skip the write-back)"
+    ).strip()
     path = Path(path_text)
+    qno = None
+    qno_path = None
     try:
         export = parse_orca_json(path)
         band = ass1st.parse_band(band_text) if band_text else (
@@ -340,6 +346,13 @@ def ass1st_round(session: Session) -> None:
         round_ = ass1st.analyze_round(
             export, weights=weights, band=band, previous_spaces=tuple(previous)
         )
+        if template_text:
+            qno = ass1st.quasi_natural_export(export, weights=weights, band=band)
+            template_mkl = parse_mkl(template_text)
+            qno_path = path.with_name(path.stem + ".qno.fbk.mkl")
+            ass1st_recipe.write_qno_mkl(
+                template_mkl, qno.coefficients, qno.occupations, qno_path
+            )
     except (ParserError, ass1st.Ass1stError, OSError, ValueError) as exc:
         session.say(f"ASS1ST round failed: {exc}")
         return
@@ -349,9 +362,20 @@ def ass1st_round(session: Session) -> None:
     refs = references_section(ass1st.evidence())
     if refs is not None:
         report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
+    if qno_path is not None and qno is not None:
+        report_lines += (
+            f"\nQuasi-natural orbitals written: `{qno_path.name}` "
+            f"(inactive prefix {qno.n_inactive}, active window {qno.n_active}; "
+            "the engine's by-orbital-order window reproduces the suggestion).\n"
+        )
     md_path = path.with_name(path.name + ".ass1st.fbk.md")
     md_path.write_text(report_lines, encoding="utf-8")
     session.say(f"Report written: {md_path}")
+    if qno_path is not None and qno is not None:
+        session.say(
+            f"Quasi-natural orbitals written: {qno_path} "
+            f"(inactive prefix {qno.n_inactive}, active window {qno.n_active})."
+        )
     if round_.suggestion.self_consistent:
         session.say(
             f"Self-consistent at ({round_.partition.n_electrons}e, "
@@ -408,6 +432,16 @@ def qicas_optimize(session: Session) -> None:
     if pairs_text not in ("", "touch", "exclusive"):
         session.say(f"Cancelled (unknown rotation set {pairs_text!r}).")
         return
+    export_text = session.ask(
+        "orca_2json export of the same run, optional (needed only for the orbital "
+        "write-back; Enter = skip)"
+    ).strip()
+    template_text = session.ask(
+        "Quasi-natural mkl template, optional (an orca_2mkl copy of the run's gbw; "
+        "Enter = skip the write-back)"
+    ).strip()
+    qe = None
+    qno_path = None
     try:
         ok, reference = casscf_reference(session, output_text)
         if not ok:
@@ -419,13 +453,33 @@ def qicas_optimize(session: Session) -> None:
             )
         n_cas, n_act = (int(token) for token in tokens)
         dump = parse_fcidump(Path(fcidump_text))
-        section = qicas.run(
+        result = qicas.analyze(
             dump,
             n_cas=n_cas,
             n_active_orbitals=n_act,
             pairs_mode=pairs_text or "touch",
             reference_energy=reference,
         )
+        section = ReportSection(
+            title="QICAS active-space optimization (F_QI-minimised orbitals)",
+            body=qicas.render(result),
+        )
+        if template_text:
+            if not export_text:
+                raise qicas.QicasError(
+                    "an mkl template was given without the export it needs. Next step: "
+                    "give the run's orca_2json export as well (an FCIDUMP carries no "
+                    "orbital coefficients)."
+                )
+            export = parse_orca_json(export_text)
+            qe = qicas.quasi_export(result, export)
+            template_mkl = parse_mkl(template_text)
+            qno_path = Path(fcidump_text).with_name(
+                Path(fcidump_text).stem + ".qicas.fbk.mkl"
+            )
+            ass1st_recipe.write_qno_mkl(
+                template_mkl, qe.coefficients, qe.occupations, qno_path
+            )
     except (ParserError, qicas.QicasError, OSError, ValueError) as exc:
         session.say(f"QICAS optimization failed: {exc}")
         return
@@ -434,9 +488,20 @@ def qicas_optimize(session: Session) -> None:
     refs = references_section(qicas.evidence())
     if refs is not None:
         report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
+    if qno_path is not None and qe is not None:
+        report_lines += (
+            f"\nQICAS optimized orbitals written: `{qno_path.name}` "
+            f"(closed {qe.n_closed}, active {qe.n_active}; window columns rotated "
+            "into the optimized basis, column order preserved).\n"
+        )
     md_path = Path(fcidump_text).with_name(Path(fcidump_text).name + ".qicas.fbk.md")
     md_path.write_text(report_lines, encoding="utf-8")
     session.say(f"Report written: {md_path}")
+    if qno_path is not None and qe is not None:
+        session.say(
+            f"QICAS optimized orbitals written: {qno_path} "
+            f"(closed {qe.n_closed}, active {qe.n_active})."
+        )
 
 
 def aegiss_select(session: Session) -> None:

@@ -30,6 +30,7 @@ import pytest
 from fblockkit.analysis import entropy_rdm, qicas
 from fblockkit.analysis.qicas import QicasError, partition_by_occupation
 from fblockkit.parsers.fcidump import parse_fcidump
+from fblockkit.parsers.orca_json import parse_orca_json
 
 from pathlib import Path
 
@@ -177,3 +178,56 @@ def test_the_report_prints_the_partitions_and_the_theorem_check():
 def test_evidence_carries_the_source():
     bibkeys = {item.bibkey for item in qicas.evidence() if item.bibkey}
     assert bibkeys == {"ding2023qicas"}
+
+
+# --- the optimized-basis export -------------------------------------------------
+
+
+def test_the_export_rotates_the_window_in_place():
+    result = qicas.analyze(
+        _dump(), n_cas=2, n_active_orbitals=4, reference_energy=REFERENCE
+    )
+    export = parse_orca_json(FIXTURES / "n2_fcidump.canonical.json")
+    qe = qicas.quasi_export(result, export)
+    assert qe.n_closed == 1 and qe.n_active == 4
+    overlap = np.asarray(export.overlap)
+    gram = qe.coefficients.T @ overlap @ qe.coefficients
+    assert np.abs(gram - np.eye(export.n_mo)).max() < 1e-10
+    # the column order is preserved: outside the window the occupations are the
+    # export's own, inside it they are exactly the optimized ones, and the
+    # rotation did move the window contents
+    occ0 = np.asarray(export.mo_occupations, dtype=float)
+    assert np.allclose(qe.occupations[:4], occ0[:4])
+    assert np.allclose(
+        qe.occupations[4:10], np.asarray(result.final_occupations), atol=1e-9
+    )
+    assert not np.allclose(qe.occupations[4:10], occ0[4:10])
+
+
+def test_the_export_is_deterministic():
+    result = qicas.analyze(
+        _dump(), n_cas=2, n_active_orbitals=4, reference_energy=REFERENCE
+    )
+    export = parse_orca_json(FIXTURES / "n2_fcidump.canonical.json")
+    first = qicas.quasi_export(result, export)
+    second = qicas.quasi_export(result, export)
+    assert np.array_equal(first.coefficients, second.coefficients)
+    assert np.array_equal(first.occupations, second.occupations)
+
+
+def test_the_write_back_round_trips_through_the_mkl(tmp_path):
+    from fblockkit.parsers.mkl import parse_mkl
+    from fblockkit.recipe import ass1st as ass1st_recipe
+
+    result = qicas.analyze(
+        _dump(), n_cas=2, n_active_orbitals=4, reference_energy=REFERENCE
+    )
+    export = parse_orca_json(FIXTURES / "n2_fcidump.canonical.json")
+    qe = qicas.quasi_export(result, export)
+    template = parse_mkl(FIXTURES / "n2_scan_1.600.mkl")
+    out = tmp_path / "qicas.mkl"
+    ass1st_recipe.write_qno_mkl(template, qe.coefficients, qe.occupations, out)
+    back = parse_mkl(out)
+    coefficients = np.asarray(back.coefficients())
+    assert coefficients.shape == qe.coefficients.shape
+    assert np.abs(coefficients - qe.coefficients).max() < 1e-6

@@ -56,6 +56,7 @@ NOON band: T (band [T, 2-T]) or T_ext,T_int (Enter = 0.05) (Enter = leave empty)
 State weights, comma-separated (Enter = equal; used only for state-averaged rounds) (Enter = leave empty)> 
 Previously visited spaces 'ne,no' space-separated (Enter = none; enables the cycle warning) (Enter = leave empty)> 
 Method/basis keywords for the next round (Enter = RHF def2-SVP TightSCF) (Enter = leave empty)> 
+Quasi-natural mkl template, optional (an orca_2mkl copy of this run's gbw; Enter = skip the write-back) (Enter = leave empty)> work/n2_scan_1.600.mkl
 ASS1ST selection round (NEVPT2 quasi-natural occupation numbers):
   system: n2_ass1st; 6 active orbitals (6e) against 4 internal and 18 external; single state
   band: external line 0.03, internal line 1.97 (the source's quasi-NOON window; 2 - T for a single threshold T)
@@ -104,6 +105,7 @@ Boundaries and checks:
   - every block table is this tool's own block diagonalization of the exported density (the source's construction); ORCA's printed NOON list is the whole-space naturalization and is not used
   - multiplicity 1; the next round's input is generated next to this report by the menu
 Report written: work\n2_ass1st.json.ass1st.fbk.md
+Quasi-natural orbitals written: work\n2_ass1st.qno.fbk.mkl (inactive prefix 5, active window 4).
 Next round written: work\n2_ass1st.r2.inp at (4e, 4o), with work\n2_ass1st.r2.json.conf. Run it, export n2_ass1st.r2.json, and feed that back to this menu; give the visited spaces (including this round's) to get the cycle warning right.
 
 Available functions:

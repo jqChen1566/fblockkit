@@ -39,8 +39,11 @@ from dataclasses import dataclass
 __all__ = [
     "MolcasAnisoError",
     "Multiplet",
+    "SusceptibilityPoint",
+    "SusceptibilityTable",
     "doublets_payload",
     "parse_single_aniso",
+    "parse_susceptibility",
 ]
 
 
@@ -153,6 +156,84 @@ def parse_single_aniso(text: str) -> tuple[Multiplet, ...]:
             )
         )
     return tuple(multiplets)
+
+
+_SUSC_HEADER = "CALCULATION OF THE MAGNETIC SUSCEPTIBILITY"
+_SUSC_INFO_RE = re.compile(
+    r"calculated in\s+(\d+)\s+points, equally distributed in temperature range\s+"
+    r"(-?\d+\.\d+)\s+---\s+(-?\d+\.\d+)\s+K"
+)
+_SUSC_ROW_RE = re.compile(
+    rf"^\s*\|\s*({_FLOAT})\s*\|\s*({_FLOAT})\s*\|\s*({_FLOAT})\s*\|\s*{_FLOAT}\s*\|\s*"
+    rf"({_FLOAT})\s*\|\s*({_FLOAT})\s*\|\s*$",
+    re.M,
+)
+
+
+@dataclass(frozen=True)
+class SusceptibilityPoint:
+    """One temperature row of the powder susceptibility table (cgs-emu units)."""
+
+    temperature_k: float
+    chi_t_cm3k_mol: float  # the zJ = 0 column
+    chi_cm3_mol: float
+    inverse_chi_mol_cm3: float
+
+
+@dataclass(frozen=True)
+class SusceptibilityTable:
+    """The printed temperature dependence of the magnetic susceptibility."""
+
+    n_points: int
+    temperature_range_k: tuple[float, float]
+    points: tuple[SusceptibilityPoint, ...]
+
+
+def parse_susceptibility(text: str) -> SusceptibilityTable:
+    """Parse the printed 'CALCULATION OF THE MAGNETIC SUSCEPTIBILITY' table.
+
+    The table columns are T, the statistical sum, chi*T at zJ = 0, chi*T, chi
+    and 1/chi; this reader keeps T, chi*T (the zJ = 0 column; the two chi*T
+    columns print identically when no zJ is applied), chi and 1/chi.  The
+    per-temperature van Vleck tensor tables that follow are not parsed (their
+    isotropic average is the same printed chi*T).
+    """
+    start = text.find(_SUSC_HEADER)
+    if start < 0:
+        raise MolcasAnisoError(
+            "no 'CALCULATION OF THE MAGNETIC SUSCEPTIBILITY' section was found. "
+            "Next step: give the output of an OpenMolcas SINGLE_ANISO run that was "
+            "asked for the susceptibility (the default) table."
+        )
+    info = _SUSC_INFO_RE.search(text, start)
+    if info is None:
+        raise MolcasAnisoError(
+            "the susceptibility section carries no 'calculated in N points' header, "
+            "so its table layout is not the measured one. Next step: check the file "
+            "against a known SINGLE_ANISO output."
+        )
+    n_points = int(info.group(1))
+    t_lo, t_hi = float(info.group(2)), float(info.group(3))
+    points = tuple(
+        SusceptibilityPoint(
+            temperature_k=float(m.group(1)),
+            chi_t_cm3k_mol=float(m.group(3)),
+            chi_cm3_mol=float(m.group(4)),
+            inverse_chi_mol_cm3=float(m.group(5)),
+        )
+        for m in _SUSC_ROW_RE.finditer(text, start)
+    )
+    if len(points) != n_points:
+        raise MolcasAnisoError(
+            f"the section announces {n_points} temperature points but "
+            f"{len(points)} data rows were read. Next step: check the file against "
+            "a known SINGLE_ANISO output."
+        )
+    return SusceptibilityTable(
+        n_points=n_points,
+        temperature_range_k=(t_lo, t_hi),
+        points=points,
+    )
 
 
 def doublets_payload(

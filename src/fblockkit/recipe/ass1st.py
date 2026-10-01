@@ -37,6 +37,9 @@ The companion export request (written next to each input as
 from __future__ import annotations
 
 import re
+from pathlib import Path
+
+from ..parsers.mkl import MklError, MklFile
 
 __all__ = [
     "Ass1stInputError",
@@ -46,6 +49,7 @@ __all__ = [
     "next_round_input",
     "next_round_stem",
     "round_one_stem",
+    "write_qno_mkl",
 ]
 
 #: The ``<base>.json.conf`` body the selection round needs (measured).
@@ -179,3 +183,31 @@ def next_round_stem(export_base_name: str) -> str:
 def export_conf() -> str:
     """The ``<base>.json.conf`` body for the round's export request."""
     return EXPORT_REQUEST
+
+
+def write_qno_mkl(
+    template_mkl: MklFile,
+    coefficients,
+    occupations,
+    path,
+) -> None:
+    """Write a quasi-natural orbital set into a copy of the template mkl.
+
+    ``coefficients`` (AO x MO) and ``occupations`` come from the analysis layer's
+    quasi-natural export (``analysis.ass1st.quasi_natural_export``), already
+    ordered so the engine's by-orbital-order window takes the inactive prefix
+    and then the active window.  The template supplies the geometry and basis
+    metadata; energies are left at the template's values because the
+    quasi-natural orbitals carry no energies of their own (the engine
+    recomputes them on read).
+    """
+    try:
+        updated = template_mkl.with_orbitals(
+            coefficients,
+            occupations=[float(value) for value in occupations],
+        )
+    except MklError as exc:
+        raise Ass1stInputError(
+            f"the template mkl does not accept the quasi-natural coefficients: {exc}"
+        ) from exc
+    Path(path).write_text(updated.render(), encoding="utf-8")

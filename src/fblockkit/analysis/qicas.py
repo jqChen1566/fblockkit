@@ -74,12 +74,14 @@ __all__ = [
     "CSpace",
     "RotationReport",
     "QicasResult",
+    "QicasExport",
     "partition_by_occupation",
     "out_of_cas_correlation",
     "minimize_rotations",
     "rotate_integrals",
     "casci_energy",
     "analyze",
+    "quasi_export",
     "render",
     "run",
     "evidence",
@@ -497,6 +499,63 @@ def analyze(
         theorem_bound=bound,
         final_occupations=final_occupations,
         source_energy_checked=reference_energy is not None,
+    )
+
+
+@dataclass(frozen=True)
+class QicasExport:
+    """The optimized-basis orbital set of one window (column order preserved).
+
+    ``coefficients`` (AO x MO) carries the window columns rotated by the
+    optimizer; the remaining columns are untouched and no re-ordering is
+    applied, because the sense in which the optimized partition re-shapes the
+    engine's window is not fixed by the source.  ``n_closed`` and ``n_active``
+    report the optimized partition's counts (window-relative indices in
+    :func:`analyze`), so a caller re-running the same window keeps
+    ``n_closed + n_active`` unchanged.
+    """
+
+    coefficients: "np.ndarray"
+    occupations: "np.ndarray"
+    n_closed: int
+    n_active: int
+
+
+def quasi_export(result: QicasResult, export: OrcaJson) -> QicasExport:
+    """Build the optimized-basis orbital set of one window.
+
+    The window columns are located by their fractional occupations (checked
+    against the dump's orbital count) and the optimizer's accumulated rotation
+    is applied to those columns only; the column order is preserved, so the
+    written file is the same window read in the optimized basis.
+    """
+    mo_x_ao = np.asarray(export.mo_coefficients)  # MO x AO
+    ao_x_mo = mo_x_ao.T
+    occupancy = np.asarray(export.mo_occupations, dtype=float)
+    tol = 1e-3
+    window = [i for i, occ in enumerate(occupancy) if tol < occ < 2.0 - tol]
+    if len(window) != result.n_window:
+        raise QicasError(
+            f"the export carries {len(window)} fractionally occupied orbitals, but "
+            f"the dump's window has {result.n_window}. Next step: give the export "
+            "of the run whose FCIDUMP was analysed."
+        )
+    rotation = np.asarray(result.rotation.matrix)
+    if rotation.shape != (result.n_window, result.n_window):
+        raise QicasError(
+            "the stored rotation does not match the window size; this is an internal "
+            "inconsistency. Next step: report this input."
+        )
+    rotated = ao_x_mo.copy()
+    rotated[:, window] = ao_x_mo[:, window] @ rotation
+
+    occupations = occupancy.copy()
+    occupations[window] = np.asarray(result.final_occupations, dtype=float)
+    return QicasExport(
+        coefficients=rotated,
+        occupations=occupations,
+        n_closed=len(result.space_final.closed),
+        n_active=len(result.space_final.active),
     )
 
 

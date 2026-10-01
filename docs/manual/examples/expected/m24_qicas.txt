@@ -55,6 +55,8 @@ FCIDUMP path (a converged CASSCF dump; the window QICAS optimizes within) (Enter
 CASSCF output path (matches the CI root to the printed energy; Enter = skip) (Enter = leave empty)> work/n2_fcidump_step_a.out
 Target active space nel,norb within the window (e.g. 4,4; the source's (N_CAS, D_CAS)) (Enter = leave empty)> 2,4
 Rotation set: touch (every pair touching a non-active orbital, the source's chemical-accuracy choice) or exclusive (active/non-active only, its economical variant) (Enter = touch) (Enter = leave empty)> touch
+orca_2json export of the same run, optional (needed only for the orbital write-back; Enter = skip) (Enter = leave empty)> work/canonical.json
+Quasi-natural mkl template, optional (an orca_2mkl copy of the run's gbw; Enter = skip the write-back) (Enter = leave empty)> work/n2_scan_1.600.mkl
 QICAS orbital optimization (out-of-CAS correlation over orbital rotations):
   window: 6 orbitals, 6 electrons; target (2e, 4o) with 2 closed, 4 active, 0 virtual
   requested partition (by natural occupation): closed [0, 2], active [1, 3, 4, 5], virtual []
@@ -83,6 +85,7 @@ Boundaries and checks:
   - the source's size-selection variant (minimize the total orbital entropy and read the plateau of the threshold diagram; their Appendix C) is not implemented
   - the run's printed CASSCF energy cross-check: applied (the CI root was matched to it)
 Report written: work\FCIDUMP.qicas.fbk.md
+QICAS optimized orbitals written: work\FCIDUMP.qicas.fbk.mkl (closed 1, active 4).
 
 Available functions:
    1  Check-up and characterisation (read an ORCA or Gaussian output -> analysis + diagnosis report)

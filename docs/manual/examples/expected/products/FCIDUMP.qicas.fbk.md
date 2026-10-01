@@ -47,3 +47,5 @@ BibTeX (paste-ready):
   doi     = {10.1021/acs.jpclett.3c02536},
 }
 ```
+
+QICAS optimized orbitals written: `FCIDUMP.qicas.fbk.mkl` (closed 1, active 4; window columns rotated into the optimized basis, column order preserved).

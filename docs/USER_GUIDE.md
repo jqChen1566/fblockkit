@@ -588,7 +588,11 @@ Below the line the doublet supports excitation above it; at or above it, QTM is
 opened. Nothing here is computed by an engine: this is pure post-processing of
 the g tensors, so it runs from a small table you prepare -- or from the raw
 text output of an OpenMolcas `SINGLE_ANISO` run, whose printed g tensors are
-converted into that table for you (see the manual's worked example).
+converted into that table for you (see the manual's worked example). When the
+OpenMolcas output carries its temperature-dependence table of the
+susceptibility, the report also quotes chi*T(300 K) beside the criterion line,
+so the g-tensor reading and the bulk-susceptibility reading of the same run
+appear together.
 
 **What you need**: a JSON table of the doublets -- or, instead, the raw text
 output of an OpenMolcas `SINGLE_ANISO` run, whose printed g tensors are
@@ -1031,13 +1035,21 @@ two independent lines `T_ext,T_int` are allowed, e.g. `0.03,1.96`); state
 weights (Enter = equal; used when the round averaged several states); the
 spaces you have visited so far (`ne,no`, space-separated -- this is what
 enables the cycle warning); the method/basis keywords for the next round
-(Enter = as in the example).
+(Enter = as in the example); and the quasi-natural mkl template, optional
+(an `orca_2mkl` copy of the run's `.gbw`; give it to also write the round's
+quasi-natural orbitals as a gbw-ready mkl).
 
 **What you get**: the block quasi-occupation tables with the band marked, the
 active orbitals with their CASSCF occupations, the next-space suggestion, and
 a report (`<export>.ass1st.fbk.md`) with the citations. Unless the round is
 self-consistent, the menu also writes the next round's input
-`<stem>.r{N+1}.inp` (and its `.json.conf`) with the suggested space.
+`<stem>.r{N+1}.inp` (and its `.json.conf`) with the suggested space. Given
+the template, it also writes `<export>.qno.fbk.mkl` -- the round's
+quasi-natural orbitals (internal and external blocks diagonalized, the active
+block untouched), ordered so the engine's by-orbital-order window reproduces
+the suggested space (the inactive prefix first, then the active window); feed
+it back as the next round's orbital guess to start that round from the
+naturalized orbitals instead of the raw ones.
 
 **How to read it**:
 
@@ -1093,12 +1105,18 @@ menu-12 cross-check).
 **How**: menu 24 -> FCIDUMP path; output path (Enter = skip the cross-check);
 the target `nel,norb`; the rotation set (`touch` = every pair touching a
 non-active orbital, the source's chemical-accuracy choice; `exclusive` =
-active/non-active pairs only, its economical variant for large spaces).
+active/non-active pairs only, its economical variant for large spaces); the
+run's `orca_2json` export and an mkl template of it, both optional and needed
+only for the orbital write-back (Enter = skip it).
 
 **What you get**: the per-orbital entropy profile before/after the optimization,
 the F_QI values, the CASCI energies in the initial and the optimized basis
 against the window FCI, the Theorem-1 check with the run's own numbers, and a
-report (`<FCIDUMP>.qicas.fbk.md`) with the citations.
+report (`<FCIDUMP>.qicas.fbk.md`) with the citations. Given the export and the
+template, the menu also writes `<FCIDUMP>.qicas.fbk.mkl` -- the optimized-basis
+orbital set: the window columns rotated by the optimizer's accumulated
+transformation, column order preserved, so the same window can be re-run in
+the optimized basis.
 
 **How to read it**:
 

@@ -3,4 +3,6 @@ work/FCIDUMP
 work/n2_fcidump_step_a.out
 2,4
 touch
+work/canonical.json
+work/n2_scan_1.600.mkl
 0

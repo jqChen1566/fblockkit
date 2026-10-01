@@ -83,8 +83,10 @@ __all__ = [
     "Partition",
     "Suggestion",
     "Ass1stRound",
+    "QuasiNaturalExport",
     "parse_band",
     "analyze_round",
+    "quasi_natural_export",
     "render",
     "run",
     "evidence",
@@ -246,15 +248,10 @@ def _validate_export(export: OrcaJson) -> None:
         )
 
 
-def analyze_round(
-    export: OrcaJson,
-    *,
-    weights: tuple[float, ...] | None = None,
-    band: tuple[float, float] = (ASS1ST_RECOMMENDED_THRESHOLD, 2.0 - ASS1ST_RECOMMENDED_THRESHOLD),
-    previous_spaces: tuple[tuple[int, int], ...] = (),
-) -> Ass1stRound:
-    """Analyse one round: block quasi-occupations, the band, and the next space."""
-    _validate_export(export)
+def _normalised_weights(
+    export: OrcaJson, weights: tuple[float, ...] | None
+) -> tuple[tuple[tuple[int, str], ...], tuple[float, ...]]:
+    """The state-density entries and the normalised state weights."""
     entries = _nevt2_densities(export)
     n_states = len(entries)
     if weights is None:
@@ -267,8 +264,37 @@ def analyze_round(
     if any(weight <= 0.0 for weight in weights):
         raise Ass1stError("state weights must be positive.")
     total = sum(weights)
-    weights = tuple(weight / total for weight in weights)
+    return entries, tuple(weight / total for weight in weights)
 
+
+@dataclass(frozen=True)
+class _RoundData:
+    """The shared core of one round: density, partition, blocks and rotations."""
+
+    occupancy: "np.ndarray"
+    internal: tuple[int, ...]
+    external: tuple[int, ...]
+    active: tuple[int, ...]
+    ext_line: float
+    int_line: float
+    internal_block: tuple[QuasiOrbital, ...]
+    external_block: tuple[QuasiOrbital, ...]
+    internal_vectors: "np.ndarray"  # columns in descending occupation order
+    external_vectors: "np.ndarray"
+
+
+def _round_data(
+    export: OrcaJson,
+    entries: tuple[tuple[int, str], ...],
+    weights: tuple[float, ...],
+    band: tuple[float, float],
+) -> _RoundData:
+    """Compute the round's density, partition, block spectra and block rotations.
+
+    Shared by :func:`analyze_round` and :func:`quasi_natural_export` so the two
+    paths cannot drift apart; the rotations are kept because the write-back
+    needs the quasi-natural orbital coefficients, not only their occupations.
+    """
     coefficients = np.asarray(export.mo_coefficients)
     overlap = np.asarray(export.overlap)
     occupancy = np.asarray(export.mo_occupations)
@@ -301,15 +327,55 @@ def analyze_round(
             f"the band ({ext_line}, {int_line}) is not a sensible occupation window."
         )
 
-    def block(values: np.ndarray, line: float, keep_above: bool) -> tuple[QuasiOrbital, ...]:
-        spectra = sorted(np.linalg.eigvalsh(values), reverse=True)
-        return tuple(
-            QuasiOrbital(occupation=float(v), in_band=(v >= line) if keep_above else (v <= line))
-            for v in spectra
+    def block(values: np.ndarray, line: float, keep_above: bool):
+        vals, vecs = np.linalg.eigh(values)
+        order = np.argsort(vals)[::-1]
+        quasis = tuple(
+            QuasiOrbital(
+                occupation=float(vals[i]),
+                in_band=(float(vals[i]) >= line) if keep_above else (float(vals[i]) <= line),
+            )
+            for i in order
         )
+        return quasis, vecs[:, order]
 
-    internal_block = block(density_mo[np.ix_(internal, internal)], int_line, keep_above=False)
-    external_block = block(density_mo[np.ix_(external, external)], ext_line, keep_above=True)
+    internal_block, internal_vectors = block(
+        density_mo[np.ix_(internal, internal)], int_line, keep_above=False
+    )
+    external_block, external_vectors = block(
+        density_mo[np.ix_(external, external)], ext_line, keep_above=True
+    )
+    return _RoundData(
+        occupancy=occupancy,
+        internal=internal,
+        external=external,
+        active=active,
+        ext_line=ext_line,
+        int_line=int_line,
+        internal_block=internal_block,
+        external_block=external_block,
+        internal_vectors=internal_vectors,
+        external_vectors=external_vectors,
+    )
+
+
+def analyze_round(
+    export: OrcaJson,
+    *,
+    weights: tuple[float, ...] | None = None,
+    band: tuple[float, float] = (ASS1ST_RECOMMENDED_THRESHOLD, 2.0 - ASS1ST_RECOMMENDED_THRESHOLD),
+    previous_spaces: tuple[tuple[int, int], ...] = (),
+) -> Ass1stRound:
+    """Analyse one round: block quasi-occupations, the band, and the next space."""
+    _validate_export(export)
+    entries, weights = _normalised_weights(export, weights)
+    n_states = len(entries)
+    data = _round_data(export, entries, weights, band)
+    occupancy = data.occupancy
+    internal, external, active = data.internal, data.external, data.active
+    ext_line, int_line = data.ext_line, data.int_line
+    internal_block = data.internal_block
+    external_block = data.external_block
 
     reassign_internal = tuple(i for i in active if occupancy[i] >= int_line)
     reassign_external = tuple(i for i in active if occupancy[i] <= ext_line)
@@ -367,6 +433,95 @@ def analyze_round(
         suggestion=suggestion,
         multiplicity=export.multiplicity,
         cycle_note=cycle_note,
+    )
+
+
+@dataclass(frozen=True)
+class QuasiNaturalExport:
+    """The round's quasi-natural orbitals, ordered for the next round's window.
+
+    ``coefficients`` are the AO x MO columns of the block-diagonalised orbital
+    set (internal and external blocks rotated into their quasi-natural orbitals,
+    the active block untouched), re-ordered so that the engine's by-orbital-order
+    windowing takes the first ``n_inactive`` columns as inactive and the next
+    ``n_active`` as active.  The re-ordering is by descending quasi-occupation,
+    which reproduces the source's bookkeeping because the groups the band
+    separates occupy disjoint occupation ranges.
+    """
+
+    coefficients: "np.ndarray"  # AO x MO, ordered
+    occupations: "np.ndarray"  # per column, in the same order
+    n_inactive: int
+    n_active: int
+    band: tuple[float, float]
+
+
+def quasi_natural_export(
+    export: OrcaJson,
+    *,
+    weights: tuple[float, ...] | None = None,
+    band: tuple[float, float] = (ASS1ST_RECOMMENDED_THRESHOLD, 2.0 - ASS1ST_RECOMMENDED_THRESHOLD),
+) -> QuasiNaturalExport:
+    """Build the quasi-natural orbital set of one round, ordered for the next window.
+
+    The next-round counts come from :func:`analyze_round` (one bookkeeping
+    source) and the rotations from the shared block diagonalisation.  The engine
+    reads its active space by orbital order, so the descending-occupation
+    ordering with the split at the suggested counts is what makes the written
+    file reproduce the suggested window on the next run.
+    """
+    _validate_export(export)
+    round_ = analyze_round(export, weights=weights, band=band)
+    suggestion = round_.suggestion
+    entries, normalised = _normalised_weights(export, weights)
+    data = _round_data(export, entries, normalised, band)
+
+    mo_x_ao = np.asarray(export.mo_coefficients)  # MO x AO
+    ao_x_mo = mo_x_ao.T
+    n_mo = export.n_mo
+    rotation = np.eye(n_mo)
+    rotation[np.ix_(list(data.internal), list(data.internal))] = data.internal_vectors
+    rotation[np.ix_(list(data.external), list(data.external))] = data.external_vectors
+    rotated = ao_x_mo @ rotation
+
+    occupations = np.array(data.occupancy, dtype=float)
+    occupations[list(data.internal)] = [q.occupation for q in data.internal_block]
+    occupations[list(data.external)] = [q.occupation for q in data.external_block]
+
+    order = np.argsort(-occupations, kind="stable")
+    ordered = rotated[:, order]
+    ordered_occupations = occupations[order]
+
+    total_electrons = 2 * len(data.internal) + round_.partition.n_electrons
+    if (total_electrons - suggestion.n_electrons) % 2 != 0:
+        raise Ass1stError(
+            "the suggested active electron count changes the electron parity. Next "
+            "step: check the band -- the bookkeeping should keep the parity."
+        )
+    n_inactive = (total_electrons - suggestion.n_electrons) // 2
+    n_active = suggestion.n_orbitals
+    if n_inactive < 0 or n_active < 0 or n_inactive + n_active > n_mo:
+        raise Ass1stError(
+            f"the suggested space ({suggestion.n_electrons}e, {suggestion.n_orbitals}o) "
+            f"does not fit the export's {n_mo} orbitals. Next step: check the band "
+            "and the state weights."
+        )
+    misplaced = [
+        k for k in range(n_inactive) if ordered_occupations[k] < data.int_line - 1e-9
+    ]
+    if misplaced:
+        raise Ass1stError(
+            f"{len(misplaced)} column(s) below the internal band line landed in the "
+            "inactive prefix; the ranking and the band bookkeeping disagree, so the "
+            "written file cannot be trusted. Next step: check the state weights and "
+            "the band, and report this input if it persists."
+        )
+    return QuasiNaturalExport(
+        coefficients=ordered,
+        occupations=ordered_occupations,
+        n_inactive=n_inactive,
+        n_active=n_active,
+        band=band,
     )
 
 
