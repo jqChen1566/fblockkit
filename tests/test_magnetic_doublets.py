@@ -319,3 +319,43 @@ def test_evidence_carries_the_source_and_the_reproduction():
     assert "10.1039/d5cs00493d" in text
     assert "chilton2025abinitio" in text
     assert "38" in text and "15.31" in text and "30.25" in text
+
+
+def test_the_dy_acac_fixture_feeds_menu_16_end_to_end():
+    """The ligand-field-bearing multi-doublet case: Dy(acac)3(H2O)2 -- the
+    classic mononuclear Dy(III) SMM (fixtures/single_aniso/dy_acac.*, the
+    molecular unit of its crystal structure).  The engine ladder is
+    cross-checked here against the all-electron CASSCF-SO column of the
+    JCTC 2025 benchmark (the same complex as its "1Dy"): the ordering and
+    splittings reproduce with a uniform ~7% underestimation from the
+    def2-ECP basis against the benchmark's ANO-RCC-DKH one (measured
+    mean |delta| = 19.7 cm-1, max 33.5 cm-1; pinned with margin)."""
+    from fblockkit.parsers import parse_auto
+    from fblockkit.parsers import single_aniso as orca_single_aniso
+
+    fixture = Path(__file__).resolve().parents[1] / "fixtures" / "single_aniso"
+    parsed = parse_auto(fixture / "dy_acac.out")
+    segments = parsed.sections["single_aniso"]["segments"]
+    payload = orca_single_aniso.doublets_payload(segments, system="dy_acac.out")
+    rows = payload["doublets"]
+    assert len(rows) == 8
+    ground = rows[0]
+    assert ground["g"][2] == pytest.approx(19.5276, abs=5e-4)  # measured pin
+    assert ground["g"][0] < 0.02 and ground["g"][1] < 0.02  # strong Ising
+    assert rows[2]["g"][2] == pytest.approx(11.0709, abs=5e-4)
+    computed = [row["energy"] for row in rows]
+    assert computed == sorted(computed)
+    assert computed[1] == pytest.approx(139.335, abs=1e-3)
+    assert computed[7] == pytest.approx(496.655, abs=1e-3)
+    jctc = (0.0, 153.2, 228.3, 281.2, 313.3, 406.1, 465.0, 530.2)
+    deltas = [abs(value - reference) for value, reference in zip(computed, jctc)]
+    assert sum(deltas) / len(deltas) < 25.0  # measured 19.7
+    assert max(deltas) < 40.0  # measured 33.5
+    table = parse_doublets(payload)
+    report = magnetic_doublets.analyze(table)
+    readings = [verdict.verdict for verdict in report.verdicts]
+    assert readings[0] == magnetic_doublets.VERDICT_SUPPORTS
+    assert readings[1] == magnetic_doublets.VERDICT_SUPPORTS
+    assert all(
+        reading == magnetic_doublets.VERDICT_QTM for reading in readings[2:]
+    )

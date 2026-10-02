@@ -34,9 +34,10 @@ magnetons for the matrix elements.
 from __future__ import annotations
 
 import re
+from fractions import Fraction
 from typing import Any
 
-__all__ = ["parse_segments"]
+__all__ = ["parse_segments", "doublets_payload"]
 
 _FLOAT = r"-?\d+\.\d+(?:E[+-]?\d+)?"
 _NUMBER = rf"(-?[\d.]+(?:E[+-]?\d+)?)"
@@ -273,3 +274,63 @@ def parse_segments(lines: list[str]) -> dict[str, Any]:
         segment.setdefault("groups", [])
         segments.append(segment)
     return {"present": bool(segments), "segments": segments}
+
+
+def _spin_text(spin: float) -> str:
+    fraction = Fraction(spin).limit_denominator(2)
+    if fraction.denominator == 1:
+        return str(fraction.numerator)
+    return f"{fraction.numerator}/{fraction.denominator}"
+
+
+def doublets_payload(
+    segments: list[dict[str, Any]],
+    *,
+    segment_index: int = 0,
+    system: str | None = None,
+) -> dict:
+    """Build the menu-16 JSON table from one segment's pseudospin groups.
+
+    Rows mirror the OpenMolcas payload (parsers/molcas_single_aniso.py): the
+    g values ascending, the axis of the largest g value, and the group's
+    lowest spin-orbit energy (cm^-1).  Groups without a g table (a run whose
+    MLTP did not cover them) are skipped; a segment with no g-carrying
+    group is refused.
+    """
+    if not segments or not 0 <= segment_index < len(segments):
+        raise ValueError(
+            f"no SINGLE_ANISO segment at index {segment_index}. Next step: check "
+            "that the ORCA %casscf ANISO block ran (MLTP must be given "
+            "explicitly)."
+        )
+    rows = []
+    for group in segments[segment_index].get("groups") or []:
+        g_values = group.get("g_values")
+        g_axes = group.get("g_axes")
+        if not g_values or not g_axes or not all(
+            value is not None for value in (*g_values, *g_axes)
+        ):
+            continue
+        triples = sorted(zip(g_values, g_axes), key=lambda item: item[0])
+        row = {
+            "label": (
+                f"multiplet {group['index']} (effective S = {_spin_text(group['spin'])})"
+            ),
+            "g": [value for value, _ in triples],
+            "axis3": list(triples[-1][1]),
+        }
+        energies = group.get("soc_state_energies_cm1") or []
+        if energies:
+            row["energy"] = min(energies)
+        rows.append(row)
+    if not rows:
+        raise ValueError(
+            "the SINGLE_ANISO segment carries no pseudospin group with a g "
+            "tensor; a run without MLTP prints no g analysis. Next step: give "
+            "MLTP explicitly in the %casscf ANISO block and rerun."
+        )
+    return {
+        "system": system or "ORCA SINGLE_ANISO output",
+        "reference": 0,
+        "doublets": rows,
+    }

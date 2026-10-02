@@ -404,15 +404,17 @@ def orbital_portrait_report(session: Session) -> None:
 def magnetic_doublets_report(session: Session) -> None:
     """Menu 16: the g_T * theta_3 criterion over a Kramers-doublet table.
 
-    Two input routes.  Either the hand-written JSON table (per doublet: the
-    three g values and theta3 or the g3 axis; see the user guide), or the raw
-    text output of an OpenMolcas SINGLE_ANISO run -- the g tensors of every
-    parsed pseudospin multiplet are converted into the same table, so the
-    engine printout and the manual table enter the criterion by one door.
+    Three input routes.  The hand-written JSON table (per doublet: the three
+    g values and theta3 or the g3 axis; see the user guide), the raw text
+    output of an OpenMolcas SINGLE_ANISO run, or an ORCA output whose
+    %casscf ANISO block ran -- the g tensors of every parsed pseudospin
+    multiplet from either engine are converted into the same table, so the
+    engine printouts and the manual table enter the criterion by one door.
     """
     path_text = session.ask(
-        "Kramers-doublet table JSON path, or OpenMolcas SINGLE_ANISO output path "
-        "(per doublet: the three g values and theta3 or the g3 axis; see the user guide)"
+        "Kramers-doublet table JSON path, an OpenMolcas SINGLE_ANISO output path, "
+        "or an ORCA output with the ANISO block (per doublet: the three g values "
+        "and theta3 or the g3 axis; see the user guide)"
     )
     if not path_text:
         session.say("Cancelled (no path given).")
@@ -437,12 +439,28 @@ def magnetic_doublets_report(session: Session) -> None:
             except MolcasAnisoError:
                 chi_line = ""
         else:
-            session.say(
-                "The file is neither a JSON doublet table nor an OpenMolcas "
-                "SINGLE_ANISO output. Next step: give a JSON object with a "
-                "'doublets' list, or the text output of a SINGLE_ANISO run."
+            from ...parsers import single_aniso as orca_single_aniso
+
+            parsed = None
+            try:
+                parsed = parse_auto(path)
+            except (ParserError, OSError):
+                parsed = None
+            segments = (
+                ((parsed.sections.get("single_aniso") or {}).get("segments") or [])
+                if parsed is not None
+                else []
             )
-            return
+            if not segments:
+                session.say(
+                    "The file is neither a JSON doublet table, an OpenMolcas "
+                    "SINGLE_ANISO output, nor an ORCA output with a SINGLE_ANISO "
+                    "section. Next step: give a JSON object with a 'doublets' "
+                    "list, an OpenMolcas SINGLE_ANISO output, or an ORCA output "
+                    "whose %casscf ANISO block ran (MLTP must be given)."
+                )
+                return
+            payload = orca_single_aniso.doublets_payload(segments, system=path.name)
         table = magnetic_doublets.parse_doublets(payload)
         section = magnetic_doublets.run(table)
     except (OSError, ValueError) as exc:

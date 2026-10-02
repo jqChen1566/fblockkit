@@ -16,7 +16,7 @@ Available functions:
   13  Orbital-space comparison (two orca_2json exports: subspace fraction and space-change SVD)
   14  AVAS target projection (an orbital export + a target AO shell -> active-space size)
   15  Orbital portrait (an export -> occupation, bonding label, shell composition, extent)
-  16  Magnetic-doublet criterion (a Kramers-doublet table JSON -> g_T * theta_3 and the QTM line)
+  16  Magnetic-doublet criterion (a Kramers-doublet table or an engine SINGLE_ANISO output -> g_T * theta_3 and the QTM line)
   17  Cross-structure orbital mapping (a manifest of exports -> consistent active spaces along a path)
   18  WASP guess transfer (neighbour orbitals -> an interpolated, gbw-ready mkl for a geometry series)
   19  Dipole-moment candidate batch (a structure -> prep + CASCI inputs + manifest for the DM-AS scan)
@@ -52,7 +52,7 @@ Available functions:
   49  Cross-run state tracking (an ordered run sequence + a target root -> the per-step root-matching table)
    0  Quit
 Choose a number (Enter = leave empty)> 16
-Kramers-doublet table JSON path, or OpenMolcas SINGLE_ANISO output path (per doublet: the three g values and theta3 or the g3 axis; see the user guide) (Enter = leave empty)> work/dy_doublets.json
+Kramers-doublet table JSON path, an OpenMolcas SINGLE_ANISO output path, or an ORCA output with the ANISO block (per doublet: the three g values and theta3 or the g3 axis; see the user guide) (Enter = leave empty)> work/dy_doublets.json
 Magnetic-doublet criterion (g_T = (g1 + g2 + g3 sin(theta3)) / 3, degrees; line g_T * theta3 = 20):
   #   doublet                             E(cm-1)      g1      g2      g3  theta3(deg)      g_T  g_T*theta3  reading
   0 * doublet that supports excitation          -    0.41    0.44    9.04         9.52    0.782        7.44  supports excitation
@@ -86,7 +86,7 @@ Available functions:
   13  Orbital-space comparison (two orca_2json exports: subspace fraction and space-change SVD)
   14  AVAS target projection (an orbital export + a target AO shell -> active-space size)
   15  Orbital portrait (an export -> occupation, bonding label, shell composition, extent)
-  16  Magnetic-doublet criterion (a Kramers-doublet table JSON -> g_T * theta_3 and the QTM line)
+  16  Magnetic-doublet criterion (a Kramers-doublet table or an engine SINGLE_ANISO output -> g_T * theta_3 and the QTM line)
   17  Cross-structure orbital mapping (a manifest of exports -> consistent active spaces along a path)
   18  WASP guess transfer (neighbour orbitals -> an interpolated, gbw-ready mkl for a geometry series)
   19  Dipole-moment candidate batch (a structure -> prep + CASCI inputs + manifest for the DM-AS scan)

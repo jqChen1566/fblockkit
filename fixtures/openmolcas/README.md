@@ -32,8 +32,9 @@ field, so the J = 15/2 manifold is fully degenerate (states 1-16 at
 representational, not physical: the tunnelling splitting is 0 and the
 g-tensor (0.9132 / 1.9906 / 13.1443) carries the degeneracy artifact.
 The fixture's purpose is the *parse chain* (menu 16's OpenMolcas input
-route); a ligand-field-bearing multi-doublet case is a registered
-candidate extension.
+route); the ligand-field-bearing multi-doublet case now
+lives in fixtures/single_aniso/dy_acac.* (the real SMM Dy(acac)3(H2O)2,
+ORCA on the 84 server).
 
 **MCSCF quality checks recorded with the fixture.**  `Number of CSFs 21`
 (= C(7,5), the sextet count of f9 in seven orbitals), convergence after

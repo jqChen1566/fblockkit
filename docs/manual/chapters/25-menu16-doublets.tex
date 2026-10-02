@@ -23,11 +23,13 @@ A JSON table of the doublets: per doublet the three principal $g$ values and
 \emph{either} \code{theta3} (as published tables give it) \emph{or}
 \code{axis3}, the unit axis of the largest value, from which the angle to the
 reference doublet's axis is computed here. The schema is in
-Chapter~\ref{ch:formats}.  Alternatively, the file may be the raw text output
-of an OpenMolcas \code{SINGLE\_ANISO} run (recognized by its pseudospin
-banner): the $g$ tensors of every parsed multiplet are converted into the same
-table, so the engine printout and the hand-written table enter the criterion
-by one door.
+Chapter~\ref{ch:formats}.  Alternatively, the file may be an engine text
+output: the raw text of an OpenMolcas \code{SINGLE\_ANISO} run (recognized by
+its pseudospin banner), or an ORCA output carrying the \code{SINGLE\_ANISO}
+section of the \code{\%casscf} ANISO block (its groups must be present, i.e.\
+\code{MLTP} given).  The $g$ tensors of every parsed pseudospin multiplet are
+converted into the same table, so the engine printouts and the hand-written
+table enter the criterion by one door.
 
 \section{Walkthrough}
 
@@ -104,6 +106,21 @@ and the menu quotes its 300~K entry beside the criterion line ---
 $\chi T = 14.2177$~cm$^3$K/mol against the free-ion $^6$H$_{15/2}$ Curie value
 of about 14.2 --- so the g-tensor reading and the bulk-susceptibility reading
 of the same run are shown together.
+
+The ligand-field-bearing multi-doublet case is on record too:
+\file{fixtures/single\_aniso/dy\_acac.out} carries the eight Kramers doublets
+of Dy(acac)$_3$(H$_2$O)$_2$ --- the classic mononuclear Dy(III) SMM, computed
+on the molecular unit of its crystal structure (ORCA 6.1.1, CAS(9,7) with
+all 21 sextets state-averaged, \code{cistep csfci}, RASSI-style SOC via the
+\code{ANISO} block).  Read through the criterion, the ground doublet's
+$g = (0.005, 0.007, 19.53)$ is strong Ising and supports excitation, the
+first excited doublet follows, and the third doublet onwards opens QTM
+($g_T\theta_3 = 30$ at the third).  The $g$ ladder doubles as an
+engine-side cross-check: the computed doublet energies
+($0/139/209/259/297/381/437/497$~cm$^{-1}$) reproduce the all-electron
+CASSCF-SO column of the JCTC~2025 benchmark of the same complex with a
+uniform $\sim7\%$ underestimation from the def2-ECP basis (mean
+$|\Delta| = 19.7$~cm$^{-1}$), ordering and pattern intact.
 
 \section{Refusals and related sections}
 

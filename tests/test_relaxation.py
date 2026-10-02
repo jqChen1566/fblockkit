@@ -43,6 +43,37 @@ def _segment(fixture: str, index: int = 0) -> dict:
 # --- the SINGLE_ANISO parse ----------------------------------------------------
 
 
+def test_the_orca_doublets_payload_feeds_menu_16():
+    """The ORCA SINGLE_ANISO segment converts into the menu-16 table -- the
+    engine printout enters the criterion by the same door as the manual
+    table (g ascending, the axis of the largest g, the group's lowest
+    spin-orbit energy)."""
+    from fblockkit.analysis import magnetic_doublets
+    from fblockkit.parsers import single_aniso as orca_single_aniso
+
+    parsed = parse_auto(SA / "co_aniso2.out")
+    segments = parsed.sections["single_aniso"]["segments"]
+    payload = orca_single_aniso.doublets_payload(segments, system="co_aniso2.out")
+    assert payload["system"] == "co_aniso2.out" and payload["reference"] == 0
+    assert len(payload["doublets"]) == 2
+    row = payload["doublets"][0]
+    assert row["g"][0] <= row["g"][1] <= row["g"][2]
+    assert row["energy"] == 0.0
+    assert payload["doublets"][1]["energy"] == approx(29361.197)
+    table = magnetic_doublets.parse_doublets(payload)
+    report = magnetic_doublets.analyze(table)
+    assert len(report.verdicts) == 2
+
+
+def test_the_orca_doublets_payload_refuses_a_groupless_segment():
+    from fblockkit.parsers import single_aniso as orca_single_aniso
+
+    with pytest.raises(ValueError, match="MLTP"):
+        orca_single_aniso.doublets_payload([{"groups": []}])
+    with pytest.raises(ValueError, match="no SINGLE_ANISO segment"):
+        orca_single_aniso.doublets_payload([])
+
+
 def test_the_o2_output_has_two_segments_with_the_expected_spectra():
     parsed = parse_auto(SA / "o2_aniso.out")
     data = parsed.sections["single_aniso"]

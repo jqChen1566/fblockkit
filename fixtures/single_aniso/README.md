@@ -59,3 +59,30 @@ and `src/fblockkit/analysis/relaxation.py` (menu 36).  All runs on 101,
 The inputs are stored verbatim; rerunning on ORCA 6.1.1 with the same
 versions reproduces the outputs (the CO+ samples reuse the converged
 CASSCF gbw via `%moinp`; the `co_aniso2` run reads `co_aniso.gbw`).
+
+- **dy_acac.{inp,out}** -- the ligand-field-bearing multi-doublet case, and
+  the fixture's first REAL SMM: Dy(acac)3(H2O)2, the classic mononuclear
+  Dy(III) single-molecule magnet (run on the 84 server, ORCA 6.1.1,
+  2026-10-02).  The geometry is the molecular unit of the experimentally
+  determined crystal structure (CCDC 770557, the 2010 reference that the
+  JCTC 2025 benchmark also draws its "1Dy" from): 49 atoms, eight-coordinate
+  Dy -- six acac O at 2.31-2.38 A, two water O at 2.38/2.43 A; the
+  independently redetermined polymorphs of Ilyukhin et al. (2018)
+  reproduce the same unit within 0.06 A (`dy_acac.xyz`).  The chain (all
+  inputs frozen): a UKS SCF (`dy_acac_scf.inp`: def2-TZVP + AutoAux +
+  RIJCOSX, SlowConv, 415 cycles -- a genuinely hard SCF), an AVAS guess
+  localising the 4f shells onto Dy (`dy_acac_avas.inp`: four f shells, 28
+  targets; the guess carries its own warnings and stores the 7-orbital
+  localised manifold), and the CASSCF-SO run (`dy_acac.inp`: CAS(9,7), all
+  21 sextets state-averaged, TRAH, `rel DoSOC`, the ANISO block with
+  `MLTP 2,2,2,2,2,2,2,2` and UBAR).  **The measured key: `cistep csfci`**
+  -- with the determinant-based CI the optimizer limit-cycled at gradient
+  ~0.16-0.39 on the complete 21-CSF manifold (three independent starts
+  measured); the CSF basis converged in 68 cycles.  Measured numbers:
+  ground-doublet g = (0.005, 0.007, 19.53) -- strong Ising; the eight
+  Kramers doublets sit at 0 / 139.3 / 209.3 / 259.5 / 297.2 / 381.3 /
+  436.5 / 496.7 cm-1 against the all-electron CASSCF-SO column of the
+  JCTC 2025 benchmark (0 / 153.2 / 228.3 / 281.2 / 313.3 / 406.1 / 465.0
+  / 530.2 cm-1): mean |delta| = 19.7 cm-1, a uniform ~7% underestimation
+  from the def2-ECP/TZVP basis against the benchmark's ANO-RCC-DKH one,
+  with the ordering and splitting pattern reproduced.
