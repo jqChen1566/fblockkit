@@ -1689,7 +1689,7 @@ statistics; the source of the dilution design rules) is a registered
 candidate increment pending its closed-access papers; polynuclear exchange
 and the POLY_ANISO route belong to the multinuclear item (5.6).
 
-## 37 Core-excited spectra XAS/RIXS (a ROCIS output)
+## 37 Core-excited spectra XAS/RIXS (a ROCIS output / a structure -> XES or CAS-CI XAS inputs)
 
 **What it is for**: the core-excited absorption spectra an ORCA ROCIS
 calculation already contains (the transition-metal L-edge protocol of the
@@ -1698,10 +1698,12 @@ the transition table of the best available spectrum block, the edge
 branching ratio of the spin-orbit-split pair, and the run's RIXS
 bookkeeping.
 
-**How**: menu 37 -> the ORCA output path of a ROCIS run (`%rocis` with
-`DoGenROCIS`), then optionally a statistical branching ratio for the
-comparison (Enter to report the ratio only).  The report is
-`<output>.xas.fbk.md`.
+**How**: menu 37 -> choose (1) to read: give the ORCA output path of a
+ROCIS run (`%rocis` with `DoGenROCIS`), then optionally a statistical
+branching ratio for the comparison (Enter to report the ratio only).  The
+report is `<output>.xas.fbk.md`.  Choose (2) to write a ROCIS XES input
+(below); choose (3) to write the two-step CAS-CI core-excited XAS inputs
+(also below).
 
 **How to read it**:
 
@@ -1733,6 +1735,48 @@ comparison (Enter to report the ratio only).  The report is
   -- without the report's 80-row display cap -- as
   `i_root,i_label,j_root,j_label,energy_eV,fosc`, the stick spectrum
   ready to plot or broaden in any tool.
+
+**Writing a ROCIS XES input (mode 2)**: answer `2` at the first question,
+then give the structure XYZ path, the charge, the multiplicity (it also
+becomes `ReferenceMult`), optionally the unpaired-electron count of an ROHF
+high-spin preparation (Enter = no `%scf` block), the `XASelems` index of
+the core element (0-based position among the atoms), `NRoots` (Enter = 30:
+enough roots are needed for the plain RIXS channel, the carrier of the XES
+table -- measured: 10 skipped the channel, 30 covered it), the six-element
+`OrbWin` (the two spin-orbit-split core ranges, then a wide acceptor -- the
+probe's own numbering was `6,6,7,8,0,2000`; the indices are your system's
+own), whether to include the SOC-corrected RIXS channel (default off; it
+stores large transition-density files -- measured past 36 GB at NRoots 30
+on the probe), whether to include the elastic line, and the method keywords
+(Enter = `x2c x2c-SVPall AutoAux TightSCF`).  The input goes to
+`<stem>.xes.inp` and the checklist to `<stem>.xes.inp.fbk.md`: the
+off-resonance XES is automatic in the RIXS-requested run; render the
+spectrum from the run's output with
+`orca_mapspc <out> XES -x0<lo> -x1<hi> -w<fwhm> -eV -n<npoints>` (the
+`XESSOC` mode for SOC-channel runs), which writes `<out>.XES.stk` and
+`.XES.dat`.  The KHD variant (`DoKHDXESSOC`) is a documented termination:
+the engine computes and then aborts in its own printout (measured for every
+probed input).
+
+**Writing the two-step CAS-CI XAS inputs (mode 3)**: answer `3`, then give
+the structure XYZ path, the charge, the multiplicity, the step-1 valence
+active space as `nel norb` (e.g. `6 5`), the step-1 root count, the core
+orbital indices to rotate in (0-based, read from the step-1 output's
+orbital table — an L-edge 2p sits near -700 eV; e.g. `6 7 8`), the step-2
+multiplicities and root counts (Enter = the ground multiplicity pair,
+`20,20`), the method keywords (Enter = `def2-SVP def2-SVP/C TightSCF`) and
+MaxCore.  Two inputs land: `<stem>.casci_xas.step1.inp` (the valence
+SA-CASSCF that writes the `.gbw`) and `<stem>.casci_xas.step2.inp` (MOREAD
++ the `%scf rotate` of the core orbitals into the active window +
+`FrozenCore FC_NONE` + one CAS-CI iteration over the core-saturated space),
+with the checklist in `<stem>.casci_xas.fbk.md`.  The window selection is
+positional (measured): the active window is the `norb` consecutive orbitals
+starting at `(N_electrons - nel)/2` — 42 for the [FeCl4]2- probe, 87 for
+the manual's own Fe(acac)3 example — and the rotations target its leading
+slots.  The step-2 run prints the L-edge transitions (measured: 719.36 eV
+on the probe, 0.5 eV from the ROCIS result of the same system); render
+them with `orca_mapspc <out> SOCABS ...` (785 peaks measured; `ABS` for
+the plain table — the `XAS`/`XASSOC` modes do not read these tables).
 
 **Boundaries**: ROCIS applies several approximations (the manual says the
 results are qualitatively correct); the menu does not name the edge
@@ -1840,18 +1884,25 @@ initio moments and usually dominates in strongly anisotropic lanthanides.
 the output path (Enter = `./poly_aniso.input`) and the cluster description:
 the number of non-equivalent centre types (1-6); the equivalent centres per
 type and the low-lying spin-orbit functions per type (one line each; the
-exchange basis size is their product); the coordinates per type (Enter =
-skip the COOR block, which switches the exact dipole-dipole coupling off);
-the coupled pairs `i j J` (J in cm-1, one per line, Enter ends -- at least
-one pair); and the susceptibility grid `t_min t_max n_points` (Enter =
-skip).  The written input plus the checklist (place the `aniso_1.input`
-... files, run `otool_poly_aniso < poly_aniso.input > poly_aniso.output`,
-read the result back) go to `<path>` and `<path>.fbk.md`; the generated
-text is accepted by the driver end to end (measured: the two-centre plan
-reproduces the fixture's frozen output byte for byte).  The J values and
-the coordinates are yours -- the writer validates their structure, not
-their physics; the symmetry (`SYMM`) and anisotropic-coupling (`LIN3` /
-`LIN9`) input variants are registered.
+exchange basis size is their product); when a type carries more than one
+equivalent centre, one rotation matrix per site (three rows of three
+numbers; Enter on the first row takes the identity) -- the driver's SYMM
+check is mandatory there but still exits 0 on a violation, so the menu
+refuses the omission; the coordinates per type (Enter = skip the COOR
+block, which switches the exact dipole-dipole coupling off); the pair
+model (Enter = Lines isotropic `i j J` / type `lin3` = axis-diagonal
+`i j Jx Jy Jz`); the coupled pairs (one per line, Enter ends -- at least
+one); and the susceptibility grid `t_min t_max n_points` (Enter = skip).
+The written input plus the checklist (place the `aniso_1.input` ... files,
+run `otool_poly_aniso < poly_aniso.input > poly_aniso.output`, read the
+result back) go to `<path>` and `<path>.fbk.md`; the generated text is
+accepted by the driver end to end (measured: the two-centre plan
+reproduces the fixture's frozen output byte for byte; the SYMM and LIN3
+variants run at rc = 0).  The J values, the coordinates and the rotation
+matrices are yours -- the writer validates their structure, not their
+physics.  The full anisotropic `LIN9` form is a documented termination:
+the driver aborts in its own printout for every probed LIN9 input
+(measured Fortran format/type mismatch, 2026-10-01).
 
 ## 40 Hyperfine and EFG parameters (an EPRNMR output)
 

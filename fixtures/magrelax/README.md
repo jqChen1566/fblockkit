@@ -10,7 +10,7 @@ terminated normally, 6 min 41 s on 101, 2026-09-28), read by
   that produced the `.hess` file magrelax reads (6 x 6 Hessian, one
   vibration at 2299.92 cm-1, the C-O stretch; the five zero modes are
   translations/rotation).  This is also the file the pysisyphus boundary
-  of Wave 4.6 used: ORCA 6.1.1's `.hess` carries the `$multiplicity`
+  probes used: ORCA 6.1.1's `.hess` carries the `$multiplicity`
   block.
 - **co_magrelax.inp / co_magrelax.out** -- the magrelax run: CASSCF with
   `projectHSOC true`, `projectedstates 4`, `rel DoSOC/DoMagrelax true`,

@@ -4,8 +4,8 @@ All files are real MOKIT 1.2.8 output (101, 2026-09-30). Deployment and
 environment (the full chain, no sudo):
 
 - MOKIT: the official prebuilt `py310_gcc10` artifact from GitLab
-  (`mokit-master_linux_py310_gcc10`), unpacked under
-  `/data1/cjq12/wave61/mokit_v128/`. The build's extension modules are
+  (`mokit-master_linux_py310_gcc10`), unpacked on the 101 server
+  (a MOKIT v1.28 directory under /data1/cjq12/). The build's extension modules are
   CPython-3.10 and compiled against NumPy 1.x.
 - Python: an isolated venv `mokitenv` (built from a Python 3.10 that exists
   on the machine) with **numpy 1.26.4** + pyscf 2.6.2 + scipy 1.13.1 +

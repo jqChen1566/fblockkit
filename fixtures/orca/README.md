@@ -118,7 +118,7 @@ The same day added the **f-block chain** on Eu3+ (4f6), files
 |---|---|---|
 | `eu3_fcidump_step_a.inp` / `.out` | Eu3+ / DKH2 + SARC2-DKH-QZVP, CASSCF(6,7) mult 7 | the **difficult tier**: the default convergence aborted in the MPI CASSCF at macro-iteration 75 (signal 6); `!TRAH` with the /JK auxiliary converged. Reference numbers: energy -10826.615512593075 Eh, N(occ) = six 1.00000 + one 0.00000 (the occupied-orbital table prints that last one as **"-0.0000"** -- the reason `_ORB_ROW_RE` accepts a signed occupation) |
 | `eu3_fcidump.fcidump` | the dump (step B) | NORB=7, NELEC=6, **MS2=6**: the na=6, nb=0 sector, 7 determinants -- the maximum-Ms block of a high-spin f6 ion |
-| `eu3_fcidump_step_c.loc.inp` / `.out` | `orca_loc`, IAO-IBO, window 27..33 | **the default IAO basis fails on Eu** ("The minimal basis set is not defined for element Eu"); the working recipe fills all positional fields and selects ANO-RCC-MB (option 4) for the IAO basis: `gbw out 27 33 3 0 128 1e-6 0.0 0.95 0.85 2 1 1 4 0 0`. That is the f-block face of the MINAO coverage gap recorded in the Wave-0 notes |
+| `eu3_fcidump_step_c.loc.inp` / `.out` | `orca_loc`, IAO-IBO, window 27..33 | **the default IAO basis fails on Eu** ("The minimal basis set is not defined for element Eu"); the working recipe fills all positional fields and selects ANO-RCC-MB (option 4) for the IAO basis: `gbw out 27 33 3 0 128 1e-6 0.0 0.95 0.85 2 1 1 4 0 0`. That is the f-block face of the MINAO coverage gap recorded in the basis coverage notes |
 
 Validation of the Eu chain (measured 2026-09-26 with its two orca_2json
 exports, which at ~1.6 MB each stayed out of the repository): the reconstructed
@@ -322,7 +322,7 @@ Points to note (also in `recipe/imag_disp.py` and `tests/test_imag_disp.py`):
 |---|---|---|---|---|
 | `n2_sa.out` (+ `n2_sa.property.txt`) | `inputs/n2_sa_prop.inp` | N2/def2-SVP RHF then SA-CASSCF(6,6), 3 singlet roots, default print | the menu-31 channel: the property file's `$CAS_SCF_Energies` per-state values reproduce the output's final `ROOT n:` lines to the printed precision (-108.9756667043 / -108.5872679717 / -108.5582885454 Eh), and the `CASSCF_Absorption_Spectrum` transitions carry the eV/cm-1 pair (10.5689 eV / 85243.7 cm-1) | terminated normally |
 | `h2o_sa.out` (+ `h2o_sa.property.txt`) | `inputs/h2o_sa_prop.inp` | H2O/def2-SVP SA-CASSCF(6,6), 3 singlet roots | the second platform of the same channel (nonzero dipole context; the state-averaged dipole is one x/y/z vector, `State -1`) | terminated normally |
-| `h2o_absp.out` (+ `h2o_absp.property.txt`) | `inputs/h2o_absp.inp` | H2O/def2-SVP, RHF then SA-CASSCF(8,6), 4 singlet roots | the **nonzero** absorption probe of Wave 5.1: the 11 `ExcitationEnergies` columns pinned as [eV, cm-1, nm, fosc, D2, DX(re,im), DY(re,im), DZ(re,im)]; the internal gates f = (2/3) dE_au D2 and D2 = the squared components reproduce the printed values; the output's `ABSORPTION SPECTRUM` block carries the same numbers (DX 0.37713 / DY 0.40898 / DZ -0.24710) | terminated normally |
+| `h2o_absp.out` (+ `h2o_absp.property.txt`) | `inputs/h2o_absp.inp` | H2O/def2-SVP, RHF then SA-CASSCF(8,6), 4 singlet roots | the **nonzero** absorption probe: the 11 `ExcitationEnergies` columns pinned as [eV, cm-1, nm, fosc, D2, DX(re,im), DY(re,im), DZ(re,im)]; the internal gates f = (2/3) dE_au D2 and D2 = the squared components reproduce the printed values; the output's `ABSORPTION SPECTRUM` block carries the same numbers (DX 0.37713 / DY 0.40898 / DZ -0.24710) | terminated normally |
 | `h2o_absp_soc.out` (+ `h2o_absp_soc.property.txt`) | `inputs/h2o_absp_soc.inp` | the same job with `%casscf rel DoSOC true` | the SOC duplicates: the property file prints `$CASSCF_Absorption_Spectrum` (and ECD) twice, `&RelCorrection` 1 and 2, the higher one carrying `&Density_name "Tdens-CASQDSOC"` and irrep labels -1; the reader picks the highest RelCorrection; the output carries the `SOC CORRECTED ...` blocks (fosc annotated `(*population)`, component magnitudes) | terminated normally |
 
 Points to note (also in `parsers/orca_property.py` and `tests/test_state_data.py`):
@@ -334,7 +334,7 @@ Points to note (also in `parsers/orca_property.py` and `tests/test_state_data.py
 - the absorption spectrum's columns beyond the eV/cm-1 pair are not named by
   the manual's schema and are carried, not interpreted;
 - the CI vectors are run-time temporaries only (the `.cis` file belongs to
-  the CIS/STEOM modules) -- the Wave-4.2 availability survey lives in
+  the CIS/STEOM modules) -- the availability survey lives in
   `analysis/state_data.py`.
 
 ## Known-behaviour notes
@@ -360,7 +360,7 @@ Points to note (also in `parsers/orca_property.py` and `tests/test_state_data.py
 
 ## QDPT magnetic-property fixtures added 2026-09-28 (server 101, the same ORCA 6.1.1)
 
-The Wave-5.2 probes: what ORCA 6.1's QDPT driver actually prints for the EPR
+The QDPT probes: what ORCA 6.1's QDPT driver actually prints for the EPR
 g/D tensors and the magnetic susceptibility (menu 35 and its reader).
 
 | Output | Input | Job | Parsing points covered | Run outcome |

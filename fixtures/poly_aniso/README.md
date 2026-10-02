@@ -10,12 +10,32 @@ Real two-center probe of `otool_poly_aniso` (POLY_ANISO v1.0.0, compiled
   and 3.7 A, TINT 0..300 K / 101 points), fed by redirection;
 - `aniso_1.input`, `aniso_2.input` -- the per-center data files, byte copies
   of `co_aniso2.CASSCF.anisofile` / `co_aniso.CASSCF.anisofile` from the
-  menu-36 SINGLE_ANISO probe (wave53 run on 101).  The names are mandatory:
+  menu-36 SINGLE_ANISO probe (the probe run on 101, 2026-09-29).  The names are mandatory:
   the program looks them up as aniso_N.input (a renamed file aborts in
   inquire_key_presence -- measured 2026-09-29);
 - `two_center_probe.out` -- the driver output (750 lines), reproduced with
 
       otool_poly_aniso < two_center_probe.polyinp > two_center_probe.out
+
+- `symm_probe.polyinp` / `symm_probe.out` (2026-10-01) -- the SYMM variant:
+  one type with two equivalent centres (spin-orbit basis 2x2), the SYMM
+  block carrying the identity + inversion matrices, one PAIR (J = 0.1
+  cm^-1).  Only `aniso_1.input` is read (one type, one data file).  The
+  input is the menu-39 writer's own bytes; the run returns rc = 0 and
+  `POLY_ANISO finished sucessfully!` (402 lines);
+- `lin3_probe.polyinp` / `lin3_probe.out` (2026-10-01) -- the LIN3 variant:
+  the same two-type cluster as the byte anchor, the pair block written as
+  LIN3 with `Jx Jy Jz = 0.1 0.1 0.1` (rc = 0, `finished sucessfully!`,
+  380 lines; the output carries the "Lines-3 model ... INCLUDED" block);
+- `lin9_probe.polyinp` / `lin9_probe.out` (2026-10-01) -- the LIN9 defect
+  evidence: the manual's own example values in the LIN9 form abort the
+  driver inside its printout (Fortran format/type mismatch at
+  `otool_aniso/poly/input_process.f90` line 286 -- the second print format
+  `(15x,3F9.5)` receives a character item; exit status 2, stderr `Fortran
+  runtime error: Expected REAL for item 1 in formatted transfer, got
+  CHARACTER`).  Every probed LIN9 shape aborts (single-line and three-line
+  layouts, manual values, `PRLV 1`); the menu-39 writer refuses the form
+  with this record.
 
 ## What the probe demonstrates
 
@@ -40,8 +60,8 @@ formats, the mandatory data-file naming and the report parsing; it does not
 represent a physical exchange calculation.  No such ab initio calculation
 exists in the ORCA ecosystem anyway -- the exchange constants are user
 input, and the LDF-CAHF / many-state PNO-CASPT2 route is outside this
-tool's scope (registered as a documented termination in the wave 5.6
-records).
+tool's scope (registered as a documented termination in the menu-39
+chapter).
 
 ## The generated-input acceptance run (2026-09-30, server 101, the same ORCA 6.1.1)
 

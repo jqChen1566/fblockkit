@@ -1,4 +1,4 @@
-"""Checks of the magnetocaloric machinery (analysis/magnetocaloric.py; menu 41; Wave 5.7).
+"""Checks of the magnetocaloric machinery (analysis/magnetocaloric.py; menu 41).
 
 The magnetization fixture is the POLY_ANISO probe with HINT/TMAG
 (fixtures/magnetocaloric/poly_mh.out; two Co(II) centers, invented J -- a

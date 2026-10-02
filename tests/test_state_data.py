@@ -129,7 +129,7 @@ def test_missing_sections_refuse_with_a_next_step(tmp_path):
         state_data.state_table(parse_property(partial))
 
 
-# --- the measured absorption columns (Wave 5.1 probes, nonzero values) ---------
+# --- the measured absorption columns (nonzero values) ---------
 
 
 def test_the_nonzero_probe_pins_the_column_layout():

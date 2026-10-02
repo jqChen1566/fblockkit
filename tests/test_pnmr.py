@@ -1,4 +1,4 @@
-"""Checks of the pNMR pseudocontact machinery (analysis/pnmr.py, menu 35; Wave 5.2).
+"""Checks of the pNMR pseudocontact machinery (analysis/pnmr.py, menu 35).
 
 Three layers of anchors:
 

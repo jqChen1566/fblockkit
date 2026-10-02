@@ -1,4 +1,4 @@
-"""Checks of the AILFT machinery (parsers/ailft.py + analysis/ailft.py; menu 38; Wave 5.5).
+"""Checks of the AILFT machinery (parsers/ailft.py + analysis/ailft.py; menu 38).
 
 The fixture is a real ORCA 6.1.1 run: the Ni(2+) d8 free ion with the AILFT
 driver requested through ``ActOrbs dOrbs`` (NEVPT2, three-triplet/fifteen-

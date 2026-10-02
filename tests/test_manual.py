@@ -195,10 +195,12 @@ def _prepare_work() -> None:
     shutil.copy(
         REPO / "fixtures" / "magrelax" / "co_magrelax.out", work / "co_magrelax.out"
     )
-    # the menu-37 core-excited-spectra fixture (the [FeCl4]2- ROCIS run)
+    # the menu-37 core-excited-spectra fixture (the [FeCl4]2- ROCIS run) and
+    # the [FeCl4]2- geometry for its XES input leg
     shutil.copy(
         REPO / "fixtures" / "rocis" / "fecl4_xas.out", work / "fecl4_xas.out"
     )
+    shutil.copy(REPO / "fixtures" / "rocis" / "fecl4.xyz", work / "fecl4.xyz")
     # the menu-38 AILFT fixture (the Ni(2+) d8 free-ion run)
     shutil.copy(
         REPO / "fixtures" / "ailft" / "ni_ailft.out", work / "ni_ailft.out"

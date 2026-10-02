@@ -1,4 +1,4 @@
-"""Checks of the pysisyphus B-layer pair (menus 32/33; Wave 4.6).
+"""Checks of the pysisyphus B-layer pair (menus 32/33).
 
 The fixtures are real runs of pysisyphus 1.0.0 driving ORCA 6.1.1 on server
 101 (2026-09-28; see fixtures/pysisyphus/README.md for the provenance and the

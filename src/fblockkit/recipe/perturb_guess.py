@@ -365,7 +365,7 @@ def evidence() -> tuple[Evidence, ...]:
             ref=(
                 "Vaucher & Reiher, J. Chem. Theory Comput. 2017, 13, 1219-1228, "
                 "section IV (Eqs. (2)-(3)); the project's close reading "
-                "scratch_wave41/vaucher2017.md"
+                "record"
             ),
             url="https://doi.org/10.1021/acs.jctc.7b00011",
             bibkey="vaucher2017steering",

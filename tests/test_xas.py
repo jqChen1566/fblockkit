@@ -1,5 +1,5 @@
 """Checks of the core-excited-spectra machinery (parsers/rocis_spectra.py +
-analysis/xas.py; menu 37; Wave 5.4).
+analysis/xas.py; menu 37).
 
 The fixture is a real ORCA 6.1.1 ROCIS run of [FeCl4]2- (x2c-SVPall, ROHF
 high-spin d6, NRoots 30, DecomposeFosc, DoSOC): fourteen absorption blocks

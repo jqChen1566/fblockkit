@@ -77,13 +77,16 @@ caller's choice, completion).
 Mode 2 writes the driver's input instead: \file{<path>} (default
 \file{./poly\_aniso.input}) carries the \code{NNEQ} block (the type count
 with the ab initio flag, the equivalent centres and the spin-orbit
-functions per type), the \code{PAIR} list (Lines-type
-$\sum -J\,\mathbf{s}_i\cdot\mathbf{s}_j$), the optional \code{COOR} block
-(symmetrised per-type coordinates; it switches the exact dipole-dipole
-coupling on) and the optional \code{TINT} grid, closed by
-\code{End of Input}; the report \file{<path>.fbk.md} repeats the cluster
-summary, the data-file checklist (\file{aniso\_1.input}, \ldots), the run
-command and the boundaries.
+functions per type), the \code{SYMM} block whenever a type carries more
+than one equivalent centre (one rotation matrix per site of the type,
+mapping the representative onto each site; the first is the identity), the
+pair block (\code{PAIR} under the Lines-type
+$\sum -J\,\mathbf{s}_i\cdot\mathbf{s}_j$, or \code{LIN3} with one $J$ per
+Cartesian axis), the optional \code{COOR} block (symmetrised per-type
+coordinates; it switches the exact dipole-dipole coupling on) and the
+optional \code{TINT} grid, closed by \code{End of Input}; the report
+\file{<path>.fbk.md} repeats the cluster summary, the data-file checklist
+(\file{aniso\_1.input}, \ldots), the run command and the boundaries.
 
 \section{Conventions, cross-checks and boundaries (measured)}
 
@@ -99,11 +102,25 @@ command and the boundaries.
     $J=0.1$~cm$^{-1}$ pair, the two coordinates, \code{TINT}
     $0$--$300$~K / $101$ points) drives \code{otool\_polyaniso} with the
     fixture's data files to rc\,=\,0 and reproduces the frozen probe output
-    byte for byte (measured 2026-09-30).  The writer validates the
-    structure (type count 1--6, at least one pair, pair indices,
-    duplicate pairs, coordinate and grid shapes) but not the physics of
-    the $J$ values or the coordinates; the \code{SYMM} and
-    \code{LIN3}/\code{LIN9} input variants are registered.
+    byte for byte (measured 2026-09-30); the \code{SYMM} and \code{LIN3}
+    variants were probed the same way (2026-10-01) -- the one-type
+    two-centre cluster with identity+inversion matrices and the
+    axis-diagonal pair form both return rc\,=\,0 (\file{symm\_probe.out},
+    \file{lin3\_probe.out}).  The writer validates the structure (type
+    count 1--6, at least one pair, pair indices, duplicate pairs, pair
+    arity, coordinate, grid and matrix shapes) but not the physics of the
+    $J$ values, the coordinates or the rotation matrices.
+  \item \textbf{The SYMM block is enforced client-side}: a type with more
+    than one equivalent centre needs its rotation matrices -- the driver's
+    own check (``SYMM is mandatory for cases when: neq(:) $>$ 1!'') prints
+    a serious-error banner yet still exits~0, so the writer refuses the
+    omission instead of letting a silently-failed run through.
+  \item \textbf{The full anisotropic \code{LIN9} form is a documented
+    termination}: the driver aborts in its own printout for every probed
+    LIN9 input (the second print format \code{(15x,3F9.5)} receives a
+    character item -- a Fortran format/type mismatch at
+    \code{input\_process.f90} line 286, exit status~2; measured
+    2026-10-01, \file{lin9\_probe.out}).
   \item \textbf{The Lines model is exact only in three cases} (two
     isotropic spins; one Ising plus one isotropic spin; two Ising spins)
     and approximate otherwise; the dipole-dipole coupling is evaluated

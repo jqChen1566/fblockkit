@@ -1,0 +1,95 @@
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c                  ____            __                 ___              _                          c
+c                 / __ \  ____    / / __  __         /   |    ____    (_) _____  ____             c
+c                / /_/ / / __ \  / / / / / /        / /| |   / __ \  / / / ___/ / __ \            c
+c               / ____/ / /_/ / / / / /_/ /        / ___ |  / / / / / / (__  ) / /_/ /            c
+c              /_/      \____/ /_/  \__, /  ______/_/  |_| /_/ /_/ /_/ /____/  \____/             c
+c                                  /____/  /_____/                                                c
+c                                                                                                 c
+c                                                                                                 c
+c                                     POLY_ANISO Program                                          c
+c                                                                                                 c
+c           developed by Liviu Ungur          --  Liviu.Ungur@nus.edu.sg                          c
+c                        Liviu F. Chibotaru   --  Liviu.Chibotaru@kuleuven.be                     c
+c                                                                                                 c
+c                     at National University of Singapore     and                                 c
+c                        KU Leuven                                                                c
+c                                                                                                 c
+c   Program version :  v1.0.0                                                                     c
+c   Compiled on     : 04-12-25                                                                                 c
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+The code allocated at least:           15384 bytes of memory for this run.
+
+The program runs in serial
+
+Number of independent centers --------------- :  2
+Number of all centers ----------------------- :  2
+
+
+Information about individual magnetic sites
+(as read from the corresponding datafiles)
+----------------------------------------------:
+Center type 1:
+  This center was computed ab initio -------- :  TRUE
+  Data file for this center ----------------- :  aniso_1.input
+  Number of centers of this kind ------------ :  1
+  Local basis for exchange interaction ------ :  2
+  Number of spin-orbit states --------------- :  4
+  Spin-orbit energy spectra (cm-1) ---------- :      0.000      0.000  29361.197  29361.197
+  Number of spin-free states ---------------- :  2
+  g_tensor ( pseudospin =  1/2 ) ------------ :                         x        y        z
+                                              : gX =  2.00000 Xm : -0.66776 -0.41991  0.61463
+                                              : gY =  2.00000 Ym : -0.52030 -0.32719 -0.78882
+                                              : gZ =  1.99952 Zm :  0.53234 -0.84653  0.00000
+  Rotation Matrices for this center type ---- :
+                         equivalent center 1  :  1.00000  0.00000  0.00000
+                                              :  0.00000  1.00000  0.00000
+                                              :  0.00000  0.00000  1.00000
+Center type 1:
+  This center was computed ab initio -------- :  TRUE
+  Data file for this center ----------------- :  aniso_2.input
+  Number of centers of this kind ------------ :  1
+  Local basis for exchange interaction ------ :  2
+  Number of spin-orbit states --------------- :  4
+  Spin-orbit energy spectra (cm-1) ---------- :      0.000      0.000  29361.197  29361.197
+  Number of spin-free states ---------------- :  2
+  g_tensor ( pseudospin =  1/2 ) ------------ :                         x        y        z
+                                              : gX =  2.00000 Xm :  0.84642  0.53227  0.01613
+                                              : gY =  2.00000 Ym :  0.01366  0.00859 -0.99987
+                                              : gZ =  1.99952 Zm : -0.53234  0.84653  0.00000
+  Rotation Matrices for this center type ---- :
+                         equivalent center 1  :  1.00000  0.00000  0.00000
+                                              :  0.00000  1.00000  0.00000
+                                              :  0.00000  0.00000  1.00000
+
+At line 286 of file otool_aniso/poly/input_process.f90 (unit = 6, file = 'stdout')
+Fortran runtime error: Expected REAL for item 1 in formatted transfer, got CHARACTER
+(15x,                    3F9.5)
+                          ^
+
+Error termination. Backtrace:
+#0  0x21d17b8
+#1  0x21d19e7
+#2  0x21d24ef
+#3  0x220cdb1
+#4  0x21f6ed6
+#5  0x21fa879
+#6  0x21fac55
+#7  0x4537aa
+#8  0x52258b
+#9  0x5274eb
+#10  0x4fb7a8
+#11  0x408f4c
+#12  0x226a463
+#13  0x226a6e0
+#14  0x40a4a5
+
+Information about magnetic exchange couplings
+----------------------------------------------:
+  Number of exchange coupled states --------- :  4
+  Number of interacting pairs (total) ------- :  1
+
+  Magnetic dipole-dipole coupling ----------- :  NOT INCLUDED
+  Lines-9 model for magnetic interaction ---- :  INCLUDED
+          Number of pairs for LINES-9 model - :  1
+               pair 1 : centers  1 --  2      :    0.10000  0.00000  0.00000

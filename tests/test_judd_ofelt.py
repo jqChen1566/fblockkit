@@ -1,4 +1,4 @@
-"""Checks of the Judd-Ofelt fit (analysis/judd_ofelt.py, menu 34; Wave 5.1).
+"""Checks of the Judd-Ofelt fit (analysis/judd_ofelt.py, menu 34).
 
 The regression fixture is the Eu3+ dataset of Babu et al. (SET B) with the
 U^(lambda) table of Hovhannesyan/Boudon/Lepers -- the same combination their

@@ -639,7 +639,7 @@ def test_oscillation_needs_a_non_collapsing_tail(tmp_path):
     assert RULE_ENERGY_OSCILLATION not in {item.rule_id for item in findings}
 
 
-# --- the TRAH proposal (Wave 4.7) --------------------------------------------
+# --- the TRAH proposal --------------------------------------------
 
 
 def test_the_oscillation_finding_yields_the_trah_proposal():

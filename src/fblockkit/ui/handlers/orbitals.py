@@ -883,13 +883,26 @@ def ailft_report(session: Session) -> None:
 
 
 def xas_report(session: Session) -> None:
-    """Menu 37: core-excited spectra (XAS/RIXS) from a ROCIS output.
+    """Menu 37: core-excited spectra -- read a ROCIS output or write inputs.
 
-    Reads the ROCIS absorption blocks, reports the transition table and the
-    edge branching ratio, and states the RIXS bookkeeping of the run.
+    Mode 1 reads the ROCIS absorption blocks, reports the transition table
+    and the edge branching ratio, and states the RIXS bookkeeping of the
+    run; mode 2 writes a ROCIS input that carries the off-resonance XES
+    request (the plain RIXS channel is its carrier); mode 3 writes the
+    two-step CAS-CI core-excited XAS inputs.
     """
     from ...analysis import xas as xas_analysis
 
+    mode = session.ask(
+        "What do you need? (1) read a ROCIS output (Enter), (2) write a ROCIS "
+        "XES input, (3) write a CAS-CI core-excited XAS input"
+    ).strip()
+    if mode == "2":
+        _rocis_xes_write(session)
+        return
+    if mode == "3":
+        _casci_xas_write(session)
+        return
     path_text = session.ask("ORCA output path (a ROCIS core-excited-spectra run)")
     if not path_text:
         session.say("Cancelled (no path given).")
@@ -930,6 +943,163 @@ def xas_report(session: Session) -> None:
         f"Plot data written: {csv_path} (primary-block transitions; columns "
         "i_root,i_label,j_root,j_label,energy_eV,fosc)"
     )
+
+
+def _rocis_xes_write(session: Session) -> None:
+    """Menu 37, mode 2: the ROCIS XES input writer (off-resonance emission)."""
+    from ...analysis import geometry as geometry_analysis
+    from ...recipe import rocis_xes as xes_recipe
+
+    xyz_text = session.ask("Structure file (XYZ) path")
+    if not xyz_text:
+        session.say("Cancelled (no structure given).")
+        return
+    charge_text = session.ask("Charge of the system (Enter = 0)").strip()
+    multiplicity_text = session.ask(
+        "Multiplicity (Enter = 1; it also becomes the ROCIS ReferenceMult)"
+    ).strip()
+    rohf_text = session.ask(
+        "Unpaired electrons for the ROHF high-spin preparation (Enter = no "
+        "%scf block)"
+    ).strip()
+    element_text = session.ask(
+        "XASelems: the 0-based position of the core element among the atoms "
+        "(Enter = 0)"
+    ).strip()
+    nroots_text = session.ask(
+        "NRoots (Enter = 30; enough roots are needed for the plain RIXS "
+        "channel, the carrier of the XES table -- measured: 10 skipped it, "
+        "30 covered it)"
+    ).strip()
+    window_text = session.ask(
+        "OrbWin: six integers 'd1s,d1e,d2s,d2e,accs,acce' -- the two "
+        "spin-orbit-split core ranges, then a wide acceptor (the probe's own "
+        "numbering: '6,6,7,8,0,2000')"
+    )
+    rixssoc_text = session.ask(
+        "Include the SOC-corrected RIXS channel? (y/N; it stores large "
+        "transition-density files -- measured past 36 GB at NRoots 30 on the "
+        "probe)"
+    ).strip().lower()
+    elastic_text = session.ask("Include the elastic line? (Enter = yes)").strip().lower()
+    keywords_text = session.ask(
+        "Method/basis keywords (Enter = x2c x2c-SVPall AutoAux TightSCF)"
+    ).strip()
+    nprocs_text = session.ask("Parallel processes (Enter = 8)").strip()
+    maxcore_text = session.ask("MaxCore in MB (Enter = 4000)").strip()
+    path = Path(xyz_text)
+    try:
+        atoms = geometry_analysis.parse_xyz(path)
+        coordinates = tuple((atom.element, atom.x, atom.y, atom.z) for atom in atoms)
+        window = tuple(int(token) for token in window_text.replace(",", " ").split())
+        plan = xes_recipe.build_input(
+            coordinates,
+            charge=int(charge_text or "0"),
+            multiplicity=int(multiplicity_text or "1"),
+            xas_element=int(element_text or "0"),
+            nroots=int(nroots_text or "30"),
+            window=window,
+            do_rixssoc=rixssoc_text in ("y", "yes"),
+            do_elastic=elastic_text not in ("n", "no"),
+            rohf_electrons=int(rohf_text) if rohf_text else None,
+            keywords=keywords_text or xes_recipe.DEFAULT_KEYWORDS,
+            nprocs=int(nprocs_text or "8"),
+            maxcore=int(maxcore_text or "4000"),
+        )
+    except (
+        xes_recipe.RocisXesError,
+        geometry_analysis.StructureError,
+        OSError,
+        ValueError,
+    ) as exc:
+        session.say(f"ROCIS XES input failed: {exc}")
+        return
+    inp_path = path.with_name(f"{path.stem}.xes.inp")
+    inp_path.write_text(plan.text, encoding="utf-8")
+    body = xes_recipe.render_plan(plan, path=inp_path)
+    session.say(body)
+    section = ReportSection(
+        title="ROCIS XES input (off-resonance X-ray emission)", body=body
+    )
+    report_lines = f"## {section.title}\n\n{section.body}\n"
+    refs = references_section(xes_recipe.evidence())
+    if refs is not None:
+        report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
+    md_path = inp_path.with_name(inp_path.name + ".fbk.md")
+    md_path.write_text(report_lines, encoding="utf-8")
+    session.say(f"Report written: {md_path}")
+
+
+def _casci_xas_write(session: Session) -> None:
+    """Menu 37, mode 3: the two-step CAS-CI core-excited XAS input writer."""
+    from ...analysis import geometry as geometry_analysis
+    from ...recipe import casci_xas as casci_recipe
+
+    xyz_text = session.ask("Structure file (XYZ) path")
+    if not xyz_text:
+        session.say("Cancelled (no structure given).")
+        return
+    charge_text = session.ask("Charge of the system (Enter = 0)").strip()
+    multiplicity_text = session.ask("Multiplicity (Enter = 1)").strip()
+    space_text = session.ask(
+        "Valence active space of step 1 as 'nel norb' (e.g. '6 5' for a d6 shell)"
+    )
+    nroots_text = session.ask("Step-1 roots (Enter = 5)").strip()
+    cores_text = session.ask(
+        "Core orbital indices to rotate in (0-based, from the step-1 output's "
+        "orbital table; e.g. '6 7 8' for the Fe 2p near -700 eV)"
+    )
+    step2_mult_text = session.ask(
+        "Step-2 multiplicities (Enter = the ground multiplicity and ground-2)"
+    ).strip()
+    step2_nroots_text = session.ask("Step-2 roots per multiplicity (Enter = 20,20)").strip()
+    keywords_text = session.ask(
+        "Method/basis keywords (Enter = def2-SVP def2-SVP/C TightSCF)"
+    ).strip()
+    maxcore_text = session.ask("MaxCore in MB (Enter = 4000)").strip()
+    path = Path(xyz_text)
+    try:
+        atoms = geometry_analysis.parse_xyz(path)
+        coordinates = tuple((atom.element, atom.x, atom.y, atom.z) for atom in atoms)
+        space_tokens = space_text.replace(",", " ").split()
+        plan = casci_recipe.build_inputs(
+            coordinates,
+            charge=int(charge_text or "0"),
+            multiplicity=int(multiplicity_text or "1"),
+            valence_nel=int(space_tokens[0]),
+            valence_norb=int(space_tokens[1]),
+            step1_nroots=int(nroots_text or "5"),
+            core_orbitals=[int(token) for token in cores_text.replace(",", " ").split()],
+            step2_mult=step2_mult_text or None,
+            step2_nroots=step2_nroots_text or "20,20",
+            keywords=keywords_text or casci_recipe.DEFAULT_KEYWORDS,
+            maxcore=int(maxcore_text or "4000"),
+        )
+    except (
+        casci_recipe.CasciXasError,
+        geometry_analysis.StructureError,
+        OSError,
+        ValueError,
+        IndexError,
+    ) as exc:
+        session.say(f"CAS-CI XAS input failed: {exc}")
+        return
+    step1_path = path.with_name(f"{path.stem}.casci_xas.step1.inp")
+    step2_path = path.with_name(f"{path.stem}.casci_xas.step2.inp")
+    step1_path.write_text(plan.step1_text, encoding="utf-8")
+    step2_path.write_text(plan.step2_text, encoding="utf-8")
+    body = casci_recipe.render_plan(plan, step1_path=step1_path, step2_path=step2_path)
+    session.say(body)
+    section = ReportSection(
+        title="CAS-CI core-excited XAS input (two-step protocol)", body=body
+    )
+    report_lines = f"## {section.title}\n\n{section.body}\n"
+    refs = references_section(casci_recipe.evidence())
+    if refs is not None:
+        report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
+    md_path = step1_path.with_name(f"{path.stem}.casci_xas.fbk.md")
+    md_path.write_text(report_lines, encoding="utf-8")
+    session.say(f"Report written: {md_path}")
 
 
 def relaxation_report(session: Session) -> None:
@@ -1209,6 +1379,42 @@ def _poly_aniso_write(session: Session) -> None:
             return None
         return values if len(values) == 3 else None
 
+    # the SYMM block is mandatory whenever a type carries more than one
+    # equivalent centre (the driver's own measured check; it aborts with a
+    # serious-error banner yet still exits 0, so the writer refuses instead)
+    _identity = (1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0)
+    symmetry = None
+    if any(count > 1 for count in centres):
+        symmetry = []
+        for type_index, count in enumerate(centres, start=1):
+            if count == 1:
+                symmetry.append((_identity,))
+                continue
+            matrices = []
+            for matrix_index in range(1, count + 1):
+                first_row = session.ask(
+                    f"Type {type_index}, rotation matrix {matrix_index} of {count}: "
+                    "row 1 'r11 r12 r13' (Enter = the identity matrix)"
+                )
+                if not first_row:
+                    matrices.append(_identity)
+                    continue
+                rows = [_vector(first_row)]
+                for row_index in (2, 3):
+                    rows.append(
+                        _vector(
+                            session.ask(
+                                f"Type {type_index}, matrix {matrix_index}, row "
+                                f"{row_index} 'r{row_index}1 r{row_index}2 r{row_index}3'"
+                            )
+                        )
+                    )
+                if any(row is None for row in rows):
+                    session.say("A matrix row must be three numbers. Cancelled.")
+                    return
+                matrices.append(tuple(value for row in rows for value in row))
+            symmetry.append(tuple(matrices))
+
     coordinates = None
     first = session.ask(
         "Coordinates of type 1, 'x y z' in Angstrom (Enter = skip the COOR block)"
@@ -1226,24 +1432,51 @@ def _poly_aniso_write(session: Session) -> None:
                 return
             coordinates.append(row)
 
+    pair_model = session.ask(
+        "Pair model: Enter = Lines isotropic 'i j J' / type lin3 = axis-diagonal "
+        "'i j Jx Jy Jz'"
+    ).strip().lower() or "lines"
+    if pair_model not in ("lines", "lin3", "lin9"):
+        session.say(
+            f"Unknown pair model {pair_model!r}; the writer renders 'lines' or "
+            "'lin3'. Cancelled."
+        )
+        return
     pairs = []
     while True:
+        label = "'i j Jx Jy Jz'" if pair_model == "lin3" else "'i j J'"
+        j_text = "J values in cm-1" if pair_model == "lin3" else "J in cm-1"
         prompt = (
-            "Coupled pair 'i j J' (J in cm-1; Enter = done)"
+            f"Coupled pair {label} ({j_text}; Enter = done)"
             if pairs
-            else "Coupled pair 'i j J' (J in cm-1; at least one pair)"
+            else f"Coupled pair {label} ({j_text}; at least one pair)"
         )
         line = session.ask(prompt)
         if not line:
             break
         try:
             tokens = line.replace(",", " ").split()
-            first_site, second_site, coupling = int(tokens[0]), int(tokens[1]), float(tokens[2])
+            if pair_model == "lin3":
+                if len(tokens) != 5:
+                    raise ValueError
+                pairs.append(
+                    (int(tokens[0]), int(tokens[1]), float(tokens[2]),
+                     float(tokens[3]), float(tokens[4]))
+                )
+            else:
+                if len(tokens) != 3:
+                    raise ValueError
+                first_site, second_site, coupling = (
+                    int(tokens[0]), int(tokens[1]), float(tokens[2])
+                )
+                pairs.append((first_site, second_site, coupling))
         except (IndexError, ValueError):
-            session.say("A pair line must read 'i j J' (two integers and a number). "
-                        "Cancelled.")
+            expected = "'i j Jx Jy Jz'" if pair_model == "lin3" else "'i j J'"
+            session.say(
+                f"A pair line must read {expected} (the two site indices and the "
+                "J value(s)). Cancelled."
+            )
             return
-        pairs.append((first_site, second_site, coupling))
 
     grid = None
     grid_text = session.ask(
@@ -1263,6 +1496,8 @@ def _poly_aniso_write(session: Session) -> None:
             pairs=pairs,
             coordinates=coordinates,
             temperature_grid=grid,
+            symmetry=symmetry,
+            pair_model=pair_model,
         )
     except poly_recipe.PolyAnisoPlanError as exc:
         session.say(f"Writing the POLY_ANISO input failed: {exc}")

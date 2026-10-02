@@ -1,0 +1,21 @@
+&POLY_ANISO
+
+NNEQ
+  1  T
+  2
+  2
+
+SYMM
+  2
+  1  0  0
+  0  1  0
+  0  0  1
+  -1  0  0
+  0  -1  0
+  0  0  -1
+
+PAIR
+  1
+  1 2 0.1
+
+End of Input

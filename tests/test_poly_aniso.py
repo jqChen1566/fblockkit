@@ -1,5 +1,5 @@
 """Checks of the polynuclear-magnetism machinery (parsers/poly_aniso.py +
-analysis/poly_aniso.py; menu 39; Wave 5.6).
+analysis/poly_aniso.py; menu 39).
 
 The fixture is a real two-center probe of the ORCA 6.1.1 `otool_poly_aniso`
 driver (POLY_ANISO v1.0.0): two Co(II) single-ion data files (the menu-36

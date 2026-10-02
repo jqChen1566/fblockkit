@@ -1,5 +1,5 @@
 """Checks of the hyperfine / EFG machinery (parsers/hyperfine.py +
-analysis/hyperfine.py; menu 40; Wave 5.7).
+analysis/hyperfine.py; menu 40).
 
 Fixtures are real ORCA 6.1.1 EPRNMR runs on CeF3 (2026-09-29): a DFT
 (PBE0/x2c-SVPall) probe without and with nuclear parameters, and a

@@ -106,7 +106,7 @@ def main() -> int:
         shutil.copy(pysisyphus / "h2o_opt" / "h2o.xyz", inputs / "h2o_ts.xyz")
         for run in ("h2o_opt", "butadiene_ts", "h2o_stop3", "hess_crash"):
             shutil.copytree(pysisyphus / run, inputs / f"pysis_{run}")
-        # the Wave-5.1 transition-intensity fixtures: the Judd-Ofelt dataset
+        # the transition-intensity fixtures: the Judd-Ofelt dataset
         # and the nonzero absorption probe of the state-data menu
         shutil.copy(
             REPO / "fixtures" / "judd_ofelt" / "babu2000_eu3.yaml",
@@ -131,9 +131,14 @@ def main() -> int:
             inputs / "co_magrelax.out",
         )
         # the menu-37 core-excited-spectra fixture (the [FeCl4]2- ROCIS run)
+        # and the [FeCl4]2- geometry for its XES input leg
         shutil.copy(
             REPO / "fixtures" / "rocis" / "fecl4_xas.out",
             inputs / "fecl4_xas.out",
+        )
+        shutil.copy(
+            REPO / "fixtures" / "rocis" / "fecl4.xyz",
+            inputs / "fecl4.xyz",
         )
         # the menu-38 AILFT fixture (the Ni(2+) d8 free-ion run)
         shutil.copy(
@@ -312,11 +317,20 @@ def main() -> int:
                     "35", "work/co_plus_qdpt_g.yaml",
                     "36", "work/co_aniso2.out",
                     "36", "work/co_magrelax.out",
-                    "37", "work/fecl4_xas.out", "2.0",
+                    "37", "", "work/fecl4_xas.out", "2.0",
+                    "37", "2", "work/fecl4.xyz", "-2", "5", "4", "0", "30",
+                    "6,6,7,8,0,2000", "", "", "", "", "",
+                    "37", "3", "work/fecl4.xyz", "-2", "5", "6 5", "5",
+                    "6 7 8", "", "", "", "",
                     "38", "work/ni_ailft.out", "Ni2+", "", "",
                     "39", "1", "work/two_center_probe.out",
                     "39", "2", "work/poly_aniso.input", "2", "1 1", "2 2",
-                    "0.0 0.0 0.0", "0.0 0.0 3.7", "1 2 0.1", "", "0 300 101",
+                    "0.0 0.0 0.0", "0.0 0.0 3.7", "", "1 2 0.1", "", "0 300 101",
+                    "39", "2", "work/poly_aniso_symm.input", "1", "2", "2",
+                    "", "-1 0 0", "0 -1 0", "0 0 -1",
+                    "", "", "1 2 0.1", "", "",
+                    "39", "2", "work/poly_aniso_lin3.input", "2", "1 1", "2 2",
+                    "", "lin3", "1 2 0.1 0.1 0.1", "", "",
                     "40", "work/cef3_epr_dft.out", "0.5",
                     "40", "work/cef3_epr_casscf.out", "",
                     "41", "work/poly_mh.out",
@@ -793,13 +807,34 @@ def main() -> int:
                 and "chiT = 0.501549 -> 0.750429 cm3 K mol-1" in poly_report,
                 "menu 39 reads the POLY_ANISO cluster report",
             )
+            poly_fixture = REPO / "fixtures" / "poly_aniso"
             poly_input = read("poly_aniso.input")
             check(
-                poly_input.startswith("&POLY_ANISO")
-                and "  2  T" in poly_input
-                and "  1 2 0.1" in poly_input
-                and poly_input.rstrip().endswith("End of Input"),
-                "menu 39 writes the POLY_ANISO input (NNEQ flag, the pair, the terminator)",
+                # the historical two_center_probe.polyinp is the hand-fed original
+                # (the driver's output is insensitive to the input's text layout);
+                # the CLI's bytes are pinned against the example's captured product
+                norm(poly_input)
+                == norm(
+                    (EXAMPLES / "expected" / "products" / "poly_aniso.input").read_text(
+                        encoding="utf-8"
+                    )
+                ),
+                "menu 39 writes the anchor's POLY_ANISO input byte-identically to "
+                "the captured example product",
+            )
+            poly_symm = read("poly_aniso_symm.input")
+            check(
+                norm(poly_symm)
+                == norm((poly_fixture / "symm_probe.polyinp").read_text(encoding="utf-8")),
+                "menu 39 writes the SYMM variant (the identity+inversion cluster) "
+                "byte-identically to its engine-validated probe",
+            )
+            poly_lin3 = read("poly_aniso_lin3.input")
+            check(
+                norm(poly_lin3)
+                == norm((poly_fixture / "lin3_probe.polyinp").read_text(encoding="utf-8")),
+                "menu 39 writes the LIN3 variant byte-identically to its "
+                "engine-validated probe",
             )
             hyp_report = read("cef3_epr_dft.out.hyperfine.fbk.md")
             check(
@@ -953,6 +988,35 @@ def main() -> int:
                 and xas_csv.endswith("\n"),
                 "menu 37 writes the plot-ready stick-spectrum CSV companion "
                 "(the full non-zero set, no display cap)",
+            )
+            xes_input = read("fecl4.xes.inp")
+            check(
+                norm(xes_input)
+                == norm(
+                    (REPO / "fixtures" / "rocis" / "fecl4_xes.inp").read_text(
+                        encoding="utf-8"
+                    )
+                ),
+                "menu 37 writes the ROCIS XES input byte-identically to its "
+                "engine-validated probe",
+            )
+            casci_step1 = read("fecl4.casci_xas.step1.inp")
+            casci_step2 = read("fecl4.casci_xas.step2.inp")
+            check(
+                norm(casci_step1)
+                == norm(
+                    (REPO / "fixtures" / "rocis" / "fecl4_casci_xas.step1.inp").read_text(
+                        encoding="utf-8"
+                    )
+                )
+                and norm(casci_step2)
+                == norm(
+                    (REPO / "fixtures" / "rocis" / "fecl4_casci_xas.step2.inp").read_text(
+                        encoding="utf-8"
+                    )
+                ),
+                "menu 37 writes the two-step CAS-CI XAS inputs byte-identically "
+                "to their engine-validated probe",
             )
             relax_mr = read("co_magrelax.out.relax.fbk.md")
             check(

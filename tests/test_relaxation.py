@@ -1,4 +1,4 @@
-"""Checks of the magnetic relaxation machinery (menu 36; Wave 5.3).
+"""Checks of the magnetic relaxation machinery (menu 36).
 
 Two fixture layers, both real ORCA 6.1.1 output:
 

@@ -10,7 +10,13 @@ CAS-CI/RAS-CI protocol of section 3.13.18 covers core-excited XAS/RIXS in
 much the same two-step way.  This menu reads what such a run already
 contains: the transition table of its best absorption block, the edge
 branching ratio of the spin-orbit-split pair, and the RIXS bookkeeping
-(refusal mode, evaluated cross sections, or not requested).
+(refusal mode, evaluated cross sections, or not requested).  Its writing
+modes produce the inputs of the two core-excitation routes instead: the
+off-resonance XES of the ROCIS family (a ROCIS input whose RIXS request
+makes the engine print the emission tables -- manual section 7.31.4), and
+the two-step CAS-CI/RAS-CI protocol of the manual's section 3.13.18 (a
+valence SA-CASSCF, then the core orbitals rotated into the active space
+for a one-iteration CAS-CI solve).
 
 \section{What you need}
 
@@ -62,6 +68,37 @@ labels, the energy in eV and fosc
 spectrum can be plotted or broadened in any tool
 (Chapter~\ref{ch:formats}).
 
+Mode 2 writes a ROCIS XES input instead: the cluster description (structure,
+charge, multiplicity, the optional ROHF high-spin preparation, the
+\code{XASelems} index, \code{NRoots} and the six-element \code{OrbWin} of
+the two donor spaces plus the acceptor, the SOC-corrected-channel and
+elastic-line switches, the method keywords) goes to \file{<stem>.xes.inp},
+and the checklist to \file{<stem>.xes.inp.fbk.md}: the run's emission
+tables carry the ground-state rows (\code{<root>-<mult>A -> 0-<mult>A}) at
+the core-emission energies, and
+\code{orca\_mapspc <out> XES -x0<lo> -x1<hi> -w<fwhm> -eV -n<npoints>}
+renders them to \file{<out>.XES.stk} and \file{<out>.XES.dat} (the
+\code{XESSOC} mode for runs with the SOC-corrected channel on).  The
+measured recipe is the \file{fecl4\_xes} fixture pair
+(\file{fixtures/rocis/}): the generated input runs to normal termination in
+about a minute and renders 56 sticks.
+
+Mode 3 writes the two-step CAS-CI core-excited XAS inputs (the manual's
+protocol, section 3.13.18): \file{<stem>.casci\_xas.step1.inp} (the valence
+SA-CASSCF that writes the \file{.gbw}) and
+\file{<stem>.casci\_xas.step2.inp} (MOREAD, the \code{\%scf rotate} of the
+core orbitals into the active window, \code{FrozenCore FC\_NONE} and one
+CAS-CI iteration over the core-saturated space), with the checklist in
+\file{<stem>.casci\_xas.fbk.md}.  The window selection is positional
+(measured): the active window is the \code{norb} consecutive orbitals
+starting at $N_{\text{inactive}} = (N_e - \mathrm{nel})/2$ -- 42 for the
+\file{[FeCl4]2-} probe, 87 for the manual's own Fe(acac)$_3$ example -- and
+each core orbital moves to the leading slots of that window through the
+five-field \code{\{i, j, 90, 0, 0\}} rotation.  The step-2 run prints the
+L-edge transitions (the probe's first at 719.36~eV), and
+\code{orca\_mapspc <out> SOCABS ...} renders the SOC-corrected table (785
+peaks measured; \code{ABS} for the plain one).
+
 \section{Conventions, cross-checks and boundaries (measured)}
 
 \begin{readbox}
@@ -80,22 +117,51 @@ spectrum can be plotted or broadened in any tool
     deviations indicate electrostatic and spin-orbit effects
     (Thole \& van der Laan 1988; the menu cites the source rather than
     reimplementing its atomic rules).
-  \item \textbf{The RIXS refusal mode is the measured default of a
-    4-element \code{OrbWin}}: the engine identifies the RIXS flags and
-    then reports zero intermediate/final states (the 6-element window
-    carries the two donor spaces the RIXS variant needs).  The report
-    carries the engine's own TIP.  The six-element semantics of a
-    \emph{successful} RIXS run were not established in this round's
-    probing -- the measured variants were refused or crashed (an acceptor
-    window covering doubly occupied orbitals segfaults) -- so generating
-    RIXS inputs is registered as a candidate increment; on success the
-    report prints the transition counts and the
-    \code{orca\_mapspc ... RIXS} recipe of manual section 5.7.4.2.
+  \item \textbf{The RIXS window semantics are measured now}: the RIXS
+    variant needs the 6-element \code{OrbWin} -- the first four elements
+    are the two donor ranges, the last two the acceptor range (manual
+    section 7.31.4) -- while a 4-element window gives the engine's
+    zero-states refusal.  Measured on the probe: the spin-orbit-split
+    core donors \code{6,6,7,8} with a wide acceptor open the RIXS
+    channels; putting a valence donor range first gives the zero-states
+    refusal, and wide valence donors make the SOC machinery impractical
+    (the XES bullets below).  On success the report prints the transition
+    counts and the \code{orca\_mapspc ... RIXS} recipe of manual section
+    5.7.4.2.
+  \item \textbf{The XES route's measured boundaries} (2026-10-02): the
+    off-resonance XES is automatic in a RIXS-requested run, and the plain
+    (non-SOC) RIXS channel is its carrier -- a root count too small for
+    the channel is skipped with the engine's own warning and no XES table
+    prints (measured: \code{NRoots} 10 skipped, 30 covered, on the
+    \file{fecl4\_xes} probe); the SOC-corrected channel
+    (\code{DoRIXSSOC}) additionally stores per-pair transition densities
+    (measured past 36~GB transiently at \code{NRoots} 30 on the probe),
+    so the writer requests it only on the caller's ask; the six-element
+    \code{OrbWin} indices are the target system's own orbital numbers.
+  \item \textbf{The KHD XES variant is a documented termination}: with
+    \code{DoKHDXESSOC} and its initial/final state lists the engine
+    computes the emission intensities and then aborts in its own printout
+    (a null stream inside \code{PrintNXESKHDSpectrum}, signal 11 --
+    measured for every probed input shape, state list and print level);
+    the writer refuses it and names the working routes instead.
+  \item \textbf{The two-step CAS-CI protocol's measured boundaries}
+    (2026-10-02): the window mechanism is positional
+    ($(N_e-\mathrm{nel})/2$; measured on the probe, consistent with the
+    manual's own example); the core-orbital indices are the target
+    system's own (read from the step-1 output's orbital table); the
+    \code{XAS}/\code{XASSOC} mapspc modes do not read these output tables
+    (measured refusals) -- \code{SOCABS} and \code{ABS} do; and the
+    protocol's first core excitation sits 0.5~eV from the ROCIS result of
+    the same system (719.36 vs 718.87~eV measured) -- two independent
+    routes to one edge.  The manual's \code{\%rel picturechange /
+    FiniteNuc} block made no difference to the probe's CAS-CI L-edge
+    energies (measured, kept out of the generated input).
   \item \textbf{Boundaries}: ROCIS's own accuracy statement applies
     (section 5.7.3: several approximations; qualitatively correct
-    results).  The CAS-CI/RAS-CI XAS protocol (section 3.13.18: a valence
-    SA-CASSCF first, then \code{\%scf rotate} the core orbitals into the
-    active space with \code{FrozenCore FC\_NONE} and \code{maxiter 1}) is
-    documented in this chapter; this menu reads ROCIS outputs.
+    results).  This menu reads ROCIS outputs, writes the ROCIS XES input
+    and writes the two-step CAS-CI XAS inputs; the RAS-CI XES variant
+    (section 3.13.19: the same two-step shape with the \code{XESSOC} rel
+    keywords and the \code{XASMOs} index) remains a registered
+    candidate.
 \end{itemize}
 \end{readbox}
