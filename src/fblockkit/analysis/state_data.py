@@ -22,7 +22,8 @@ survey, measured on ORCA 6.1.1):
   available from single-root runs (the menu-19 batch route), and per-root
   *densities* from the FIC-NEVPT2 sidecar (the menu-23 chain).
 - Consequently, identity tracking along a series needs per-state observables
-  from such runs; it is registered as a candidate increment, not claimed here.
+  from such runs; the cross-run tracker built on them is menu 49 (its own
+  chapter).
 
 What this module does: read ``$CAS_SCF_Energies`` (the per-state table) and the
 ``CASSCF_Absorption_Spectrum`` section (per-transition state pairs,
@@ -335,8 +336,7 @@ def render(table: dict, lines: tuple[Transition, ...], *, source: str) -> str:
         "structured per-state energies and transitions;",
         "  - per-state observables for identity tracking: single-root runs carry the "
         "per-state dipole (the menu-19 route), the FIC-NEVPT2 sidecar carries per-root "
-        "densities (the menu-23 chain) -- a tracker across a series is registered as a "
-        "candidate increment;",
+        "densities (the menu-23 chain) -- the cross-run tracker is menu 49;",
         "  - the absorption columns are the measured layout [eV, cm-1, nm, fosc, D2, "
         "DX(re,im), DY(re,im), DZ(re,im)] (nonzero probes); a SOC run's "
         "duplicate section is read at its highest &RelCorrection, and the "

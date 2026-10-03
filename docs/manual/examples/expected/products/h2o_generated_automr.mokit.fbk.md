@@ -47,6 +47,15 @@ Side products echoed by the run (audit trail, not parsed here):
   mokit_gen2_uhf_uno_asrot2gvb4_s.dat
   mokit_gen2_uhf_uno_asrot2gvb4_s.fch
 
+.fch side products read next to the output (3 file(s)):
+  - h2o_gvb_rhf.fch -- the GVB stage (name-derived): nbf 24; 3 atoms; charge 0, mult 1, 10 e (5alpha/5beta); 24 alpha MOs, no beta block
+      SCF -75.78429273 Eh
+  - h2o_gvb_uhf_gvb4_CASSCF_NO.fch -- the CASSCF natural orbitals (name-derived): nbf 24; 3 atoms; charge 0, mult 1, 10 e (5alpha/5beta); 24 alpha MOs, no beta block
+      SCF -75.91806514 Eh; dipole (as stored) (0.308, 0.436, -0.000)
+  - h2o_gvb_uhf_uno_asrot2gvb4.fch -- the UNO active-space rotation towards the GVB stage (name-derived): nbf 24; 3 atoms; charge 0, mult 1, 10 e (5alpha/5beta); 24 alpha MOs, no beta block
+      SCF -75.91806514 Eh; dipole (as stored) (0.308, 0.436, -0.000)
+    Notes: the stage notes are derived from the file names (MOKIT's naming); coordinates and the dipole vector are reported as stored (the file's own units; the coordinates are in Bohr); the format carries no occupation numbers.
+
 Termination: Normal termination of AutoMR -- the workflow ran to its end.
 
-Reading notes: the active space on the CASSCF line is the automatically determined selection (GVB natural-orbital occupations above the 0.02 threshold); writing CASSCF(n,m) in the route line pins the size instead. The energy chain shows the flow RHF/UHF (the lower one is kept) -> GVB -> CASCI/CASSCF, so consecutive entries are different wave-function levels, not an error. GVB runs need a backend program (GAMESS by default; Gaussian and QChem are the alternates -- PySCF is not a GVB backend); the CASSCF stage defaults to PySCF. The natural-orbital .fch side products are listed for the audit trail but this report does not parse them (stated boundary); dynamic-correlation stages (CASPT2/NEVPT2/DMRG) appear in the strategy table only when requested.
+Reading notes: the active space on the CASSCF line is the automatically determined selection (GVB natural-orbital occupations above the 0.02 threshold); writing CASSCF(n,m) in the route line pins the size instead. The energy chain shows the flow RHF/UHF (the lower one is kept) -> GVB -> CASCI/CASSCF, so consecutive entries are different wave-function levels, not an error. GVB runs need a backend program (GAMESS by default; Gaussian and QChem are the alternates -- PySCF is not a GVB backend); the CASSCF stage defaults to PySCF. The natural-orbital .fch side products are read back when they sit next to the output (the section above; the reader is parsers/mokit_fch.py, whose anchor policy is in its docstring); dynamic-correlation stages (CASPT2/NEVPT2/DMRG) appear in the strategy table only when requested.

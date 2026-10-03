@@ -183,6 +183,13 @@ def main() -> int:
             REPO / "fixtures" / "mokit" / "h2o_generated_automr.out",
             inputs / "h2o_generated_automr.out",
         )
+        # the menu-45 walk reads the .fch side products sibling to the run
+        for name in (
+            "h2o_gvb_rhf.fch",
+            "h2o_gvb_uhf_gvb4_CASSCF_NO.fch",
+            "h2o_gvb_uhf_uno_asrot2gvb4.fch",
+        ):
+            shutil.copy(REPO / "fixtures" / "mokit" / name, inputs / name)
         # the menu-46 tunnelling fixture (the constructed neighbour probe)
         shutil.copy(
             REPO / "fixtures" / "qtm" / "neighbours_example.txt",
@@ -300,6 +307,7 @@ def main() -> int:
                     "work/canonical.json", "work/n2_scan_1.600.mkl",
                     "25", "work/benzene.json", "work/benzene.fcidump", "work/benzene.out", "C pz", "", "",
                     "26", "work/benzene.fcidump", "work/benzene.out", "4", "greedy",
+                    "26", "work/benzene.fcidump", "work/benzene.out", "", "best",
                     "27", "work/h2co.xyz", "0", "1", "0,1", "", "", "", "", "",
                     "28", "work/n2.xyz", "0", "1", "casscf", "ras", "6:2 2/2/2 2", "1", "1", "RHF def2-SVP",
                     "28", "work/n2.xyz", "0", "1", "rasci", "ormas", "6: 2 0 4, 2 0 4, 2 0 4", "1", "1", "accci", "0", "RHF def2-SVP",
@@ -314,14 +322,16 @@ def main() -> int:
                     "33", "work/pysis_h2o_opt",
                     "33", "work/pysis_hess_crash",
                     "34", "work/babu2000_eu3.yaml", "",
-                    "35", "work/co_plus_qdpt_g.yaml",
+                    "35", "work/co_plus_qdpt_g.yaml", "",
                     "36", "work/co_aniso2.out",
                     "36", "work/co_magrelax.out",
                     "37", "", "work/fecl4_xas.out", "2.0",
                     "37", "2", "work/fecl4.xyz", "-2", "5", "4", "0", "30",
                     "6,6,7,8,0,2000", "", "", "", "", "",
                     "37", "3", "work/fecl4.xyz", "-2", "5", "6 5", "5",
-                    "6 7 8", "", "", "", "",
+                    "6 7 8", "", "", "", "48", "",
+                    "37", "4", "work/fecl4.xyz", "-2", "5", "6 5", "5",
+                    "0 26 27 28", "", "", "", "", "48", "",
                     "38", "work/ni_ailft.out", "Ni2+", "", "",
                     "39", "1", "work/two_center_probe.out",
                     "39", "2", "work/poly_aniso.input", "2", "1 1", "2 2",
@@ -654,6 +664,17 @@ def main() -> int:
                 "quartet are printed",
             )
 
+            bestk_report = read("benzene.fcidump.tnass.bestk.fbk.md")
+            check(
+                "TNASS best-k sweep" in bestk_report
+                and "best: k = 6" in bestk_report
+                and "-230.793818898" in bestk_report
+                and "compact pick (this tool)" in bestk_report
+                and "reproduces the window's own FCI energy" in bestk_report,
+                "menu 26 best-k sweep ranks every prefix, marks the minimum "
+                "and the compact pick (k = 6 reproduces the window FCI)",
+            )
+
             dscf_input = read("h2co.dscf.inp")
             check(
                 "! PBE0 def2-TZVP UHF DeltaSCF" in dscf_input
@@ -974,6 +995,12 @@ def main() -> int:
                 and "gvb_prog=gaussian" in mokit_report,
                 "menu 45 reads the automr run (active space, chain, termination)",
             )
+            check(
+                ".fch side products read next to the output (3 file(s)):" in mokit_report
+                and "no beta block" in mokit_report
+                and "-75.91806514 Eh" in mokit_report,
+                "menu 45 reads the .fch side products (sizes, counts, energies)",
+            )
             xas_report = read("fecl4_xas.out.xas.fbk.md")
             check(
                 "ratio (low/high) = 56.355" in xas_report
@@ -1018,6 +1045,26 @@ def main() -> int:
                 "menu 37 writes the two-step CAS-CI XAS inputs byte-identically "
                 "to their engine-validated probe",
             )
+            casci_xes_step2 = read("fecl4.casci_xes.step2.inp")
+            xes_fixture = REPO / "fixtures" / "rocis" / "fecl4_casci_xes.step2.inp"
+            if xes_fixture.exists():
+                check(
+                    norm(casci_xes_step2)
+                    == norm(xes_fixture.read_text(encoding="utf-8")),
+                    "menu 37 writes the two-step RAS-CI XES input byte-identically "
+                    "to its engine-validated probe",
+                )
+            else:
+                # the fixture freezes after the engine probe run completes; until
+                # then this is an explicit registered pending -- a clean FAIL that
+                # keeps the rest of the walk running (the probe's input text was
+                # verified byte-for-byte against the running job at freeze-prep)
+                check(
+                    False,
+                    "menu 37 writes the two-step RAS-CI XES input byte-identically "
+                    "to its engine-validated probe (fixture freeze pending the "
+                    "engine probe; registered)",
+                )
             relax_mr = read("co_magrelax.out.relax.fbk.md")
             check(
                 "Orbach fit: not applicable" in relax_mr

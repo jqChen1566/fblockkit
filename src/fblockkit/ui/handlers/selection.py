@@ -571,33 +571,49 @@ def tnass_select(session: Session) -> None:
     output_text = session.ask(
         "CASSCF output path (matches the CI root to the printed energy; Enter = skip)"
     ).strip()
-    size_text = session.ask("Target size: the number of active spatial orbitals").strip()
+    size_text = session.ask(
+        "Target size: the number of active spatial orbitals (ignored by 'best')"
+    ).strip()
     method_text = session.ask(
-        "Method: greedy, 'block K' (e.g. 'block 2'), or brute (Enter = greedy)"
+        "Method: greedy, 'block K' (e.g. 'block 2'), brute, or best (the k-sweep "
+        "ranked by the CASCI energy) (Enter = greedy)"
     ).strip().lower()
     try:
         ok, reference = casscf_reference(session, output_text)
         if not ok:
             return
-        n_target = int(size_text)
         tokens = method_text.split()
-        method, block_size = "greedy", None
-        if tokens == ["brute"]:
-            method = "brute"
-        elif len(tokens) == 2 and tokens[0] == "block":
-            method, block_size = "block", int(tokens[1])
-        elif tokens not in ([], ["greedy"]):
-            raise tnass.TnassError(
-                f"unknown method {method_text!r}; use 'greedy', 'block K', or 'brute'."
-            )
         dump = parse_fcidump(Path(fcidump_text))
-        section = tnass.run(
-            dump,
-            n_target=n_target,
-            method=method,
-            block_size=block_size,
-            reference_energy=reference,
-        )
+        if tokens[:1] == ["best"]:
+            section = tnass.run_best_k(dump, reference_energy=reference)
+            suffix = ".tnass.bestk.fbk.md"
+        else:
+            try:
+                n_target = int(size_text)
+            except ValueError as exc:
+                raise tnass.TnassError(
+                    f"the target size {size_text!r} is not an integer. Next "
+                    "step: give the number of active spatial orbitals (or use "
+                    "'best' for the k-sweep)."
+                ) from exc
+            method, block_size = "greedy", None
+            if tokens == ["brute"]:
+                method = "brute"
+            elif len(tokens) == 2 and tokens[0] == "block":
+                method, block_size = "block", int(tokens[1])
+            elif tokens not in ([], ["greedy"]):
+                raise tnass.TnassError(
+                    f"unknown method {method_text!r}. Next step: use 'greedy', "
+                    "'block K', 'brute', or 'best'."
+                )
+            section = tnass.run(
+                dump,
+                n_target=n_target,
+                method=method,
+                block_size=block_size,
+                reference_energy=reference,
+            )
+            suffix = ".tnass.fbk.md"
     except (ParserError, tnass.TnassError, OSError, ValueError) as exc:
         session.say(f"TNASS selection failed: {exc}")
         return
@@ -606,7 +622,7 @@ def tnass_select(session: Session) -> None:
     refs = references_section(tnass.evidence())
     if refs is not None:
         report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
-    md_path = Path(fcidump_text).with_name(Path(fcidump_text).name + ".tnass.fbk.md")
+    md_path = Path(fcidump_text).with_name(Path(fcidump_text).name + suffix)
     md_path.write_text(report_lines, encoding="utf-8")
     session.say(f"Report written: {md_path}")
 

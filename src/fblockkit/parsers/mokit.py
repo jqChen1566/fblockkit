@@ -28,8 +28,9 @@ MOKIT 1.2.8 (fixtures ``fixtures/mokit/``, 2026-09-30; H2O CASSCF probe with
 - the closing line ``Normal termination of AutoMR at <timestamp>``.
 
 Side products (``*_rhf.fch``, ``*_uno_asrot.fch``, ``*2gvb4_s.fch``,
-``*_CASSCF_NO.fch``, stage ``.dat`` files) are listed by the report but not
-parsed here (stated boundary).
+``*_CASSCF_NO.fch``, stage ``.dat`` files) are echoed by this reader from the
+run text; the ``.fch`` files themselves are parsed by
+``parsers/mokit_fch.py`` (menu 45's side-product section).
 """
 
 from __future__ import annotations

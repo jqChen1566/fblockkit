@@ -39,13 +39,13 @@ script (Section 8).
 ## 1 Check-up and characterisation (read an ORCA or Gaussian output)
 
 **What it is for**: turn one ORCA output file (deep analysis) -- or a
-Gaussian 09/16 output (the minimal fact set: termination, SCF, frequency and
-optimization facts) -- into an "analysis + diagnosis" report.
+Gaussian 09/16 output (the minimal fact set: termination, SCF, frequency,
+optimization and CASSCF facts) -- into an "analysis + diagnosis" report.
 
 **What you need**: an ORCA 6.x output file (`.out`/`.log`), or a Gaussian
 09/16 output; the diagnosis rules run off the shared fact vocabulary, so
 Gaussian files get the engine-independent checks (termination, SCF,
-frequencies, optimization) while ORCA-only analyses are skipped. The per-MO
+frequencies, optimization, CASSCF facts) while ORCA-only analyses are skipped. The per-MO
 composition analysis needs the `LOEWDIN ORBITAL-COMPOSITIONS` table in the
 ORCA output (add `%output Print[P_ReducedOrbPopMO_L] 1` to the input; it is
 printed at the normal print level); when the table is absent, that analysis
@@ -1213,13 +1213,17 @@ entropy and QICAS menus read), optionally the run's output for the energy
 cross-check, the target size (number of active spatial orbitals) and the
 method.
 
-**How**: menu 26 -> FCIDUMP path; output path (Enter = skip); target size;
-method (`greedy` default, `block K` for the block-greedy variant, `brute` for
-the exact search, capped at C(N,n) <= 20000).
+**How**: menu 26 -> FCIDUMP path; output path (Enter = skip); target size
+(ignored by `best`); method (`greedy` default, `block K` for the
+block-greedy variant, `brute` for the exact search, capped at
+C(N,n) <= 20000, `best` for the k-sweep ranked by the CASCI energy).
 
 **What you get**: the one-orbital S2 seed ranking, the step-by-step trace
 (each addition and the subset's S2), the resulting space with its electron
-count, and a report (`<FCIDUMP>.tnass.fbk.md`) with the citations.
+count, and a report (`<FCIDUMP>.tnass.fbk.md`) with the citations.  The
+`best` mode writes the k-sweep report (`<FCIDUMP>.tnass.bestk.fbk.md`):
+every prefix's subset, electron count and dressed-CASCI energy, the minimum
+and a compact pick.
 
 **How to read it**:
 
@@ -1237,9 +1241,15 @@ count, and a report (`<FCIDUMP>.tnass.fbk.md`) with the citations.
   window is small enough, and treat a greedy result as the source's practical
   approximation;
 - the subset is a spatial-orbital set (both spins together), matching the
-  source's selection domain; the source's best-k variant (choose k by the
-  CASCI energy) is registered as a follow-up -- run the menu at several target sizes
-  and compare;
+  source's selection domain; the source's best-k variant is the `best` mode:
+  one shared greedy path supplies every k's candidate, each prefix is scored
+  with a dressed CASCI (the complement carries its natural occupations as a
+  fractional closed-shell environment; the subset runs with round(sum w_i)
+  electrons), and the source selects k manually off the energy curve -- the
+  report carries the table, the minimum (the full window, by variational
+  monotonicity) and a compact pick (the smallest prefix within 1 mEh of the
+  minimum).  At k = N the environment is empty and the printed energy
+  reproduces the window's own FCI value bit for bit;
 - delivering the space to a CASSCF needs the orbital-order machinery (see
   menu 22's boundary note).
 
@@ -1470,9 +1480,11 @@ from one output.  What exists: the output's initial/final dominant-CSF
 snapshots, this menu's structured per-state energies and transitions, and --
 for identity fingerprints -- per-state dipoles from single-root runs (the
 menu-19 route) or per-root densities from the FIC-NEVPT2 sidecar (the menu-23
-chain); a tracker across a series built on those is a registered candidate
-increment.  The state-averaged dipole in the property file is one x/y/z
-vector (`State -1`), not a per-root table.
+chain).  Menu 49 is the tracker built on those: an ordered run sequence and a
+target root produce the per-step root-matching table, with per-root 1-RDM
+fingerprints from exports carrying `Densities: ["all"]` (its own section).
+The state-averaged dipole in the property file is one x/y/z vector
+(`State -1`), not a per-root table.
 
 ## 32 pysisyphus input (a structure + a method -> a PES-exploration YAML)
 
@@ -1603,7 +1615,17 @@ literature's 1e-32 m^3 unit), a g-matrix, or g + D/E/D -- each of these may
 also be read straight from an ORCA QDPT output (`orca_output:`); the menu's
 ORCA reader takes the effective-Hamiltonian g-matrix and the preferred ZFS
 variant (effective Hamiltonian with the spin-spin contribution when
-present).  The report is `<runfile>.pnmr.fbk.md`.
+present).  The report is `<runfile>.pnmr.fbk.md`.  Optionally answer the
+Bleaney-comparator questions (the Ln(III) ion, the axial crystal-field
+parameter `B_0^2` in cm^-1, and the temperature; Enter at the ion question
+skips the comparator, and Enter at the temperature keeps 300 K): the report
+then appends the analytic high-temperature `chi_ax` for comparison -- the
+source's one-source modern SI form and C_J table, anchored on a published
+lanthanide-tag table's signs and magnitude (the classical `C_Dy = -100`
+tabulation ships for the scale-bridge check, and the closed form
+`g_J^2 theta_2 J(J+1)(4J(J+1)-3)` reproduces the modern constants at their
+printed precision, giving the per-ion converter between the two scales; the
+entered `B_0^2` is not fitted here).
 
 **How to read it**:
 
@@ -1629,11 +1651,15 @@ present).  The report is `<runfile>.pnmr.fbk.md`.
   reproduces ORCA's own printed susceptibility to the printed precision.
 
 **Boundaries**: the contact shift is not computed (it needs hyperfine
-coupling); Bleaney's analytic anisotropy theory is registered as a
-construction (the ligand-field review's limits of it frame the menu's
-documentation; a Bleaney comparator is a registered candidate increment);
-the OpenMolcas-side g/chi data belong to the OpenMolcas chain (menus 1.4/
-0.5) when that deployment lands.
+coupling); Bleaney's analytic anisotropy theory is implemented as an
+optional comparator (`analysis/bleaney.py`): the source's one-source modern
+SI form and C_J table, with `B_0^2` entered in cm^-1, anchored on a
+published lanthanide-tag table's sign structure and magnitude, with the
+closed form `g_J^2 theta_2 J(J+1)(4J(J+1)-3)` converting between the two
+scales at the printed precision (the
+classical `C_Dy = -100` scale ships for the bridge check; the
+high-temperature limit applies); the OpenMolcas-side g/chi data belong to
+the OpenMolcas chain (menus 1.4/0.5) when that deployment lands.
 
 ## 36 Magnetic relaxation and QTM (an ORCA output with SINGLE_ANISO or MAGRELAX)
 
@@ -1688,9 +1714,10 @@ file with both gets both parts of the report, written as
 section 7.3 calls the UBAR-permutation picture "not realistic", and the
 empirical thresholds bound a plausible barrier rather than a measured one;
 the magnetic-dilution tau_QT model of the Aravena group (dipolar-field
-statistics; the source of the dilution design rules) is a registered
-candidate increment pending its closed-access papers; polynuclear exchange
-and the POLY_ANISO route belong to the multinuclear item (5.6).
+statistics; the source of the dilution design rules) is implemented as
+menu 46's dilution variant (probabilistic neighbours, seeded repeats at the
+median -- the tunnelling-prediction section); polynuclear exchange and the
+POLY_ANISO route belong to the multinuclear item (5.6).
 
 ## 37 Core-excited spectra XAS/RIXS (a ROCIS output / a structure -> XES or CAS-CI XAS inputs)
 
@@ -1767,12 +1794,16 @@ active space as `nel norb` (e.g. `6 5`), the step-1 root count, the core
 orbital indices to rotate in (0-based, read from the step-1 output's
 orbital table — an L-edge 2p sits near -700 eV; e.g. `6 7 8`), the step-2
 multiplicities and root counts (Enter = the ground multiplicity pair,
-`20,20`), the method keywords (Enter = `def2-SVP def2-SVP/C TightSCF`) and
-MaxCore.  Two inputs land: `<stem>.casci_xas.step1.inp` (the valence
-SA-CASSCF that writes the `.gbw`) and `<stem>.casci_xas.step2.inp` (MOREAD
-+ the `%scf rotate` of the core orbitals into the active window +
-`FrozenCore FC_NONE` + one CAS-CI iteration over the core-saturated space),
-with the checklist in `<stem>.casci_xas.fbk.md`.  The window selection is
+`20,20`), the method keywords (Enter = `def2-SVP def2-SVP/C TightSCF`), a
+parallel-process count (Enter = 8; both inputs then carry
+`%pal nprocs N end`) and MaxCore.  Two inputs land:
+`<stem>.casci_xas.step1.inp` (the valence SA-CASSCF that writes the `.gbw`)
+and `<stem>.casci_xas.step2.inp` (MOREAD + the `%scf rotate` of the core
+orbitals into the active window + `FrozenCore FC_NONE` + one CAS-CI
+iteration over the core-saturated space), with the checklist in
+`<stem>.casci_xas.fbk.md`.  The step-2 `%moinp` names the gbw the step-1
+run produces (`<stem>.casci_xas.step1.gbw`), so the pair runs as written.
+The window selection is
 positional (measured): the active window is the `norb` consecutive orbitals
 starting at `(N_electrons - nel)/2` — 42 for the [FeCl4]2- probe, 87 for
 the manual's own Fe(acac)3 example — and the rotations target its leading
@@ -1781,16 +1812,42 @@ on the probe, 0.5 eV from the ROCIS result of the same system); render
 them with `orca_mapspc <out> SOCABS ...` (785 peaks measured; `ABS` for
 the plain table — the `XAS`/`XASSOC` modes do not read these tables).
 
+**Writing the two-step RAS-CI XES inputs (mode 4)**: answer `4`, then give
+the structure XYZ path, the charge, the multiplicity, the step-1 valence
+active space (`nel norb`), the step-1 root count, the core orbital indices
+to rotate in (0-based, read from the step-1 output's orbital table — for
+K-beta emission the metal 1s and 3p, e.g. `0 26 27 28` for Fe; the 2p
+group, e.g. `6 7 8`, gives L-edge XES instead), the XASMOs index (Enter =
+the window head), the step-2 multiplicities (Enter = the ground pair), the
+step-2 root counts (Enter = `40,40`; 20 roots miss the K-beta core hole,
+and the manual's saturated `1000,1000` grows superlinearly in the QDPT
+transition-density stage — 290 states did not finish within 24 h, measured
+2026-10-03), the keywords, the process count and MaxCore.  The writer
+emits `<stem>.casci_xes.step1.inp` (identical to the CAS-CI XAS step-1
+input) plus `<stem>.casci_xes.step2.inp` (the rotated core set, the `refs
+ras` single-hole saturation, `XESSOC`), with the checklist in
+`<stem>.casci_xes.fbk.md`.  The probe run ([FeCl4]2-, K-beta) terminates
+in 8m44s and prints the emission blocks (the main 319→0 line at 7086.9 eV;
+the experimental Fe K-beta1 is 7058 eV); render with `orca_mapspc <out>
+XESSOC -w<fwhm> -eV -n<npoints>` (7375 peaks measured; the mode's own
+window 5000-7200 eV covers the K-beta region; the `ABS`/`SOCABS` modes do
+not read these tables).  Run step 2 in a fresh directory — stale
+transition-density residue under the same basename aborts the new run
+(measured).
+
 **Boundaries**: ROCIS applies several approximations (the manual says the
 results are qualitatively correct); the menu does not name the edge
 clusters (their assignment depends on the orbital windows), it reports the
-low/high clusters and the ratio.  The six-element `OrbWin` semantics of a
-successful RIXS run were not established in this round's probing (the
-measured variants were refused or crashed); generating RIXS inputs is a
-registered candidate increment.  The CAS-CI/RAS-CI XAS protocol
-(section 3.13.18: rotate the core orbitals in, `FrozenCore FC_NONE`,
-`maxiter 1`) is documented in the manual chapter but this menu reads ROCIS
-outputs only.
+low/high clusters and the ratio.  The six-element `OrbWin` semantics are
+measured (the mode-2 writer asks for that window): the first four elements
+are the two donor ranges, the last two the acceptor range — the
+spin-orbit-split core donors with a wide acceptor open the RIXS channels,
+a valence donor range first gives the engine's zero-states refusal, and the
+plain RIXS channel carries the XES table (the manual chapter holds the full
+record).  The CAS-CI/RAS-CI protocol (section 3.13.18: rotate the core
+orbitals in, `FrozenCore FC_NONE`, `maxiter 1`) is generated by mode 3; its
+output tables are rendered with `orca_mapspc`, not parsed by this menu
+(the reading mode covers ROCIS tables).
 
 ## 38 Ab initio ligand-field analysis (an AILFT output)
 
@@ -2103,8 +2160,10 @@ The report is `<output>.mokit.fbk.md`.
   `Normal termination of AutoMR` line state the run's state; without the
   closing line, every number is partial.
 
-**Boundaries**: the natural-orbital `.fch` side products are listed for
-the audit trail but not parsed.  Cited form: "Jingxiang Zou, Molecular
+**Boundaries**: the natural-orbital `.fch` side products are read back
+when they sit next to the output (stage notes are derived from MOKIT's
+file naming; the format carries no occupation numbers; coordinates are
+reported in Bohr as stored).  Cited form: "Jingxiang Zou, Molecular
 Orbital Kit (MOKIT)" (no program paper).
 
 ## 46 Quantum-tunnelling relaxation prediction

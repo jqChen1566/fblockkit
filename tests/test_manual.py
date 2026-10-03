@@ -242,6 +242,12 @@ def _prepare_work() -> None:
         REPO / "fixtures" / "mokit" / "h2o_generated_automr.out",
         work / "h2o_generated_automr.out",
     )
+    for name in (
+        "h2o_gvb_rhf.fch",
+        "h2o_gvb_uhf_gvb4_CASSCF_NO.fch",
+        "h2o_gvb_uhf_uno_asrot2gvb4.fch",
+    ):
+        shutil.copy(REPO / "fixtures" / "mokit" / name, work / name)
     # the menu-46 tunnelling fixture: the constructed neighbour-table probe
     shutil.copy(
         REPO / "fixtures" / "qtm" / "neighbours_example.txt",

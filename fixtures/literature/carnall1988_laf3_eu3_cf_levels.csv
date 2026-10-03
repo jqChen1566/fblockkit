@@ -1,0 +1,94 @@
+# Source: W. T. Carnall, G. L. Goodman, K. Rajnak, R. S. Rana,
+#   "A systematic analysis of the spectra of the lanthanides doped into single crystal LaF3",
+#   Argonne National Laboratory report ANL-88-8 (February 1988), Appendix V, pp. 102-105.
+# DOI: 10.2172/6995771 (OSTI) ; OSTI full-text: https://www.osti.gov/servlets/purl/6995771
+# Table: Appendix V, "Experimental and Computed Energy Level Structure for Eu3+:LaF3" (12 J-states, 78 CF components).
+# Digitized: 2026-10-03 (fBlockKit anchor-digitization), from the OSTI PDF (152 pp.).
+# Method: MinerU 4.0.10 (advanced/hybrid-OCR) markdown conversion, cross-checked cell-by-cell against
+#   180-dpi page renders (PDF pages 109-112) and against pypdf raw text layer. No interpolation, no estimates:
+#   every value is taken from the printed table. Rows where the original omits repeated leading digits
+#   (e.g. 21507 -> 512) are expanded by the table convention and flagged in obsd_note (raw form kept in obsd_raw_repr).
+#   "-" entries = no experimental value printed (not observed). Parenthesized values were excluded from the fit.
+# Columns: state (SLJ), component_index (within state, as printed), energy_obsd_cm1 (observed, vacuum cm-1),
+#   obsd_raw_repr (as printed), obsd_note, species (C2v symmetry species as printed; subscript in parentheses
+#   = calculated differs from experimental assignment), model_calc_cm1, fit_calc_cm1.
+# Units: vacuum cm-1.  Ground state 7F0 taken as 0; computed values are relative to the same origin.
+state,component_index,energy_obsd_cm1,obsd_raw_repr,obsd_note,species,model_calc_cm1,fit_calc_cm1
+7F0,1,0,0,,A_1,-10,-13
+7F1,1,313,313,,A_2,318,318
+7F1,2,375,375,,B_1(2),375,372
+7F1,3,415,415,,B_2(1),414,412
+7F2,1,964,964,,A_1,940,943
+7F2,2,,-,not observed (no entry in original),B_(1),975,974
+7F2,3,997,997,,A_1,1011,1012
+7F2,4,,-,not observed (no entry in original),A_(2),1109,1110
+7F2,5,1098,1098,,B_2,1118,1118
+7F3,1,,-,not observed (no entry in original),B_(2),1834,1839
+7F3,2,1843,1843,,B_1,1852,1855
+7F3,3,1867,1867,,A_1(2),1861,1866
+7F3,4,1884,1884,,A_2(1),1888,1893
+7F3,5,1889,1889,,B_1(2),1892,1894
+7F3,6,1908,1908,,A_2,1923,1919
+7F3,7,1996,1996,,B_2(1),2007,2010
+7F4,1,2614,2614,,B_1(2),2582,2593
+7F4,2,2788,2788,,A_1(2),2769,2768
+7F4,3,2852,2852,,A_2(1),2816,2822
+7F4,4,2873,2873,,B_2(1),2880,2896
+7F4,5,2926,2926,,B_2,2890,2900
+7F4,6,2894,(2894),parenthesized in original; not included in the parameter fit,A_1,2966,2972
+7F4,7,,-,not observed (no entry in original),A_(2),2988,2987
+7F4,8,3047,3047,,B_1,3060,3065
+7F4,9,3068,3068,,A_2(1),3077,3075
+7F5,1,,-,not observed (no entry in original),B_(2),3775,3787
+7F5,2,,-,not observed (no entry in original),B_(1),3800,3809
+7F5,3,,-,not observed (no entry in original),A_(1),3864,3873
+7F5,4,,-,not observed (no entry in original),A_(2),3921,3931
+7F5,5,,-,not observed (no entry in original),A_(2),3991,3995
+7F5,6,,-,not observed (no entry in original),B_(2),3994,4005
+7F5,7,,-,not observed (no entry in original),B_(2),4035,4036
+7F5,8,,-,not observed (no entry in original),A_(1),4050,4056
+7F5,9,,-,not observed (no entry in original),B_(1),4052,4061
+7F5,10,,-,not observed (no entry in original),A_(2),4098,4096
+7F5,11,,-,not observed (no entry in original),B_(1),4102,4109
+7F6,1,,-,not observed (no entry in original),A_(1),4919,4934
+7F6,2,,-,not observed (no entry in original),A_(2),4935,4950
+7F6,3,,-,not observed (no entry in original),B_(2),5000,5012
+7F6,4,,-,not observed (no entry in original),B_(1),5027,5039
+7F6,5,,-,not observed (no entry in original),A_(1),5035,5046
+7F6,6,,-,not observed (no entry in original),B_(1),5036,5046
+7F6,7,,-,not observed (no entry in original),A_(1),5112,5124
+7F6,8,,-,not observed (no entry in original),B_(2),5120,5129
+7F6,9,,-,not observed (no entry in original),A_(2),5123,5130
+7F6,10,,-,not observed (no entry in original),B(2),5140,5151
+7F6,11,,-,not observed (no entry in original),A(2),5159,5168
+7F6,12,,-,not observed (no entry in original),A(1),5167,5176
+7F6,13,,-,not observed (no entry in original),B(1),5174,5182
+5D0,1,17293,17293,,A_1,17296,17294
+5D1,1,19043,19043,,A_2,19037,19034
+5D1,2,19056,056,leading digits omitted in original; expanded to 19056 by table convention,B_2,19055,19052
+5D1,3,19063,063,leading digits omitted in original; expanded to 19063 by table convention,B_1,19066,19064
+5D2,1,21507,21507,,B_1(2),21512,21512
+5D2,2,21512,512,leading digits omitted in original; expanded to 21512 by table convention,A_1(2),21525,21525
+5D2,3,21532,532,leading digits omitted in original; expanded to 21532 by table convention,B_2(1),21538,21539
+5D2,4,21541,21541,,A_1,21532,21532
+5D2,5,21565,565,leading digits omitted in original; expanded to 21565 by table convention,A_2(1),21561,21562
+5D3,1,,-,not observed (no entry in original),B(2),,24398
+5D3,2,,-,not observed (no entry in original),A(2),,24415
+5D3,3,,-,not observed (no entry in original),B(2),,24422
+5D3,4,,-,not observed (no entry in original),B(1),,24429
+5D3,5,,-,not observed (no entry in original),B(1),,24439
+5D3,6,,-,not observed (no entry in original),A(1),,24445
+5D3,7,,-,not observed (no entry in original),A(2),,24449
+5L6,1,,-,not observed (no entry in original),A(2),,25067
+5L6,2,,-,not observed (no entry in original),A(1),,25095
+5L6,3,,-,not observed (no entry in original),B(1),,25098
+5L6,4,,-,not observed (no entry in original),B(2),,25144
+5L6,5,,-,not observed (no entry in original),A(1),,25188
+5L6,6,,-,not observed (no entry in original),B(1),,25238
+5L6,7,,-,not observed (no entry in original),A(2),,25245
+5L6,8,,-,not observed (no entry in original),B(2),,25256
+5L6,9,,-,not observed (no entry in original),A(1),,25375
+5L6,10,,-,not observed (no entry in original),B(2),,25390
+5L6,11,,-,not observed (no entry in original),B(1),,25394
+5L6,12,,-,not observed (no entry in original),A(2),,25408
+5L6,13,,-,not observed (no entry in original),A(1),,25464

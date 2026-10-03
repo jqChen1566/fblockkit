@@ -16,5 +16,5 @@ CASSCF state data from n2_sa.property.txt
 Boundaries (the availability survey):
   - the CI vectors are not persistable (run-time temporaries only; the .cis file belongs to the CIS/STEOM modules), so state identity along a series cannot be read from one output;
   - the .out side prints the per-root dominant CSF occupations twice (initial state check and final states block), and this property file adds the structured per-state energies and transitions;
-  - per-state observables for identity tracking: single-root runs carry the per-state dipole (the menu-19 route), the FIC-NEVPT2 sidecar carries per-root densities (the menu-23 chain) -- a tracker across a series is registered as a candidate increment;
+  - per-state observables for identity tracking: single-root runs carry the per-state dipole (the menu-19 route), the FIC-NEVPT2 sidecar carries per-root densities (the menu-23 chain) -- the cross-run tracker is menu 49;
   - the absorption columns are the measured layout [eV, cm-1, nm, fosc, D2, DX(re,im), DY(re,im), DZ(re,im)] (nonzero probes); a SOC run's duplicate section is read at its highest &RelCorrection, and the magnetic-dipole data live in the separate ECD section (not shown here).

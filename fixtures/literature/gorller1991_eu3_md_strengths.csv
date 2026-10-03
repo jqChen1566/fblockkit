@@ -1,0 +1,93 @@
+# Source: C. Gorller-Walrand, L. Fluyt, A. Ceulemans, W. T. Carnall,
+#   "Magnetic dipole transitions as standards for Judd-Ofelt parametrization in
+#    lanthanide spectra", J. Chem. Phys. 95, 3099-3106 (1991).
+# DOI: 10.1063/1.460867
+# Digitized: 2026-10-03 (fBlockKit anchor-digitization).
+# Method: MinerU 4.0.10 markdown (HTML table), cross-checked against 170-dpi page
+#   renders (pages 3104/3105 = PDF pp. 6-7) and a 700-900 dpi crop for the disputed cell.
+#   Every number is the printed value; no interpolation, no estimates, no corrections.
+# Table: TABLE IV, calculated magnetic dipole strengths D (in 1e-7 D^2), intermediate
+#   coupling (IC) and J-mixing (JJ) schemes, five symmetry environments.
+#   SUM* = 2 D(pi) + D(sigma) (paper definition).
+# Self-check (this digitization): SUM vs 2*sum_pi + sum_sigma recomputed for all blocks;
+#   29/30 rows agree within +-0.01. Two known deviations, both printed as such in the paper:
+#   (1) D3(YAl3(BO3)4)/Eu3+ | 5D1<-7F0 | IC: 2*6.13+6.50 = 18.76 vs printed SUM 19.12 (delta 0.36);
+#       verified against a 700 dpi crop of the original page (6.13 and 19.12 both printed exactly).
+#   (2) C3v (fictitious) | 5D2<-7F1 | IC: 2*2.95+2.93 = 8.83 vs printed 8.85 (delta 0.02, rounding level).
+# Mean theoretical values quoted in the paper: 18, 94, 9 (1e-7 D^2) for 5D1<-7F0, 5D0<-7F1,
+#   5D2<-7F1, respectively.
+# Columns: symmetry, transition, cf_transition (or SUM*), kind (line|SUM), D_IC, D_JJ.
+symmetry,transition,cf_transition,kind,D_IC,D_JJ
+D2d (LiYF4/Eu3+),5D1 <- 7F0,Gamma_5 <- Gamma_1 (pi),line,6.09,6.92
+D2d (LiYF4/Eu3+),5D1 <- 7F0,Gamma_2 <- Gamma_1 (sigma),line,6.29,4.46
+D2d (LiYF4/Eu3+),5D1 <- 7F0,SUM*,SUM,18.47,18.30
+D2d (LiYF4/Eu3+),5D0 <- 7F1,Gamma_1 <- Gamma_2 (sigma),line,31.23,30.61
+D2d (LiYF4/Eu3+),5D0 <- 7F1,Gamma_1 <- Gamma_5 (pi),line,31.56,30.84
+D2d (LiYF4/Eu3+),5D0 <- 7F1,SUM*,SUM,94.35,92.29
+D2d (LiYF4/Eu3+),5D2 <- 7F1,Gamma_1 <- Gamma_2 (sigma),line,1.17,0.37
+D2d (LiYF4/Eu3+),5D2 <- 7F1,Gamma_5 <- Gamma_2 (pi),line,0.87,1.46
+D2d (LiYF4/Eu3+),5D2 <- 7F1,Gamma_3 <- Gamma_5 (pi),line,0.87,0.27
+D2d (LiYF4/Eu3+),5D2 <- 7F1,Gamma_1 <- Gamma_5 (pi),line,0.31,0.23
+D2d (LiYF4/Eu3+),5D2 <- 7F1,Gamma_5 <- Gamma_5 (sigma),line,1.82,1.81
+D2d (LiYF4/Eu3+),5D2 <- 7F1,Gamma_4 <- Gamma_5 (pi),line,0.88,1.73
+D2d (LiYF4/Eu3+),5D2 <- 7F1,SUM*,SUM,8.85,9.56
+D3 (EuODA),5D2 <- 7F1,Gamma_3 <- Gamma_3 (pi),line,1.07,0.63
+D3 (EuODA),5D2 <- 7F1,Gamma_3 <- Gamma_3 (sigma),line,0.56,0.33
+D3 (EuODA),5D2 <- 7F1,Gamma_1 <- Gamma_3 (pi),line,0.27,0.18
+D3 (EuODA),5D2 <- 7F1,Gamma_3' <- Gamma_3 (pi),line,0.56,1.00
+D3 (EuODA),5D2 <- 7F1,Gamma_3' <- Gamma_3 (sigma),line,1.09,1.78
+D3 (EuODA),5D2 <- 7F1,SUM*,SUM,8.17,8.57
+D3 (EuODA),5D1 <- 7F0,Gamma_3 <- Gamma_1 (pi),line,5.99,6.00
+D3 (EuODA),5D1 <- 7F0,Gamma_2 <- Gamma_1 (sigma),line,6.01,5.86
+D3 (EuODA),5D1 <- 7F0,SUM*,SUM,17.99,17.86
+D3 (EuODA),5D0 <- 7F1,Gamma_1 <- Gamma_2 (sigma),line,31.39,30.99
+D3 (EuODA),5D0 <- 7F1,Gamma_1 <- Gamma_3 (pi),line,31.42,31.04
+D3 (EuODA),5D0 <- 7F1,SUM*,SUM,94.23,93.07
+D3 (EuODA),5D2 <- 7F1,Gamma_1 <- Gamma_2 (sigma),line,1.08,0.74
+D3 (EuODA),5D2 <- 7F1,Gamma_3 <- Gamma_2 (pi),line,0.28,0.17
+D3 (EuODA),5D2 <- 7F1,Gamma_3' <- Gamma_2 (pi),line,0.54,0.88
+C3v (Eu2Mg3(NO3)12.24H2O),5D1 <- 7F0,Gamma_2 <- Gamma_1 (sigma),line,5.94,7.01
+C3v (Eu2Mg3(NO3)12.24H2O),5D1 <- 7F0,Gamma_3 <- Gamma_1 (pi),line,6.01,5.51
+C3v (Eu2Mg3(NO3)12.24H2O),5D1 <- 7F0,SUM*,SUM,17.96,18.03
+C3v (Eu2Mg3(NO3)12.24H2O),5D0 <- 7F1,Gamma_1 <- Gamma_3 (pi),line,31.83,31.62
+C3v (Eu2Mg3(NO3)12.24H2O),5D0 <- 7F1,Gamma_1 <- Gamma_2 (sigma),line,31.97,31.52
+C3v (Eu2Mg3(NO3)12.24H2O),5D0 <- 7F1,SUM*,SUM,95.63,94.76
+C3v (Eu2Mg3(NO3)12.24H2O),5D2 <- 7F1,Gamma_3 <- Gamma_3 (pi),line,0.70,0.46
+C3v (Eu2Mg3(NO3)12.24H2O),5D2 <- 7F1,Gamma_3 <- Gamma_3 (sigma),line,0.89,0.89
+C3v (Eu2Mg3(NO3)12.24H2O),5D2 <- 7F1,Gamma_1 <- Gamma_3 (pi),line,0.26,0.23
+C3v (Eu2Mg3(NO3)12.24H2O),5D2 <- 7F1,Gamma_3' <- Gamma_3 (pi),line,0.90,1.11
+C3v (Eu2Mg3(NO3)12.24H2O),5D2 <- 7F1,Gamma_3' <- Gamma_3 (sigma),line,0.69,1.01
+C3v (Eu2Mg3(NO3)12.24H2O),5D2 <- 7F1,Gamma_3 <- Gamma_2 (pi),line,0.45,0.32
+C3v (Eu2Mg3(NO3)12.24H2O),5D2 <- 7F1,Gamma_1 <- Gamma_2 (sigma),line,1.07,1.32
+C3v (Eu2Mg3(NO3)12.24H2O),5D2 <- 7F1,Gamma_3' <- Gamma_2 (pi),line,0.35,0.37
+C3v (Eu2Mg3(NO3)12.24H2O),5D2 <- 7F1,SUM*,SUM,7.97,8.20
+D3 (YAl3(BO3)4)/Eu3+,5D1 <- 7F0,Gamma_3 <- Gamma_1 (pi),line,6.13,7.90
+D3 (YAl3(BO3)4)/Eu3+,5D1 <- 7F0,Gamma_2 <- Gamma_1 (sigma),line,6.50,3.19
+D3 (YAl3(BO3)4)/Eu3+,5D1 <- 7F0,SUM*,SUM,19.12,18.99
+D3 (YAl3(BO3)4)/Eu3+,5D0 <- 7F1,Gamma_1 <- Gamma_2 (sigma),line,32.12,31.91
+D3 (YAl3(BO3)4)/Eu3+,5D0 <- 7F1,Gamma_1 <- Gamma_3 (pi),line,32.78,31.77
+D3 (YAl3(BO3)4)/Eu3+,5D0 <- 7F1,SUM*,SUM,97.68,95.45
+D3 (YAl3(BO3)4)/Eu3+,5D2 <- 7F1,Gamma_1 <- Gamma_2 (sigma),line,1.17,0.51
+D3 (YAl3(BO3)4)/Eu3+,5D2 <- 7F1,Gamma_3' <- Gamma_2 (pi),line,0.25,0.20
+D3 (YAl3(BO3)4)/Eu3+,5D2 <- 7F1,Gamma_3' <- Gamma_2 (pi),line,0.60,1.27
+D3 (YAl3(BO3)4)/Eu3+,5D2 <- 7F1,Gamma_3' <- Gamma_3 (pi),line,1.21,0.99
+D3 (YAl3(BO3)4)/Eu3+,5D2 <- 7F1,Gamma_3' <- Gamma_3 (sigma),line,0.56,0.10
+D3 (YAl3(BO3)4)/Eu3+,5D2 <- 7F1,Gamma_1 <- Gamma_3 (pi),line,0.32,0.44
+D3 (YAl3(BO3)4)/Eu3+,5D2 <- 7F1,Gamma_3' <- Gamma_3 (pi),line,0.53,1.06
+D3 (YAl3(BO3)4)/Eu3+,5D2 <- 7F1,Gamma_3' <- Gamma_3 (sigma),line,1.32,1.00
+D3 (YAl3(BO3)4)/Eu3+,5D2 <- 7F1,SUM*,SUM,8.87,9.53
+C3v (fictitious case),5D1 <- 7F0,Gamma_2 <- Gamma_1 (sigma),line,6.11,7.20
+C3v (fictitious case),5D1 <- 7F0,Gamma_3 <- Gamma_1 (pi),line,6.18,5.68
+C3v (fictitious case),5D1 <- 7F0,SUM*,SUM,18.47,18.56
+C3v (fictitious case),5D0 <- 7F1,Gamma_1 <- Gamma_3 (pi),line,31.41,31.18
+C3v (fictitious case),5D0 <- 7F1,Gamma_1 <- Gamma_2 (sigma),line,31.53,31.09
+C3v (fictitious case),5D0 <- 7F1,SUM*,SUM,94.35,93.45
+C3v (fictitious case),5D2 <- 7F1,Gamma_3 <- Gamma_3 (pi),line,0.74,0.48
+C3v (fictitious case),5D2 <- 7F1,Gamma_3 <- Gamma_3 (sigma),line,1.01,1.04
+C3v (fictitious case),5D2 <- 7F1,Gamma_1 <- Gamma_3 (pi),line,0.29,0.26
+C3v (fictitious case),5D2 <- 7F1,Gamma_3' <- Gamma_3 (pi),line,1.03,1.26
+C3v (fictitious case),5D2 <- 7F1,Gamma_3' <- Gamma_3 (sigma),line,0.74,1.04
+C3v (fictitious case),5D2 <- 7F1,Gamma_3 <- Gamma_2 (pi),line,0.51,0.38
+C3v (fictitious case),5D2 <- 7F1,Gamma_1 <- Gamma_2 (sigma),line,1.18,1.44
+C3v (fictitious case),5D2 <- 7F1,Gamma_3' <- Gamma_2 (pi),line,0.38,0.39
+C3v (fictitious case),5D2 <- 7F1,SUM*,SUM,8.85,9.06

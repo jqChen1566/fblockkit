@@ -93,10 +93,15 @@ eigenframe, and $\delta_{\mathrm{PCS}}$ in ppm -- plus the report file.
     ORCA's own printed value to the printed precision (0.3759 from CO$^+$,
     both routes).
   \item \textbf{Boundaries}: the contact shift is not computed (hyperfine
-    coupling needed); Bleaney's analytic anisotropy theory is documented as
-    context with a registered candidate construction;
-    OpenMolcas-side g/$\chi$ data belong to the OpenMolcas chain (menu 1.4,
-    deployment 0.5).
+    coupling needed); Bleaney's analytic anisotropy theory is implemented as
+    an optional comparator (one-source modern SI form with its $C_J$ table,
+    $B_0^2$ entered in cm$^{-1}$; anchored on a published lanthanide-tag
+    table's sign structure and magnitude; the classical $C_{\mathrm{Dy}} =
+    -100$ scale ships for the bridge check and the closed form
+    $g_J^2\,\theta_2\,J(J+1)(4J(J+1)-3)$ converts between the two scales
+    (matching the modern constants at their printed precision); the
+    high-temperature limit applies); OpenMolcas-side g/$\chi$ data belong to the OpenMolcas chain
+    (menu 1.4, deployment 0.5).
 \end{itemize}
 \end{readbox}
 

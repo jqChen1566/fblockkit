@@ -1,0 +1,26 @@
+# Source: W. T. Carnall, H. Crosswhite, H. M. Crosswhite,
+#   "Energy level structure and transition probabilities in the spectra of the
+#    trivalent lanthanides in LaF3", Argonne National Laboratory report
+#    ANL-78-XX-95 (1978). DOI: 10.2172/6417825 ; OSTI: https://www.osti.gov/biblio/6417825
+# Table: APPENDIX XIV - TABLE 1, "Calculated Values of Omega_lambda for Ln3+:LaF3" (p. ~193 of PDF).
+# Digitized: 2026-10-03 (fBlockKit anchor-digitization).
+# Method: PDF text layer extraction programmatically asserted equal to 170-dpi page-render
+#   values read cell-by-cell (double-source check, 33/33). Values as printed, no interpolation.
+# Units: 1e-20 cm^2 (fitted Judd-Ofelt intensity parameters, Omega_2/4/6).
+# source_ref letters (footnote of the original table): a=Krupke(1966);
+#   b=Approximate values from present work (ANL-78-XX-95); c=Weber(1967a);
+#   d=Krupke(1974); e=Weber et al.(1972); f=Weber(1967b); g=Weber(1967c);
+#   h=Pappalardo(1976).  Ce3+ and Yb3+ are not listed in the original table.
+# Columns: ion, Omega2, Omega4, Omega6, source_ref.
+ion,Omega2,Omega4,Omega6,source_ref
+Pr3+,0.12,1.77,4.78,a
+Nd3+,0.35,2.57,2.50,a
+Pm3+,0.5,1.9,2.2,b
+Sm3+,1.0,0.5,1.5,b
+Eu3+,1.19,1.16,0.39,c
+Gd3+,1.1,1.2,0.5,b
+Tb3+,1.1,1.4,0.9,b
+Dy3+,1.1,1.4,0.9,"b,d"
+Ho3+,1.16,1.38,0.88,e
+Er3+,1.07,0.28,0.63,f
+Tm3+,0.52,0.59,0.22,"b,g,h"

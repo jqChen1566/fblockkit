@@ -36,8 +36,8 @@ window.
 
 The regression anchors: the one-orbital ``S2`` reproduces
 ``-log(sum_k w_k^2)`` from the four-state weights (the menu-12 densities) to
-1e-12; the two-orbital ``S2`` reproduces the purity assembled independently
-from the spin-resolved 2-RDM; the full-window subset has ``S2 = 0`` (a pure
+1e-12; the single-orbital ``S2`` reproduces the purity assembled independently
+from the spin-resolved 2-RDM (the two-orbital values are pinned alongside); the full-window subset has ``S2 = 0`` (a pure
 state); and on the benzene pi platform the greedy four-orbital selection lands
 on the strongly entangled quartet of the manifold (the exact values are pinned
 in the tests).
@@ -61,19 +61,29 @@ __all__ = [
     "BRUTE_FORCE_CAP",
     "GreedyStep",
     "TnassResult",
+    "BestKEntry",
+    "BestKResult",
     "renyi2_entropy",
     "greedy_selection",
     "block_greedy_selection",
     "brute_selection",
     "analyze",
+    "best_k_sweep",
     "render",
+    "render_best_k",
     "run",
+    "run_best_k",
     "evidence",
 ]
 
 #: The exact combinatorial search is capped at this many subsets (the source's
 #: brute force scales as C(N, n); beyond the cap the greedy family is the route).
 BRUTE_FORCE_CAP = 20000
+
+#: The best-k sweep's compact-pick tolerance: the smallest prefix within this
+#: energy of the sweep minimum (this tool's convenience; the source selects k
+#: manually off the energy curve).
+COMPACT_TOLERANCE_EH = 1e-3
 
 
 class TnassError(ValueError):
@@ -310,7 +320,173 @@ def analyze(
     )
 
 
-# --- output -------------------------------------------------------------------
+# --- the best-k sweep (the source's energy-ranked variant) --------------------
+
+
+@dataclass(frozen=True)
+class BestKEntry:
+    """One rankable prefix of the selection path: its subset and energy."""
+
+    k: int
+    subset: tuple[int, ...]
+    n_electrons: int
+    energy: float
+
+
+@dataclass(frozen=True)
+class BestKResult:
+    """The k-sweep: every rankable prefix, the winner, the compact pick, the skips."""
+
+    method: str
+    entries: tuple[BestKEntry, ...]
+    best: BestKEntry
+    compact: BestKEntry
+    skipped: tuple[tuple[int, str], ...]
+
+
+def subset_casci_energy(
+    dump: Fcidump, occupations: list[float], subset: tuple[int, ...]
+) -> tuple[int, float]:
+    """The dressed CASCI energy of one subset (the best-k ranking's kernel).
+
+    The convention (stated in the report; the source's main text leaves the
+    environment treatment to its CASCI implementation): the complement of the
+    subset enters as a fractional closed-shell environment carrying its
+    natural occupations ``w_i`` (the exact CI's spin-summed occupations of the
+    window):
+
+        h'_pq = h_pq + 1/2 sum_i w_i [2 (pq|ii) - (pi|qi)]
+        E_core' = E_core + sum_i w_i h_ii
+                  + 1/4 sum_ij w_i w_j [2 (ii|jj) - (ij|ji)]
+
+    for ``p, q`` in the subset and ``i, j`` in its complement; the subset CI
+    itself then runs with ``n_A = round(sum_i-in-A w_i)`` electrons in the
+    minimal ``|Ms|`` sector of that count.  At the full window the environment
+    is empty and the energy is the window's own FCI energy bit for bit -- the
+    identity the test suite pins.  Returns ``(n_A, E(A))``.
+    """
+    norb = dump.norb
+    if not subset:
+        raise TnassError("the empty subset has no CASCI energy.")
+    if len(set(subset)) != len(subset):
+        raise TnassError(
+            f"the subset {subset} repeats an index. Next step: give each "
+            "orbital once."
+        )
+    subset_set = set(subset)
+    complement = [i for i in range(norb) if i not in subset_set]
+    n_a = int(round(sum(occupations[i] for i in subset)))
+    if n_a < 1:
+        raise TnassError(
+            f"the subset carries {n_a} electrons at the natural occupations; the "
+            "CASCI is not physical. Next step: rank a larger prefix."
+        )
+    position = {orbital: index for index, orbital in enumerate(subset)}
+    size = len(subset)
+    h_new = [[0.0] * size for _ in range(size)]
+    for p in subset:
+        for q in subset:
+            value = dump.h[p][q]
+            for i in complement:
+                weight = occupations[i]
+                if weight:
+                    value += 0.5 * weight * (
+                        2.0 * dump.g.get((p, q, i, i), 0.0)
+                        - dump.g.get((p, i, q, i), 0.0)
+                    )
+            h_new[position[p]][position[q]] = value
+    ecore = dump.ecore
+    for i in complement:
+        weight = occupations[i]
+        if not weight:
+            continue
+        ecore += weight * dump.h[i][i]
+        for j in complement:
+            weight_j = occupations[j]
+            if weight_j:
+                ecore += 0.25 * weight * weight_j * (
+                    2.0 * dump.g.get((i, i, j, j), 0.0)
+                    - dump.g.get((i, j, j, i), 0.0)
+                )
+    g_new = {
+        (position[p], position[q], position[r], position[s]): value
+        for (p, q, r, s), value in dump.g.items()
+        if p in subset_set and q in subset_set and r in subset_set and s in subset_set
+    }
+    sub_dump = Fcidump(
+        norb=size,
+        nelec=n_a,
+        ms2=n_a % 2,
+        ecore=ecore,
+        h=tuple(tuple(row) for row in h_new),
+        g=g_new,
+        orbsym=tuple(1 for _ in subset),
+        isym=1,
+    )
+    state = _solve(sub_dump, None)
+    return n_a, float(state.energy_total)
+
+
+def best_k_sweep(
+    dump: Fcidump,
+    *,
+    method: str = "greedy",
+    block_size: int | None = None,
+    reference_energy: float | None = None,
+) -> BestKResult:
+    """The source's best-k variant: rank the selection path's prefixes by energy.
+
+    The greedy path is prefix-consistent, so one full run to ``norb`` yields
+    the candidate subset for every ``k``; each prefix is then scored with
+    :func:`subset_casci_energy` and the lowest energy wins.  ``method``:
+    ``"greedy"`` (Eq. 11) or ``"block"`` (with ``block_size``).
+    """
+    state = _solve(dump, reference_energy)
+    if method == "greedy" and block_size is None:
+        label = "greedy"
+        steps = greedy_selection(state, dump.norb)
+    elif method == "block":
+        if block_size is None:
+            raise TnassError("the block method needs a block size.")
+        label = f"block greedy (k={block_size})"
+        steps = block_greedy_selection(state, dump.norb, block_size)
+    else:
+        raise TnassError(
+            f"unknown method {method!r} for the best-k sweep; use 'greedy' or "
+            "'block' (with a block size)."
+        )
+    densities = entropy_rdm.spin_densities(state)
+    occupations = [
+        float(densities.gamma_a[i, i] + densities.gamma_b[i, i]) for i in range(dump.norb)
+    ]
+    entries: list[BestKEntry] = []
+    skipped: list[tuple[int, str]] = []
+    for step in steps:
+        n_a = int(round(sum(occupations[i] for i in step.subset)))
+        if n_a < 1:
+            skipped.append((len(step.subset), f"the prefix carries {n_a} electrons"))
+            continue
+        _, energy = subset_casci_energy(dump, occupations, step.subset)
+        entries.append(
+            BestKEntry(k=len(step.subset), subset=step.subset, n_electrons=n_a, energy=energy)
+        )
+    if not entries:
+        raise TnassError(
+            "no prefix of the selection path carries a positive electron count; the "
+            "best-k ranking has no candidates. Next step: check the window's natural "
+            "occupations."
+        )
+    best = min(entries, key=lambda entry: entry.energy)
+    compact = next(
+        entry for entry in entries if entry.energy <= best.energy + COMPACT_TOLERANCE_EH
+    )
+    return BestKResult(
+        method=label,
+        entries=tuple(entries),
+        best=best,
+        compact=compact,
+        skipped=tuple(skipped),
+    )
 
 
 def render(result: TnassResult) -> str:
@@ -344,8 +520,9 @@ def render(result: TnassResult) -> str:
         "(its useful bond dimensions are 4-6) -- there is no bond-dimension "
         "truncation here, but the window boundary is the restriction instead",
         "the selection maximizes the bipartition entanglement with the window "
-        "complement; the source's best-k variant (choose k by the CASCI energy) is "
-        "not implemented -- run the menu at several target sizes and compare",
+        "complement; the source's best-k variant is the menu's 'best' method (the "
+        "selection path's prefixes ranked by the CASCI energy -- see that report "
+        "for the environment convention)",
         "the subset is a spatial-orbital set (both spins travel together), matching "
         "the source's selection domain",
         "delivering the space to a CASSCF needs the orbital-order machinery "
@@ -360,6 +537,65 @@ def run(dump: Fcidump, **kwargs) -> ReportSection:
     return ReportSection(
         title="TNASS selection (Renyi-2 bipartition)",
         body=render(analyze(dump, **kwargs)),
+    )
+
+
+def render_best_k(result: BestKResult) -> str:
+    """The k-sweep table and the winning space."""
+    lines = [
+        "TNASS best-k sweep (the selection path's prefixes ranked by the CASCI energy):",
+        f"  method: {result.method}; k = 1..{max(entry.k for entry in result.entries)} of "
+        "the window's spatial orbitals",
+        "",
+        f"  {'k':>3}  {'subset':<24}  {'n_elec':>6}  {'E(k) [Eh]':>16}  {'dE [mEh]':>9}",
+    ]
+    best_energy = result.best.energy
+    for entry in result.entries:
+        subset = ", ".join(str(i) for i in entry.subset)
+        lines.append(
+            f"  {entry.k:>3}  {subset:<24}  {entry.n_electrons:>6}  "
+            f"{entry.energy:>16.9f}  {1000.0 * (entry.energy - best_energy):>9.3f}"
+        )
+    for k, reason in result.skipped:
+        lines.append(f"  {k:>3}  (skipped: {reason})")
+    lines += [
+        "",
+        f"  best: k = {result.best.k}, orbitals {list(result.best.subset)} "
+        f"({result.best.n_electrons}e, {result.best.k}o), E = {result.best.energy:.9f} Eh",
+        f"  compact pick (this tool): k = {result.compact.k}, orbitals "
+        f"{list(result.compact.subset)} -- the smallest prefix within "
+        f"{COMPACT_TOLERANCE_EH * 1000:.0f} mEh of the sweep minimum",
+        "",
+        "Boundaries and checks:",
+    ]
+    for item in (
+        "the environment convention is this tool's own (the source's main text "
+        "leaves it to its CASCI implementation): the complement carries its natural "
+        "occupations as a fractional closed-shell environment "
+        "(h'_pq = h_pq + 1/2 sum w_i [2(pq|ii) - (pi|qi)]; E_core' = E_core + "
+        "sum w_i h_ii + 1/4 sum w_i w_j [2(ii|jj) - (ij|ji)]), and each prefix's CI "
+        "runs with round(sum of its occupations) electrons",
+        "the source selects k manually off the energy curve (in its words, "
+        "'while we are selecting the best k manually with respect to energy'); the "
+        "table and the minimum marker serve that choice, and the compact pick is "
+        "this tool's convenience",
+        "at k = the full window the environment is empty and E(k) reproduces the "
+        "window's own FCI energy -- the identity pinned in the test suite",
+        "the prefix path is greedy: each k's subset is the k-prefix of the single "
+        "greedy run (prefix-consistent); the source's best-k is defined over its "
+        "greedy family the same way",
+        "delivering the winning space to a CASSCF needs the orbital-order machinery "
+        "(menu 22's boundary note)",
+    ):
+        lines.append(f"  - {item}")
+    return "\n".join(lines)
+
+
+def run_best_k(dump: Fcidump, **kwargs) -> ReportSection:
+    """The best-k analyser entry point for menu 26."""
+    return ReportSection(
+        title="TNASS best-k sweep (energy-ranked)",
+        body=render_best_k(best_k_sweep(dump, **kwargs)),
     )
 
 
@@ -391,8 +627,8 @@ def evidence() -> tuple[Evidence, ...]:
             kind=EVIDENCE_MEASURED,
             text=(
                 "The exact S2 oracle and its anchors: the one-orbital S2 reproduces "
-                "-log(sum w^2) from the four-state weights to 1e-12; the two-orbital S2 "
-                "reproduces the purity assembled independently from the spin-resolved "
+                "-log(sum w^2) from the four-state weights to 1e-12; the single-orbital "
+                "S2 reproduces the purity assembled independently from the spin-resolved "
                 "2-RDM; the full-window subset has S2 = 0; and the greedy four-orbital "
                 "selection on the benzene pi platform lands on the strongly entangled "
                 "quartet (values pinned in the tests)."

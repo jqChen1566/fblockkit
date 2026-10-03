@@ -22,7 +22,7 @@ TNASS active-space selection (Renyi-2 entropy of the bipartition):
 
 Boundaries and checks:
   - the S2 oracle is exact over the FCIDUMP window (the determinant CI of the four-state-entropy route); the source builds it as a tensor-network entanglement feature over the full orbital space with an approximate MPS (its useful bond dimensions are 4-6) -- there is no bond-dimension truncation here, but the window boundary is the restriction instead
-  - the selection maximizes the bipartition entanglement with the window complement; the source's best-k variant (choose k by the CASCI energy) is not implemented -- run the menu at several target sizes and compare
+  - the selection maximizes the bipartition entanglement with the window complement; the source's best-k variant is the menu's 'best' method (the selection path's prefixes ranked by the CASCI energy -- see that report for the environment convention)
   - the subset is a spatial-orbital set (both spins travel together), matching the source's selection domain
   - delivering the space to a CASSCF needs the orbital-order machinery (menu 22's boundary note)
 

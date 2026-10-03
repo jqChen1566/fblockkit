@@ -3,6 +3,74 @@
 All notable changes to this project are documented in this file.
 The format follows Keep a Changelog; versions are date-agnostic semantic versions.
 
+## [0.2.0] - Unreleased
+
+*(release date set at the cut; the entry conditions are in
+`packaging/RELEASE_CHECKLIST.md`)*
+
+The second development snapshot: the external-program interface layer, the
+f-block post-processing family, the X-ray-spectroscopy routes and the
+reproducibility hardening on top of the 0.1.0 core.
+
+### Input generation
+
+- External-program interfaces: MOKIT automr input generation with its run
+  reader, the CREST conformer-ensemble report and the CREST-to-ORCA upgrade
+  generator, the xTB pre-screening run report, and the pysisyphus run report;
+- Core-excited spectra (menu 37): the ROCIS XES writer (the six-element
+  donor/acceptor window; the plain RIXS channel as the emission carrier) and
+  the two-step CAS-CI/RAS-CI family -- the XAS pair (manual 3.13.18) and its
+  RAS-CI XES counterpart (3.13.19; the `refs ras` saturation and the
+  XESSOC/XASMOs request).  Both two-step writers ask for the MPI process
+  count (`%pal`), and the step-2 `%moinp` names the gbw the step-1 run
+  produces, so a generated pair runs as written;
+- RAS/ORMAS library (menu 28's writer; not yet exposed as menu questions):
+  the manual's arbitrary-CFG references (`{2 2 2 0 0 0}`), `irrep` lists and
+  the `%rasci` `douv` / `rel dosoc` coupling lines (module level only; engine
+  acceptance pending its probe round);
+- POLY_ANISO input writer: the SYMM block for equivalent centres, the
+  isotropic PAIR and axis-diagonal LIN3 pair models, plus the couplings
+  checklist; the AOP rotation guess and the PiOS pi-orbital space write
+  gbw-ready orbital files.
+
+### Analysis
+
+- f-block post-processing: Judd-Ofelt intensity parameters (menu 34), pNMR
+  pseudocontact shifts with the optional Bleaney comparator (menu 35),
+  magnetic relaxation / QTM metrics (menu 36), AILFT ligand-field analysis
+  with a built-in free-ion reference table (menu 38), polynuclear magnetism
+  (menu 39), hyperfine/EFG parameters and magnetic entropy/magnetocaloric
+  quantities (menus 40/41), tunnelling-relaxation prediction (menu 46),
+  cross-run state tracking (menu 49) and the TNASS subset selection with its
+  energy-ranked best-k sweep (menu 26);
+- MOKIT automr side products: the `.fch` formatted-checkpoint reader
+  (column-major MO blocks and row-major density triangles pinned against the
+  file's own density; stage notes derived from the file names);
+- curve companions: plot-ready tidy CSVs beside the reports of menus 34, 36,
+  37 and 41 (one shared formatting module);
+- the two-step spectrum outputs are rendered with `orca_mapspc`
+  (SOCABS/ABS for the XAS tables, XESSOC for the emission tables).
+
+### Fixed
+
+- the two-step writers' step-2 `%moinp` now names the gbw the generated
+  step-1 input actually produces (previously a rename was needed);
+- negative-zero normalisation in the orbital write-back routes;
+- degenerate-subspace bases in the written orbital files are rebuilt
+  deterministically (cross-machine byte reproducibility: AOP, PiOS, WASP and
+  the quasi-natural-orbital write-back);
+- the manual's own XES example carries `rel / DoVelocity`, which the 6.1.1
+  input scanner rejects (measured); the generated inputs omit it.
+
+### Documentation
+
+- the manual grows to 263 pages (menus 34-49 chapters, the criterion table,
+  the format chapter) with every example transcript replayable against the
+  frozen fixtures; the user guide mirrors all added routes and their measured
+  boundaries;
+- fixtures: real engine outputs for every added route, each with its README
+  recording the run conditions and the measured boundaries.
+
 ## [0.1.0] - 2026-09-26
 
 Initial release (early development).

@@ -26,7 +26,7 @@ Available functions:
   23  ASS1ST selection round (a NEVPT2-density export -> quasi-NOON tables + the next round's input)
   24  QICAS active-space optimization (an FCIDUMP -> F_QI-minimized orbitals and the CASCI check)
   25  AEGISS selection (entropy screening + an AO projection -> a compact active space)
-  26  TNASS subset selection (an FCIDUMP -> the S2-maximizing orbital subset)
+  26  TNASS subset selection (an FCIDUMP -> the S2-maximizing orbital subset, or the best-k energy sweep)
   27  DeltaSCF / MOM excited-state SCF input (a structure + an excitation spec -> an input)
   28  RAS / ORMAS model-space input (a structure + a partition mask -> an ORCA input)
   29  Perturbed multistart batch (a converged reference mkl + its input -> restart inputs)
@@ -35,9 +35,9 @@ Available functions:
   32  pysisyphus input (a structure + a method -> a PES-exploration YAML)
   33  pysisyphus run report (a run directory or console capture -> cross-checked record)
   34  Judd-Ofelt intensity parameters (a transition dataset -> Omega_2/4/6 and radiative quantities)
-  35  pNMR pseudocontact shifts (a susceptibility run file + a structure -> per-nucleus PCS)
+  35  pNMR pseudocontact shifts (a susceptibility run file + a structure -> per-nucleus PCS; optional Bleaney comparator)
   36  Magnetic relaxation and QTM (an ORCA output with SINGLE_ANISO or MAGRELAX -> the barrier estimate and tau(T))
-  37  Core-excited spectra XAS/RIXS (a ROCIS output -> the spectra table and the edge branching ratio; a structure -> ROCIS XES or CAS-CI XAS inputs)
+  37  Core-excited spectra XAS/XES/RIXS (a ROCIS output -> the spectra table and the edge branching ratio; a structure -> ROCIS XES, CAS-CI XAS or RAS-CI XES inputs)
   38  Ab initio ligand-field analysis (an AILFT output -> LF splitting, Slater-Condon/Racah parameters and the fit quality)
   39  Polynuclear magnetism (a POLY_ANISO output -> per-center data, the exchange decomposition and the chiT summary)
   40  Hyperfine and EFG parameters (an EPRNMR output -> the A tensor, the EFG principal values and Rho(0))
@@ -69,7 +69,7 @@ CASSCF state data from n2_sa.property.txt
 Boundaries (the availability survey):
   - the CI vectors are not persistable (run-time temporaries only; the .cis file belongs to the CIS/STEOM modules), so state identity along a series cannot be read from one output;
   - the .out side prints the per-root dominant CSF occupations twice (initial state check and final states block), and this property file adds the structured per-state energies and transitions;
-  - per-state observables for identity tracking: single-root runs carry the per-state dipole (the menu-19 route), the FIC-NEVPT2 sidecar carries per-root densities (the menu-23 chain) -- a tracker across a series is registered as a candidate increment;
+  - per-state observables for identity tracking: single-root runs carry the per-state dipole (the menu-19 route), the FIC-NEVPT2 sidecar carries per-root densities (the menu-23 chain) -- the cross-run tracker is menu 49;
   - the absorption columns are the measured layout [eV, cm-1, nm, fosc, D2, DX(re,im), DY(re,im), DZ(re,im)] (nonzero probes); a SOC run's duplicate section is read at its highest &RelCorrection, and the magnetic-dipole data live in the separate ECD section (not shown here).
 Report written: work\n2_sa.property.txt.states.fbk.md
 
@@ -99,7 +99,7 @@ Available functions:
   23  ASS1ST selection round (a NEVPT2-density export -> quasi-NOON tables + the next round's input)
   24  QICAS active-space optimization (an FCIDUMP -> F_QI-minimized orbitals and the CASCI check)
   25  AEGISS selection (entropy screening + an AO projection -> a compact active space)
-  26  TNASS subset selection (an FCIDUMP -> the S2-maximizing orbital subset)
+  26  TNASS subset selection (an FCIDUMP -> the S2-maximizing orbital subset, or the best-k energy sweep)
   27  DeltaSCF / MOM excited-state SCF input (a structure + an excitation spec -> an input)
   28  RAS / ORMAS model-space input (a structure + a partition mask -> an ORCA input)
   29  Perturbed multistart batch (a converged reference mkl + its input -> restart inputs)
@@ -108,9 +108,9 @@ Available functions:
   32  pysisyphus input (a structure + a method -> a PES-exploration YAML)
   33  pysisyphus run report (a run directory or console capture -> cross-checked record)
   34  Judd-Ofelt intensity parameters (a transition dataset -> Omega_2/4/6 and radiative quantities)
-  35  pNMR pseudocontact shifts (a susceptibility run file + a structure -> per-nucleus PCS)
+  35  pNMR pseudocontact shifts (a susceptibility run file + a structure -> per-nucleus PCS; optional Bleaney comparator)
   36  Magnetic relaxation and QTM (an ORCA output with SINGLE_ANISO or MAGRELAX -> the barrier estimate and tau(T))
-  37  Core-excited spectra XAS/RIXS (a ROCIS output -> the spectra table and the edge branching ratio; a structure -> ROCIS XES or CAS-CI XAS inputs)
+  37  Core-excited spectra XAS/XES/RIXS (a ROCIS output -> the spectra table and the edge branching ratio; a structure -> ROCIS XES, CAS-CI XAS or RAS-CI XES inputs)
   38  Ab initio ligand-field analysis (an AILFT output -> LF splitting, Slater-Condon/Racah parameters and the fit quality)
   39  Polynuclear magnetism (a POLY_ANISO output -> per-center data, the exchange decomposition and the chiT summary)
   40  Hyperfine and EFG parameters (an EPRNMR output -> the A tensor, the EFG principal values and Rho(0))

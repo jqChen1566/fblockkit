@@ -1,0 +1,32 @@
+# Source: C. Gorller-Walrand, L. Fluyt, A. Ceulemans, W. T. Carnall,
+#   "Magnetic dipole transitions as standards for Judd-Ofelt parametrization in
+#    lanthanide spectra", J. Chem. Phys. 95, 3099-3106 (1991).
+# DOI: 10.1063/1.460867
+# Digitized: 2026-10-03 (fBlockKit anchor-digitization).
+# Method: MinerU 4.0.10 markdown (HTML table), cross-checked against 170-dpi page
+#   renders (pages 3104/3105 = PDF pp. 6-7) and a 700-900 dpi crop for the disputed cell.
+#   Every number is the printed value; no interpolation, no estimates, no corrections.
+# Table: TABLE V, synopsis of magnetic dipole strengths (in 1e-7 D^2) of the
+#   5D1<-7F0 and 5D0<-7F1 transitions in different Eu3+ environments.
+#   D_expt_prime = as measured in the sample; D_expt = D_expt_prime / n (refractive index);
+#   D_theor from the corresponding symmetry calculation (TABLE IV).
+#   Ref. letters refer to footnotes of the original table (a-h) which list the compounds
+#   and refractive indices; numeric refs are literature citations of the paper.
+#   Empty D_theor cells: the original prints "..." (not calculated for that environment).
+#   The 5D2<-7F1 transition was not included by the authors (too weak, hard to assign).
+# Columns: transition, substance, sample, D_expt_prime, D_expt, D_theor, ref.
+transition,substance,sample,D_expt_prime,D_expt,D_theor,ref
+^5D_1  <-  ^7F_0,EuODA,Monocrystal,21.8,16.8,17.9,b
+^5D_1  <-  ^7F_0,EuODA,D_3,25.7,19.8,,19
+^5D_1  <-  ^7F_0,Eu(ClO_4)_3,Solution in H_2O,23.4,17.6,,c
+^5D_1  <-  ^7F_0,Eu(ClO_4)_3,Solution in H_2O,24.1,18.1,,"d, 6"
+^5D_1  <-  ^7F_0,EuDN,Monocrystal,27.1,17.8,18.0,e
+^5D_1  <-  ^7F_0,LiYF_4/Eu^3+,Monocrystal,19.4,13.3,18.3,f
+^5D_1  <-  ^7F_0,Gd(Eu) huntite,Monocrystal,29.4,16.6,19.0,"g, 19"
+^5D_1  <-  ^7F_0,Eu(H_2O)_9,Monocrystal,25.5,17.1,,"h, 19"
+^5D_0  <-  ^7F_1,EuODA,Monocrystal,96.5,74.2,93.1,b
+^5D_0  <-  ^7F_1,EuODA,D_3,119.5,91.9,,19
+^5D_0  <-  ^7F_1,EuDN,Monocrystal,121.3,79.5,94.8,e
+^5D_0  <-  ^7F_1,LiYF_4/Eu^3+,Monocrystal,90.6,62.0,92.3,f
+^5D_0  <-  ^7F_1,Gd(Eu) huntite,Monocrystal,195.9,110.7,95.4,"g, 19"
+^5D_0  <-  ^7F_1,Eu(H_2O)_9,Monocrystal,85.4,57.3,,"h, 19"

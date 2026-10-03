@@ -4,7 +4,8 @@ Renders one automr capture: the program-path survey, the run settings and
 merged mokit{} options, the final strategy table, the stage sequence, the
 energy chain, the automatically determined active space, the radical-index
 tables and the termination state -- plus the reading notes that state what
-was and was not read (the .fch side products are listed but not parsed).
+was and was not read (the .fch side products are listed and parsed; see
+``parsers/mokit_fch.py`` for their measured layout).
 Every anchor is measured (``parsers/mokit.py``; MOKIT 1.2.8, 2026-09-30).
 """
 
@@ -12,6 +13,7 @@ from __future__ import annotations
 
 from ..knowledge.models import EVIDENCE_MEASURED, Evidence
 from ..parsers.mokit import MokitRun
+from ..parsers.mokit_fch import stage_label
 
 __all__ = ["render", "evidence"]
 
@@ -31,8 +33,13 @@ _STAGE_TITLES = {
 }
 
 
-def render(run: MokitRun, *, source: str) -> str:
-    """The report body (plain text, English, no timestamps of the day)."""
+def render(run: MokitRun, *, source: str, fch_files: tuple = ()) -> str:
+    """The report body (plain text, English, no timestamps of the day).
+
+    ``fch_files``: the .fch side products read next to the output (an iterable
+    of :class:`fblockkit.parsers.mokit_fch.FchFile`, or of ready-made problem
+    strings for files that could not be read).
+    """
     lines: list[str] = [
         "MOKIT automr run report",
         f"Source: {source}",
@@ -98,6 +105,55 @@ def render(run: MokitRun, *, source: str) -> str:
         for name in run.side_products:
             lines.append(f"  {name}")
 
+    if fch_files:
+        lines.append("")
+        lines.append(
+            f".fch side products read next to the output ({len(fch_files)} file(s)):"
+        )
+        for item in fch_files:
+            if isinstance(item, str):
+                lines.append(f"  - {item}")
+                continue
+            spin = (
+                f"{item.n_alpha}alpha/{item.n_beta}beta"
+                if item.n_alpha is not None and item.n_beta is not None
+                else "spin counts not carried"
+            )
+            mo_note = (
+                f"{len(item.alpha_energies)} alpha MOs, no beta block"
+                if item.beta_energies is None
+                else f"{len(item.alpha_energies)} alpha + "
+                f"{len(item.beta_energies)} beta MOs"
+            )
+            lines.append(
+                f"  - {item.name} -- {stage_label(item.name)} (name-derived): "
+                f"nbf {item.nbf}; {len(item.atomic_numbers)} atoms; charge "
+                f"{item.charge}, mult {item.multiplicity}, {item.n_electrons} e "
+                f"({spin}); {mo_note}"
+            )
+            facts: list[str] = []
+            if item.scf_energy is not None:
+                facts.append(f"SCF {item.scf_energy:.8f} Eh")
+            if (
+                item.total_energy is not None
+                and item.total_energy != item.scf_energy
+            ):
+                facts.append(f"total {item.total_energy:.8f} Eh")
+            if item.dipole_au is not None:
+                facts.append(
+                    "dipole (as stored) "
+                    f"({item.dipole_au[0]:.3f}, {item.dipole_au[1]:.3f}, "
+                    f"{item.dipole_au[2]:.3f})"
+                )
+            if facts:
+                lines.append("      " + "; ".join(facts))
+        lines.append(
+            "    Notes: the stage notes are derived from the file names (MOKIT's "
+            "naming); coordinates and the dipole vector are reported as stored "
+            "(the file's own units; the coordinates are in Bohr); the format "
+            "carries no occupation numbers."
+        )
+
     lines.append("")
     if run.terminated:
         lines.append(
@@ -118,8 +174,9 @@ def render(run: MokitRun, *, source: str) -> str:
         "CASCI/CASSCF, so consecutive entries are different wave-function levels, "
         "not an error. GVB runs need a backend program (GAMESS by default; Gaussian "
         "and QChem are the alternates -- PySCF is not a GVB backend); the CASSCF "
-        "stage defaults to PySCF. The natural-orbital .fch side products are listed "
-        "for the audit trail but this report does not parse them (stated boundary); "
+        "stage defaults to PySCF. The natural-orbital .fch side products are read "
+        "back when they sit next to the output (the section above; the reader is "
+        "parsers/mokit_fch.py, whose anchor policy is in its docstring); "
         "dynamic-correlation stages (CASPT2/NEVPT2/DMRG) appear in the strategy "
         "table only when requested."
     )

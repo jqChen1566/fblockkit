@@ -1,6 +1,7 @@
 !def2-SVP def2-SVP/C TightSCF MOREAD
-%maxcore 4000
-%moinp "step1.gbw"
+%pal nprocs 8 end
+%maxcore 48
+%moinp "fecl4.casci_xas.step1.gbw"
 %scf
   rotate
   {6,42,90,0,0}

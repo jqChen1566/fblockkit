@@ -1,0 +1,321 @@
+ Entering Gaussian System, Link 0=/home/chen_jianqi/gaussian/g16/g16
+ Input=g16_h2o_cas22.gjf
+ Output=g16_h2o_cas22.log
+ Initial command:
+ /home/chen_jianqi/gaussian/g16/l1.exe "/data1/cjq12/fbk_g16/scratch/Gau-1991160.inp" -scrdir="/data1/cjq12/fbk_g16/scratch/"
+ Entering Link 1 = /home/chen_jianqi/gaussian/g16/l1.exe PID=   1991165.
+  
+ Copyright (c) 1988-2019, Gaussian, Inc.  All Rights Reserved.
+  
+ This is part of the Gaussian(R) 16 program.  It is based on
+ the Gaussian(R) 09 system (copyright 2009, Gaussian, Inc.),
+ the Gaussian(R) 03 system (copyright 2003, Gaussian, Inc.),
+ the Gaussian(R) 98 system (copyright 1998, Gaussian, Inc.),
+ the Gaussian(R) 94 system (copyright 1995, Gaussian, Inc.),
+ the Gaussian 92(TM) system (copyright 1992, Gaussian, Inc.),
+ the Gaussian 90(TM) system (copyright 1990, Gaussian, Inc.),
+ the Gaussian 88(TM) system (copyright 1988, Gaussian, Inc.),
+ the Gaussian 86(TM) system (copyright 1986, Carnegie Mellon
+ University), and the Gaussian 82(TM) system (copyright 1983,
+ Carnegie Mellon University). Gaussian is a federally registered
+ trademark of Gaussian, Inc.
+  
+ This software contains proprietary and confidential information,
+ including trade secrets, belonging to Gaussian, Inc.
+  
+ This software is provided under written license and may be
+ used, copied, transmitted, or stored only in accord with that
+ written license.
+  
+ The following legend is applicable only to US Government
+ contracts under FAR:
+  
+                    RESTRICTED RIGHTS LEGEND
+  
+ Use, reproduction and disclosure by the US Government is
+ subject to restrictions as set forth in subparagraphs (a)
+ and (c) of the Commercial Computer Software - Restricted
+ Rights clause in FAR 52.227-19.
+  
+ Gaussian, Inc.
+ 340 Quinnipiac St., Bldg. 40, Wallingford CT 06492
+  
+  
+ ---------------------------------------------------------------
+ Warning -- This program may not be used in any manner that
+ competes with the business of Gaussian, Inc. or will provide
+ assistance to any competitor of Gaussian, Inc.  The licensee
+ of this program is prohibited from giving any competitor of
+ Gaussian, Inc. access to this program.  By using this program,
+ the user acknowledges that Gaussian, Inc. is engaged in the
+ business of creating and licensing software in the field of
+ computational chemistry and represents and warrants to the
+ licensee that it is not a competitor of Gaussian, Inc. and that
+ it will not use this program in any manner prohibited above.
+ ---------------------------------------------------------------
+  
+
+ Cite this work as:
+ Gaussian 16, Revision C.01,
+ M. J. Frisch, G. W. Trucks, H. B. Schlegel, G. E. Scuseria, 
+ M. A. Robb, J. R. Cheeseman, G. Scalmani, V. Barone, 
+ G. A. Petersson, H. Nakatsuji, X. Li, M. Caricato, A. V. Marenich, 
+ J. Bloino, B. G. Janesko, R. Gomperts, B. Mennucci, H. P. Hratchian, 
+ J. V. Ortiz, A. F. Izmaylov, J. L. Sonnenberg, D. Williams-Young, 
+ F. Ding, F. Lipparini, F. Egidi, J. Goings, B. Peng, A. Petrone, 
+ T. Henderson, D. Ranasinghe, V. G. Zakrzewski, J. Gao, N. Rega, 
+ G. Zheng, W. Liang, M. Hada, M. Ehara, K. Toyota, R. Fukuda, 
+ J. Hasegawa, M. Ishida, T. Nakajima, Y. Honda, O. Kitao, H. Nakai, 
+ T. Vreven, K. Throssell, J. A. Montgomery, Jr., J. E. Peralta, 
+ F. Ogliaro, M. J. Bearpark, J. J. Heyd, E. N. Brothers, K. N. Kudin, 
+ V. N. Staroverov, T. A. Keith, R. Kobayashi, J. Normand, 
+ K. Raghavachari, A. P. Rendell, J. C. Burant, S. S. Iyengar, 
+ J. Tomasi, M. Cossi, J. M. Millam, M. Klene, C. Adamo, R. Cammi, 
+ J. W. Ochterski, R. L. Martin, K. Morokuma, O. Farkas, 
+ J. B. Foresman, and D. J. Fox, Gaussian, Inc., Wallingford CT, 2019.
+ 
+ ******************************************
+ Gaussian 16:  ES64L-G16RevC.01  3-Jul-2019
+                 2-Oct-2026 
+ ******************************************
+ %chk=fbk_cas22.chk
+ -------------------------
+ #p CAS(2,2)/STO-3G nosymm
+ -------------------------
+ 1/38=1,172=1/1;
+ 2/12=2,15=1,17=6,18=5,40=1/2;
+ 3/6=3,25=1,116=101/1,2,3;
+ 4/17=2,18=2,43=1/1,5;
+ 5/5=2,17=1000000,38=5/10;
+ 6/7=2,8=2,9=2,10=2,28=1/1;
+ 99/5=1,9=1/99;
+ Leave Link    1 at Fri Oct  2 22:33:18 2026, MaxMem=           0 cpu:               0.0 elap:               0.0
+ (Enter /home/chen_jianqi/gaussian/g16/l101.exe)
+ ----------------------------------------------------------------------
+ fBlockKit Gaussian fixture: CASSCF(2,2) single point (the CASSCF fact 
+ anchor)
+ ----------------------------------------------------------------------
+ Symbolic Z-matrix:
+ Charge =  0 Multiplicity = 1
+ O                     0.        0.        0. 
+ H                     0.        0.757     0.587 
+ H                     0.       -0.757     0.587 
+ 
+ ITRead=  0  0  0
+ MicOpt= -1 -1 -1
+ NAtoms=      3 NQM=        3 NQMF=       0 NMMI=      0 NMMIF=      0
+                NMic=       0 NMicF=      0.
+                    Isotopes and Nuclear Properties:
+ (Nuclear quadrupole moments (NQMom) in fm**2, nuclear magnetic moments (NMagM)
+  in nuclear magnetons)
+
+  Atom         1           2           3
+ IAtWgt=          16           1           1
+ AtmWgt=  15.9949146   1.0078250   1.0078250
+ NucSpn=           0           1           1
+ AtZEff=  -0.0000000  -0.0000000  -0.0000000
+ NQMom=    0.0000000   0.0000000   0.0000000
+ NMagM=    0.0000000   2.7928460   2.7928460
+ AtZNuc=   8.0000000   1.0000000   1.0000000
+ Leave Link  101 at Fri Oct  2 22:33:19 2026, MaxMem=   104857600 cpu:               0.2 elap:               0.2
+ (Enter /home/chen_jianqi/gaussian/g16/l202.exe)
+                          Input orientation:                          
+ ---------------------------------------------------------------------
+ Center     Atomic      Atomic             Coordinates (Angstroms)
+ Number     Number       Type             X           Y           Z
+ ---------------------------------------------------------------------
+      1          8           0        0.000000    0.000000    0.000000
+      2          1           0        0.000000    0.757000    0.587000
+      3          1           0        0.000000   -0.757000    0.587000
+ ---------------------------------------------------------------------
+                    Distance matrix (angstroms):
+                    1          2          3
+     1  O    0.000000
+     2  H    0.957924   0.000000
+     3  H    0.957924   1.514000   0.000000
+ Symmetry turned off by external request.
+ Stoichiometry    H2O
+ Framework group  C2V[C2(O),SGV(H2)]
+ Deg. of freedom     2
+ Full point group                 C2V     NOp   4
+ Rotational constants (GHZ):         819.3534029         437.5324837         285.2237687
+ Leave Link  202 at Fri Oct  2 22:33:19 2026, MaxMem=   104857600 cpu:               0.0 elap:               0.0
+ (Enter /home/chen_jianqi/gaussian/g16/l301.exe)
+ Standard basis: STO-3G (5D, 7F)
+ Ernie: Thresh=  0.10000D-02 Tol=  0.10000D-05 Strict=F.
+     7 basis functions,    21 primitive gaussians,     7 cartesian basis functions
+     5 alpha electrons        5 beta electrons
+       nuclear repulsion energy         9.1882584177 Hartrees.
+ IExCor=    0 DFT=F Ex=HF Corr=None ExCW=0 ScaHFX=  1.000000
+ ScaDFX=  1.000000  1.000000  1.000000  1.000000 ScalE2=  1.000000  1.000000
+ IRadAn=      5 IRanWt=     -1 IRanGd=            0 ICorTp=0 IEmpDi=  4
+ NAtoms=    3 NActive=    3 NUniq=    3 SFac= 1.00D+00 NAtFMM=   60 NAOKFM=F Big=F
+ Integral buffers will be    131072 words long.
+ Regular integral format.
+ Two-electron integral symmetry is turned off.
+ Leave Link  301 at Fri Oct  2 22:33:19 2026, MaxMem=   104857600 cpu:               0.1 elap:               0.0
+ (Enter /home/chen_jianqi/gaussian/g16/l302.exe)
+ NPDir=0 NMtPBC=     1 NCelOv=     1 NCel=       1 NClECP=     1 NCelD=      1
+         NCelK=      1 NCelE2=     1 NClLst=     1 CellRange=     0.0.
+ One-electron integrals computed using PRISM.
+ NBasis=     7 RedAO= T EigKep=  3.43D-01  NBF=     7
+ NBsUse=     7 1.00D-06 EigRej= -1.00D+00 NBFU=     7
+ Leave Link  302 at Fri Oct  2 22:33:19 2026, MaxMem=   104857600 cpu:               0.1 elap:               0.1
+ (Enter /home/chen_jianqi/gaussian/g16/l303.exe)
+ DipDrv:  MaxL=1.
+ Leave Link  303 at Fri Oct  2 22:33:19 2026, MaxMem=   104857600 cpu:               0.0 elap:               0.0
+ (Enter /home/chen_jianqi/gaussian/g16/l401.exe)
+ ExpMin= 1.69D-01 ExpMax= 1.31D+02 ExpMxC= 1.31D+02 IAcc=3 IRadAn=         5 AccDes= 0.00D+00
+ Harris functional with IExCor=  205 and IRadAn=       5 diagonalized for initial guess.
+ HarFok:  IExCor=  205 AccDes= 0.00D+00 IRadAn=         5 IDoV= 1 UseB2=F ITyADJ=14
+ ICtDFT=  3500011 ScaDFX=  1.000000  1.000000  1.000000  1.000000
+ FoFCou: FMM=F IPFlag=           0 FMFlag=      100000 FMFlg1=           0
+         NFxFlg=           0 DoJE=T BraDBF=F KetDBF=T FulRan=T
+         wScrn=  0.000000 ICntrl=       500 IOpCl=  0 I1Cent=   200000004 NGrid=           0
+         NMat0=    1 NMatS0=      1 NMatT0=    0 NMatD0=    1 NMtDS0=    0 NMtDT0=    0
+ Symmetry not used in FoFCou.
+ Harris En= -75.0358260414669    
+ JPrj=0 DoOrth=F DoCkMO=F.
+ Leave Link  401 at Fri Oct  2 22:33:19 2026, MaxMem=   104857600 cpu:               0.1 elap:               0.1
+ (Enter /home/chen_jianqi/gaussian/g16/l405.exe)
+          Truncation Level=               99999
+          a=  1          b=  0          c=  1
+          a=N/2 - s   b=2s   c=n- (a+b)
+          no. active orbitals (n)  2
+          no. active ELECTRONS (N)=  2
+                                                  IRREPS TO BE RETAINED = 1
+                                                  GROUP IRREP. MULT. TABLE
+                                                      1
+                                                  IRREP. LABELS FOR ORBITALS
+                                                   1 1
+          BOTTOM WEIGHT=  2     TOP WEIGHT=  4
+          Configuration         1 Symmetry 1 10
+          Configuration         2 Symmetry 1 ab
+          Configuration         3 Symmetry 1 01
+          NO OF BASIS FUNCTIONS =         3 NO TO BE DELETED =    0
+ CI Matrix Elements calculated here
+          NO. OF CONFIGURATIONS IN REFERENCE SPACE =    1
+                                   SECONDARY SPACE =    3
+                                   TERTIARY SPACE =    3
+          NO. OF ORBITALS =    2
+          NO. OF ELECTRONS =    2
+          NO. OF WEIGHTS =    3
+          REFERENCE STATE CONFIGURATIONS ARE:     0
+          NO. OF CORE ORBITALS =    0
+          OPTION:  NON-DIAGONAL HOLE LINE INTERACTIONS INCLUDED
+ Len28=          98 LenMCI=         101.
+ Leave Link  405 at Fri Oct  2 22:33:20 2026, MaxMem=   104857600 cpu:               0.7 elap:               0.7
+ (Enter /home/chen_jianqi/gaussian/g16/l510.exe)
+ Enter MCSCF program.
+ NBasis=    7 NCore=    4 NVal=    2 NVirt=    1 IFrame=0 Acc=  1.00D-08.
+  Memory needed for Incore Integrals:                   262550
+  Integrals KEPT IN MEMORY
+ IBUJAK length=                      224
+ Integral file not found: evaluate integrals 
+ FoFCou: FMM=F IPFlag=           0 FMFlag=           0 FMFlg1=           0
+         NFxFlg=           0 DoJE=F BraDBF=F KetDBF=F FulRan=T
+         wScrn=  0.000000 ICntrl=       600 IOpCl=  0 I1Cent=           0 NGrid=           0
+         NMat0=    1 NMatS0=      1 NMatT0=    0 NMatD0=    1 NMtDS0=    0 NMtDT0=    0
+ Symmetry not used in FoFCou.
+ Defining IBUGAM
+ 2ND ORD PT ENERGY     CV   -0.021289   CU   -0.035610   UV   -0.000000
+ TOTAL                     -74.967979
+ ITN=  1 MaxIt= 64 E=    -74.9110796038 DE=-7.49D+01 Acc= 1.00D-08 Lan=  0
+ ITN=  2 MaxIt= 64 E=    -74.9638236719 DE=-5.27D-02 Acc= 1.00D-08 Lan=  0
+ ITN=  3 MaxIt= 64 E=    -74.9643106898 DE=-4.87D-04 Acc= 1.00D-08 Lan=  0
+ ITN=  4 MaxIt= 64 E=    -74.9643162345 DE=-5.54D-06 Acc= 1.00D-08 Lan=  0
+ ITN=  5 MaxIt= 64 E=    -74.9643165000 DE=-2.66D-07 Acc= 1.00D-08 Lan=  0
+ ITN=  6 MaxIt= 64 E=    -74.9643165176 DE=-1.76D-08 Acc= 1.00D-08 Lan=  0
+ ITN=  7 MaxIt= 64 E=    -74.9643165190 DE=-1.40D-09 Acc= 1.00D-08 Lan=  0
+ ... Do an extra-iteration for final printing.
+
+
+                    EIGENVALUES AND  EIGENVECTORS OF CI MATRIX
+
+
+
+   ( 1)     EIGENVALUE   -74.96431652    
+ (    1) 0.9994727 (    3)-0.0324715 (    2)-0.0000000 (
+ Final one electron symbolic density matrix:
+                1             2 
+      1  0.199789D+01
+      2 -0.109832D-11  0.210880D-02
+ MCSCF converged.
+ Leave Link  510 at Fri Oct  2 22:33:21 2026, MaxMem=   104857600 cpu:               0.8 elap:               0.8
+ (Enter /home/chen_jianqi/gaussian/g16/l601.exe)
+ Copying SCF densities to generalized density rwf, IOpCl= 0 IROHF=3.
+
+ **********************************************************************
+
+            Population analysis using the SCF Density.
+
+ **********************************************************************
+
+ Alpha  occ. eigenvalues --    0.00000   0.00000   0.00000   0.00000   0.00000
+ Alpha virt. eigenvalues --    0.00000   0.00000
+          Condensed to atoms (all electrons):
+               1          2          3
+     1  O    7.835314   0.263521   0.263521
+     2  H    0.263521   0.602792  -0.047492
+     3  H    0.263521  -0.047492   0.602792
+ Mulliken charges:
+               1
+     1  O   -0.362357
+     2  H    0.181179
+     3  H    0.181179
+ Sum of Mulliken charges =  -0.00000
+ Mulliken charges with hydrogens summed into heavy atoms:
+               1
+     1  O   -0.000000
+ Electronic spatial extent (au):  <R**2>=             18.0461
+ Charge=             -0.0000 electrons
+ Dipole moment (field-independent basis, Debye):
+    X=              0.0000    Y=              0.0000    Z=              1.7220  Tot=              1.7220
+ Quadrupole moment (field-independent basis, Debye-Ang):
+   XX=             -6.0947   YY=             -4.3694   ZZ=             -4.9935
+   XY=              0.0000   XZ=              0.0000   YZ=              0.0000
+ Traceless Quadrupole moment (field-independent basis, Debye-Ang):
+   XX=             -0.9422   YY=              0.7832   ZZ=              0.1590
+   XY=              0.0000   XZ=              0.0000   YZ=              0.0000
+ Octapole moment (field-independent basis, Debye-Ang**2):
+  XXX=             -0.0000  YYY=              0.0000  ZZZ=             -1.6335  XYY=             -0.0000
+  XXY=              0.0000  XXZ=             -0.7139  XZZ=             -0.0000  YZZ=              0.0000
+  YYZ=              0.0330  XYZ=              0.0000
+ Hexadecapole moment (field-independent basis, Debye-Ang**3):
+ XXXX=             -3.2327 YYYY=             -6.5159 ZZZZ=             -5.2299 XXXY=              0.0000
+ XXXZ=             -0.0000 YYYX=              0.0000 YYYZ=              0.0000 ZZZX=             -0.0000
+ ZZZY=              0.0000 XXYY=             -1.7760 XXZZ=             -1.4719 YYZZ=             -1.6223
+ XXYZ=              0.0000 YYXZ=             -0.0000 ZZXY=              0.0000
+ N-N= 9.188258417746D+00 E-N=-1.969325176166D+02  KE= 7.458212907284D+01
+ No NMR shielding tensors so no spin-rotation constants.
+ Leave Link  601 at Fri Oct  2 22:33:21 2026, MaxMem=   104857600 cpu:               0.1 elap:               0.1
+ (Enter /home/chen_jianqi/gaussian/g16/l9999.exe)
+ Unable to Open any file for archive entry.
+ 1\1\GINC-LOCALHOST\SP\CASSCF\STO-3G\H2O1\CHEN_JIANQI\02-Oct-2026\0\\#p
+  CAS(2,2)/STO-3G nosymm\\fBlockKit Gaussian fixture: CASSCF(2,2) singl
+ e point (the CASSCF fact anchor)\\0,1\O,0,0.,0.,0.\H,0,0.,0.757,0.587\
+ H,0,0.,-0.757,0.587\\Version=ES64L-G16RevC.01\HF=-74.9643165\RMSD=0.00
+ 0e+00\Dipole=0.,0.,0.6775064\Quadrupole=-0.7004735,0.5822659,0.1182076
+ ,0.,0.,0.\PG=C02V [C2(O1),SGV(H2)]\\@
+ The archive entry for this job was punched.
+
+
+ LORD, MAN... WERE YE BUT WHYLES WHERE I AM, 
+ THE GENTILES YE WAD NE'ER ENVY 'EM.        
+ IT'S TRUE, THEY NEEDNA STARVE OR SWEAT,     
+ THRO' WINTER'S CAULD OR SIMMER'S HEAT...  
+ THEY'VE NAE SAIR WARK TO CRAZE THEIR BANES, 
+ AND FILL AULD AGE WITH GRIPS AN' GRANES...  
+                                             
+ BUT HUMAN BODIES ARE SIC FOOLS              
+ FOR A' THEIR COLLEGES AND SCHOOLS,           
+ THAT WHEN NAE REAL ILLS PERPLEX THEM,       
+ THEY MAK ENOW THEMSELVES TO VEX THEM,       
+ AN' AYE THE LESS THEY HAE TO STURT THEM,    
+ IN LIKE PROPORTION LESS WILL HURT THEM....  
+                                             
+                (ROBERT BURNS 'THE TWA DOGS')
+ Job cpu time:       0 days  0 hours  0 minutes  2.7 seconds.
+ Elapsed time:       0 days  0 hours  0 minutes  2.3 seconds.
+ File lengths (MBytes):  RWF=      6 Int=      0 D2E=      0 Chk=      1 Scr=      1
+ Normal termination of Gaussian 16 at Fri Oct  2 22:33:21 2026.

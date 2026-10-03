@@ -1,0 +1,26 @@
+# Source: W. T. Carnall, H. Crosswhite, H. M. Crosswhite,
+#   "Energy level structure and transition probabilities in the spectra of the
+#    trivalent lanthanides in LaF3", ANL-78-XX-95 (1978). DOI: 10.2172/6417825
+# Table: APPENDIX XIV TABLE 2, "Observed and calculated radiative life-times for Ln3+:LaF3".
+# Digitized: 2026-10-03 (fBlockKit anchor-digitization).
+# Method: MinerU markdown table; tau_R values cross-checked against the archive text layer.
+# Columns: ion, state (excited SLJ), tau_R_usec (calculated radiative lifetime),
+#   tau_obs_usec (observed; empty = not measured), ref (source flag as printed).
+ion,state,tau_R_usec,tau_obs_usec,ref
+Pr,1D2,902,520,a
+Pr,3P0,73,47,
+Nd,4F3/2,635,670,b
+Pm,5F1,566,,c
+Sm,4G5/2,2160,,c
+Eu,5D2,9200,5400,d
+Eu,5D1,7700,4700,
+Eu,5D0,6900,6700,
+Tb,5D3,809,,c
+Tb,5D4,1450,,
+Dy,4F9/2,896,,c
+Ho,5S2,826,,e
+Ho,5F5,779,,
+Er,2P3/2,430,290,f
+Er,4S3/2,1020,1000,
+Tm,1D2,137,54,"a,g"
+Tm,1G4,1560,960,"a,g"

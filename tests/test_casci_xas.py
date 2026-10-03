@@ -43,8 +43,10 @@ def _probe_plan(**overrides):
 
 
 def test_the_probe_plan_writes_the_frozen_bytes():
-    """Both inputs freeze as fixtures/rocis/fecl4_casci_xas.step*.inp."""
-    plan = _probe_plan()
+    """Both inputs freeze as fixtures/rocis/fecl4_casci_xas.step*.inp (the
+    walk's own parameters: %pal nprocs 48 end, and a step-2 %moinp naming
+    the gbw the step-1 run actually produces)."""
+    plan = _probe_plan(nprocs=48, gbw_name="fecl4.casci_xas.step1.gbw")
     assert plan.step1_text == (ROCI / "fecl4_casci_xas.step1.inp").read_text(
         encoding="utf-8"
     )
@@ -53,9 +55,20 @@ def test_the_probe_plan_writes_the_frozen_bytes():
     )
     assert plan.window_start == 42  # (96 - 12)/2
     assert plan.step2_nel == 12 and plan.step2_norb == 8
+    assert "%pal nprocs 48 end" in plan.step1_text
     assert "{6,42,90,0,0}" in plan.step2_text
+    assert '%moinp "fecl4.casci_xas.step1.gbw"' in plan.step2_text
     assert "FrozenCore FC_NONE" in plan.step2_text
     assert "maxiter 1" in plan.step2_text
+
+
+def test_the_new_parameter_refusals():
+    with pytest.raises(casci_xas.CasciXasError, match="unknown mode"):
+        _probe_plan(mode="rixs")
+    with pytest.raises(casci_xas.CasciXasError, match="XES mode's index"):
+        _probe_plan(xas_mo=42)
+    with pytest.raises(casci_xas.CasciXasError, match="not a positive count"):
+        _probe_plan(nprocs=0)
 
 
 def test_the_refusals():
@@ -106,6 +119,39 @@ def test_the_frozen_outputs_carry_the_measured_anchors():
     assert "SOC CORRECTED ABSORPTION SPECTRUM" in step2
 
 
+def test_the_xes_probe_plan_writes_the_frozen_bytes():
+    """The emission-mode plan freezes as fixtures/rocis/fecl4_casci_xes.step2.inp
+    (the K-beta core set {0,26,27,28}; the walk's own parameters: %pal nprocs 48
+    end and a %moinp naming the step-1 gbw).  The step-1 half equals the CAS-CI
+    XAS step-1 fixture byte-for-byte (same valence space), so only the step-2
+    half carries a frozen copy."""
+    plan = _probe_plan(
+        mode="xes",
+        core_orbitals=[0, 26, 27, 28],
+        nprocs=48,
+        gbw_name="fecl4.casci_xes.step1.gbw",
+    )
+    assert plan.step1_text == (ROCI / "fecl4_casci_xas.step1.inp").read_text(
+        encoding="utf-8"
+    )
+    assert plan.step2_text == (ROCI / "fecl4_casci_xes.step2.inp").read_text(
+        encoding="utf-8"
+    )
+
+
+def test_the_frozen_xes_output_carries_the_measured_anchors():
+    """The engine-side anchors of the frozen RAS-CI XES output (menu 37 mode
+    4, the K-beta protocol: the Fe 1s + 3p rotated into the 41-49 window):
+    the K-beta emission lines around 7 keV, with the main 319 -> 0 line at
+    7086.9 eV (experimental Fe K-beta1 is 7058 eV; the def2-SVP level
+    accounts for the offset, measured 2026-10-03)."""
+    step2 = (ROCI / "fecl4_casci_xes.step2.out").read_text(encoding="utf-8")
+    assert "Active        41 -   49 (   9 orbitals)" in step2
+    assert "295-5.0A  -> 294-5.0A   7025.483764" in step2
+    assert "319-5.0A  ->  0-5.0A   7086.908295" in step2
+    assert "SOC CORRECTED   EMISSION SPECTRUM" in step2
+
+
 def test_evidence_states_the_protocol_and_the_measurements():
     text = " ".join(
         entry.ref + " " + entry.text + " " + entry.url for entry in casci_xas.evidence()
@@ -113,3 +159,32 @@ def test_evidence_states_the_protocol_and_the_measurements():
     assert "3.13.18" in text
     assert "719.36" in text and "785" in text
     assert "XAS/XASSOC" in text
+
+
+def test_the_xes_plan_text_shape():
+    """The emission mode's step-2 text (K-beta core set {0,26,27,28}; the
+    byte anchor freezes as fixtures/rocis/fecl4_casci_xes.step2.inp): the
+    RAS hole restriction, the velocity/fosc requests, the XESSOC/XASMOs
+    rel block, the 40,40 default roots (the manual's saturated 1000,1000
+    recipe grows superlinearly in the QDPT transition-density stage and
+    did not finish within 24 h at 290 states; measured 2026-10-03) -- and
+    the deliberate absence of rel/DoVelocity, which the 6.1.1 input
+    scanner rejects (measured)."""
+    plan = _probe_plan(
+        mode="xes",
+        core_orbitals=[0, 26, 27, 28],
+        nprocs=48,
+        gbw_name="fecl4.casci_xes.step1.gbw",
+    )
+    text = plan.step2_text
+    assert "refs ras(14:4 1/5/0 0) end" in text
+    assert "DoDipoleVelocity true" in text
+    assert "DecomposeFosc true" in text
+    assert "XESSOC true" in text
+    assert "XASMOs 41" in text
+    assert "DoDTensor false" in text
+    assert "nroots 40,40" in text
+    assert "%pal nprocs 48 end" in text
+    assert 'moinp "fecl4.casci_xes.step1.gbw"' in text
+    assert "FrozenCore FC_NONE" in text
+    assert "DoVelocity" not in text

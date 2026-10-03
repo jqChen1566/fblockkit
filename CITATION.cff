@@ -16,14 +16,8 @@ authors:
     alias: "jqChen1566"
     affiliation: "College of Chemistry and Materials Science, Jinan University"
     email: "chen_jianqi1566@163.com"
-  - family-names: "Zeng"
-    given-names: "Wen"
-    affiliation: "College of Chemistry and Materials Science, Jinan University"
-  - family-names: "Song"
-    given-names: "Guanghui"
-    affiliation: "College of Chemistry and Materials Science, Jinan University"
-version: 0.1.0
-date-released: "2026-09-26"
+version: 0.2.0
+# (the release date is set at the cut; see packaging/RELEASE_CHECKLIST.md)
 license: Apache-2.0
 repository-code: "https://github.com/jqChen1566/fblockkit"
 keywords:

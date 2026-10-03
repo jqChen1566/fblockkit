@@ -174,10 +174,10 @@ interface, adapt or use parts of their codes:
 
 
   ***********************************
-  * Starting time: Fri Oct  2 11:32:16 2026
+  * Starting time: Fri Oct  2 19:29:51 2026
   * Host name:     48
-  * Process ID:    133737
-  * Working dir.:  /home/w16/fbk_casci/gen
+  * Process ID:    158551
+  * Working dir.:  /home/w16/fbk_casci_xes
   ***********************************
 
 NOTE: MaxCore=4000 MB was set to SCF,MP2,MDCI,CIPSI,MRCI,RASCI and CIS
@@ -202,24 +202,25 @@ Your calculation utilizes the auxiliary basis: def2-SVP/C
 ================================================================================
                                        INPUT FILE
 ================================================================================
-NAME = step1.inp
+NAME = fecl4.casci_xas.step1.inp
 |  1> !def2-SVP def2-SVP/C TightSCF
-|  2> %maxcore 4000
-|  3> %casscf
-|  4>   nel 6
-|  5>   norb 5
-|  6>   mult 5
-|  7>   nroots 5
-|  8> end
-|  9> *xyz -2 5
-| 10> Fe -0.009575 0.000087 0.011550
-| 11> Cl -1.774578 -1.558533 -0.219791
-| 12> Cl -0.681385 1.874633 1.289404
-| 13> Cl 0.666770 0.847828 -2.091305
-| 14> Cl 1.756927 -1.164015 1.071196
-| 15> *
-| 16> 
-| 17>                          ****END OF INPUT****
+|  2> %pal nprocs 48 end
+|  3> %maxcore 4000
+|  4> %casscf
+|  5>   nel 6
+|  6>   norb 5
+|  7>   mult 5
+|  8>   nroots 5
+|  9> end
+| 10> *xyz -2 5
+| 11> Fe -0.009575 0.000087 0.011550
+| 12> Cl -1.774578 -1.558533 -0.219791
+| 13> Cl -0.681385 1.874633 1.289404
+| 14> Cl 0.666770 0.847828 -2.091305
+| 15> Cl 1.756927 -1.164015 1.071196
+| 16> *
+| 17> 
+| 18>                          ****END OF INPUT****
 ================================================================================
 
                        ****************************
@@ -289,6 +290,12 @@ Atom   1Cl   basis set group =>   2
 Atom   2Cl   basis set group =>   2
 Atom   3Cl   basis set group =>   2
 Atom   4Cl   basis set group =>   2
+
+
+           ************************************************************
+           *        Program running with 48 parallel MPI-processes    *
+           *              working on a common directory               *
+           ************************************************************
 ------------------------------------------------------------------------------
                              ORCA STARTUP CALCULATIONS
 ------------------------------------------------------------------------------
@@ -342,7 +349,7 @@ Auxiliary Correlation fitting basis         ... AVAILABLE
    Maximum angular momentum in Aux-C        ...      5
 Auxiliary 'external' fitting basis          ... NOT available
 
-Checking pre-screening integrals            ... done (  0.0 sec) Dimension = 43
+Checking pre-screening integrals            ... done (  0.3 sec) Dimension = 43
    => SHARK Basis and OBASIS are compatible. Storing Pre-screening
 Shell pair information
 Shell pair cut-off parameter TPreSel        ...   2.5e-12
@@ -367,16 +374,16 @@ Checking whether 4 symmetric matrices of dimension 103 fit in memory
  MB left             =   3993.08
  MB needed           =      0.16
  Data fit in memory  = YES
-Calculating RI/C V-Matrix + Cholesky decomp.... done (  0.0 sec)
+Calculating RI/C V-Matrix + Cholesky decomp.... done (  0.6 sec)
 Calculating Nuclear repulsion               ... done (  0.0 sec) ENN=    632.989221368622 Eh
 
 Diagonalization of the overlap matrix:
 Smallest eigenvalue                        ... 4.268e-02
-Time for diagonalization                   ...    0.001 sec
+Time for diagonalization                   ...    0.039 sec
 Threshold for overlap eigenvalues          ... 1.000e-07
 Number of eigenvalues below threshold      ... 0
-Time for construction of square roots      ...    0.000 sec
-Total time needed                          ...    0.002 sec
+Time for construction of square roots      ...    0.078 sec
+Total time needed                          ...    0.217 sec
 
 -------------------
 DFT GRID GENERATION
@@ -399,12 +406,18 @@ Total number of grid points                  ...    40729
 Total number of batches                      ...      640
 Average number of points per batch           ...       63
 Average number of grid points per atom       ...     8146
-Grids setup in   0.3 sec
-Initializing property integral containers    ... done (  0.0 sec)
+Grids setup in   1.1 sec
+Initializing property integral containers    ... done (  0.2 sec)
 
-SHARK setup successfully completed in   0.5 seconds
+SHARK setup successfully completed in   3.7 seconds
 
-Maximum memory used throughout the entire STARTUP-calculation: 21.0 MB
+Maximum memory used throughout the entire STARTUP-calculation: 16.4 MB
+
+
+           ************************************************************
+           *        Program running with 48 parallel MPI-processes    *
+           *              working on a common directory               *
+           ************************************************************
 -------------------------------------------------------------------------------
                                  ORCA GUESS
                    Start orbitals & Density for SCF / CASSCF
@@ -418,7 +431,7 @@ Hamiltonian:
 
 
 General Settings:
- Integral files         IntName         .... step1
+ Integral files         IntName         .... fecl4.casci_xas.step1
  Hartree-Fock type      HFTyp           .... CASSCF
  Total Charge           Charge          ....   -2
  Multiplicity           Mult            ....    5
@@ -433,20 +446,26 @@ Loading Hartree-Fock densities                     ... done
 Calculating cut-offs                               ... done
 Initializing the effective Hamiltonian             ... done
 Setting up the integral package (SHARK)            ... done
-Starting the Coulomb interaction                   ... done (   0.0 sec)
-Making the grid                                    ... done (   0.1 sec)
+Starting the Coulomb interaction                   ... done (   0.7 sec)
+Making the grid                                    ... done (   4.9 sec)
 Mapping shells                                     ... done
-Starting the XC term evaluation                    ... done (   0.0 sec)
-Transforming the Hamiltonian                       ... done (   0.0 sec)
-Diagonalizing the Hamiltonian                      ... done (   0.0 sec)
-Back transforming the eigenvectors                 ... done (   0.0 sec)
+Starting the XC term evaluation                    ... done (   0.1 sec)
+Transforming the Hamiltonian                       ... done (   0.9 sec)
+Diagonalizing the Hamiltonian                      ... done (   0.5 sec)
+Back transforming the eigenvectors                 ... done (   0.3 sec)
 Now organizing SCF variables                       ... done
                       ------------------
-                      INITIAL GUESS DONE (   0.2 sec)
+                      INITIAL GUESS DONE (   8.1 sec)
                       ------------------
-             **** ENERGY FILE WAS UPDATED (step1.en.tmp) ****
-Finished Guess after   0.3 sec
-Maximum memory used throughout the entire GUESS-calculation: 12.4 MB
+             **** ENERGY FILE WAS UPDATED (fecl4.casci_xas.step1.en.tmp) ****
+Finished Guess after  11.4 sec
+Maximum memory used throughout the entire GUESS-calculation: 10.6 MB
+
+
+           ************************************************************
+           *        Program running with 48 parallel MPI-processes    *
+           *              working on a common directory               *
+           ************************************************************
 -------------------------------------------------------------------------------
                               ORCA-CASSCF
 -------------------------------------------------------------------------------
@@ -530,11 +549,11 @@ CAS-SCF ITERATIONS
 MACRO-ITERATION   1: 
    --- Inactive Energy E0 = -3090.67393747 Eh
 CI-ITERATION   0: 
- -3099.554604346   0.000000000001 (    0.00)
- -3099.554553614   0.000000000001
- -3099.553557893   0.000000000003
- -3099.544843283   0.000000000002
- -3099.544745071   0.000000000001
+ -3099.554604346   0.000000000002 (    0.20)
+ -3099.554553614   0.000000000004
+ -3099.553557893   0.000000000002
+ -3099.544843283   0.000000000001
+ -3099.544745071   0.000000000000
    CI-PROBLEM SOLVED
    DENSITIES MADE
 
@@ -573,11 +592,11 @@ ROOT   4:  E=   -3099.5447450713 Eh  0.268 eV   2163.9 cm**-1
 MACRO-ITERATION   2: 
    --- Inactive Energy E0 = -3086.43651919 Eh
 CI-ITERATION   0: 
- -3099.863443778   0.000000000003 (    0.00)
- -3099.862392917   0.000000000004
- -3099.851651978   0.000000000002
+ -3099.863443778   0.000000000001 (    0.20)
+ -3099.862392917   0.000000000001
+ -3099.851651978   0.000000000001
  -3099.849221599   0.000000000002
- -3099.849196292   0.000000000002
+ -3099.849196292   0.000000000001
    CI-PROBLEM SOLVED
    DENSITIES MADE
    E(CAS)= -3099.855181313 Eh DE=   -3.047205e-01
@@ -594,7 +613,7 @@ MACRO-ITERATION   3:
    --- Inactive Energy E0 = -3086.56085735 Eh
 CI-ITERATION   0: 
  -3099.918768418   0.000000000002 (    0.00)
- -3099.917699083   0.000000000004
+ -3099.917699083   0.000000000001
  -3099.912425536   0.000000000003
  -3099.910481865   0.000000000002
  -3099.910461857   0.000000000001
@@ -613,10 +632,10 @@ CI-ITERATION   0:
 MACRO-ITERATION   4: 
    --- Inactive Energy E0 = -3085.96683833 Eh
 CI-ITERATION   0: 
- -3099.932744427   0.000000000002 (    0.00)
- -3099.931584284   0.000000000004
- -3099.924321551   0.000000000001
- -3099.921954379   0.000000000001
+ -3099.932744427   0.000000000001 (    0.00)
+ -3099.931584284   0.000000000002
+ -3099.924321551   0.000000000005
+ -3099.921954379   0.000000000002
  -3099.921931080   0.000000000001
    CI-PROBLEM SOLVED
    DENSITIES MADE
@@ -633,11 +652,11 @@ CI-ITERATION   0:
 MACRO-ITERATION   5: 
    --- Inactive Energy E0 = -3085.89613526 Eh
 CI-ITERATION   0: 
- -3099.933381017   0.000000000002 (    0.00)
- -3099.932244912   0.000000000001
- -3099.924713199   0.000000000002
- -3099.922343000   0.000000000001
- -3099.922319499   0.000000000001
+ -3099.933381017   0.000000000003 (    0.22)
+ -3099.932244912   0.000000000002
+ -3099.924713199   0.000000000004
+ -3099.922343000   0.000000000008
+ -3099.922319499   0.000000000002
    CI-PROBLEM SOLVED
    DENSITIES MADE
    E(CAS)= -3099.927000325 Eh DE=   -4.931810e-04
@@ -653,14 +672,14 @@ CI-ITERATION   0:
 MACRO-ITERATION   6: 
    --- Inactive Energy E0 = -3085.88176588 Eh
 CI-ITERATION   0: 
- -3099.933468554   0.000000000002 (    0.00)
- -3099.932337388   0.000000000003
+ -3099.933468554   0.000000000005 (    0.23)
+ -3099.932337388   0.000000000002
  -3099.924705232   0.000000000004
- -3099.922331180   0.000000000002
+ -3099.922331180   0.000000000007
  -3099.922307579   0.000000000001
    CI-PROBLEM SOLVED
    DENSITIES MADE
-   E(CAS)= -3099.927029987 Eh DE=   -2.966114e-05
+   E(CAS)= -3099.927029987 Eh DE=   -2.966113e-05
    --- Energy gap subspaces: Ext-Act = 0.370   Act-Int = 0.182
    N(occ)=  1.20000 1.20000 1.20000 1.20000 1.20000
    ||g|| =     3.547312e-03 Max(G)=   -8.011312e-04 Rot=52,28
@@ -673,14 +692,14 @@ CI-ITERATION   0:
 MACRO-ITERATION   7: 
    --- Inactive Energy E0 = -3085.88103182 Eh
 CI-ITERATION   0: 
- -3099.933476161   0.000000000004 (    0.00)
- -3099.932346981   0.000000000005
- -3099.924701056   0.000000000004
- -3099.922327459   0.000000000003
+ -3099.933476161   0.000000000001 (    0.02)
+ -3099.932346981   0.000000000002
+ -3099.924701056   0.000000000005
+ -3099.922327459   0.000000000002
  -3099.922303852   0.000000000000
    CI-PROBLEM SOLVED
    DENSITIES MADE
-   E(CAS)= -3099.927031102 Eh DE=   -1.115173e-06
+   E(CAS)= -3099.927031102 Eh DE=   -1.115176e-06
    --- Energy gap subspaces: Ext-Act = 0.369   Act-Int = 0.182
    N(occ)=  1.20000 1.20000 1.20000 1.20000 1.20000
    ||g|| =     4.816158e-04 Max(G)=    1.412741e-04 Rot=46,37
@@ -693,10 +712,10 @@ CI-ITERATION   0:
 MACRO-ITERATION   8: 
    --- Inactive Energy E0 = -3085.88168966 Eh
 CI-ITERATION   0: 
- -3099.933478003   0.000000000002 (    0.00)
+ -3099.933478003   0.000000000002 (    0.20)
  -3099.932349578   0.000000000002
- -3099.924699539   0.000000000004
- -3099.922326144   0.000000000001
+ -3099.924699539   0.000000000003
+ -3099.922326144   0.000000000002
  -3099.922302536   0.000000000001
    CI-PROBLEM SOLVED
    DENSITIES MADE
@@ -714,15 +733,15 @@ MACRO-ITERATION   9:
    --- Inactive Energy E0 = -3085.88168966 Eh
    --- All densities will be recomputed
 CI-ITERATION   0: 
- -3099.933478006   0.000000000002 (    0.00)
- -3099.932349580   0.000000000001
+ -3099.933478006   0.000000000003 (    0.17)
+ -3099.932349580   0.000000000002
  -3099.924699542   0.000000000002
- -3099.922326146   0.000000000003
+ -3099.922326146   0.000000000002
  -3099.922302538   0.000000000001
    CI-PROBLEM SOLVED
    DENSITIES MADE
-   E(CAS)= -3099.927031162 Eh DE=   -2.144134e-09
-   --- Energy gap subspaces: Ext-Act = 0.280   Act-Int = 0.182
+   E(CAS)= -3099.927031162 Eh DE=   -2.129582e-09
+   --- Energy gap subspaces: Ext-Act = 0.280   Act-Int = 0.184
    N(occ)=  1.20000 1.20000 1.20000 1.20000 1.20000
    ||g|| =     1.345247e-04 Max(G)=   -3.759675e-05 Rot=51,33
 --------------
@@ -781,11 +800,11 @@ ORBITAL ENERGIES
   42   2.0000      -0.082965        -2.2576 
   43   2.0000      -0.081569        -2.2196 
   44   2.0000      -0.081534        -2.2187 
-  45   1.2000       0.111908         3.0452 
+  45   1.2000       0.102890         2.7998 
   46   1.2000       0.113038         3.0759 
-  47   1.2000       0.100218         2.7271 
-  48   1.2000       0.111416         3.0318 
-  49   1.2000       0.101249         2.7551 
+  47   1.2000       0.106315         2.8930 
+  48   1.2000       0.108606         2.9553 
+  49   1.2000       0.106980         2.9111 
   50   0.0000       0.393230        10.7003 
   51   0.0000       0.598940        16.2980 
   52   0.0000       0.661102        17.9895 
@@ -846,27 +865,30 @@ CAS-SCF STATES FOR BLOCK  0 MULT= 5 NROOTS= 5
 ---------------------------------------------
 
 ROOT   0:  E=   -3099.9334780055 Eh
-      0.94399 [     2]: 11211
-      0.04540 [     0]: 11112
-      0.00746 [     4]: 21111
-      0.00315 [     1]: 11121
+      0.39130 [     0]: 11112
+      0.23550 [     4]: 21111
+      0.18930 [     1]: 11121
+      0.18391 [     2]: 11211
 ROOT   1:  E=   -3099.9323495801 Eh  0.031 eV    247.7 cm**-1
-      0.94556 [     0]: 11112
-      0.04783 [     2]: 11211
-      0.00652 [     1]: 11121
+      0.55793 [     4]: 21111
+      0.33694 [     2]: 11211
+      0.08223 [     0]: 11112
+      0.02289 [     1]: 11121
 ROOT   2:  E=   -3099.9246995415 Eh  0.239 eV   1926.7 cm**-1
-      0.58476 [     1]: 11121
-      0.40094 [     4]: 21111
-      0.00768 [     0]: 11112
-      0.00660 [     2]: 11211
+      0.66734 [     1]: 11121
+      0.19529 [     4]: 21111
+      0.13658 [     2]: 11211
 ROOT   3:  E=   -3099.9223261464 Eh  0.303 eV   2447.6 cm**-1
-      0.55511 [     4]: 21111
-      0.38154 [     1]: 11121
+      0.49411 [     0]: 11112
+      0.32132 [     2]: 11211
+      0.11344 [     1]: 11121
       0.06060 [     3]: 12111
+      0.01053 [     4]: 21111
 ROOT   4:  E=   -3099.9223025380 Eh  0.304 eV   2452.7 cm**-1
       0.93939 [     3]: 12111
-      0.03640 [     4]: 21111
-      0.02403 [     1]: 11121
+      0.03158 [     0]: 11112
+      0.02125 [     2]: 11211
+      0.00703 [     1]: 11121
 
 
 --------------
@@ -875,10 +897,10 @@ DENSITY MATRIX
 
                   0          1          2          3          4    
       0       1.200000  -0.000000  -0.000000   0.000000   0.000000
-      1      -0.000000   1.200000   0.000000  -0.000000  -0.000000
-      2      -0.000000   0.000000   1.200000  -0.000000   0.000000
-      3       0.000000  -0.000000  -0.000000   1.200000   0.000000
-      4       0.000000  -0.000000   0.000000   0.000000   1.200000
+      1      -0.000000   1.200000   0.000000  -0.000000   0.000000
+      2      -0.000000   0.000000   1.200000   0.000000  -0.000000
+      3       0.000000  -0.000000   0.000000   1.200000  -0.000000
+      4       0.000000   0.000000  -0.000000  -0.000000   1.200000
 Trace of the electron density:  6.000000
 Extracting Spin-Density from 2-RDM (MULT=5) ... done
 
@@ -888,10 +910,10 @@ SPIN-DENSITY MATRIX
 
                   0          1          2          3          4    
       0       0.800000   0.000000   0.000000  -0.000000  -0.000000
-      1       0.000000   0.800000  -0.000000   0.000000   0.000000
-      2       0.000000  -0.000000   0.800000   0.000000  -0.000000
-      3      -0.000000   0.000000   0.000000   0.800000  -0.000000
-      4      -0.000000   0.000000  -0.000000  -0.000000   0.800000
+      1       0.000000   0.800000  -0.000000   0.000000  -0.000000
+      2       0.000000  -0.000000   0.800000  -0.000000   0.000000
+      3      -0.000000   0.000000  -0.000000   0.800000   0.000000
+      4      -0.000000  -0.000000   0.000000   0.000000   0.800000
 Trace of the spin density:  4.000000
 
 -----------------
@@ -1046,55 +1068,55 @@ LOEWDIN ORBITAL-COMPOSITIONS
  4 Cl py             15.3      16.9       1.7      22.6       2.3       0.5
 
                      42        43        44        45        46        47   
-                  -0.08297  -0.08157  -0.08153   0.11191   0.11304   0.10022
+                  -0.08297  -0.08157  -0.08153   0.10289   0.11304   0.10632
                    2.00000   2.00000   2.00000   1.20000   1.20000   1.20000
                   --------  --------  --------  --------  --------  --------
- 0 Fe pz              0.0       0.0       0.0       0.5       0.3       0.0
- 0 Fe px              0.0       0.0       0.0       0.2       0.5       0.0
- 0 Fe py              0.0       0.0       0.0       0.2       0.0       0.0
- 0 Fe dz2             0.0       0.0       0.0      22.0      21.8      29.4
- 0 Fe dxz             0.0       0.0       0.0      30.7       0.2      56.6
- 0 Fe dyz             0.0       0.0       0.0       0.2      64.9       7.2
- 0 Fe dx2y2           0.0       0.0       0.0       6.6       7.3       2.2
- 0 Fe dxy             0.0       0.0       0.0      37.3       2.4       3.6
- 1 Cl pz             20.6       4.7       9.6       0.1       0.1       0.2
- 1 Cl px              3.2       2.2      14.1       0.1       0.3       0.0
- 1 Cl py              1.8       1.6      16.4       0.0       0.0       0.0
- 2 Cl pz              2.3      25.3       2.7       0.1       0.3       0.1
- 2 Cl px             22.2       2.8       6.9       0.1       0.2       0.2
- 2 Cl py              0.4      12.3       0.0       0.0       0.2       0.0
- 3 Cl pz              3.2       4.6       1.7       0.5       0.5       0.1
- 3 Cl px             21.3       3.8       6.5       0.0       0.2       0.2
- 3 Cl py              0.5      32.2       1.0       0.1       0.0       0.0
- 4 Cl pz             19.5       7.8       0.1       0.4       0.0       0.1
- 4 Cl px              3.2       2.6      14.1       0.4       0.3       0.0
- 4 Cl py              1.8       0.1      26.8       0.2       0.1       0.1
+ 0 Fe pz              0.0       0.0       0.0       0.0       0.3       0.3
+ 0 Fe px              0.0       0.0       0.0       0.0       0.5       0.1
+ 0 Fe py              0.0       0.0       0.0       0.1       0.0       0.0
+ 0 Fe dz2             0.0       0.0       0.0       7.2      21.8       6.3
+ 0 Fe dxz             0.0       0.0       0.0      42.8       0.2      49.0
+ 0 Fe dyz             0.0       0.0       0.0      13.6      64.9       4.0
+ 0 Fe dx2y2           0.0       0.0       0.0      34.0       7.3      24.1
+ 0 Fe dxy             0.0       0.0       0.0       0.9       2.4      14.5
+ 1 Cl pz             20.6       4.7       9.6       0.2       0.1       0.1
+ 1 Cl px              3.2       2.2      14.1       0.0       0.3       0.0
+ 1 Cl py              1.8       1.6      16.4       0.2       0.0       0.1
+ 2 Cl pz              2.3      25.3       2.7       0.1       0.3       0.2
+ 2 Cl px             22.2       2.8       6.9       0.0       0.2       0.0
+ 2 Cl py              0.4      12.3       0.0       0.0       0.2       0.1
+ 3 Cl pz              3.2       4.6       1.7       0.2       0.5       0.2
+ 3 Cl px             21.3       3.8       6.5       0.0       0.2       0.1
+ 3 Cl py              0.5      32.2       1.0       0.0       0.0       0.2
+ 4 Cl pz             19.5       7.8       0.1       0.0       0.0       0.1
+ 4 Cl px              3.2       2.6      14.1       0.0       0.3       0.5
+ 4 Cl py              1.8       0.1      26.8       0.4       0.1       0.0
 
                      48        49        50        51        52        53   
-                   0.11142   0.10125   0.39323   0.59894   0.66110   0.66129
+                   0.10861   0.10698   0.39323   0.59894   0.66110   0.66129
                    1.20000   1.20000   0.00000   0.00000   0.00000   0.00000
                   --------  --------  --------  --------  --------  --------
  0 Fe s               0.0       0.0      91.0      70.2       0.0       0.0
- 0 Fe pz              0.1       0.0       0.0       0.0       2.1      66.0
- 0 Fe px              0.1       0.0       0.0       0.0      71.8       2.4
- 0 Fe py              0.7       0.0       0.0       0.0       0.3       5.9
- 0 Fe dz2            15.6       8.9       0.0       0.0       0.4       0.3
- 0 Fe dxz             6.8       3.7       0.0       0.0       0.1       0.2
- 0 Fe dyz             4.6      20.4       0.0       0.0       1.3       0.8
- 0 Fe dx2y2          17.3      65.0       0.0       0.0       0.2       0.1
- 0 Fe dxy            52.5       0.9       0.0       0.0       1.0       1.7
+ 0 Fe pz              0.0       0.3       0.0       0.0       2.1      66.0
+ 0 Fe px              0.0       0.2       0.0       0.0      71.8       2.4
+ 0 Fe py              0.6       0.0       0.0       0.0       0.3       5.9
+ 0 Fe dz2            53.7       8.6       0.0       0.0       0.4       0.3
+ 0 Fe dxz             1.1       4.9       0.0       0.0       0.1       0.2
+ 0 Fe dyz            13.4       1.4       0.0       0.0       1.3       0.8
+ 0 Fe dx2y2          14.4      18.6       0.0       0.0       0.2       0.1
+ 0 Fe dxy            14.7      64.3       0.0       0.0       1.0       1.7
  1 Cl s               0.1       0.0       1.7       1.4       1.8       0.6
- 1 Cl pz              0.0       0.0       0.0       0.0       0.2       1.2
- 1 Cl px              0.3       0.1       0.2       2.5       0.4       0.7
- 1 Cl py              0.7       0.1       0.2       2.1       2.6       0.3
+ 1 Cl pz              0.1       0.0       0.0       0.0       0.2       1.2
+ 1 Cl px              0.1       0.4       0.2       2.5       0.4       0.7
+ 1 Cl py              0.5       0.0       0.2       2.1       2.6       0.3
  1 Cl dz2             0.0       0.0       0.0       0.3       0.2       0.2
  1 Cl dxz             0.0       0.0       0.0       0.0       0.1       0.5
  1 Cl dyz             0.0       0.0       0.0       0.0       0.1       0.4
  1 Cl dx2y2           0.0       0.0       0.0       0.0       0.6       0.0
  1 Cl dxy             0.0       0.0       0.1       1.0       0.8       0.3
- 2 Cl s               0.1       0.0       1.7       1.4       0.7       1.8
- 2 Cl pz              0.1       0.1       0.1       1.3       0.3       0.1
- 2 Cl px              0.0       0.0       0.0       0.4       0.8       0.8
+ 2 Cl s               0.0       0.0       1.7       1.4       0.7       1.8
+ 2 Cl pz              0.0       0.1       0.1       1.3       0.3       0.1
+ 2 Cl px              0.0       0.2       0.0       0.4       0.8       0.8
  2 Cl py              0.5       0.1       0.3       2.9       1.2       2.3
  2 Cl dz2             0.0       0.0       0.0       0.0       0.0       0.5
  2 Cl dxz             0.0       0.0       0.0       0.1       0.2       0.1
@@ -1102,18 +1124,18 @@ LOEWDIN ORBITAL-COMPOSITIONS
  2 Cl dx2y2           0.0       0.0       0.0       0.3       0.7       0.4
  2 Cl dxy             0.0       0.0       0.0       0.2       0.3       0.7
  3 Cl s               0.0       0.0       1.7       1.4       0.7       1.8
- 3 Cl pz              0.0       0.0       0.3       3.6       1.1       1.0
+ 3 Cl pz              0.0       0.1       0.3       3.6       1.1       1.0
  3 Cl px              0.1       0.0       0.0       0.4       0.8       0.8
- 3 Cl py              0.2       0.2       0.1       0.6       0.3       1.4
+ 3 Cl py              0.3       0.0       0.1       0.6       0.3       1.4
  3 Cl dz2             0.0       0.0       0.1       0.6       0.6       0.0
  3 Cl dxz             0.0       0.0       0.0       0.3       0.4       0.5
  3 Cl dyz             0.0       0.0       0.0       0.4       0.4       0.9
  3 Cl dx2y2           0.0       0.0       0.0       0.0       0.2       0.0
  3 Cl dxy             0.0       0.0       0.0       0.0       0.0       0.3
  4 Cl s               0.0       0.0       1.7       1.4       1.9       0.7
- 4 Cl pz              0.0       0.0       0.1       0.9       1.7       0.4
- 4 Cl px              0.1       0.1       0.2       2.5       0.4       0.8
- 4 Cl py              0.2       0.1       0.1       1.1       1.2       1.2
+ 4 Cl pz              0.0       0.5       0.1       0.9       1.7       0.4
+ 4 Cl px              0.0       0.1       0.2       2.5       0.4       0.8
+ 4 Cl py              0.1       0.0       0.1       1.1       1.2       1.2
  4 Cl dz2             0.0       0.0       0.0       0.1       0.1       0.7
  4 Cl dxz             0.0       0.0       0.0       0.5       0.6       0.1
  4 Cl dyz             0.0       0.0       0.0       0.2       0.7       0.0
@@ -1472,46 +1494,45 @@ LOEWDIN REDUCED ACTIVE MOs
 ----------------------------
 
                      42        43        44        45        46        47   
-                  -0.08297  -0.08157  -0.08153   0.11191   0.11304   0.10022
+                  -0.08297  -0.08157  -0.08153   0.10289   0.11304   0.10632
                    2.00000   2.00000   2.00000   1.20000   1.20000   1.20000
                   --------  --------  --------  --------  --------  --------
- 0 Fe dz2             0.0       0.0       0.0      22.0      21.8      29.4
- 0 Fe dxz             0.0       0.0       0.0      30.7       0.2      56.6
- 0 Fe dyz             0.0       0.0       0.0       0.2      64.9       7.2
- 0 Fe dx2y2           0.0       0.0       0.0       6.6       7.3       2.2
- 0 Fe dxy             0.0       0.0       0.0      37.3       2.4       3.6
- 1 Cl pz             20.6       4.7       9.6       0.1       0.1       0.2
- 1 Cl px              3.2       2.2      14.1       0.1       0.3       0.0
- 1 Cl py              1.8       1.6      16.4       0.0       0.0       0.0
- 2 Cl pz              2.3      25.3       2.7       0.1       0.3       0.1
- 2 Cl px             22.2       2.8       6.9       0.1       0.2       0.2
- 2 Cl py              0.4      12.3       0.0       0.0       0.2       0.0
- 3 Cl px             21.3       3.8       6.5       0.0       0.2       0.2
- 3 Cl py              0.5      32.2       1.0       0.1       0.0       0.0
- 4 Cl pz             19.5       7.8       0.1       0.4       0.0       0.1
- 4 Cl px              3.2       2.6      14.1       0.4       0.3       0.0
- 4 Cl py              1.8       0.1      26.8       0.2       0.1       0.1
+ 0 Fe dz2             0.0       0.0       0.0       7.2      21.8       6.3
+ 0 Fe dxz             0.0       0.0       0.0      42.8       0.2      49.0
+ 0 Fe dyz             0.0       0.0       0.0      13.6      64.9       4.0
+ 0 Fe dx2y2           0.0       0.0       0.0      34.0       7.3      24.1
+ 0 Fe dxy             0.0       0.0       0.0       0.9       2.4      14.5
+ 1 Cl pz             20.6       4.7       9.6       0.2       0.1       0.1
+ 1 Cl px              3.2       2.2      14.1       0.0       0.3       0.0
+ 1 Cl py              1.8       1.6      16.4       0.2       0.0       0.1
+ 2 Cl pz              2.3      25.3       2.7       0.1       0.3       0.2
+ 2 Cl px             22.2       2.8       6.9       0.0       0.2       0.0
+ 2 Cl py              0.4      12.3       0.0       0.0       0.2       0.1
+ 3 Cl px             21.3       3.8       6.5       0.0       0.2       0.1
+ 3 Cl py              0.5      32.2       1.0       0.0       0.0       0.2
+ 4 Cl pz             19.5       7.8       0.1       0.0       0.0       0.1
+ 4 Cl px              3.2       2.6      14.1       0.0       0.3       0.5
+ 4 Cl py              1.8       0.1      26.8       0.4       0.1       0.0
 
                      48        49        50        51        52        53   
-                   0.11142   0.10125   0.39323   0.59894   0.66110   0.66129
+                   0.10861   0.10698   0.39323   0.59894   0.66110   0.66129
                    1.20000   1.20000   0.00000   0.00000   0.00000   0.00000
                   --------  --------  --------  --------  --------  --------
  0 Fe s               0.0       0.0      91.0      70.2       0.0       0.0
- 0 Fe pz              0.1       0.0       0.0       0.0       2.1      66.0
- 0 Fe px              0.1       0.0       0.0       0.0      71.8       2.4
- 0 Fe py              0.7       0.0       0.0       0.0       0.3       5.9
- 0 Fe dz2            15.6       8.9       0.0       0.0       0.4       0.3
- 0 Fe dxz             6.8       3.7       0.0       0.0       0.1       0.2
- 0 Fe dyz             4.6      20.4       0.0       0.0       1.3       0.8
- 0 Fe dx2y2          17.3      65.0       0.0       0.0       0.2       0.1
- 0 Fe dxy            52.5       0.9       0.0       0.0       1.0       1.7
+ 0 Fe pz              0.0       0.3       0.0       0.0       2.1      66.0
+ 0 Fe px              0.0       0.2       0.0       0.0      71.8       2.4
+ 0 Fe py              0.6       0.0       0.0       0.0       0.3       5.9
+ 0 Fe dz2            53.7       8.6       0.0       0.0       0.4       0.3
+ 0 Fe dyz            13.4       1.4       0.0       0.0       1.3       0.8
+ 0 Fe dx2y2          14.4      18.6       0.0       0.0       0.2       0.1
+ 0 Fe dxy            14.7      64.3       0.0       0.0       1.0       1.7
 
 ------------------------------------------------------------------------------
                            ORCA POPULATION ANALYSIS
 ------------------------------------------------------------------------------
-Input electron density              ... step1.scfp
-Input spin density                  ... step1.scfr
-BaseName (.gbw .S,...)              ... step1
+Input electron density              ... fecl4.casci_xas.step1.scfp
+Input spin density                  ... fecl4.casci_xas.step1.scfr
+BaseName (.gbw .S,...)              ... fecl4.casci_xas.step1
 
                     ********************************
                     * MULLIKEN POPULATION ANALYSIS *
@@ -1789,7 +1810,7 @@ B(  0-Fe,  4-Cl) :   0.4453
 
 
 -------------------------------------------------------------
- Forming the transition densities       ... done in 0.0 sec
+ Forming the transition densities       ... done in 0.3 sec
 -------------------------------------------------------------
 Memory for address arrays  		      ... done
 Make address arrays			      ... done
@@ -1807,36 +1828,42 @@ Coupling container construction done
 CASSCF TIMINGS
 --------------
 
-Total time                       ...       22.8 sec
-Sum of individual times          ...       22.6 sec ( 99.2%)
+Total time                       ...       96.0 sec
+Sum of individual times          ...       89.8 sec ( 93.6%)
 
 Calculation of AO operators
-   F(Core) operator              ...        4.8 sec ( 21.0%)
-   G(Act) operator               ...        4.4 sec ( 19.3%)
+   F(Core) operator              ...        1.7 sec (  1.8%)
+   G(Act) operator               ...        1.5 sec (  1.6%)
 Calculation of MO transformed quantities
-   J(MO) operators               ...       13.4 sec ( 58.8%)
+   J(MO) operators               ...        5.1 sec (  5.3%)
    AO->MO one electron integrals ...        0.0 sec (  0.0%)
 Configuration interaction steps
-   CI-setup phase                ...        0.0 sec (  0.0%)
-   CI-solution phase             ...        0.0 sec (  0.1%)
-   Generation of densities       ...        0.0 sec (  0.0%)
+   CI-setup phase                ...        4.6 sec (  4.8%)
+   CI-solution phase             ...       51.1 sec ( 53.2%)
+   Generation of densities       ...        1.3 sec (  1.4%)
 Orbital improvement steps
-   Orbital gradient              ...        0.0 sec (  0.0%)
-   O(1) converger                ...        0.0 sec (  0.0%)
+   Orbital gradient              ...        0.2 sec (  0.2%)
+   O(1) converger                ...       23.7 sec ( 24.7%)
 CPCM steps
-   Total CPCM time               ...        0.0 sec (  0.0%)
-Properties                       ...        0.0 sec (  0.0%)
+   Total CPCM time               ...        0.2 sec (  0.2%)
+Properties                       ...        0.3 sec (  0.3%)
    SOC integral calculation      ...        0.0 sec (  0.0%)
    SSC RMEs (incl. integrals)    ...        0.0 sec (  0.0%)
    SOC RMEs                      ...        0.0 sec (  0.0%)
 
-Maximum memory used throughout the entire CASSCF-calculation: 42.7 MB
+Maximum memory used throughout the entire CASSCF-calculation: 40.9 MB
+
+
+           ************************************************************
+           *        Program running with 48 parallel MPI-processes    *
+           *              working on a common directory               *
+           ************************************************************
 
 ------------------------------------------------------------------------------
                          ORCA PROPERTY INTEGRAL CALCULATIONS
 ------------------------------------------------------------------------------
 
-GBWName                                   ... step1.gbw
+GBWName                                   ... fecl4.casci_xas.step1.gbw
 Number of atoms                           ...      5
 Number of basis functions                 ...    103
 Max core memory                           ...   4000 MB
@@ -1864,12 +1891,18 @@ Position of electric origin ... ( -0.0160,  0.0000,  0.0229)
 Choice of magnetic origin   ... GIAO
 Position of magnetic origin ... (  0.0000,  0.0000,  0.0000) 
 
-Calculating integrals                     ... Electric Dipole (Length)     done (  0.0 sec)
-Calculating integrals                     ... Angular Momentum  (ElOri)    done (  0.0 sec)
+Calculating integrals                     ... Electric Dipole (Length)     done (  0.2 sec)
+Calculating integrals                     ... Angular Momentum  (ElOri)    done (  0.3 sec)
 
-Property integrals calculated in   0.0 sec
+Property integrals calculated in   0.5 sec
 
-Maximum memory used throughout the entire PROPINT-calculation: 12.5 MB
+Maximum memory used throughout the entire PROPINT-calculation: 10.7 MB
+
+
+           ************************************************************
+           *        Program running with 48 parallel MPI-processes    *
+           *              working on a common directory               *
+           ************************************************************
 -------------------------------------------------------------------------------
                               ORCA-CASSCF
 -------------------------------------------------------------------------------
@@ -1887,10 +1920,10 @@ CASSCF UV, CD spectra and dipole moments
      Transition      Energy     Energy  Wavelength fosc(D2)      D2        DX        DY        DZ   
                       (eV)      (cm-1)    (nm)                 (au**2)    (au)      (au)      (au)  
 ----------------------------------------------------------------------------------------------------
-  0-5A  ->  1-5A    0.030706     247.7  40377.8   0.000000000   0.00000  -0.00001   0.00002   0.00005
-  0-5A  ->  2-5A    0.238874    1926.7  5190.4   0.000000000   0.00000   0.00001   0.00018  -0.00007
+  0-5A  ->  1-5A    0.030706     247.7  40377.8   0.000000000   0.00000   0.00001  -0.00002  -0.00005
+  0-5A  ->  2-5A    0.238874    1926.7  5190.4   0.000000000   0.00000  -0.00001  -0.00018   0.00007
   0-5A  ->  3-5A    0.303458    2447.6  4085.7   0.000014123   0.00190   0.01748   0.01160   0.03821
-  0-5A  ->  4-5A    0.304100    2452.7  4077.1   0.000014322   0.00192  -0.04016   0.00512   0.01683
+  0-5A  ->  4-5A    0.304100    2452.7  4077.1   0.000014322   0.00192   0.04016  -0.00512  -0.01683
 
 ------------------------------------------------------------------------------------------
                      CD SPECTRUM VIA TRANSITION ELECTRIC DIPOLE MOMENTS    
@@ -1898,40 +1931,46 @@ CASSCF UV, CD spectra and dipole moments
      Transition      Energy     Energy  Wavelength    R        MX        MY        MZ   
                       (eV)      (cm-1)    (nm)   (1e40*cgs)   (au)      (au)      (au)  
 ------------------------------------------------------------------------------------------
-  0-5A  ->  1-5A    0.030706     247.7  40377.8   -0.00001   0.00197  -0.00033   0.00114
-  0-5A  ->  2-5A    0.238874    1926.7  5190.4    0.08852  -0.00060  -0.92695   0.28144
+  0-5A  ->  1-5A    0.030706     247.7  40377.8   -0.00001  -0.00197   0.00033  -0.00114
+  0-5A  ->  2-5A    0.238874    1926.7  5190.4    0.08852   0.00060   0.92695  -0.28144
   0-5A  ->  3-5A    0.303458    2447.6  4085.7   -9.98644   0.20187   0.12940   0.42280
-  0-5A  ->  4-5A    0.304100    2452.7  4077.1    9.89828   0.43560  -0.05682  -0.19074
+  0-5A  ->  4-5A    0.304100    2452.7  4077.1    9.89828  -0.43560   0.05682   0.19074
 
 --------------
 CASSCF TIMINGS
 --------------
 
-Total time                       ...        0.1 sec
-Sum of individual times          ...        0.1 sec ( 95.0%)
+Total time                       ...        2.8 sec
+Sum of individual times          ...        1.9 sec ( 67.2%)
 
 Calculation of AO operators
 Calculation of MO transformed quantities
 Configuration interaction steps
-   CI-setup phase                ...        0.1 sec ( 95.0%)
+   CI-setup phase                ...        1.9 sec ( 67.2%)
 Orbital improvement steps
 Properties                       ...        0.0 sec (  0.0%)
    SOC integral calculation      ...        0.0 sec (  0.0%)
    SSC RMEs (incl. integrals)    ...        0.0 sec (  0.0%)
    SOC RMEs                      ...        0.0 sec (  0.0%)
 
-Maximum memory used throughout the entire CASSCF-calculation: 33.6 MB
+Maximum memory used throughout the entire CASSCF-calculation: 31.8 MB
 
 -------------------------   --------------------
-FINAL SINGLE POINT ENERGY     -3099.927031162309
+FINAL SINGLE POINT ENERGY     -3099.927031162294
 -------------------------   --------------------
 
+
+
+           ************************************************************
+           *        Program running with 48 parallel MPI-processes    *
+           *              working on a common directory               *
+           ************************************************************
 
 ------------------------------------------------------------------------------
                               ORCA PROPERTY CALCULATIONS
 ------------------------------------------------------------------------------
 
-GBWName                                 ... step1.gbw
+GBWName                                 ... fecl4.casci_xas.step1.gbw
 Number of atoms                         ...      5
 Number of basis functions               ...    103
 Max core memory                         ...   4000 MB
@@ -1992,7 +2031,7 @@ Level              : Unrelaxed density
 State              :  -1
 Multiplicity       :  -1
 Irrep              :   0
-Energy             : -3099.9270311623090493 Eh
+Energy             : -3099.9270311622935878 Eh
 Basis              : AO
                                 X                 Y                 Z
 Electronic contribution:     -0.005926289       0.000452491      -0.003254602
@@ -2018,9 +2057,9 @@ x,y,z [Debye]:     0.002469    -0.007790     0.009576
 
  
 
-Dipole moment calculation done in   0.0 sec 
+Dipole moment calculation done in   0.2 sec 
 
-Maximum memory used throughout the entire PROP-calculation: 9.1 MB
+Maximum memory used throughout the entire PROP-calculation: 7.3 MB
 
 --------------------------------
 SUGGESTED CITATIONS FOR THIS RUN
@@ -2038,7 +2077,7 @@ But we need these citations in order to attract the funding resources that allow
 
 Therefore, if you are a happy ORCA user, please consider citing a few of the papers listed below in the main body of your paper
 
-In addition to the list printed below, the program has created the file step1.bibtex that contains the list in bibtex format
+In addition to the list printed below, the program has created the file fecl4.casci_xas.step1.bibtex that contains the list in bibtex format
 You can import this file easily into all common literature databanks and citation aid programs
 
 It goes without saying that in many instances, there are alternative algorithms to achieve similar
@@ -2104,11 +2143,11 @@ List of optional additional citations
 
 Timings for individual modules:
 
-Sum of individual times          ...       24.171 sec (=   0.403 min)
-Startup calculation              ...        0.556 sec (=   0.009 min)   2.3 %
-SCF iterations                   ...        0.322 sec (=   0.005 min)   1.3 %
-CASSCF iterations                ...       23.035 sec (=   0.384 min)  95.3 %
-Property integrals               ...        0.123 sec (=   0.002 min)   0.5 %
-Property calculations            ...        0.134 sec (=   0.002 min)   0.6 %
+Sum of individual times          ...      120.674 sec (=   2.011 min)
+Startup calculation              ...        4.298 sec (=   0.072 min)   3.6 %
+SCF iterations                   ...       11.595 sec (=   0.193 min)   9.6 %
+CASSCF iterations                ...      101.236 sec (=   1.687 min)  83.9 %
+Property integrals               ...        1.900 sec (=   0.032 min)   1.6 %
+Property calculations            ...        1.645 sec (=   0.027 min)   1.4 %
                              ****ORCA TERMINATED NORMALLY****
-TOTAL RUN TIME: 0 days 0 hours 0 minutes 24 seconds 332 msec
+TOTAL RUN TIME: 0 days 0 hours 2 minutes 2 seconds 261 msec

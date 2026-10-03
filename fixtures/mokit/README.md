@@ -38,6 +38,17 @@ Files:
 - `h2o_generated_automr.out` — the acceptance run of that generated input
   (same chain, CAS(4e,4o) automatically determined, Normal termination):
   this is the generator's verification record.
+- `h2o_gvb_rhf.fch`, `h2o_gvb_uhf_gvb4_CASSCF_NO.fch`,
+  `h2o_gvb_uhf_uno_asrot2gvb4.fch` — three `.fch` side products of the same
+  probe chain (the RHF stage, the CASSCF natural orbitals, and the UNO
+  active-space rotation towards GVB(4)), read by `parsers/mokit_fch.py`
+  (menu 45's side-product section).  Measured format facts: the MO
+  coefficient arrays are column-major over (basis, MO); the density
+  triangles are row-major lower (the RHF file's five closed-shell MOs
+  reconstruct its own `Total SCF Density` to 9e-9 — the reader's regression
+  anchor); coordinates are in Bohr; the transformed-stage files carry alpha
+  sections only (no beta block); the energy scalars are the stage's
+  SCF/total values (-75.78429 Eh RHF, -75.91807 Eh GVB stages).
 
 Measured boundary (kept out of the fixture set): an N2 probe with the
 active-space size unpinned made automr choose GVB(5), and Gaussian 16

@@ -82,7 +82,7 @@ items:
     title: "AEGISS selection (entropy screening + an AO projection -> a compact active space)"
     handler: aegiss_select
   - number: "26"
-    title: "TNASS subset selection (an FCIDUMP -> the S2-maximizing orbital subset)"
+    title: "TNASS subset selection (an FCIDUMP -> the S2-maximizing orbital subset, or the best-k energy sweep)"
     handler: tnass_select
   - number: "27"
     title: "DeltaSCF / MOM excited-state SCF input (a structure + an excitation spec -> an input)"
@@ -109,13 +109,13 @@ items:
     title: "Judd-Ofelt intensity parameters (a transition dataset -> Omega_2/4/6 and radiative quantities)"
     handler: judd_ofelt_fit
   - number: "35"
-    title: "pNMR pseudocontact shifts (a susceptibility run file + a structure -> per-nucleus PCS)"
+    title: "pNMR pseudocontact shifts (a susceptibility run file + a structure -> per-nucleus PCS; optional Bleaney comparator)"
     handler: pnmr_report
   - number: "36"
     title: "Magnetic relaxation and QTM (an ORCA output with SINGLE_ANISO or MAGRELAX -> the barrier estimate and tau(T))"
     handler: relaxation_report
   - number: "37"
-    title: "Core-excited spectra XAS/RIXS (a ROCIS output -> the spectra table and the edge branching ratio; a structure -> ROCIS XES or CAS-CI XAS inputs)"
+    title: "Core-excited spectra XAS/XES/RIXS (a ROCIS output -> the spectra table and the edge branching ratio; a structure -> ROCIS XES, CAS-CI XAS or RAS-CI XES inputs)"
     handler: xas_report
   - number: "38"
     title: "Ab initio ligand-field analysis (an AILFT output -> LF splitting, Slater-Condon/Racah parameters and the fit quality)"

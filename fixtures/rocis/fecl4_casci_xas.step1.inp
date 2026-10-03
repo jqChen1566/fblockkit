@@ -1,4 +1,5 @@
 !def2-SVP def2-SVP/C TightSCF
+%pal nprocs 48 end
 %maxcore 4000
 %casscf
   nel 6

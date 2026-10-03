@@ -410,10 +410,12 @@ Rescue paths & see Chapter~\ref{ch:menu9} & Better starting orbitals first;
   cases'') & \textsf{[Manual]} ORCA 6.1 \S2.6.4, \S2.6.6, \S2.6.7,
   \S2.6.9; \textsf{[Measured]} fixtures \\
 Gaussian outputs & shared facts from G09/G16 & Termination / SCF
-  (\code{SCF Done} shape; fixture anchor registered) / frequency blocks
-  (counted imaginary modes cross-checked with the engine's mark) /
-  optimization cycles (\code{Step number}, \code{Stationary point found});
-  Gaussian CASSCF facts registered (no sample); engine-independent rules
+  (\code{SCF Done}, fixture-verified on a G16 conventional-SCF probe) /
+  frequency blocks (counted imaginary modes cross-checked with the
+  engine's mark) / optimization cycles (\code{Step number},
+  \code{Stationary point found}); Gaussian CASSCF facts from a measured
+  G16 sample (active space, per-iteration energies, \code{MCSCF
+  converged.}, active natural occupations); engine-independent rules
   fire, ORCA-only fields stay absent & \textsf{[Measured]} fixtures
   \file{gaussian/} \\
 \bottomrule

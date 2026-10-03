@@ -13,6 +13,8 @@ venv/
 build/
 dist/
 packaging/.buildenv/
+packaging/dist020/
+packaging/build020/
 
 # the built manual (a release artefact; see docs/manual/build.sh)
 docs/manual/main.pdf

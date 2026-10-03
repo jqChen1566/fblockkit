@@ -166,3 +166,52 @@ def test_the_report_prints_the_trace_and_the_space():
 def test_evidence_carries_the_source():
     bibkeys = {item.bibkey for item in tnass.evidence() if item.bibkey}
     assert bibkeys == {"mingare2026tnass"}
+
+
+# --- the best-k sweep ---------------------------------------------------------
+
+
+def test_the_best_k_sweep_pins_both_fixtures():
+    """The sweep table on the two windows: the skips (the greedy path starts on
+    near-empty orbitals), the pinned energies, and the built-in check -- at
+    k = the full window the environment is empty and the energy reproduces the
+    window's own FCI value bit for bit."""
+    benzene = tnass.best_k_sweep(parse_fcidump(BENZENE))
+    assert [entry.k for entry in benzene.entries] == [4, 5, 6]
+    assert [entry.subset for entry in benzene.entries] == [
+        (0, 3, 4, 5),
+        (0, 1, 3, 4, 5),
+        (0, 1, 2, 3, 4, 5),
+    ]
+    assert [entry.n_electrons for entry in benzene.entries] == [2, 4, 6]
+    assert benzene.entries[0].energy == pytest.approx(-230.655257976992, abs=1e-9)
+    assert benzene.entries[1].energy == pytest.approx(-230.71600771658285, abs=1e-9)
+    assert benzene.entries[2].energy == pytest.approx(-230.79381889817188, abs=1e-9)
+    assert [k for k, _ in benzene.skipped] == [1, 2, 3]
+    assert all("0 electrons" in reason for _, reason in benzene.skipped)
+    assert benzene.best.k == 6 and benzene.compact.k == 6
+    window = tnass.analyze(parse_fcidump(BENZENE), n_target=6, method="greedy")
+    assert benzene.entries[-1].energy == window.energy_fci  # the built-in check
+
+    n2 = tnass.best_k_sweep(parse_fcidump(N2))
+    assert [entry.n_electrons for entry in n2.entries] == [2, 4, 6]
+    assert n2.entries[0].energy == pytest.approx(-108.77612228854697, abs=1e-9)
+    assert n2.entries[1].energy == pytest.approx(-108.85000125362497, abs=1e-9)
+    assert n2.entries[2].energy == pytest.approx(-108.95067194527942, abs=1e-9)
+    assert n2.best.k == 6
+
+
+def test_the_best_k_render_and_refusals():
+    dump = parse_fcidump(BENZENE)
+    body = tnass.render_best_k(tnass.best_k_sweep(dump))
+    assert "best-k sweep" in body
+    assert "manually" in body  # the source's own selection mode
+    assert "1/2 sum w_i" in body  # the environment convention, stated
+    assert "compact pick" in body
+    assert "identity pinned in the test suite" in body
+    with pytest.raises(TnassError, match="unknown method"):
+        tnass.best_k_sweep(dump, method="brute")
+    with pytest.raises(TnassError, match="needs a block size"):
+        tnass.best_k_sweep(dump, method="block")
+    with pytest.raises(TnassError, match="empty subset"):
+        tnass.subset_casci_energy(dump, [1.0] * 6, ())

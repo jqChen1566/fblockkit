@@ -1,0 +1,26 @@
+# Source: W. T. Carnall, P. R. Fields, K. Rajnak,
+#   "Electronic Energy Levels of the Trivalent Lanthanide Aquo Ions. IV. Eu3+",
+#   J. Chem. Phys. 49, 4450-4455 (1968). DOI: 10.1063/1.1669896
+# Table: TABLE III, "Parameter values calculated for Eu3+ (aquo) and Eu3+ in LaCl3".
+#   Least-squares fit of 26 J levels (aquo); rms deviation 40 cm-1.
+# Digitized: 2026-10-03 (fBlockKit anchor-digitization).
+# Method: MinerU 4.0.10 markdown table; every value printed as given, including the
+#   +/- uncertainties and trailing decimal points printed in the original (e.g. "1298.").
+# Columns: species, parameter, value (with uncertainty as printed; cm-1).
+species,parameter,value
+Eu3+(aq),E^1,5573.0±40
+Eu3+(aq),E^2,26.708±0.9
+Eu3+(aq),E^3,557.39±2.4
+Eu3+(aq),zeta_4f,1326.0±3.9
+Eu3+(aq),alpha,25.336±1.6
+Eu3+(aq),beta,-580.25±88
+Eu3+(aq),gamma,1155.7±230
+Eu3+(aq),No. of levels fit,26
+Eu3+inLaCl3,E^1,5566.8
+Eu3+inLaCl3,E^2,27.073
+Eu3+inLaCl3,E^3,562.34
+Eu3+inLaCl3,zeta_4f,1298.
+Eu3+inLaCl3,alpha,22.0
+Eu3+inLaCl3,beta,-235.78±25
+Eu3+inLaCl3,gamma,1000.
+Eu3+inLaCl3,No. of levels fit,12

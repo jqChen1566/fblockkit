@@ -15,7 +15,10 @@ from pathlib import Path
 import pytest
 from pytest import approx
 
+from fblockkit.analysis import mokit as mokit_analysis
+from fblockkit.parsers import ParserError
 from fblockkit.parsers.mokit import MokitError, read_mokit_run_file
+from fblockkit.parsers.mokit_fch import read_fch, stage_label
 from fblockkit.recipe import mokit as mokit_recipe
 from fblockkit.recipe.mokit import MokitInputError
 
@@ -142,3 +145,101 @@ def test_the_generator_refuses_method_with_basis():
             charge=0,
             mult=1,
         )
+
+
+# --- the .fch side products ---------------------------------------------------
+
+
+def test_the_fch_reader_pins_the_rhf_stage():
+    """The layout anchor: the parsed coefficients (column-major) reconstruct the
+    file's own stored density triangle (row-major lower) to 1e-8."""
+    rhf = read_fch(MO / "h2o_gvb_rhf.fch")
+    assert rhf.nbf == 24 and rhf.charge == 0 and rhf.multiplicity == 1
+    assert (rhf.n_alpha, rhf.n_beta, rhf.n_electrons) == (5, 5, 10)
+    assert rhf.alpha_energies[0] == approx(-20.6296358, abs=1e-6)
+    assert rhf.coordinates_bohr[0][0] == approx(-0.444042024, abs=1e-9)
+    assert rhf.beta_energies is None and rhf.beta_coefficients is None
+    assert rhf.scf_energy == approx(-75.78429272840782, abs=1e-12)
+    nocc = rhf.n_electrons // 2
+    pairs = [(p, q) for p in range(rhf.nbf) for q in range(p + 1)]
+    assert rhf.total_scf_density is not None
+    worst = max(
+        abs(
+            2.0
+            * sum(
+                rhf.alpha_coefficients[p][m] * rhf.alpha_coefficients[q][m]
+                for m in range(nocc)
+            )
+            - rhf.total_scf_density[k]
+        )
+        for k, (p, q) in enumerate(pairs)
+    )
+    assert worst < 1e-8
+
+
+def test_the_fch_reader_pins_the_transformed_stage():
+    no = read_fch(MO / "h2o_gvb_uhf_gvb4_CASSCF_NO.fch")
+    assert no.total_energy == approx(-75.91806513607675, abs=1e-12)
+    assert no.beta_energies is None
+    assert no.dipole_au is not None
+    assert no.dipole_au[0] == approx(0.307792233, abs=1e-9)
+    assert len(no.alpha_energies) == no.nbf
+    assert stage_label(no.name) == "the CASSCF natural orbitals"
+    assert stage_label("h2o_gvb_uhf_uno_asrot2gvb4.fch").startswith(
+        "the UNO active-space rotation"
+    )
+    assert stage_label("mystery.fch") == "mystery"
+
+
+def test_the_fch_reader_refuses(tmp_path):
+    with pytest.raises(ParserError, match="does not exist"):
+        read_fch(tmp_path / "missing.fch")
+    junk = tmp_path / "junk.fch"
+    junk.write_text("just a line\n", encoding="utf-8")
+    with pytest.raises(ParserError, match="title/level"):
+        read_fch(junk)
+    incomplete = tmp_path / "incomplete.fch"
+    incomplete.write_text("title\nlevel\nSomething  I  1\n", encoding="utf-8")
+    with pytest.raises(ParserError, match="Number of basis functions"):
+        read_fch(incomplete)
+
+
+def test_the_report_renders_the_fch_section():
+    run = read_mokit_run_file(MO / "h2o_gvb_automr.out")
+    files = (
+        read_fch(MO / "h2o_gvb_rhf.fch"),
+        read_fch(MO / "h2o_gvb_uhf_uno_asrot2gvb4.fch"),
+    )
+    body = mokit_analysis.render(run, source="h2o_gvb_automr.out", fch_files=files)
+    assert ".fch side products read next to the output (2 file(s)):" in body
+    assert "name-derived" in body and "no beta block" in body
+    assert "-75.78429273 Eh" in body
+    body2 = mokit_analysis.render(
+        run, source="x.out", fch_files=("broken.fch: not read (short file)",)
+    )
+    assert "broken.fch: not read" in body2
+
+
+def test_a_truncated_array_is_refused(tmp_path):
+    """Dropping one value from an array must raise -- the reader stops at the
+    next section instead of swallowing its numbers as data (the overread
+    that silently fabricated a coefficient with the next header's count,
+    found by the 2026-10-03 review)."""
+    source = MO / "h2o_gvb_rhf.fch"
+    lines = source.read_text(encoding="utf-8").splitlines(keepends=True)
+    start = next(
+        i for i, ln in enumerate(lines) if ln.startswith("Alpha Orbital Energies")
+    )
+    end = next(
+        i
+        for i in range(start + 1, len(lines))
+        if lines[i].strip() and lines[i].lstrip()[0] not in "0123456789+-."
+    )
+    tokens = lines[end - 1].split()
+    lines[end - 1] = " ".join(tokens[:-1]) + "\n"
+    broken = tmp_path / "truncated.fch"
+    broken.write_text("".join(lines), encoding="utf-8")
+    with pytest.raises(
+        ParserError, match="Alpha Orbital Energies.*were read"
+    ):
+        read_fch(broken)

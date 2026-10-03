@@ -6,9 +6,12 @@ see fixtures/gaussian/README): an H2CO frequency run (one imaginary mode at
 activity, so after_geometry is False) and an H2CO TS optimization
 (opt(nomicro,calcfc,ts,noeigen); 7 steps; converged).  Both are
 external-driver runs -- no SCF Done line, so the SCF facts are absent
-(verified absent-field semantics).  The SCF Done regex follows the
-published line shape and is exercised here on that shape only; its real
-fixture anchor is registered as a follow-up.
+(verified absent-field semantics).  Two G16 Rev C.01 probes (added
+2026-10-02) supply the conventional-SCF anchor (the SCF Done regex is
+fixture-verified) and the CASSCF facts (every marker measured; the active
+natural occupations come from the final symbolic density matrix's
+diagonal).  A third G16 probe (N2 CAS(6,6)/STO-3G, 2026-10-03) covers the
+multi-block column pages of that matrix.
 """
 
 from __future__ import annotations
@@ -27,6 +30,9 @@ FIXTURES = Path(__file__).resolve().parents[1] / "fixtures"
 GS = FIXTURES / "gaussian"
 FREQ = GS / "g09_h2co_freq.out"
 TS = GS / "g09_h2co_ts.out"
+G16_RHF = GS / "g16_h2o_rhf.log"
+G16_CAS = GS / "g16_h2o_cas22.log"
+G16_CAS66 = GS / "n2_cas66.log"
 
 
 @pytest.fixture(scope="module")
@@ -101,11 +107,71 @@ def test_the_ts_probe(ts):
 
 
 def test_the_scf_done_line_shape():
-    # the regex follows the published shape; a conventional-SCF fixture is
-    # registered as a follow-up (the shipped probes are external-driver runs)
+    # the regex follows the published shape, now fixture-verified by the G16
+    # conventional-SCF sample (see the function below)
     line = " SCF Done:  E(RB3LYP) =  -93.2545622     A.U. after   10 cycles"
     match = _SCF_DONE_RE.search(line)
     assert match is not None
     assert match.group(1) == "RB3LYP"
     assert float(match.group(2)) == approx(-93.2545622)
     assert int(match.group(3)) == 10
+
+
+# --- the G16 conventional-SCF and CASSCF anchors (added 2026-10-02) -----------
+
+
+def test_the_g16_rhf_anchor():
+    """The conventional-SCF sample: the SCF Done regex is fixture-verified."""
+    result = parse_auto(G16_RHF)
+    assert result.sections["version"] == "16, Revision C.01"
+    scf = result.sections["gaussian_scf"]
+    assert scf["present"] is True and scf["converged"] is True
+    assert scf["cycles"] == 7 and scf["method"] == "RHF"
+    assert scf["energy"] == approx(-74.9630631539, abs=1e-10)
+    facts = facts_from(result)
+    assert facts["scf_converged"] is True
+    assert facts["final_energy"] == approx(-74.9630631539, abs=1e-10)
+    assert facts["casscf_present"] is False
+
+
+def test_the_g16_casscf_anchor():
+    result = parse_auto(G16_CAS)
+    casscf = result.sections["gaussian_casscf"]
+    assert casscf["present"] is True
+    assert (casscf["active_orbitals"], casscf["active_electrons"]) == (2, 2)
+    assert (casscf["core"], casscf["valence"], casscf["virtual"]) == (4, 2, 1)
+    assert (casscf["iterations"], casscf["max_iterations"]) == (7, 64)
+    assert casscf["energy"] == approx(-74.964316519, abs=1e-9)
+    assert casscf["converged"] is True and casscf["converged_via"] is None
+    assert casscf["active_occ_min"] == approx(0.00210880, abs=1e-8)
+    assert casscf["active_occ_max"] == approx(1.99789, abs=1e-5)
+    facts = facts_from(result)
+    assert facts["casscf_present"] is True
+    assert facts["casscf_converged"] is True
+    # G16's marker states no criterion, so the ORCA-only energy-only rule
+    # cannot fire on a Gaussian file (nothing guessed)
+    assert facts["casscf_converged_via"] is None
+    assert facts["final_energy"] == approx(-74.964316519, abs=1e-9)
+    # the nearly-empty active orbital sits below the 0.02 documentation line
+    assert facts["casscf_active_occ_min"] < 0.02
+    # no conventional SCF Done line in this sample; the SCF facts stay absent
+    assert result.sections["gaussian_scf"]["present"] is False
+
+
+def test_the_g16_multiblock_symbolic_density_anchor():
+    """The CAS(6,6) probe (2026-10-03) prints the lower triangle in
+    five-column pages, so the sixth row's first-page last value is the (6,5)
+    element -- a last-value diagonal read fabricates ~1e-18 for the sixth
+    orbital.  The pinned occupations discriminate: right read min =
+    0.0176416, max = 1.98270."""
+    result = parse_auto(G16_CAS66)
+    casscf = result.sections["gaussian_casscf"]
+    assert casscf["present"] is True
+    assert (casscf["active_orbitals"], casscf["active_electrons"]) == (6, 6)
+    assert casscf["converged"] is True
+    assert casscf["converged_via"] is None
+    assert casscf["active_occ_max"] == approx(1.98270, abs=1e-5)
+    assert casscf["active_occ_min"] == approx(0.0176416, abs=1e-7)
+    facts = facts_from(result)
+    assert facts["casscf_converged_via"] is None
+    assert facts["casscf_active_occ_min"] < 0.02

@@ -26,7 +26,7 @@ Available functions:
   23  ASS1ST selection round (a NEVPT2-density export -> quasi-NOON tables + the next round's input)
   24  QICAS active-space optimization (an FCIDUMP -> F_QI-minimized orbitals and the CASCI check)
   25  AEGISS selection (entropy screening + an AO projection -> a compact active space)
-  26  TNASS subset selection (an FCIDUMP -> the S2-maximizing orbital subset)
+  26  TNASS subset selection (an FCIDUMP -> the S2-maximizing orbital subset, or the best-k energy sweep)
   27  DeltaSCF / MOM excited-state SCF input (a structure + an excitation spec -> an input)
   28  RAS / ORMAS model-space input (a structure + a partition mask -> an ORCA input)
   29  Perturbed multistart batch (a converged reference mkl + its input -> restart inputs)
@@ -35,9 +35,9 @@ Available functions:
   32  pysisyphus input (a structure + a method -> a PES-exploration YAML)
   33  pysisyphus run report (a run directory or console capture -> cross-checked record)
   34  Judd-Ofelt intensity parameters (a transition dataset -> Omega_2/4/6 and radiative quantities)
-  35  pNMR pseudocontact shifts (a susceptibility run file + a structure -> per-nucleus PCS)
+  35  pNMR pseudocontact shifts (a susceptibility run file + a structure -> per-nucleus PCS; optional Bleaney comparator)
   36  Magnetic relaxation and QTM (an ORCA output with SINGLE_ANISO or MAGRELAX -> the barrier estimate and tau(T))
-  37  Core-excited spectra XAS/RIXS (a ROCIS output -> the spectra table and the edge branching ratio; a structure -> ROCIS XES or CAS-CI XAS inputs)
+  37  Core-excited spectra XAS/XES/RIXS (a ROCIS output -> the spectra table and the edge branching ratio; a structure -> ROCIS XES, CAS-CI XAS or RAS-CI XES inputs)
   38  Ab initio ligand-field analysis (an AILFT output -> LF splitting, Slater-Condon/Racah parameters and the fit quality)
   39  Polynuclear magnetism (a POLY_ANISO output -> per-center data, the exchange decomposition and the chiT summary)
   40  Hyperfine and EFG parameters (an EPRNMR output -> the A tensor, the EFG principal values and Rho(0))
@@ -100,9 +100,18 @@ Side products echoed by the run (audit trail, not parsed here):
   mokit_gen2_uhf_uno_asrot2gvb4_s.dat
   mokit_gen2_uhf_uno_asrot2gvb4_s.fch
 
+.fch side products read next to the output (3 file(s)):
+  - h2o_gvb_rhf.fch -- the GVB stage (name-derived): nbf 24; 3 atoms; charge 0, mult 1, 10 e (5alpha/5beta); 24 alpha MOs, no beta block
+      SCF -75.78429273 Eh
+  - h2o_gvb_uhf_gvb4_CASSCF_NO.fch -- the CASSCF natural orbitals (name-derived): nbf 24; 3 atoms; charge 0, mult 1, 10 e (5alpha/5beta); 24 alpha MOs, no beta block
+      SCF -75.91806514 Eh; dipole (as stored) (0.308, 0.436, -0.000)
+  - h2o_gvb_uhf_uno_asrot2gvb4.fch -- the UNO active-space rotation towards the GVB stage (name-derived): nbf 24; 3 atoms; charge 0, mult 1, 10 e (5alpha/5beta); 24 alpha MOs, no beta block
+      SCF -75.91806514 Eh; dipole (as stored) (0.308, 0.436, -0.000)
+    Notes: the stage notes are derived from the file names (MOKIT's naming); coordinates and the dipole vector are reported as stored (the file's own units; the coordinates are in Bohr); the format carries no occupation numbers.
+
 Termination: Normal termination of AutoMR -- the workflow ran to its end.
 
-Reading notes: the active space on the CASSCF line is the automatically determined selection (GVB natural-orbital occupations above the 0.02 threshold); writing CASSCF(n,m) in the route line pins the size instead. The energy chain shows the flow RHF/UHF (the lower one is kept) -> GVB -> CASCI/CASSCF, so consecutive entries are different wave-function levels, not an error. GVB runs need a backend program (GAMESS by default; Gaussian and QChem are the alternates -- PySCF is not a GVB backend); the CASSCF stage defaults to PySCF. The natural-orbital .fch side products are listed for the audit trail but this report does not parse them (stated boundary); dynamic-correlation stages (CASPT2/NEVPT2/DMRG) appear in the strategy table only when requested.
+Reading notes: the active space on the CASSCF line is the automatically determined selection (GVB natural-orbital occupations above the 0.02 threshold); writing CASSCF(n,m) in the route line pins the size instead. The energy chain shows the flow RHF/UHF (the lower one is kept) -> GVB -> CASCI/CASSCF, so consecutive entries are different wave-function levels, not an error. GVB runs need a backend program (GAMESS by default; Gaussian and QChem are the alternates -- PySCF is not a GVB backend); the CASSCF stage defaults to PySCF. The natural-orbital .fch side products are read back when they sit next to the output (the section above; the reader is parsers/mokit_fch.py, whose anchor policy is in its docstring); dynamic-correlation stages (CASPT2/NEVPT2/DMRG) appear in the strategy table only when requested.
 Report written: work\h2o_generated_automr.mokit.fbk.md
 
 Available functions:
@@ -131,7 +140,7 @@ Available functions:
   23  ASS1ST selection round (a NEVPT2-density export -> quasi-NOON tables + the next round's input)
   24  QICAS active-space optimization (an FCIDUMP -> F_QI-minimized orbitals and the CASCI check)
   25  AEGISS selection (entropy screening + an AO projection -> a compact active space)
-  26  TNASS subset selection (an FCIDUMP -> the S2-maximizing orbital subset)
+  26  TNASS subset selection (an FCIDUMP -> the S2-maximizing orbital subset, or the best-k energy sweep)
   27  DeltaSCF / MOM excited-state SCF input (a structure + an excitation spec -> an input)
   28  RAS / ORMAS model-space input (a structure + a partition mask -> an ORCA input)
   29  Perturbed multistart batch (a converged reference mkl + its input -> restart inputs)
@@ -140,9 +149,9 @@ Available functions:
   32  pysisyphus input (a structure + a method -> a PES-exploration YAML)
   33  pysisyphus run report (a run directory or console capture -> cross-checked record)
   34  Judd-Ofelt intensity parameters (a transition dataset -> Omega_2/4/6 and radiative quantities)
-  35  pNMR pseudocontact shifts (a susceptibility run file + a structure -> per-nucleus PCS)
+  35  pNMR pseudocontact shifts (a susceptibility run file + a structure -> per-nucleus PCS; optional Bleaney comparator)
   36  Magnetic relaxation and QTM (an ORCA output with SINGLE_ANISO or MAGRELAX -> the barrier estimate and tau(T))
-  37  Core-excited spectra XAS/RIXS (a ROCIS output -> the spectra table and the edge branching ratio; a structure -> ROCIS XES or CAS-CI XAS inputs)
+  37  Core-excited spectra XAS/XES/RIXS (a ROCIS output -> the spectra table and the edge branching ratio; a structure -> ROCIS XES, CAS-CI XAS or RAS-CI XES inputs)
   38  Ab initio ligand-field analysis (an AILFT output -> LF splitting, Slater-Condon/Racah parameters and the fit quality)
   39  Polynuclear magnetism (a POLY_ANISO output -> per-center data, the exchange decomposition and the chiT summary)
   40  Hyperfine and EFG parameters (an EPRNMR output -> the A tensor, the EFG principal values and Rho(0))

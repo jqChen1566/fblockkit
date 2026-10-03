@@ -127,6 +127,10 @@ cp "$REPO/fixtures/crest/crest_conformers.xyz" work/crest_run/
 cp "$REPO/fixtures/crest/crest.energies" work/crest_run/
 cp "$REPO/fixtures/crest/crest_best.xyz" work/crest_run/
 cp "$REPO/fixtures/mokit/h2o_generated_automr.out" work/
+# the automr .fch side products of the same run-chain (read by menu 45)
+cp "$REPO/fixtures/mokit/h2o_gvb_rhf.fch" work/
+cp "$REPO/fixtures/mokit/h2o_gvb_uhf_gvb4_CASSCF_NO.fch" work/
+cp "$REPO/fixtures/mokit/h2o_gvb_uhf_uno_asrot2gvb4.fch" work/
 # the menu-46 tunnelling fixture: the constructed neighbour-table probe
 cp "$REPO/fixtures/qtm/neighbours_example.txt" work/qtm_neighbours.txt
 
@@ -152,6 +156,7 @@ cp work/*.fbk.mkl expected/products/
 cp work/*.fbk.csv expected/products/
 cp work/*.xes.inp expected/products/
 cp work/*.casci_xas.step*.inp expected/products/
+cp work/*.casci_xes.step*.inp expected/products/
 cp work/*.fix_*.inp expected/products/
 cp work/*.pysisyphus.xyz work/*.pysisyphus.yaml expected/products/
 cp -r work/*.fbk.dm expected/products/

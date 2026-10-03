@@ -85,11 +85,12 @@
   purpose: ORCA automation and error patterns (a reference for ErrorPatterns)
   relation: interface
   status: planned
-  license: to be checked (against the official repository)
+  license: GPL-3.0 (measured 2026-10-03 on the official repository; not compatible with this package's Apache-2.0 -- no linking; API shapes may be referenced)
   source: https://github.com/faccts/opi (documentation recorded in the group's notes)
-  note: Its ORCA error-pattern list is a supplementary source for the diagnosis layer.
+  note: Its ORCA error-pattern list is a supplementary source for the diagnosis layer; the planned execution bridge borrows the terminated_normally() guard shape only (2026-10-03 survey).
   evidence:
     - {kind: measured, text: Research synthesis §5 "custodian's Job/ErrorHandler skeleton; OPI's ORCA ErrorPatterns", ref: 调研/合成_cjq12_全景与方案_20260925.md}
+    - {kind: measured, text: "The execution-bridge survey read the licence on the official repository (GPL-3.0) and records OPI as a shape source only; the bridge is built in-package.", ref: 调研/侦察2026-10-03_光谱扩展/R3_ORCA执行桥.md}
 
 - id: goodvibes
   name: GoodVibes / Shermo
@@ -203,11 +204,12 @@
   purpose: magnetic fitting (CF parameter fitting and magnetic-property simulation)
   relation: index
   status: planned
-  license: GPL-3.0
-  source: recorded in the research notes
+  license: GPL-3.0-or-later (measured 2026-10-03 on the author's official page; not compatible with this package's Apache-2.0 -- borrow the algorithm only)
+  source: https://www.nfchilton.com/phi.html (distributions hosted at gitlab.com/chilton-group/phi_releases)
   note: GPL -- borrow the algorithm only (tier D, do not link the code in).
   evidence:
     - {kind: measured, text: 'Research synthesis §3 "magnetic fitting: PHI (GPLv3), CONDON 3.0 / SplitFit, SIMPRE"', ref: 调研/合成_cjq12_全景与方案_20260925.md}
+    - {kind: measured, text: 'Licence measured on the official page (GPL-3.0-or-later); GitHub has no official repository.', ref: 调研/侦察2026-10-03_光谱扩展/E0_许可核实测.md}
 
 - id: condon-splitfit
   name: CONDON 3.0 / SplitFit
@@ -225,8 +227,8 @@
   purpose: point-charge crystal-field estimate (the S2 route)
   relation: index
   status: planned
-  license: GPL (as recorded in the research notes)
-  source: recorded in the research notes
+  license: GPL-3.0 (measured 2026-10-03 on the official repository; not compatible with this package's Apache-2.0 -- borrow the algorithm only)
+  source: https://github.com/asche1/PyCrystalField
   note: >-
     GPL -- the software itself is never linked; its published algorithm route is now
     implemented independently as S2 (analysis/point_charge.py, menu 11, validated by
@@ -234,6 +236,35 @@
   evidence:
     - {kind: measured, text: Design spec §5.3 "S2 point-charge CEF estimate (the PyCrystalField route, GPL -- borrow the algorithm only)", ref: 设计/设计文档_spec_v0.1_20260925.md}
     - {kind: literature, text: The published algorithm route of the PyCrystalField software paper, implemented independently (no code linked or copied); the module cites this entry via the same bibkey., ref: "Scheie A., J. Appl. Crystallogr., 2021, 54(1), 356-362, DOI 10.1107/S160057672001554X", bibkey: scheie2021pycrystalfield}
+    - {kind: measured, text: 'Licence measured on the official repository (GPL-3.0, spdx_id plus LICENSE full text; the GitHub candidate "mgfh" does not exist).', ref: 调研/侦察2026-10-03_光谱扩展/E0_许可核实测.md}
+
+- id: cc-fit2
+  name: CC-FIT2
+  purpose: multi-mode magnetic-relaxation fitting (a method reference for the planned relaxation-fit extension)
+  relation: index
+  status: planned
+  license: GPL-3.0 (measured 2026-10-03 on the official GitLab repository; not compatible with this package's Apache-2.0 -- borrow the method only)
+  source: https://gitlab.com/chilton-group/cc-fit2
+  note: >-
+    The planned multi-mode relaxation fit (Orbach + Raman + direct + QTM) takes the
+    published method of Reta and Chilton, PCCP 21, 23567 (2019) as a reference;
+    no code is linked or copied.
+  evidence:
+    - {kind: measured, text: 'Licence measured on the official GitLab repository (GPL-3.0, LICENSE full text; the GitHub candidate ChiltonGroup/ccfit2 does not exist).', ref: 调研/侦察2026-10-03_光谱扩展/E0_许可核实测.md}
+
+- id: quanty
+  name: Quanty
+  purpose: multiplet and core-level spectra calculation (the planned controlled-template route)
+  relation: interface
+  status: planned
+  license: CC-BY-4.0 (measured 2026-10-03 on the official copyright page; a content licence, not a software licence -- no linking; write-input/read-output only)
+  source: https://quanty.org/ (downloads are registration-based)
+  note: >-
+    The planned core-hole-spectra route writes a controlled subset of .lua templates
+    (frozen in-package, each line annotated) and reads the spectral tables back; the
+    engine itself stays external and is run by the user.
+  evidence:
+    - {kind: measured, text: 'Licence measured on the official copyright page (CC-BY 4.0 covering subroutines and functions); no official repository on GitHub.', ref: 调研/侦察2026-10-03_光谱扩展/E0_许可核实测.md}
 
 - id: liblan
   name: liblan (LnSIM DMET code)
@@ -251,11 +282,18 @@
   purpose: reads multireference results from ORCA for characterisation (a close neighbour)
   relation: index
   status: planned
-  license: to be checked (scope and licence under review)
-  source: recorded in the research notes (official link still to be added)
-  note: Sits close to fBlockKit's characterisation-analysis column -- check the scope and licence before deciding whether to move it to interface.
+  license: MIT (measured 2026-10-03 on the official repository; a numerical cross-check against it is permissible)
+  source: https://github.com/letiziafiorucci/NJA-CFS
+  note: >-
+    The closest neighbour (competitor survey, route A): a Python crystal-field /
+    ligand-field toolkit for transition metals and lanthanides that also reads ORCA
+    AILFT output and records an ORCA f+3/f-3 phase-convention difference -- that
+    record is the source of the planned menu-38 phase cross-check. Scope stays at
+    the lanthanide model layer (no actinides, no input generation, no fixture
+    regime); registered for reference, not interfaced.
   evidence:
     - {kind: measured, text: Noticed during the naming check, see synthesis document §1.4 to-do, ref: 调研/合成_cjq12_全景与方案_20260925.md}
+    - {kind: measured, text: Scope, activity and licence measured in the competitor survey; the f+3/f-3 phase note comes from its user guide., ref: 调研/竞争格局_20261003_A_f区专项.md}
 
 - id: pysisyphus
   name: pysisyphus
@@ -351,3 +389,361 @@
     orca_2mkl -gbw.
   evidence:
     - {kind: manual, text: The utility is documented with the ORCA manual's orbital-plotting section., ref: ORCA 6.1 manual, utilities/visualization (orca_plot), url: https://www.faccts.de/docs/orca/6.1/manual/contents/utilitiesvisualization/}
+
+- id: bonnmag
+  name: BonnMag
+  purpose: AOM ligand-field analysis for f^n systems (a model-layer reference)
+  relation: index
+  status: planned
+  license: to be checked (the 2017 paper gives no licence text)
+  source: recorded in the competitor survey (no official repository seen)
+  note: >-
+    Reference for AOM parameterisation and Judd-Ofelt relative intensities
+    (competitor survey, route A); registered for the CF/JO layers, not interfaced.
+  evidence:
+    - {kind: measured, text: 'Paper: J. Comput. Chem. 2017, DOI 10.1002/jcc.25096.', ref: 调研/竞争格局_20261003_A_f区专项.md}
+
+- id: f-electron
+  name: f_electron
+  purpose: a Fortran ligand-field program for f-electron systems (a model-layer reference)
+  relation: index
+  status: planned
+  license: GPL-3.0 (repository LICENSE; no commits after 2022)
+  source: https://github.com/octoYot/f_electron
+  note: Registered for reference only; no linking (GPL family).
+  evidence:
+    - {kind: measured, text: Repository activity and licence measured in the competitor survey (route A)., ref: 调研/竞争格局_20261003_A_f区专项.md}
+
+- id: loms
+  name: LOMS.cz
+  purpose: an online luminescence / Judd-Ofelt platform (the combinatory JO idea)
+  relation: index
+  status: planned
+  license: closed online service (no licence applicable; the published idea is referenced)
+  source: recorded in the competitor survey (route A)
+  note: >-
+    Its combinatory Judd-Ofelt stability idea (parameter-set consistency when the
+    transition set is overdetermined) is the reference for the planned menu-34
+    consistency report; no code involved.
+  evidence:
+    - {kind: measured, text: 'Idea source: Sci. Rep. 2025, DOI 10.1038/s41598-025-13620-0; platform status measured in the competitor survey.', ref: 调研/竞争格局_20261003_A_f区专项.md}
+
+- id: gagliardi-workflow
+  name: Gagliardi-group high-throughput MR/SISO workflow
+  purpose: an automated lanthanide multireference + spin-orbit workflow (an observation item)
+  relation: index
+  status: planned
+  license: not applicable yet (software release state unverified, checked 2026-10-03)
+  source: paper only (DOI 10.1021/acs.jcim.6c01565)
+  note: >-
+    The closest published neighbour of the automation narrative; kept as an
+    observation item until a software release appears. The accompanying
+    299-complex data set (JCIM 2026, DOI 10.1021/acs.jcim.6c01565) is currently
+    the most direct f-block magnetic-property ML training candidate (storage
+    location unverified). No batch-scheduler ambitions on this side (charter: no
+    engine execution in the core).
+  evidence:
+    - {kind: measured, text: Found and bounded in the competitor survey (route A); release state unverified (ACS pages returned 403)., ref: 调研/竞争格局_20261003_A_f区专项.md}
+
+- id: avogadro2
+  name: Avogadro2
+  purpose: a molecule editor and visualisation front end
+  relation: index
+  status: planned
+  license: BSD-3-Clause
+  source: https://github.com/OpenChemistry/avogadrolibs
+  note: >-
+    Editor/visualisation layer only (competitor survey, route B); structurally
+    complementary -- no f-block semantics, no input discipline. Registered, not
+    interfaced.
+  evidence:
+    - {kind: measured, text: Version 2.0.0 (2026-04-01) and licence measured in the competitor survey., ref: 调研/竞争格局_20261003_B_平台光谱.md}
+
+- id: iqmol
+  name: IQmol
+  purpose: a molecular editor and Q-Chem front end
+  relation: index
+  status: planned
+  license: GPL-3.0
+  source: https://www.iqmol.org
+  note: Registered for reference; single-engine binding, no f-block criteria (competitor survey, route B). No linking (GPL family).
+  evidence:
+    - {kind: measured, text: Version and licence measured in the competitor survey (route B)., ref: 调研/竞争格局_20261003_B_平台光谱.md}
+
+- id: webmo
+  name: WebMO
+  purpose: a commercial web interface for submitting and viewing quantum-chemistry jobs
+  relation: index
+  status: planned
+  license: commercial (a free Basic tier)
+  source: https://www.webmo.net
+  note: >-
+    Solves the "experimentalists can run it themselves" usability layer that this
+    toolkit does not cover (competitor survey, route B); registered as the honest
+    usability-gap reference, not interfaced.
+  evidence:
+    - {kind: measured, text: Version 26.0 and tier structure measured in the competitor survey (route B)., ref: 调研/竞争格局_20261003_B_平台光谱.md}
+
+- id: gabedit
+  name: Gabedit
+  purpose: a desktop GUI that generates input and visualises results for many engines
+  relation: index
+  status: planned
+  license: to be checked (no licence file seen on the project pages)
+  source: https://sourceforge.net/projects/gabedit/
+  note: Last release 2021-07-27 (competitor survey, route B); registered for reference, effectively dormant.
+  evidence:
+    - {kind: measured, text: Release date and licence state measured in the competitor survey (route B)., ref: 调研/竞争格局_20261003_B_平台光谱.md}
+
+- id: aiida
+  name: AiiDA (with the aiida-orca plugin)
+  purpose: a provenance-focused workflow manager for computational science
+  relation: index
+  status: planned
+  license: MIT (the aiida-orca plugin is MIT as well)
+  source: https://github.com/aiidateam/aiida-core
+  note: >-
+    Multi-engine infrastructure whose ORCA channel is stale (aiida-orca last
+    released 2023-05-21; no lanthanide/actinide wording in either README --
+    competitor survey, route B). Its exit-code doctrine is a design reference for
+    the optional execution bridge; this toolkit's artefacts remain callable from
+    such platforms by design ("not a workflow engine").
+  evidence:
+    - {kind: measured, text: Core 2.9.3 (2026-10-02) and plugin state measured in the competitor survey (route B)., ref: 调研/竞争格局_20261003_B_平台光谱.md}
+
+- id: quacc
+  name: quacc
+  purpose: a high-throughput, database-driven computation platform (ORCA recipes included)
+  relation: index
+  status: planned
+  license: BSD-3-Clause
+  source: https://github.com/quantum-accelerators/quacc
+  note: >-
+    Active (v1.6.1, 2026-10-01) but its ORCA recipes stay at the generic-task
+    layer; no f-block criteria (competitor survey, route B). Its "renew the
+    working directory per run" convention matches the execution-bridge design.
+  evidence:
+    - {kind: measured, text: Version and licence measured in the competitor survey (route B)., ref: 调研/竞争格局_20261003_B_平台光谱.md}
+
+- id: jobflow
+  name: jobflow
+  purpose: a library for writing computational workflows (the atomate2 substrate)
+  relation: index
+  status: planned
+  license: modified BSD
+  source: https://pypi.org/project/jobflow/
+  note: Function-as-job orchestration skeleton (competitor survey, route B); registered, not interfaced.
+  evidence:
+    - {kind: measured, text: Version 0.3.1 (2026-02-05) measured in the competitor survey (route B)., ref: 调研/竞争格局_20261003_B_平台光谱.md}
+
+- id: atomate2
+  name: atomate2
+  purpose: a materials-science workflow library
+  relation: index
+  status: planned
+  license: modified BSD
+  source: https://github.com/materialsproject/atomate2
+  note: Materials domain (VASP-centred); no overlap with molecular f-block properties (competitor survey, route B).
+  evidence:
+    - {kind: measured, text: Version 0.1.5 (2026-07-13) measured in the competitor survey (route B)., ref: 调研/竞争格局_20261003_B_平台光谱.md}
+
+- id: fireworks
+  name: FireWorks
+  purpose: a job-orchestration engine with fault-tolerant execution
+  relation: index
+  status: planned
+  license: modified BSD
+  source: https://github.com/materialsproject/fireworks
+  note: Scheduling layer only (competitor survey, route B); registered for reference.
+  evidence:
+    - {kind: measured, text: Version 2.1.4 and repository activity measured in the competitor survey (route B)., ref: 调研/竞争格局_20261003_B_平台光谱.md}
+
+- id: qcfractal
+  name: QCArchive / QCFractal
+  purpose: a distributed compute and database platform for quantum chemistry
+  relation: index
+  status: planned
+  license: BSD-3-Clause
+  source: https://github.com/MolSSI/QCFractal
+  note: >-
+    A data-archiving layer this toolkit deliberately does not provide (reports and
+    ledgers stay file artefacts; competitor survey, route B).
+  evidence:
+    - {kind: measured, text: 'Repository activity measured 2026-10-02 in the competitor survey; pre-print DOI 10.26434/chemrxiv.11908356.v1.', ref: 调研/竞争格局_20261003_B_平台光谱.md}
+
+- id: nomad
+  name: NOMAD
+  purpose: a FAIR research-data management platform (computational chemistry included)
+  relation: index
+  status: planned
+  license: Apache-2.0
+  source: https://github.com/nomad-coe/nomad
+  note: Data-governance layer (competitor survey, route B); registered, not interfaced.
+  evidence:
+    - {kind: measured, text: Repository activity measured 2026-10-02 in the competitor survey (route B)., ref: 调研/竞争格局_20261003_B_平台光谱.md}
+
+- id: aqme
+  name: AQME
+  purpose: an automation package for cheminformatics-driven quantum-chemistry workflows
+  relation: index
+  status: planned
+  license: to be checked (paper only; repository state not measured)
+  source: recorded in the competitor survey (route B)
+  note: >-
+    Organic-molecule automation with auto-correction re-submission; no f-block
+    semantics (competitor survey, route B). Registered for reference.
+  evidence:
+    - {kind: measured, text: 'Paper: WIREs Comput. Mol. Sci. 2023, DOI 10.1002/wcms.1663.', ref: 调研/竞争格局_20261003_B_平台光谱.md}
+
+- id: molsimplify
+  name: molSimplify
+  purpose: automated inorganic structure generation with ML property prediction
+  relation: index
+  status: planned
+  license: GPL-3.0 (algorithm references only; no linking)
+  source: https://github.com/hjkgrp/molSimplify
+  note: >-
+    Octahedral transition-metal scope (no lanthanide/actinide wording seen;
+    competitor survey, route B); registered, not interfaced.
+  evidence:
+    - {kind: measured, text: 'Repository activity (2026-08-18) and the 2.0 paper (DOI 10.1021/acs.jcim.5c02733) recorded in the competitor survey.', ref: 调研/竞争格局_20261003_B_平台光谱.md}
+
+- id: orca-input-library
+  name: ORCA Input Library
+  purpose: the community ORCA input-example site
+  relation: index
+  status: planned
+  license: documentation site (not a program)
+  source: https://sites.google.com/site/orcainputlibrary
+  note: >-
+    The community's input-example hub; its maintainer states no near-term plans to
+    cover ORCA 6 (competitor survey, route B), and it gives no f-block /
+    multireference guidance -- registered as the community baseline this toolkit
+    differs from.
+  evidence:
+    - {kind: measured, text: Maintenance statement measured in the competitor survey (route B)., ref: 调研/竞争格局_20261003_B_平台光谱.md}
+
+- id: edrixs
+  name: EDRIXS
+  purpose: an exact-diagonalisation toolkit for XAS and RIXS (a model-layer reference)
+  relation: index
+  status: planned
+  license: GPL-3.0 (measured 2026-10-03; repository EDRIXS/edrixs -- no linking, write-driver/read-spectra only)
+  source: https://github.com/EDRIXS/edrixs
+  note: >-
+    Active (last commit 2026-10-02); the public example gallery shows no f-shell
+    systems (measured in the X-ray survey), so any f-block claim needs
+    self-built fixtures. Possible reference for the optional independent
+    multiplet solver, which stays a teaching/acceptance-scale exercise.
+  evidence:
+    - {kind: measured, text: 'Licence and repository transfer measured in the E0 licence round; activity in the competitor survey (route B).', ref: 调研/侦察2026-10-03_光谱扩展/E0_许可核实测.md}
+
+- id: feff10
+  name: FEFF10
+  purpose: real-space Green-function multiple scattering (XANES/EXAFS/XES/RIXS)
+  relation: index
+  status: planned
+  license: custom FEFF10 licence (redistribution allowed with conditions; not OSI)
+  source: https://github.com/times-software/feff10
+  note: >-
+    Single-particle route; weak for 4f/5f strong correlation and SOC (X-ray
+    survey). Registered for reference; not interfaced.
+  evidence:
+    - {kind: measured, text: Licence text and activity recorded in the X-ray and competitor surveys., ref: 调研/侦察2026-10-03_光谱扩展/R1_x射线工具.md}
+
+- id: fdmnes
+  name: FDMNES (with the embedded FDMX extension)
+  purpose: a DFT finite-difference all-electron X-ray spectra code
+  relation: index
+  status: planned
+  license: no licence text found (official site and source package measured 2026-10-03; IDDN copyright registration -- write-input/read-output only, no bundle)
+  source: https://fdmnes.neel.cnrs.fr/
+  note: >-
+    All-element K edges and heavy-element L23 edges; actinide L/M-edge XANES
+    precedent exists. FDMX has been an embedded extension since 2015 (Bourke,
+    Chantler & Joly, J. Synchrotron Rad. 23, 551 (2016)) -- never list it as a
+    separate program. Registration of the entry waits for the E3 route decision.
+  evidence:
+    - {kind: measured, text: Licence and source-package state measured in the E0 licence round (35-file package, no licence text, IDDN line in main.f90)., ref: 调研/侦察2026-10-03_光谱扩展/E0_许可核实测.md}
+
+- id: larch
+  name: xraylarch (Larch)
+  purpose: XAFS/XRF/XRD analysis for experimental spectra
+  relation: index
+  status: planned
+  license: MIT
+  source: https://xraypy.github.io/xraylarch/
+  note: Experimental-data domain (X-ray survey); registered for reference, deliberately not a dependency.
+  evidence:
+    - {kind: measured, text: Licence and version recorded in the X-ray survey., ref: 调研/侦察2026-10-03_光谱扩展/R1_x射线工具.md}
+
+- id: ctm4xas
+  name: CTM4XAS / CTM4RIXS
+  purpose: IDL-hosted charge-transfer multiplet model interfaces (historical entry point)
+  relation: index
+  status: planned
+  license: not declared (to be checked)
+  source: recorded in the X-ray survey (temporary site during an update)
+  note: >-
+    The v5.5 ion list includes 4f (XAS/XES/XPS) -- its value is the 4f model
+    inventory; the IDL host is closed, so this is a registration-only entry
+    (also listed by the Quanty ecosystem).
+  evidence:
+    - {kind: measured, text: Coverage and licence state recorded in the X-ray survey., ref: 调研/侦察2026-10-03_光谱扩展/R1_x射线工具.md}
+
+- id: crispy
+  name: Crispy
+  purpose: a Python GUI over Quanty (input generation, submission, plotting)
+  relation: index
+  status: planned
+  license: MIT
+  source: https://github.com/mretegan/crispy
+  note: >-
+    v2026.0 (2026-06-21, its largest update since 0.8.0) puts the Quanty multiplet
+    model behind a GUI; the planned Quanty route stays at the controlled-template
+    layer (see the quanty entry), so Crispy is a reference for what the ecosystem
+    already wraps, not an interface target.
+  evidence:
+    - {kind: measured, text: Version, date and scope recorded in the competitor survey (route B)., ref: 调研/竞争格局_20261003_B_平台光谱.md}
+
+- id: pyfitit
+  name: PyFitIt
+  purpose: machine-learning fitting for quantitative XANES analysis
+  relation: index
+  status: planned
+  license: GPL-3.0 (no linking; write-input/read-output at most)
+  source: https://github.com/gudasergey/pyFitIt
+  note: >-
+    The one XANES-ML tool with a clear licence found in the ML survey (42 stars,
+    last push 2024-12-23); experimental-analysis domain, registered for the
+    spectral-analysis map, not interfaced.
+  evidence:
+    - {kind: measured, text: Licence and activity measured via the GitHub API in the ML survey., ref: 调研/ML整合调查_20261003.md}
+
+- id: berthusen-cfnet
+  name: Berthusen CNN data/code (Figshare)
+  purpose: synthetic and experimental data plus code for CNN extraction of crystal-field parameters
+  relation: index
+  status: planned
+  license: Figshare deposit (licence to be checked at the deposit page)
+  source: https://doi.org/10.6084/m9.figshare.13321985
+  note: >-
+    Reference for inverse-problem ML over thermodynamic data (SciPost Phys. 2021,
+    DOI 10.21468/SciPostPhys.11.1.011); the training domain is 3d /
+    high-symmetry -- the f-block molecular domain is open. Registered.
+  evidence:
+    - {kind: measured, text: Deposit found in the ML survey; contents verified at title level only., ref: 调研/ML整合调查_20261003.md}
+
+- id: fdp-project
+  name: FDP-Project (lanthanide MLIP error study)
+  purpose: a study on how reference convention and structure type control machine-learning-potential errors for lanthanides
+  relation: index
+  status: planned
+  license: none declared (no licence file; do not reuse code)
+  source: https://github.com/MDMynulHasan/FDP-Project
+  note: >-
+    Boundary note only (machine-learning potentials belong to the neighbouring
+    NNP-AFIR project); the finding that the reference convention outweighs the
+    4f occupancy for MLIP errors is cited at title level. Registered, not used.
+  evidence:
+    - {kind: measured, text: Repository metadata measured via the GitHub API in the ML survey., ref: 调研/ML整合调查_20261003.md}

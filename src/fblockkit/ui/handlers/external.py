@@ -22,6 +22,7 @@ from ...knowledge.models import ReportSection
 from ...parsers import ParserError, parse_auto
 from ...parsers.crest import CrestError, read_crest_directory
 from ...parsers.mokit import MokitError, read_mokit_run_file
+from ...parsers.mokit_fch import read_fch
 from ...parsers.pysisyphus import PysisyphusError
 from ...parsers.xtb import XtbError, read_xtb_run_file
 from ...recipe import mokit as mokit_recipe
@@ -384,7 +385,13 @@ def mokit_report(session: Session) -> None:
     except (MokitError, OSError) as exc:
         session.say(f"automr run read failed: {exc}")
         return
-    body = mokit_analysis.render(run, source=path.name)
+    fch_entries: list = []
+    for fch_path in sorted(path.parent.glob("*.fch")):
+        try:
+            fch_entries.append(read_fch(fch_path))
+        except ParserError as exc:
+            fch_entries.append(f"{fch_path.name}: not read ({exc})")
+    body = mokit_analysis.render(run, source=path.name, fch_files=tuple(fch_entries))
     session.say(body)
     md_path = path.with_name(f"{path.stem}.mokit.fbk.md")
     _write_report(md_path, "MOKIT automr run report (B-layer reading)", body, mokit_analysis.evidence())

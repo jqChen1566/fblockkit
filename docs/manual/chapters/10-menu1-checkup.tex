@@ -70,12 +70,14 @@ of M'', ``Optimization completed.''/``Stationary point found.'', and the
 ``ts'' token of the echoed input line).  Engine-independent rules then fire
 normally -- the example's TS optimisation without a frequency verification
 is caught by the same rule as on ORCA files -- while ORCA-only analyses and
-rules stay absent.  Boundaries: Gaussian CASSCF facts are registered as a
-follow-up (no sample in hand); the ``SCF Done'' parse follows the published
-line shape with its real fixture anchor registered (the two shipped G09
-probes are external-driver runs without an SCF line); the suggested-action
-text of shared rules may quote ORCA syntax -- the rule and its reasoning
-are engine-independent, the syntax is not.
+rules stay absent.  Boundaries: the Gaussian CASSCF facts are read from a
+measured G16 sample (the active space, the per-iteration energies, the
+``MCSCF converged.'' marker and the active natural occupations -- the
+non-convergence spelling is unmeasured and stays unparsed), and the
+``SCF Done'' parse is fixture-verified by a conventional-SCF G16 probe
+(the two older G09 probes are external-driver runs without an SCF line);
+the suggested-action text of shared rules may quote ORCA syntax -- the
+rule and its reasoning are engine-independent, the syntax is not.
 
 \lstinputlisting[style=fbkcode, firstline=170, lastline=175,
   title={The Gaussian leg of the menu-1 example (a G09 TS optimisation

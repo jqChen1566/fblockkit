@@ -1,0 +1,246 @@
+# Source: W. T. Carnall, "A systematic analysis of the spectra of trivalent actinide
+#   chlorides in D3h site symmetry", Argonne National Laboratory report ANL-89/39 (1989).
+#   DOI: 10.2172/7017566 ; OSTI: https://www.osti.gov/biblio/7017566
+# Table: Table 3, "Energy Level Parameters for An3+:LaCl3 (in cm-1)" (p. 8; PDF p. 13).
+# Digitized: 2026-10-03 (fBlockKit anchor-digitization).
+# Method: MinerU 4.0.10 markdown table, verified cell-by-cell on demand against 150-1600 dpi
+#   page renders. Eight conversion/OCR artefacts were adjudicated on the render and corrected
+#   in a whitelist (each with recorded evidence):
+#   (1) ion label Ee3+ -> Es3+;  (2) footnote Na3+ -> No3+ in the original footnote;
+#   (3) the four B rows (all printed B^2_0 in the conversion) are B0^2, B0^4, B0^6, B6^6
+#       as required by D3h symmetry and confirmed on the 1200-dpi label crop;
+#   (4) Pu3+ M4: [.388] -> [.338]  (invariant M4/M0 = 0.385 across nine ions);
+#   (5) Fm3+ M4: .312 -> .612      (same ratio check; glyph shows the 6 upper hook);
+#   (6) U3+ T4: ",88(20)" -> 88(20) (leading print artefact present on the page itself);
+#   (7) M^8 -> M0 (superscript OCR);  (8) footnote letters (a/b/c) stripped from labels.
+# Values in parentheses are errors; bracketed = not varied ("fixed") or ratio-constrained
+#   (Pu3+: F4/F2=0.808; Es3+: F4/F2=0.792, F6/F2=0.573). Fm3+/Md3+/No3+ columns are
+#   extrapolated values except where error bars are printed.
+# Columns: ion, parameter, value (cm-1), uncertainty, flag, note.
+ion,parameter,value,uncertainty,flag,note
+U3+,F2,39611,222,,
+Np3+,F2,45382,80,,
+Pu3+,F2,48679,89,,
+Am3+,F2,51900,,fixed,
+Cm3+,F2,55055,,fixed,
+Bk3+,F2,57687,,fixed,
+Cf3+,F2,60464,,fixed,
+Es3+,F2,63174,142,,
+Fm3+,F2,65850,,,extrapolated value (footnote a of the source table)
+Md3+,F2,68454,,,extrapolated value (footnote a of the source table)
+U3+,F4,32960,418,,
+Np3+,F4,37242,215,,
+Pu3+,F4,39333,,ratio-constrained,
+Am3+,F4,41600,,fixed,
+Cm3+,F4,43938,148,,
+Bk3+,F4,45969,,fixed,
+Cf3+,F4,48026,,fixed,
+Es3+,F4,50034,,ratio-constrained,
+Fm3+,F4,52044,,,extrapolated value (footnote a of the source table)
+Md3+,F4,54048,,,extrapolated value (footnote a of the source table)
+U3+,F6,23084,352,,
+Np3+,F6,25644,196,,
+Pu3+,F6,27647,89,,
+Am3+,F6,29400,,fixed,
+Cm3+,F6,32876,154,,
+Bk3+,F6,32876,,fixed,
+Cf3+,F6,34592,,fixed,
+Es3+,F6,36199,,ratio-constrained,
+Fm3+,F6,37756,,,extrapolated value (footnote a of the source table)
+Md3+,F6,39283,,,extrapolated value (footnote a of the source table)
+U3+,zeta,1626,3,,
+Np3+,zeta,1937,2,,
+Pu3+,zeta,2242,2,,
+Am3+,zeta,2564,3,,
+Cm3+,zeta,2889,4,,
+Bk3+,zeta,3210,4,,
+Cf3+,zeta,3572,2,,
+Es3+,zeta,3944,3,,
+Fm3+,zeta,4326,,,extrapolated value (footnote a of the source table)
+Md3+,zeta,4715,,,extrapolated value (footnote a of the source table)
+No3+,zeta,5114,,,extrapolated value (footnote a of the source table)
+U3+,alpha,29.26,0.44,,
+Np3+,alpha,31.78,0.30,,
+Pu3+,alpha,30.00,0.16,,
+Am3+,alpha,26.71,0.31,,
+Cm3+,alpha,29.42,0.32,,
+Bk3+,alpha,29.56,0.54,,
+Cf3+,alpha,27.36,0.26,,
+Es3+,alpha,30.21,1.1,,
+Fm3+,alpha,30,,,extrapolated value (footnote a of the source table)
+Md3+,alpha,30,,,extrapolated value (footnote a of the source table)
+U3+,beta,-824.6,29,,
+Np3+,beta,-728.0,18,,
+Pu3+,beta,-678.3,12,,
+Am3+,beta,-426.6,42,,
+Cm3+,beta,-362.9,51,,
+Bk3+,beta,-564.9,47,,
+Cf3+,beta,-587.5,21,,
+Es3+,beta,-761.0,55,,
+Fm3+,beta,-600,,,extrapolated value (footnote a of the source table)
+Md3+,beta,-600,,,extrapolated value (footnote a of the source table)
+U3+,gamma,1093,105,,
+Np3+,gamma,840.2,61,,
+Pu3+,gamma,1022,31,,
+Am3+,gamma,977.9,28,,
+Cm3+,gamma,500,,fixed,
+Bk3+,gamma,839.8,28,,
+Cf3+,gamma,753.5,14,,
+Es3+,gamma,488.2,39,,
+Fm3+,gamma,450,,,extrapolated value (footnote a of the source table)
+Md3+,gamma,450,,,extrapolated value (footnote a of the source table)
+U3+,T2,306,64,,
+Np3+,T2,200,,fixed,
+Pu3+,T2,190,8,,
+Am3+,T2,150,20,,
+Cm3+,T2,275,,fixed,
+Bk3+,T2,127,15,,
+Cf3+,T2,105,11,,
+Es3+,T2,110,,fixed,
+Fm3+,T2,100,,,extrapolated value (footnote a of the source table)
+Md3+,T2,100,,,extrapolated value (footnote a of the source table)
+U3+,T3,42,14,,
+Np3+,T3,45,7,,
+Pu3+,T3,54,10,,
+Am3+,T3,45,,fixed,
+Cm3+,T3,45,,fixed,
+Bk3+,T3,24,59,,
+Cf3+,T3,48,11,,
+Es3+,T3,45,,fixed,
+Fm3+,T3,45,,,extrapolated value (footnote a of the source table)
+U3+,T4,88,20,,
+Np3+,T4,50,6,,
+Pu3+,T4,45,,fixed,
+Am3+,T4,45,,fixed,
+Cm3+,T4,60,,fixed,
+Bk3+,T4,70,54,,
+Cf3+,T4,59,21,,
+Es3+,T4,50,,fixed,
+Fm3+,T4,50,,,extrapolated value (footnote a of the source table)
+U3+,T6,-242,40,,
+Np3+,T6,-361,18,,
+Pu3+,T6,-368,19,,
+Am3+,T6,-487,31,,
+Cm3+,T6,-289,22,,
+Bk3+,T6,-388,44,,
+Cf3+,T6,-529,31,,
+Es3+,T6,-256,43,,
+Fm3+,T6,-300,,,extrapolated value (footnote a of the source table)
+U3+,T7,447,61,,
+Np3+,T7,427,23,,
+Pu3+,T7,363,14,,
+Am3+,T7,489,28,,
+Cm3+,T7,546,95,,
+Bk3+,T7,525,29,,
+Cf3+,T7,630,34,,
+Es3+,T7,648,66,,
+Fm3+,T7,640,,,extrapolated value (footnote a of the source table)
+U3+,T8,300,,fixed,
+Np3+,T8,340,17,,
+Pu3+,T8,322,10,,
+Am3+,T8,228,32,,
+Cm3+,T8,528,52,,
+Bk3+,T8,378,34,,
+Cf3+,T8,270,14,,
+Es3+,T8,408,44,,
+Fm3+,T8,400,,,extrapolated value (footnote a of the source table)
+U3+,M0,.672,,fixed,
+Np3+,M0,.773,,fixed,
+Pu3+,M0,.877,,fixed,
+Am3+,M0,.985,,fixed,
+Cm3+,M0,1.097,,fixed,
+Bk3+,M0,1.213,,fixed,
+Cf3+,M0,1.334,,fixed,
+Es3+,M0,1.458,,fixed,
+Fm3+,M0,1.587,,,extrapolated value (footnote a of the source table)
+Md3+,M0,1.720,,,extrapolated value (footnote a of the source table)
+U3+,M2,.372,,fixed,
+Np3+,M2,.428,,fixed,
+Pu3+,M2,.486,,fixed,
+Am3+,M2,.546,,fixed,
+Cm3+,M2,.608,,fixed,
+Bk3+,M2,.672,,fixed,
+Cf3+,M2,.736,,fixed,
+Es3+,M2,.807,,fixed,
+Fm3+,M2,.878,,,extrapolated value (footnote a of the source table)
+Md3+,M2,.951,,,extrapolated value (footnote a of the source table)
+U3+,M4,.258,,fixed,
+Np3+,M4,.297,,fixed,
+Pu3+,M4,.338,,fixed,
+Am3+,M4,.379,,fixed,
+Cm3+,M4,.423,,fixed,
+Bk3+,M4,.468,,fixed,
+Cf3+,M4,.514,,fixed,
+Es3+,M4,.562,,fixed,
+Fm3+,M4,.612,,,extrapolated value (footnote a of the source table)
+Md3+,M4,.662,,,extrapolated value (footnote a of the source table)
+U3+,P2,1216,77,,"P4=0.5 P2, P6=0.1 P2 constrained (footnote b)"
+Np3+,P2,1009,30,,"P4=0.5 P2, P6=0.1 P2 constrained (footnote b)"
+Pu3+,P2,949,24,,"P4=0.5 P2, P6=0.1 P2 constrained (footnote b)"
+Am3+,P2,613,42,,"P4=0.5 P2, P6=0.1 P2 constrained (footnote b)"
+Cm3+,P2,1054,36,,"P4=0.5 P2, P6=0.1 P2 constrained (footnote b)"
+Bk3+,P2,667,83,,"P4=0.5 P2, P6=0.1 P2 constrained (footnote b)"
+Cf3+,P2,820,42,,"P4=0.5 P2, P6=0.1 P2 constrained (footnote b)"
+Es3+,P2,506,102,,"P4=0.5 P2, P6=0.1 P2 constrained (footnote b)"
+Fm3+,P2,600,,,"extrapolated value (footnote a of the source table); P4=0.5 P2, P6=0.1 P2 constrained (footnote b)"
+Md3+,P2,600,,,"extrapolated value (footnote a of the source table); P4=0.5 P2, P6=0.1 P2 constrained (footnote b)"
+U3+,B0^2,287,32,,
+Np3+,B0^2,164,26,,
+Pu3+,B0^2,197,22,,
+Am3+,B0^2,242,34,,
+Cm3+,B0^2,280,,fixed,
+Bk3+,B0^2,280,40,,
+Cf3+,B0^2,306,29,,
+Es3+,B0^2,306,,fixed,
+Fm3+,B0^2,306,,,extrapolated value (footnote a of the source table)
+Md3+,B0^2,306,,,extrapolated value (footnote a of the source table)
+No3+,B0^2,306,,,extrapolated value (footnote a of the source table)
+U3+,B0^4,-662,93,,
+Np3+,B0^4,-559,44,,
+Pu3+,B0^4,-586,38,,
+Am3+,B0^4,-582,80,,
+Cm3+,B0^4,-884,,fixed,
+Bk3+,B0^4,-884,62,,
+Cf3+,B0^4,-1062,56,,
+Es3+,B0^4,-1062,,fixed,
+Fm3+,B0^4,-1062,,,extrapolated value (footnote a of the source table)
+Md3+,B0^4,-1062,,,extrapolated value (footnote a of the source table)
+No3+,B0^4,-1052,,,extrapolated value (footnote a of the source table)
+U3+,B0^6,-1340,89,,
+Np3+,B0^6,-1673,49,,
+Pu3+,B0^6,-1723,39,,
+Am3+,B0^6,-1887,83,,
+Cm3+,B0^6,-1293,,fixed,
+Bk3+,B0^6,-1293,68,,
+Cf3+,B0^6,-1441,48,,
+Es3+,B0^6,-1441,,fixed,
+Fm3+,B0^6,-1441,,,extrapolated value (footnote a of the source table)
+Md3+,B0^6,-1441,,,extrapolated value (footnote a of the source table)
+No3+,B0^6,-1441,,,extrapolated value (footnote a of the source table)
+U3+,B6^6,1070,63,,
+Np3+,B6^6,1033,34,,
+Pu3+,B6^6,1011,34,,
+Am3+,B6^6,1122,49,,
+Cm3+,B6^6,990,,fixed,
+Bk3+,B6^6,990,40,,
+Cf3+,B6^6,941,36,,
+Es3+,B6^6,941,,fixed,
+Fm3+,B6^6,941,,,extrapolated value (footnote a of the source table)
+Md3+,B6^6,941,,,extrapolated value (footnote a of the source table)
+No3+,B6^6,941,,,extrapolated value (footnote a of the source table)
+U3+,sigma,29,,,
+Np3+,sigma,22,,,
+Pu3+,sigma,18,,,
+Am3+,sigma,21,,,
+Cm3+,sigma,23,,,
+Bk3+,sigma,22,,,
+Cf3+,sigma,19,,,
+Es3+,sigma,22,,,
+U3+,n_levels,82,,,
+Np3+,n_levels,167,,,
+Pu3+,n_levels,193,,,
+Am3+,n_levels,79,,,
+Cm3+,n_levels,84,,,
+Bk3+,n_levels,83,,,
+Cf3+,n_levels,110,,,
+Es3+,n_levels,47,,,

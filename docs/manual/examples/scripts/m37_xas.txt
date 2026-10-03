@@ -16,6 +16,7 @@ work/fecl4.xyz
 
 
 
+
 37
 3
 work/fecl4.xyz
@@ -27,5 +28,22 @@ work/fecl4.xyz
 
 
 
+
+48
+
+37
+4
+work/fecl4.xyz
+-2
+5
+6 5
+5
+0 26 27 28
+
+
+
+
+
+48
 
 0

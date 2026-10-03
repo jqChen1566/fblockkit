@@ -220,3 +220,135 @@ def test_the_fixture_chain_matches_the_generated_inputs():
     # unrestricted (ORMAS) space reaches below its restricted (RAS) space
     assert energy("n2_rasci") > energy("n2_ras")
     assert energy("n2_rasci_ormas") < energy("n2_rasci")
+
+
+# --- the manual's three extra forms (arbitrary CFGs, irrep lists, rel/douv) ---
+
+
+def test_arbitrary_cfg_references_render():
+    text = ras_ormas.ras_ormas_input(
+        COORDS,
+        charge=0,
+        multiplicity=1,
+        space="ras",
+        nel=6,
+        norb=6,
+        cfg_references=("{2 2 2 0 0 0}", "{2 2 1 1 0 0}"),
+        mult="1",
+        nroots="1",
+    )
+    assert "  refs\n    {2 2 2 0 0 0}\n    {2 2 1 1 0 0}\n  end" in text
+    assert "  nel 6\n  norb 6\n" in text
+    assert "RAS(" not in text and "ORMAS(" not in text
+
+
+def test_arbitrary_cfg_references_on_the_rasci_route():
+    text = ras_ormas.ras_ormas_input(
+        COORDS,
+        charge=0,
+        multiplicity=1,
+        space="ras",
+        nel=6,
+        norb=6,
+        cfg_references=("{2 2 2 0 0 0}",),
+        route="rasci",
+        mult="1",
+        nroots="1",
+    )
+    assert "%rasci" in text
+    assert "    {2 2 2 0 0 0}" in text
+
+
+def test_the_irrep_list_renders():
+    text = ras_ormas.ras_ormas_input(
+        COORDS,
+        charge=0,
+        multiplicity=1,
+        space="ras",
+        mask="2: 1 0/0/1 0",
+        nel=2,
+        norb=2,
+        mult="1,3",
+        nroots="1,1",
+        irreps="0,1",
+    )
+    assert "  irrep 0,1" in text
+    # %casscf order: nel, norb, irrep, mult
+    assert text.index("  norb 2") < text.index("  irrep 0,1") < text.index("  mult 1,3")
+
+
+def test_the_rasci_coupling_lines_render():
+    text = ras_ormas.ras_ormas_input(
+        COORDS,
+        charge=0,
+        multiplicity=1,
+        space="ras",
+        mask="6:2 2/2/2 2",
+        route="rasci",
+        mult="1",
+        nroots="5",
+        rasci_douv=True,
+        rasci_rel_dosoc=True,
+    )
+    assert "  douv true" in text
+    assert "  rel dosoc true end" in text
+    # the manual's example order: ExcLevel, douv, rel
+    assert text.index("  douv true") < text.index("  rel dosoc true end")
+
+
+def test_the_extra_forms_refuse_mismatches():
+    base = dict(charge=0, multiplicity=1, space="ras", nel=6, norb=6)
+    with pytest.raises(RasOrmasError, match="brace"):
+        ras_ormas.ras_ormas_input(
+            COORDS, cfg_references=("2 2 2 0 0 0",), mult="1", nroots="1", **base
+        )
+    with pytest.raises(RasOrmasError, match="occupations for"):
+        ras_ormas.ras_ormas_input(
+            COORDS, cfg_references=("{2 2 2 0 0}",), mult="1", nroots="1", **base
+        )
+    with pytest.raises(RasOrmasError, match="electrons but the"):
+        ras_ormas.ras_ormas_input(
+            COORDS, cfg_references=("{2 2 2 2 0 0}",), mult="1", nroots="1", **base
+        )
+    with pytest.raises(RasOrmasError, match="outside 0..2"):
+        ras_ormas.ras_ormas_input(
+            COORDS, cfg_references=("{2 2 2 0 0 3}",), mult="1", nroots="1", **base
+        )
+    with pytest.raises(RasOrmasError, match="explicit nel and norb"):
+        ras_ormas.ras_ormas_input(
+            COORDS,
+            charge=0,
+            multiplicity=1,
+            space="ras",
+            cfg_references=("{2 2 2 0 0 0}",),
+            mult="1",
+            nroots="1",
+        )
+    with pytest.raises(RasOrmasError, match="one irrep per mult"):
+        ras_ormas.ras_ormas_input(
+            COORDS,
+            charge=0,
+            multiplicity=1,
+            space="ras",
+            mask="2: 1 0/0/1 0",
+            nel=2,
+            norb=2,
+            mult="1,3",
+            nroots="1,1",
+            irreps="0,1,2",
+        )
+    with pytest.raises(RasOrmasError, match="%rasci"):
+        ras_ormas.ras_ormas_input(
+            COORDS,
+            charge=0,
+            multiplicity=1,
+            space="ras",
+            mask="6:2 2/2/2 2",
+            rasci_douv=True,
+            mult="1",
+            nroots="1",
+        )
+    with pytest.raises(RasOrmasError, match="no reference space"):
+        ras_ormas.ras_ormas_input(
+            COORDS, charge=0, multiplicity=1, space="ras", mult="1", nroots="1"
+        )

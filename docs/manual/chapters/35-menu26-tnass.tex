@@ -18,7 +18,8 @@ the orbital maximizing $S_2(A \cup \{i\})$), and the block greedy family
 
 The FCIDUMP of a converged CASSCF run (the same dump the entropy and QICAS
 routes read), optionally the run's output for the energy cross-check, the
-target size (number of active spatial orbitals) and the method.
+target size (number of active spatial orbitals; the \code{best} mode ignores
+it) and the method.
 
 \section{Walkthrough}
 
@@ -33,7 +34,10 @@ target size (number of active spatial orbitals) and the method.
 
 The one-orbital $S_2$ seed ranking, the step-by-step trace of the selection
 with each subset's $S_2$, the resulting space and its electron count, and a
-report (\file{<FCIDUMP>.tnass.fbk.md}) with the citations.
+report (\file{<FCIDUMP>.tnass.fbk.md}) with the citations; the \code{best}
+mode writes the $k$-sweep instead (\file{<FCIDUMP>.tnass.bestk.fbk.md}):
+every prefix's subset, electron count and dressed-CASCI energy, the minimum
+and the compact pick.
 
 \section{How to read it}
 
@@ -55,9 +59,16 @@ report (\file{<FCIDUMP>.tnass.fbk.md}) with the citations.
     source acknowledges this weakness and keeps the exact search for small
     windows (capped here at $\binom{N}{n} \le 20000$);
   \item the subset is a spatial-orbital set (both spins travel together),
-    matching the source's selection domain; the source's best-$k$ variant
-    (choose $k$ by the CASCI energy) is registered as a follow-up --- run the
-    menu at several target sizes and compare;
+    matching the source's selection domain; the source's best-$k$ variant is
+    the menu's \code{best} mode: one shared greedy path supplies every $k$'s
+    candidate, each prefix is scored with a dressed CASCI (the complement
+    carries its natural occupations as a fractional closed-shell environment;
+    the subset runs with $\mathrm{round}(\sum_i w_i)$ electrons), and the
+    source selects $k$ manually off the energy curve --- the report carries
+    the table, the minimum (the full window, by variational monotonicity) and
+    a compact pick (the smallest prefix within 1~mEh of the minimum).  At
+    $k = N$ the environment is empty and the printed energy reproduces the
+    window's own FCI value bit for bit (the sweep's built-in check);
   \item delivering the space to a CASSCF needs the orbital-order machinery
     (Chapter~\ref{ch:menu22}'s boundary note).
 \end{itemize}

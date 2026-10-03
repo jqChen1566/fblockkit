@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fblockkit"
-version = "0.1.0"
+version = "0.2.0"
 description = "fBlockKit - the f-block calculation toolkit: input-file generation and characterisation analysis for strongly correlated systems and lanthanide/actinide calculations"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -12,8 +12,6 @@ license = "Apache-2.0"
 license-files = ["LICENSE", "NOTICE"]
 authors = [
     { name = "Jianqi Chen", email = "chen_jianqi1566@163.com" },
-    { name = "Wen Zeng" },
-    { name = "Guanghui Song" },
 ]
 keywords = [
     "quantum chemistry",

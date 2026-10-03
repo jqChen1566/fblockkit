@@ -9,7 +9,7 @@ Step-1 input written: work\fecl4.casci_xas.step1.inp
 Step-2 input written: work\fecl4.casci_xas.step2.inp
 
 Next steps:
-  1. run step 1 (writes the .gbw next to it), then step 2 (MOREAD reads it)
+  1. run step 1 (it writes fecl4.casci_xas.step1.gbw next to itself), then step 2 (its %moinp reads that gbw)
   2. the step-2 output carries the valence transitions and the core transitions -- the core-excited CAS-CI roots sit far above the ground state (the probe's Fe 2p to 3d L-edge states at 719.36 eV)
   3. render the spectrum:  orca_mapspc <step2-name>.out SOCABS -x0<lo> -x1<hi> -w<fwhm> -eV -n<npoints>
      for the SOC-corrected table (measured: 785 peaks on the probe), or the ABS mode for the plain one (19); the XAS/XASSOC modes do not read these tables (measured refusals)

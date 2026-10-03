@@ -216,6 +216,38 @@ def format_ormas_mask(nel: int, subspaces: tuple[tuple[int, int, int], ...]) -> 
     return f"ORMAS({nel}: {body})"
 
 
+def _parse_cfg_vector(text: str, norb: int, nel: int) -> tuple[int, ...]:
+    """One arbitrary-CFG occupation vector (``{2 2 2 0 0 0}``), validated."""
+    stripped = text.strip()
+    if not (stripped.startswith("{") and stripped.endswith("}")):
+        raise RasOrmasError(
+            f"the CFG reference {text!r} is not brace-delimited. Next step: write "
+            "it as '{2 2 2 0 0 0}' -- one occupation per active orbital."
+        )
+    fields = stripped[1:-1].split()
+    try:
+        vector = tuple(int(field) for field in fields)
+    except ValueError as exc:
+        raise RasOrmasError(
+            f"the CFG reference {text!r} carries a non-integer occupation."
+        ) from exc
+    if len(vector) != norb:
+        raise RasOrmasError(
+            f"the CFG reference {text!r} carries {len(vector)} occupations for "
+            f"{norb} active orbitals; the counts must match."
+        )
+    if any(value not in (0, 1, 2) for value in vector):
+        raise RasOrmasError(
+            f"the CFG reference {text!r} carries an occupation outside 0..2."
+        )
+    if sum(vector) != nel:
+        raise RasOrmasError(
+            f"the CFG reference {text!r} carries {sum(vector)} electrons but the "
+            f"active space holds {nel}; the manual requires them to match."
+        )
+    return vector
+
+
 def _int_list(text: str, label: str) -> tuple[int, ...]:
     fields = [item for item in text.replace(" ", "").split(",") if item != ""]
     if not fields:
@@ -235,7 +267,7 @@ def ras_ormas_input(
     charge: int,
     multiplicity: int,
     space: str,
-    mask: str,
+    mask: str | None = None,
     nel: int | None = None,
     norb: int | None = None,
     route: str = "casscf",
@@ -243,6 +275,10 @@ def ras_ormas_input(
     nroots: str = "1",
     cistep: str | None = None,
     exc_level: int | None = None,
+    cfg_references: tuple[str, ...] | None = None,
+    irreps: str | None = None,
+    rasci_douv: bool = False,
+    rasci_rel_dosoc: bool = False,
     keywords: str = "RHF def2-SVP",
     maxcore: int = 2000,
 ) -> str:
@@ -255,6 +291,17 @@ def ras_ormas_input(
     wording instead of being silently overridden.  ``route='casscf'``
     optimizes the orbitals inside the partition (RASSCF / ORMAS-SCF);
     ``route='rasci'`` is the standalone CI-only module.
+
+    The three manual forms beyond the mask routes (syntax taken verbatim from
+    manual sections 3.13.3.6.1 and 3.13.3.9; their engine acceptance is
+    **pending** the prepared probe round -- the probes live in the project's
+    ``scratch_c1/`` and are registered, not yet run): ``cfg_references`` --
+    arbitrary CFG occupation vectors written as ``{2 2 2 0 0 0}`` inside the
+    ``refs`` block (requires explicit ``nel``/``norb``; mutually exclusive
+    with the masks); ``irreps`` -- the ``irrep`` list, one entry per mult.
+    block (both routes); ``rasci_douv`` / ``rasci_rel_dosoc`` -- the %rasci
+    module's OPA (optical) and QDPT (magnetic) coupling lines (``douv true``
+    and the one-line ``rel dosoc true end``).
     """
     if space not in ("ras", "ormas"):
         raise RasOrmasError(f"unknown partition type {space!r}; use ras or ormas.")
@@ -262,8 +309,44 @@ def ras_ormas_input(
         raise RasOrmasError(f"unknown route {route!r}; use casscf or rasci.")
     if multiplicity < 1:
         raise RasOrmasError(f"multiplicity {multiplicity} is not positive.")
+    if route != "rasci" and (rasci_douv or rasci_rel_dosoc):
+        raise RasOrmasError(
+            "the douv / rel dosoc options belong to the %rasci module; the "
+            "%casscf route does not read them. Next step: use route='rasci', "
+            "or drop the two options."
+        )
+    if cfg_references is None and mask is None:
+        raise RasOrmasError(
+            "no reference space was given. Next step: pass a partition mask "
+            "(RAS(...) / ORMAS(...)) or arbitrary-CFG references."
+        )
+    if cfg_references is not None and mask is not None:
+        raise RasOrmasError(
+            "both arbitrary-CFG references and a partition mask were given; "
+            "the mask would be silently dropped. Next step: keep one of the "
+            "two (they are mutually exclusive)."
+        )
 
-    if space == "ras":
+    cfg_vectors: tuple[tuple[int, ...], ...] | None = None
+    if cfg_references is not None:
+        if not cfg_references:
+            raise RasOrmasError(
+                "the arbitrary-CFG reference list is empty. Next step: give at "
+                "least one occupation vector, e.g. '{2 2 2 0 0 0}'."
+            )
+        if nel is None or norb is None:
+            raise RasOrmasError(
+                "arbitrary-CFG references need the explicit nel and norb (the "
+                "manual: 'the number of electrons and orbitals must match the "
+                "active space defined below'). Next step: pass nel and norb "
+                "explicitly."
+            )
+        cfg_vectors = tuple(
+            _parse_cfg_vector(entry, norb, nel) for entry in cfg_references
+        )
+        resolved_nel, resolved_norb = nel, norb
+        mask_text = ""
+    elif space == "ras":
         nel_m, n1, h1, n2, n3, p3 = parse_ras_mask(mask)
         total = n1 + n2 + n3
         if norb is not None and norb != total:
@@ -314,29 +397,68 @@ def ras_ormas_input(
         )
     if exc_level is not None and exc_level < 0:
         raise RasOrmasError("ExcLevel cannot be negative.")
+    irrep_text: str | None = None
+    if irreps is not None:
+        fields = [field for field in irreps.replace(" ", "").split(",") if field != ""]
+        try:
+            irrep_values = tuple(int(field) for field in fields)
+        except ValueError as exc:
+            raise RasOrmasError(
+                f"the irrep list {irreps!r} is not a comma list of integers. "
+                "Next step: give comma-separated irreps, e.g. '0,1'."
+            ) from exc
+        if not irrep_values or any(value < 0 for value in irrep_values):
+            raise RasOrmasError(
+                f"the irrep list {irreps!r} is empty or carries a negative "
+                "entry. Next step: give non-negative irrep indices."
+            )
+        if len(irrep_values) not in (1, len(mult_values)):
+            raise RasOrmasError(
+                f"{len(irrep_values)} irrep entries against {len(mult_values)} "
+                "multiplicities; the manual wants one irrep per mult. block. "
+                "Next step: give one irrep per multiplicity (or a single "
+                "value)."
+            )
+        irrep_text = ",".join(str(value) for value in irrep_values)
 
     lines = [f"! {keywords}", f"%maxcore {maxcore}"]
     if route == "casscf":
         lines.append("%casscf")
         lines.append(f"  nel {resolved_nel}")
         lines.append(f"  norb {resolved_norb}")
+        if irrep_text is not None:
+            lines.append(f"  irrep {irrep_text}")
         lines.append(f"  mult {','.join(str(v) for v in mult_values)}")
         lines.append(f"  nroots {','.join(str(v) for v in nroots_values)}")
         lines.append("  refs")
-        lines.append(f"    {mask_text}")
+        if cfg_vectors is not None:
+            for vector in cfg_vectors:
+                lines.append("    {" + " ".join(str(v) for v in vector) + "}")
+        else:
+            lines.append(f"    {mask_text}")
         lines.append("  end")
         lines.append("end")
     else:
         lines.append("%rasci")
         lines.append("  refs")
-        lines.append(f"    {mask_text}")
+        if cfg_vectors is not None:
+            for vector in cfg_vectors:
+                lines.append("    {" + " ".join(str(v) for v in vector) + "}")
+        else:
+            lines.append(f"    {mask_text}")
         lines.append("  end")
         lines.append(f"  mult {','.join(str(v) for v in mult_values)}")
         lines.append(f"  nroots {','.join(str(v) for v in nroots_values)}")
+        if irrep_text is not None:
+            lines.append(f"  irrep {irrep_text}")
         if cistep is not None:
             lines.append(f"  cistep {cistep}")
         if exc_level is not None:
             lines.append(f"  ExcLevel {exc_level}")
+        if rasci_douv:
+            lines.append("  douv true")
+        if rasci_rel_dosoc:
+            lines.append("  rel dosoc true end")
         lines.append("end")
     lines.append(f"* xyz {charge} {multiplicity}")
     for element, x, y, z in coordinates:
@@ -370,7 +492,8 @@ def run_guidance_lines(route: str = "casscf") -> tuple[str, ...]:
             "MRCISD-style example relies on the default); mult/nroots take the "
             "CASSCF list syntax",
             "the module couples to the QDPT (magnetic) and OPA (optical) drivers "
-            "via its rel/douv options; those are not generated here",
+            "via its rel/douv options (generated on request with the manual's own "
+            "spelling: 'rel dosoc true end', 'douv true')",
         )
     return common + (
         "the RASSCF/ORMAS-SCF orbital optimization omits the active-active "

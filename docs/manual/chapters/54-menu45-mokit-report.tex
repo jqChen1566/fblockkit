@@ -49,9 +49,12 @@ line.
     report the automatic \code{CAS(4e,4o)} of water.
   \item \textbf{Without the closing \code{Normal termination of AutoMR}
     line every number is partial}; the report says so explicitly.
-  \item \textbf{Stated boundary}: the natural-orbital \code{.fch} side
-    products are listed for the audit trail; their contents are outside
-    this report.
+  \item \textbf{The \code{.fch} side products are read back} when they sit
+    next to the output (the reader is \code{parsers/mokit\_fch.py}): each
+    file is reported with its name-derived stage note, size, charge and
+    electron counts, and the energy scalars it carries; the stage notes
+    come from MOKIT's file naming (name-derived, not a format contract),
+    and the format itself carries no occupation numbers.
   \item \textbf{Citation form}: ``Jingxiang Zou, Molecular Orbital Kit
     (MOKIT)'' -- the project has no program paper.
 \end{itemize}

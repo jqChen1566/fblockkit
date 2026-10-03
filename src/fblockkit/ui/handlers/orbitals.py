@@ -907,19 +907,24 @@ def xas_report(session: Session) -> None:
     and the edge branching ratio, and states the RIXS bookkeeping of the
     run; mode 2 writes a ROCIS input that carries the off-resonance XES
     request (the plain RIXS channel is its carrier); mode 3 writes the
-    two-step CAS-CI core-excited XAS inputs.
+    two-step CAS-CI core-excited XAS inputs; mode 4 writes their RAS-CI
+    XES counterpart (the emission side of the same two-step shape).
     """
     from ...analysis import xas as xas_analysis
 
     mode = session.ask(
         "What do you need? (1) read a ROCIS output (Enter), (2) write a ROCIS "
-        "XES input, (3) write a CAS-CI core-excited XAS input"
+        "XES input, (3) write a CAS-CI core-excited XAS input, (4) write a "
+        "RAS-CI core-excited XES input"
     ).strip()
     if mode == "2":
         _rocis_xes_write(session)
         return
     if mode == "3":
         _casci_xas_write(session)
+        return
+    if mode == "4":
+        _casci_xes_write(session)
         return
     path_text = session.ask("ORCA output path (a ROCIS core-excited-spectra run)")
     if not path_text:
@@ -1074,6 +1079,7 @@ def _casci_xas_write(session: Session) -> None:
     keywords_text = session.ask(
         "Method/basis keywords (Enter = def2-SVP def2-SVP/C TightSCF)"
     ).strip()
+    nprocs_text = session.ask("Parallel processes (Enter = 8)").strip()
     maxcore_text = session.ask("MaxCore in MB (Enter = 4000)").strip()
     path = Path(xyz_text)
     try:
@@ -1089,9 +1095,11 @@ def _casci_xas_write(session: Session) -> None:
             step1_nroots=int(nroots_text or "5"),
             core_orbitals=[int(token) for token in cores_text.replace(",", " ").split()],
             step2_mult=step2_mult_text or None,
-            step2_nroots=step2_nroots_text or "20,20",
+            step2_nroots=step2_nroots_text or None,
             keywords=keywords_text or casci_recipe.DEFAULT_KEYWORDS,
             maxcore=int(maxcore_text or "4000"),
+            nprocs=int(nprocs_text or "8"),
+            gbw_name=f"{path.stem}.casci_xas.step1.gbw",
         )
     except (
         casci_recipe.CasciXasError,
@@ -1116,6 +1124,99 @@ def _casci_xas_write(session: Session) -> None:
     if refs is not None:
         report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
     md_path = step1_path.with_name(f"{path.stem}.casci_xas.fbk.md")
+    md_path.write_text(report_lines, encoding="utf-8")
+    session.say(f"Report written: {md_path}")
+
+
+def _casci_xes_write(session: Session) -> None:
+    """Menu 37, mode 4: the two-step RAS-CI core-excited XES input writer.
+
+    The emission side of the CAS-CI/RAS-CI two-step protocol (manual
+    section 3.13.19): the same valence SA-CASSCF, then the core orbitals
+    (e.g. a metal 1s and 3p for K-beta emission) rotated into the window
+    and one CAS-CI iteration over the singly-core-excited space (the
+    ``refs ras(Nel: NRAS1 1 / NRAS2 / 0 0)`` restriction), with the
+    ``XESSOC``/``XASMOs`` rel request.
+    """
+    from ...analysis import geometry as geometry_analysis
+    from ...recipe import casci_xas as casci_recipe
+
+    xyz_text = session.ask("Structure file (XYZ) path")
+    if not xyz_text:
+        session.say("Cancelled (no structure given).")
+        return
+    charge_text = session.ask("Charge of the system (Enter = 0)").strip()
+    multiplicity_text = session.ask("Multiplicity (Enter = 1)").strip()
+    space_text = session.ask(
+        "Valence active space of step 1 as 'nel norb' (e.g. '6 5' for a d6 shell)"
+    )
+    nroots_text = session.ask("Step-1 roots (Enter = 5)").strip()
+    cores_text = session.ask(
+        "Core orbital indices to rotate in (0-based, from the step-1 output's "
+        "orbital table; for a K-beta emission the metal 1s and 3p, e.g. "
+        "'0 26 27 28' for Fe)"
+    )
+    xasmo_text = session.ask(
+        "XASMOs -- the global index of the rotated 1s MO (Enter = the window "
+        "head: the lowest-index core moves to the leading slot)"
+    ).strip()
+    step2_mult_text = session.ask(
+        "Step-2 multiplicities (Enter = the ground multiplicity and ground-2)"
+    ).strip()
+    step2_nroots_text = session.ask(
+        "Step-2 roots per multiplicity (Enter = 1000,1000: the manual's large "
+        "number; the engine adjusts it to the CSF count of the restricted space)"
+    ).strip()
+    keywords_text = session.ask(
+        "Method/basis keywords (Enter = def2-SVP def2-SVP/C TightSCF)"
+    ).strip()
+    nprocs_text = session.ask("Parallel processes (Enter = 8)").strip()
+    maxcore_text = session.ask("MaxCore in MB (Enter = 4000)").strip()
+    path = Path(xyz_text)
+    try:
+        atoms = geometry_analysis.parse_xyz(path)
+        coordinates = tuple((atom.element, atom.x, atom.y, atom.z) for atom in atoms)
+        space_tokens = space_text.replace(",", " ").split()
+        plan = casci_recipe.build_inputs(
+            coordinates,
+            charge=int(charge_text or "0"),
+            multiplicity=int(multiplicity_text or "1"),
+            valence_nel=int(space_tokens[0]),
+            valence_norb=int(space_tokens[1]),
+            step1_nroots=int(nroots_text or "5"),
+            core_orbitals=[int(token) for token in cores_text.replace(",", " ").split()],
+            step2_mult=step2_mult_text or None,
+            step2_nroots=step2_nroots_text or None,
+            keywords=keywords_text or casci_recipe.DEFAULT_KEYWORDS,
+            maxcore=int(maxcore_text or "4000"),
+            mode="xes",
+            xas_mo=int(xasmo_text) if xasmo_text else None,
+            nprocs=int(nprocs_text or "8"),
+            gbw_name=f"{path.stem}.casci_xes.step1.gbw",
+        )
+    except (
+        casci_recipe.CasciXasError,
+        geometry_analysis.StructureError,
+        OSError,
+        ValueError,
+        IndexError,
+    ) as exc:
+        session.say(f"RAS-CI XES input failed: {exc}")
+        return
+    step1_path = path.with_name(f"{path.stem}.casci_xes.step1.inp")
+    step2_path = path.with_name(f"{path.stem}.casci_xes.step2.inp")
+    step1_path.write_text(plan.step1_text, encoding="utf-8")
+    step2_path.write_text(plan.step2_text, encoding="utf-8")
+    body = casci_recipe.render_plan(plan, step1_path=step1_path, step2_path=step2_path)
+    session.say(body)
+    section = ReportSection(
+        title="RAS-CI core-excited XES input (two-step protocol)", body=body
+    )
+    report_lines = f"## {section.title}\n\n{section.body}\n"
+    refs = references_section(casci_recipe.evidence())
+    if refs is not None:
+        report_lines += f"\n## {refs.title}\n\n{refs.body}\n"
+    md_path = step1_path.with_name(f"{path.stem}.casci_xes.fbk.md")
     md_path.write_text(report_lines, encoding="utf-8")
     session.say(f"Report written: {md_path}")
 
@@ -1289,6 +1390,38 @@ def pnmr_report(session: Session) -> None:
         session.say(f"pNMR run failed: {exc}")
         return
     body = pnmr_analysis.render(data)
+    ion_text = session.ask(
+        "Bleaney comparator: the Ln(III) ion (Tb, Dy, Ho, Er, Tm, Yb; Enter = skip)"
+    ).strip()
+    if ion_text:
+        b02_text = session.ask(
+            "B_0^2 in cm^-1 (the axial crystal-field parameter; Enter = skip)"
+        ).strip()
+        if b02_text:
+            temperature_text = session.ask(
+                "Temperature in K for the comparator (Enter = 300)"
+            ).strip()
+            from ...analysis import bleaney as bleaney_analysis
+
+            try:
+                b02_value = float(b02_text)
+                temperature_value = float(temperature_text or "300")
+            except ValueError:
+                session.say(
+                    "Bleaney comparator skipped: the B_0^2 and temperature "
+                    "entries must be numbers (B_0^2 in cm^-1). Next step: give "
+                    "numeric values, or leave the ion question empty to skip "
+                    "the comparator."
+                )
+            else:
+                try:
+                    block = bleaney_analysis.comparator_lines(
+                        ion_text, b02_value, temperature_value
+                    )
+                except bleaney_analysis.BleaneyError as exc:
+                    session.say(f"Bleaney comparator skipped: {exc}")
+                else:
+                    body = body + "\n" + "\n".join(block)
     session.say(body)
     section = ReportSection(title="pNMR pseudocontact shifts", body=body)
     report_lines = f"## {section.title}\n\n{section.body}\n"

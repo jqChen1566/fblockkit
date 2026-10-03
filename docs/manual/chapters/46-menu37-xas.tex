@@ -89,7 +89,11 @@ SA-CASSCF that writes the \file{.gbw}) and
 \file{<stem>.casci\_xas.step2.inp} (MOREAD, the \code{\%scf rotate} of the
 core orbitals into the active window, \code{FrozenCore FC\_NONE} and one
 CAS-CI iteration over the core-saturated space), with the checklist in
-\file{<stem>.casci\_xas.fbk.md}.  The window selection is positional
+\file{<stem>.casci\_xas.fbk.md}.  Both inputs carry the requested
+\code{\%pal nprocs N end} block (the writer asks for the MPI process
+count), and the step-2 \code{\%moinp} names the gbw the step-1 run
+produces (\file{<stem>.casci\_xas.step1.gbw}), so the generated pair
+runs as written.  The window selection is positional
 (measured): the active window is the \code{norb} consecutive orbitals
 starting at $N_{\text{inactive}} = (N_e - \mathrm{nel})/2$ -- 42 for the
 \file{[FeCl4]2-} probe, 87 for the manual's own Fe(acac)$_3$ example -- and
@@ -158,10 +162,19 @@ peaks measured; \code{ABS} for the plain one).
     energies (measured, kept out of the generated input).
   \item \textbf{Boundaries}: ROCIS's own accuracy statement applies
     (section 5.7.3: several approximations; qualitatively correct
-    results).  This menu reads ROCIS outputs, writes the ROCIS XES input
-    and writes the two-step CAS-CI XAS inputs; the RAS-CI XES variant
+    results).  This menu reads ROCIS outputs, writes the ROCIS XES input,
+    the two-step CAS-CI XAS inputs and the two-step RAS-CI XES inputs
     (section 3.13.19: the same two-step shape with the \code{XESSOC} rel
-    keywords and the \code{XASMOs} index) remains a registered
-    candidate.
+    keywords, the single-hole \code{refs ras} saturation and the
+    \code{XASMOs} index).  The K-beta probe ([FeCl4]2-, the 1s and 3p
+    rotated into a 14e/9o window, \code{nroots 40,40}) terminates normally
+    in 8m44s and prints the emission blocks at the Fe K-beta scale (the
+    main 319$\rightarrow$0 line at 7086.9~eV; the experimental K-beta1 is
+    7058~eV; the def2-SVP level accounts for the offset).  The saturated
+    recipe (the manual's \code{1000,1000}, the 290-state restricted space
+    here) grows superlinearly in the QDPT transition-density stage and did
+    not finish within 24~h (measured); run the step-2 job in a fresh
+    directory --- stale residue under the same basename aborts the new run
+    (measured).
 \end{itemize}
 \end{readbox}
