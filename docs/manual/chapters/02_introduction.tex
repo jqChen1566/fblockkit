@@ -31,9 +31,11 @@ program: a numbered menu, prompts that always show their default, and a
 
 \begin{refusalbox}
 \begin{itemize}
-  \item It does \textbf{not} run calculations. You submit the generated input
-    to ORCA (or OpenMolcas) yourself; \fbk{} never launches an engine, never
-    queues a job, and never waits for one.
+  \item Its core does \textbf{not} run calculations. You submit the generated
+    input to ORCA (or OpenMolcas) yourself -- except that the optional execution
+    bridge, off by default and acting only when explicitly asked, can run one
+    generated input locally (menu 50); the core never queues a job on any
+    scheduler and never waits for one.
   \item It does \textbf{not} use machine learning in its decision layer. Every
     recommendation and every diagnosis is a deterministic rule with declared
     conditions, an action and provenance; the same input always produces the

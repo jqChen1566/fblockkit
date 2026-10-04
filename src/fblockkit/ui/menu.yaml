@@ -153,6 +153,9 @@ items:
   - number: "49"
     title: "Cross-run state tracking (an ordered run sequence + a target root -> the per-step root-matching table)"
     handler: state_tracking_report
+  - number: "50"
+    title: "Run a generated input with ORCA (the optional execution bridge; off by default, acts only when asked)"
+    handler: bridge_run
   - number: "0"
     title: Quit
     handler: quit

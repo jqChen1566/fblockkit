@@ -5,8 +5,10 @@ abstract: >-
   A zero-barrier workbench for strongly correlated systems and lanthanide/actinide
   calculations: it generates calculation input files (basis set, ECP, active space,
   convergence settings) and reads output files or input structures for
-  characterisation analysis. It never runs a calculation for the user, does not use
-  the network, and does not use machine learning in its decision layer; every
+  characterisation analysis. Its core never runs a calculation for the user (an
+  optional execution bridge, off by default and never required by the core, can
+  run one generated input when explicitly asked), does not use the network, and
+  does not use machine learning in its decision layer; every
   conclusion carries its provenance (a program-manual quote, a literature DOI, or a
   measured record).
 type: software

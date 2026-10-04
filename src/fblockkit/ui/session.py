@@ -48,6 +48,7 @@ class Session:
         out: TextIO | None = None,
         root: Path | None = None,
         menu: tuple[MenuItem, ...] | None = None,
+        is_replay: bool = False,
     ) -> None:
         self.out = out if out is not None else sys.stdout
         self._source = iter(strip_comments(lines))
@@ -56,6 +57,10 @@ class Session:
         self.record: list[str] = []
         self.eof = False
         self.stop = False  # a handler sets this to True to end the main loop (e.g. "quit")
+        # True when the lines come from a replayed script (`fblockkit run`): run
+        # points with effects outside this program (the execution bridge) report a
+        # fixed "skipped" line instead of acting, so a replay never re-runs an engine.
+        self.is_replay = is_replay
 
     # --- input and output ---------------------------------------------------
 
@@ -91,7 +96,12 @@ class Session:
     # --- main loop ----------------------------------------------------------
 
     def run(self, handlers: dict[str, Callable[["Session"], None]]) -> int:
-        self.say("fBlockKit -- the f-block calculation toolkit (input generation + characterisation analysis; it runs no calculations)")
+        self.say(
+            "fBlockKit -- the f-block calculation toolkit (input generation + "
+            "characterisation analysis; the core runs no calculations -- an optional "
+            "execution bridge, off by default, can run a generated input when "
+            "explicitly asked)"
+        )
         while True:
             self.say("")
             self.say(render_menu(self.menu))

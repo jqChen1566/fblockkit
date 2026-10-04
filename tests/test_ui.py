@@ -547,7 +547,8 @@ def test_tool_index_loads_with_evidence():
 def test_only_integrated_tools_are_marked_active():
     """status=active must live up to its name: every id below is used by this version --
     either through a built interface (menus 4/32/33/42/43/44/45, the OpenMolcas chain
-    template) or through an internalised protocol/algorithm (autoCAS, NIFREC).
+    template, the optional execution bridge of menu 50 for ORCA) or through an
+    internalised protocol/algorithm (autoCAS, NIFREC).
 
     This step is the mechanical gate for "registered != used": when a tool is genuinely
     wired in later, add it here in the same change that flips its status.
@@ -560,6 +561,7 @@ def test_only_integrated_tools_are_marked_active():
         "mokit",
         "nifrec",
         "openmolcas",
+        "orca",
         "pysisyphus",
         "xtb",
     }

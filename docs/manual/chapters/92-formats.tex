@@ -337,7 +337,10 @@ units, underscore-separated, e.g.\
 \code{temperature\_K,rate\_per\_s,tau\_s}), then one data row per point,
 comma separated, at ten significant digits, with no comment lines and no
 styling information; a text field is quoted only when it would otherwise
-break the row.  It drops straight into spreadsheets, Origin, pandas or
+break the row.  One deliberate extension (the shared spectrum writer, W0):
+its \code{meta} option may prepend \code{\#\ key:\ value} comment lines
+naming the columns, and with no metadata given its output is exactly the
+comment-free companion above.  It drops straight into spreadsheets, Origin, pandas or
 gnuplot, and the report beside it carries the context (fit window,
 coefficients, boundary notes); the values are the engine's printed
 numbers, so a figure made from the companion is regenerated from the same

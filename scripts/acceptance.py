@@ -278,7 +278,7 @@ def main() -> int:
                     "1", "work/n2_stretch_local_spin.out",
                     "1", "work/n2_diffuse.out",
                     "2", "work/octahedron.xyz", "Oh",
-                    "3", "Ce", "3", "2", "3", "energy", "work/ce_atom.xyz", "1", "1,7,2,1", "default", "5000",
+                    "3", "Ce", "3", "2", "3", "energy", "work/ce_atom.xyz", "1", "1,7,2,1", "default", "5000", "n",
                     "4", "Pu,Cl", "0", "2", "3", "energy", "Ce",
                     "5", "dmrg",
                     "6", "openmolcas",
@@ -987,6 +987,15 @@ def main() -> int:
                 and "margin over the runner-up: 1.0401e+00" in track_report,
                 "menu 49 tracks the ground state across the average-size change "
                 "(D = 7.2e-3 against 0.89 for the wrong roots; declarations printed)",
+            )
+            m50_capture = (
+                REPO / "docs" / "manual" / "examples" / "expected" / "m50_bridge.txt"
+            ).read_text(encoding="utf-8")
+            check(
+                "(skipped on replay: the execution bridge never re-runs)" in m50_capture
+                and "Run a generated input with ORCA" in m50_capture,
+                "menu 50's replay run point prints the fixed skip line "
+                "(no engine is started)",
             )
             mokit_report = read("h2o_generated_automr.mokit.fbk.md")
             check(

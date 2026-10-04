@@ -34,6 +34,7 @@ from .crystal import (
     crystal_field_fit,
     point_charge_estimate,
 )
+from .bridge import bridge_run
 from .external import (
     crest_report,
     mokit_generate,
@@ -93,6 +94,7 @@ HANDLERS = {
     "report_output": report_output,
     "geometry_report": geometry_report,
     "generate_input": generate_input,
+    "bridge_run": bridge_run,
     "deltascf_generate": deltascf_generate,
     "ras_ormas_generate": ras_ormas_generate,
     "imag_disp_generate": imag_disp_generate,

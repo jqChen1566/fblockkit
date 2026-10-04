@@ -1,0 +1,7 @@
+50
+work/fecl4.casci_xes.step2.inp
+/usr/local/orca/orca
+4
+4000
+60
+0

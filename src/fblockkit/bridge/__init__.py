@@ -22,6 +22,6 @@ no process.
 """
 
 from .config import BridgeConfig, BridgeError
-from .runner import BridgeResult, run_bridge
+from .runner import REPLAY_SKIP_TEXT, BridgeResult, run_bridge
 
-__all__ = ["BridgeConfig", "BridgeError", "BridgeResult", "run_bridge"]
+__all__ = ["BridgeConfig", "BridgeError", "BridgeResult", "REPLAY_SKIP_TEXT", "run_bridge"]

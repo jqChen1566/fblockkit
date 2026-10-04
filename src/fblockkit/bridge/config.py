@@ -83,7 +83,13 @@ class BridgeConfig:
 
     def __post_init__(self) -> None:
         try:
-            object.__setattr__(self, "orca_path", os.fspath(self.orca_path))
+            # Resolve to an absolute pathname now: validation runs against this
+            # process's cwd, but the engine is launched with cwd = the case
+            # directory, where a relative pathname would quietly point elsewhere
+            # (measured: the launch then dies with the shell's "path not found").
+            object.__setattr__(
+                self, "orca_path", str(Path(os.fspath(self.orca_path)).resolve())
+            )
         except TypeError as exc:
             raise BridgeError(
                 f"orca_path {self.orca_path!r} is not a path. Next step: give "

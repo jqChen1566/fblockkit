@@ -181,6 +181,15 @@ def generate_input(session: Session) -> None:
             recommendation, plan, basis_entry, _relativistic_for(profile)
         )
     )
+    run_now = (session.ask("Run it now with the execution bridge? (y/N)") or "").strip().lower()
+    if run_now in ("y", "yes"):
+        from .bridge import bridge_run
+
+        bridge_run(session)
+    else:
+        session.say(
+            "Not run: the input is ready for ORCA (run it yourself, or use menu 50)."
+        )
 
 
 # --- 4 basis query ----------------------------------------------------------

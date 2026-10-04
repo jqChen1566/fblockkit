@@ -747,3 +747,20 @@
     4f occupancy for MLIP errors is cited at title level. Registered, not used.
   evidence:
     - {kind: measured, text: Repository metadata measured via the GitHub API in the ML survey., ref: 调研/ML整合调查_20261003.md}
+
+- id: orca
+  name: ORCA
+  purpose: the primary quantum-chemistry engine this toolkit writes inputs for (and, optionally, runs through the execution bridge)
+  relation: interface
+  status: active
+  license: free for academic use under the ORCA terms (registration with FACCTs); the toolkit never bundles the engine
+  source: https://www.faccts.de/orca/
+  note: >-
+    The working relationship is two-sided: the toolkit renders inputs and reads
+    outputs for every menu, and menu 50 (the optional execution bridge, off by
+    default) can run one generated input when explicitly asked.  The engine
+    itself stays the user's own installation -- never bundled, never downloaded
+    by the toolkit.
+  evidence:
+    - {kind: measured, text: The bridge's launch conventions (full pathname, no shell, never through mpirun) follow the engine's calling chapter, recorded in the bridge survey., ref: 调研/侦察2026-10-03_光谱扩展/R3_ORCA执行桥.md}
+    - {kind: measured, text: The exit-code semantics that shape the verdict table were measured on the engine (rc = 0 does not imply success; the scanner rejection is the one reliable non-zero code)., ref: 调研/侦察2026-10-03_光谱扩展/E0_84探针实测.md}

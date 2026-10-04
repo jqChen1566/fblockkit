@@ -14,7 +14,9 @@ analysis for strongly correlated systems and lanthanide/actinide calculations
 
 A zero-barrier workbench for strongly correlated systems and lanthanide/actinide
 calculations.  It writes the input file and reads the results back; running the
-calculation itself stays with you.  Every conclusion it draws carries its
+calculation itself stays with you -- or, when you explicitly ask, the optional
+execution bridge runs one generated input on a local engine (off by default;
+the core never depends on it).  Every conclusion it draws carries its
 provenance: a program-manual quote (with section and URL), a literature
 reference (with DOI and a paste-ready BibTeX entry), or a measured record.  The
 decision layer is a deterministic rule engine -- no machine learning, no network

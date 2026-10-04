@@ -14,7 +14,7 @@
 
 ## 0 Before you start
 
-fBlockKit does two things, and it never runs calculations for you:
+fBlockKit does two things, and its core never runs calculations for you (an optional execution bridge, off by default, can run a generated input when you explicitly ask):
 
 1. **Generates input files** - it turns "which method, basis set, active space and
    convergence settings" into an input file you can submit to ORCA, plus plain
@@ -2377,6 +2377,40 @@ not applied, and `omega` is taken as the tracked state's own energy. Single
 geometry sequences only -- the density rotation presupposes one AO space
 (cross-geometry work is menu 17's). A printed-degenerate pair shows up as a
 near-zero margin and is flagged, not resolved.
+
+## 50 Run a generated input with ORCA (the optional execution bridge)
+
+**What it is for**: handing one generated input to a local ORCA and judging the
+outcome.  The core never runs calculations and never needs the bridge; it acts
+only through this menu (or `fblockkit submit`), only when you explicitly ask --
+and a script replay never re-runs an engine (the run point prints one fixed
+"skipped" line instead).
+
+**How**: menu 50 → give the input path (an `.inp` this toolkit generated), the
+full pathname of the ORCA executable, the process count, the MaxCore (MB per
+core) and a wall-clock timeout.  The bridge copies the input into a fresh
+`runs/<case>/` directory (injecting `%pal`/`%maxcore` only when the input does
+not already carry them), launches ORCA by its complete pathname (no shell, never
+through `mpirun` itself) and monitors it: a heartbeat from the `.tmp`/`.gbw`
+timestamps, a wall-clock bound and a stall bound with SIGTERM-then-SIGKILL.
+
+**How to read it**: the verdict comes from three sources -- return code, output
+text, heartbeat -- never from the return code alone.  `normal` requires the
+termination banner (`rc = 0` without it is `suspicious`, never success --
+measured: a non-converged SCF exits 0); `orca_error` is the engine's own error
+termination; `input_rejected` is the input scanner (rc 11); `input_error` is a
+missing prerequisite file; `killed`/`timeout` are terminations from outside or
+by the bridge's clocks.  The output and the `runs/<case>/run.json` ledger land
+beside the copy -- the ledger is a side product (configuration snapshot,
+injection record, sha256 sums) and never enters a byte-compared report.
+Analyse the output with menu 1.
+
+**Boundaries**: local engines only -- no queues, no ssh, no scheduler, and no
+automatic re-run of a failed job (the verdict is a report, not a repair).
+Give every run a fresh directory (measured: stale residue under the same case
+name aborts the new run inside the engine).  The core's import contract keeps
+the bridge optional: dropping the subpackage removes the menu without touching
+anything else.
 
 ## Appendix A Command line
 

@@ -1,4 +1,4 @@
-fBlockKit -- the f-block calculation toolkit (input generation + characterisation analysis; it runs no calculations)
+fBlockKit -- the f-block calculation toolkit (input generation + characterisation analysis; the core runs no calculations -- an optional execution bridge, off by default, can run a generated input when explicitly asked)
 
 Available functions:
    1  Check-up and characterisation (read an ORCA or Gaussian output -> analysis + diagnosis report)
@@ -50,6 +50,7 @@ Available functions:
   47  AOP rotation guess (a reference active space + a target export -> a gbw-ready mkl)
   48  PiOS pi-orbital active space (a pi-system definition + an export -> the pi orbitals and a gbw-ready mkl)
   49  Cross-run state tracking (an ordered run sequence + a target root -> the per-step root-matching table)
+  50  Run a generated input with ORCA (the optional execution bridge; off by default, acts only when asked)
    0  Quit
 Choose a number (Enter = leave empty)> 43
 What do you need? (1) read the ensemble (Boltzmann table), (2) write the ORCA upgrade inputs (Enter = 1) (Enter = leave empty)> 1
@@ -119,6 +120,7 @@ Available functions:
   47  AOP rotation guess (a reference active space + a target export -> a gbw-ready mkl)
   48  PiOS pi-orbital active space (a pi-system definition + an export -> the pi orbitals and a gbw-ready mkl)
   49  Cross-run state tracking (an ordered run sequence + a target root -> the per-step root-matching table)
+  50  Run a generated input with ORCA (the optional execution bridge; off by default, acts only when asked)
    0  Quit
 Choose a number (Enter = leave empty)> 43
 What do you need? (1) read the ensemble (Boltzmann table), (2) write the ORCA upgrade inputs (Enter = 1) (Enter = leave empty)> 2
@@ -195,6 +197,7 @@ Available functions:
   47  AOP rotation guess (a reference active space + a target export -> a gbw-ready mkl)
   48  PiOS pi-orbital active space (a pi-system definition + an export -> the pi orbitals and a gbw-ready mkl)
   49  Cross-run state tracking (an ordered run sequence + a target root -> the per-step root-matching table)
+  50  Run a generated input with ORCA (the optional execution bridge; off by default, acts only when asked)
    0  Quit
 Choose a number (Enter = leave empty)> 0
 Goodbye.
