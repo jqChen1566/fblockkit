@@ -1,4 +1,0 @@
-2
-work/octahedron.xyz
-Oh
-0

@@ -1,3 +1,0 @@
-18
-work/guess_manifest.json
-0

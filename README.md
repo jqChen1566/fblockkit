@@ -73,9 +73,7 @@ Pick the distribution form that suits you (all are attached to the repository's
 - **from source** (for development): `pip install .` inside a checkout; the
   build/test scripts are described under Development below.
 
-The compiled manual (one chapter per menu entry, the criteria and format
-references) is attached as a PDF to the **manual release** on the Releases page,
-and `docs/USER_GUIDE.md` ships inside the program itself.
+`docs/USER_GUIDE.md` ships inside the program itself.
 
 ## Use
 
@@ -157,13 +155,7 @@ the onboarding notes for the external programs the toolkit pairs with.
 ## Documentation
 
 - `docs/USER_GUIDE.md` -- the quick-start guide (section numbers are the menu
-  numbers); it ships inside the program;
-- the full manual (`docs/manual/`, built to `main.pdf` with
-  `bash docs/manual/build.sh`; one chapter per menu entry, the criterion
-  reference, the format reference).  Every session transcript and report
-  excerpt in it is a replayable script under `docs/manual/examples/`, and the
-  test suite replays them (`tests/test_manual.py`).  The built PDF ships with
-  the release archives.
+  numbers); it ships inside the program.
 
 ## Scope and guarantees
 

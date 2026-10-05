@@ -1,8 +1,0 @@
-25
-work/benzene.json
-work/benzene.fcidump
-work/benzene.out
-C pz
-
-
-0

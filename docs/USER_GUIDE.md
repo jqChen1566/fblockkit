@@ -7,10 +7,6 @@
 > Version: v0.1.0 (early development). The provenance of every methodological
 > criterion is in the program's output ("provenance" section and the References
 > block) and in the data files under `src/fblockkit/knowledge/`.
->
-> The full manual is built from `docs/manual/` (`bash docs/manual/build.sh`):
-> the same structure, one chapter per menu entry, with worked examples that are
-> replayable scripts; the built PDF ships with the release archives.
 
 ## 0 Before you start
 

@@ -1,6 +1,0 @@
-30
-work/fhh_optts_freq.out
-work/fhh_reopt.inp
-sum
-0.1
-0

@@ -1,3 +1,0 @@
-1
-work/fhh_optts_freq.out
-0
